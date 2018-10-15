@@ -6,3 +6,4 @@ ods/*
 zlib/*
 quazip/*
 qcustomplot/*
+moc_*
