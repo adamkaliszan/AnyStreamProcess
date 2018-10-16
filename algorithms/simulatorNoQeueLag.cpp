@@ -735,26 +735,13 @@ bool simulatorNoQeueLag::Server::findAS(int noOfAUs, int& groupNo, QList<int>& a
                 ) const
 {
     bool result = false;
+    int groupNoTmp;
 
     switch (subgroupScheduler)
     {
     case ModelResourcessScheduler::Random:
         Utils::UtilsMisc::suffle(groupSequence);
-        //Furder part of this label (inclueng break) can be removed, because the code is repeated in next case value.
-        foreach (int groupNoTmp1, groupSequence)
-        {
-            groupNo = groupNoTmp1;
-            if (groups[static_cast<int>(groupNo)]->findAS(noOfAUs, asIndexes, groupResourcessAllocationlgorithm) >= noOfAUs)
-            {
-                result = true;
-                break;
-            }
-        }
-        break;
-
-    case ModelResourcessScheduler::Sequencial:
-        Utils::UtilsMisc::suffle(groupSequence);
-        foreach (int groupNoTmp, groupSequence)
+        foreach (groupNoTmp, groupSequence)
         {
             groupNo = groupNoTmp;
             if (groups[static_cast<int>(groupNo)]->findAS(noOfAUs, asIndexes, groupResourcessAllocationlgorithm) >= noOfAUs)
@@ -764,8 +751,17 @@ bool simulatorNoQeueLag::Server::findAS(int noOfAUs, int& groupNo, QList<int>& a
             }
         }
         break;
-    default:
-        qFatal("nod supported groupSelectionAlgorithm");
+
+    case ModelResourcessScheduler::Sequencial:
+        foreach (groupNoTmp, groupSequence)
+        {
+            groupNo = groupNoTmp;
+            if (groups[static_cast<int>(groupNo)]->findAS(noOfAUs, asIndexes, groupResourcessAllocationlgorithm) >= noOfAUs)
+            {
+                result = true;
+                break;
+            }
+        }
         break;
     }
     if (result)
