@@ -23,6 +23,21 @@ void TypesAndSettings::_initialize()
     _myMap.insert(Type::NumberOfCallsInStateN_inServer, new SettingsNumberOfCallsInStateN_inServer());
     _myMap.insert(Type::NumberOfCallsInStateN_inBuffer, new SettingsNumberOfCallsInStateN_inBuffer());
 
+    _myMap.insert(Type::NewCallOutIntensitySystem, new SettingsNewCallOutIntensitySystem());
+    _myMap.insert(Type::NewCallInIntensitySystem, new SettingsNewCallInIntensitySystem());
+    _myMap.insert(Type::EndCallOutIntensitySystem, new SettingsEndCallOutIntensitySystem());
+    _myMap.insert(Type::EndCallInIntensitySystem, new SettingsEndCallInIntensitySystem());
+
+    _myMap.insert(Type::NewCallOutIntensityServer, new SettingsNewCallOutIntensityServer());
+    _myMap.insert(Type::NewCallInIntensityServer, new SettingsNewCallInIntensityServer());
+    _myMap.insert(Type::EndCallOutIntensityServer, new SettingsEndCallOutIntensityServer());
+    _myMap.insert(Type::EndCallInIntensityServer, new SettingsEndCallInIntensityServer());
+
+    _myMap.insert(Type::NewCallOutIntensityBuffer, new SettingsNewCallOutIntensityBuffer());
+    _myMap.insert(Type::NewCallInIntensityBuffer, new SettingsNewCallInIntensityBuffer());
+    _myMap.insert(Type::EndCallOutIntensityBuffer, new SettingsEndCallOutIntensityBuffer());
+    _myMap.insert(Type::EndCallInIntensityBuffer, new SettingsEndCallInIntensityBuffer());
+
     _myMap.insert(Type::AllSugbrupsInGivenCombinationAndClassAvailable, new SettingsInavailabilityForClassInAllGroupsInCombination());
     _myMap.insert(Type::AvailableSubroupDistribution, new SettingsAvailableSubroupDistribution());
 
@@ -84,6 +99,54 @@ QString TypesAndSettings::typeToString(Type type)
 
     case Type::NumberOfCallsInStateN_inBuffer:
         result = "Avarage number of calls in a buffer";
+        break;
+
+    case Type::NewCallOutIntensitySystem:
+        result = "New call intensity from state N in a system";
+        break;
+
+    case Type::NewCallInIntensitySystem:
+        result = "New call intensity to state N in a system";
+        break;
+
+    case Type::EndCallOutIntensitySystem:
+        result = "New call intensity from state N in a system";
+        break;
+
+    case Type::EndCallInIntensitySystem:
+        result = "End call intensity to state N in a system";
+        break;
+
+    case Type::NewCallOutIntensityServer:
+        result = "New call intensity from state N in a server";
+        break;
+
+    case Type::NewCallInIntensityServer:
+        result = "New call intensity to state N in a server";
+        break;
+
+    case Type::EndCallOutIntensityServer:
+        result = "New call intensity from state N in a server";
+        break;
+
+    case Type::EndCallInIntensityServer:
+        result = "End call intensity to state N in a server";
+        break;
+
+    case Type::NewCallOutIntensityBuffer:
+        result = "New call intensity from state N in a buffer";
+        break;
+
+    case Type::NewCallInIntensityBuffer:
+        result = "New call intensity to state N in a buffer";
+        break;
+
+    case Type::EndCallOutIntensityBuffer:
+        result = "New call intensity from state N in a buffer";
+        break;
+
+    case Type::EndCallInIntensityBuffer:
+        result = "End call intensity to state N in a buffer";
         break;
 
     case Type::AllSugbrupsInGivenCombinationAndClassAvailable:
@@ -712,7 +775,870 @@ bool SettingsNumberOfCallsInStateN_inBuffer::getSinglePlot(QLineSeries *outPlot,
             }
         }
     }
+    return result;
+}
 
+SettingsNewCallOutIntensitySystem::SettingsNewCallOutIntensitySystem()
+{
+    dependencyParameters.append(ParameterType::SystemState);
+    dependencyParameters.append(ParameterType::TrafficClass);
+    dependencyParameters.append(ParameterType::OfferedTrafficPerAS);
+
+    functionalParameter  = ParameterType::SystemState;
+    additionalParameter2 = ParameterType::TrafficClass;
+    additionalParameter1 = ParameterType::OfferedTrafficPerAS;
+}
+
+bool SettingsNewCallOutIntensitySystem::getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
+{
+    bool result = false;
+
+    outPlot->clear();
+    if (functionalParameter == ParameterType::OfferedTrafficPerAS)
+    {
+        foreach(decimal a, rSystem.getAvailableAperAU())
+        {
+            const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+
+            double y=0;
+            if ((*singlePoint)->read(y, TypeForClassAndSystemState::OfferedNewCallIntensityOutForSystem, parametersSet.classIndex, parametersSet.systemState))
+            {
+                if ((y > 0) || linearScale)
+                {
+                    *outPlot<<QPointF(static_cast<double>(a), y);
+                    result = true;
+                }
+            }
+        }
+    }
+
+    if (functionalParameter == ParameterType::SystemState)
+    {
+        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+        for (int n=0; n<=rSystem.getModel().V(); n++)
+        {
+            double y=0;
+
+            if ((*singlePoint)->read(y, TypeForClassAndSystemState::OfferedNewCallIntensityOutForSystem, parametersSet.classIndex, n))
+            {
+                if ((y > 0) || linearScale)
+                {
+                    *outPlot<<QPointF(n, y);
+                    result = true;
+                }
+            }
+        }
+    }
+
+    if (functionalParameter == ParameterType::TrafficClass)
+    {
+        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+        for (int i=0; i<rSystem.getModel().m(); i++)
+        {
+            double y=0;
+
+            if ((*singlePoint)->read(y, TypeForClassAndSystemState::OfferedNewCallIntensityOutForSystem, i, parametersSet.systemState))
+            {
+                if ((y > 0) || linearScale)
+                {
+                    *outPlot<<QPointF(i, y);
+                    result = true;
+                }
+            }
+        }
+    }
+    return result;
+}
+
+SettingsNewCallInIntensitySystem::SettingsNewCallInIntensitySystem()
+{
+    dependencyParameters.append(ParameterType::SystemState);
+    dependencyParameters.append(ParameterType::TrafficClass);
+    dependencyParameters.append(ParameterType::OfferedTrafficPerAS);
+
+    functionalParameter  = ParameterType::SystemState;
+    additionalParameter2 = ParameterType::TrafficClass;
+    additionalParameter1 = ParameterType::OfferedTrafficPerAS;
+}
+
+bool SettingsNewCallInIntensitySystem::getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
+{
+    bool result = false;
+
+    outPlot->clear();
+    if (functionalParameter == ParameterType::OfferedTrafficPerAS)
+    {
+        foreach(decimal a, rSystem.getAvailableAperAU())
+        {
+            const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+
+            double y=0;
+            if ((*singlePoint)->read(y, TypeForClassAndSystemState::NewCallIntensityInForSystem, parametersSet.classIndex, parametersSet.systemState))
+            {
+                if ((y > 0) || linearScale)
+                {
+                    *outPlot<<QPointF(static_cast<double>(a), y);
+                    result = true;
+                }
+            }
+        }
+    }
+
+    if (functionalParameter == ParameterType::SystemState)
+    {
+        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+        for (int n=0; n<=rSystem.getModel().V(); n++)
+        {
+            double y=0;
+
+            if ((*singlePoint)->read(y, TypeForClassAndSystemState::NewCallIntensityInForSystem, parametersSet.classIndex, n))
+            {
+                if ((y > 0) || linearScale)
+                {
+                    *outPlot<<QPointF(n, y);
+                    result = true;
+                }
+            }
+        }
+    }
+
+    if (functionalParameter == ParameterType::TrafficClass)
+    {
+        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+        for (int i=0; i<rSystem.getModel().m(); i++)
+        {
+            double y=0;
+
+            if ((*singlePoint)->read(y, TypeForClassAndSystemState::NewCallIntensityInForSystem, i, parametersSet.systemState))
+            {
+                if ((y > 0) || linearScale)
+                {
+                    *outPlot<<QPointF(i, y);
+                    result = true;
+                }
+            }
+        }
+    }
+    return result;
+}
+
+SettingsEndCallOutIntensitySystem::SettingsEndCallOutIntensitySystem()
+{
+    dependencyParameters.append(ParameterType::SystemState);
+    dependencyParameters.append(ParameterType::TrafficClass);
+    dependencyParameters.append(ParameterType::OfferedTrafficPerAS);
+
+    functionalParameter  = ParameterType::SystemState;
+    additionalParameter2 = ParameterType::TrafficClass;
+    additionalParameter1 = ParameterType::OfferedTrafficPerAS;
+}
+
+bool SettingsEndCallOutIntensitySystem::getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
+{
+    bool result = false;
+
+    outPlot->clear();
+    if (functionalParameter == ParameterType::OfferedTrafficPerAS)
+    {
+        foreach(decimal a, rSystem.getAvailableAperAU())
+        {
+            const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+
+            double y=0;
+            if ((*singlePoint)->read(y, TypeForClassAndSystemState::EndCallIntensityOutForSystem, parametersSet.classIndex, parametersSet.systemState))
+            {
+                if ((y > 0) || linearScale)
+                {
+                    *outPlot<<QPointF(static_cast<double>(a), y);
+                    result = true;
+                }
+            }
+        }
+    }
+
+    if (functionalParameter == ParameterType::SystemState)
+    {
+        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+        for (int n=0; n<=rSystem.getModel().V(); n++)
+        {
+            double y=0;
+
+            if ((*singlePoint)->read(y, TypeForClassAndSystemState::EndCallIntensityOutForSystem, parametersSet.classIndex, n))
+            {
+                if ((y > 0) || linearScale)
+                {
+                    *outPlot<<QPointF(n, y);
+                    result = true;
+                }
+            }
+        }
+    }
+
+    if (functionalParameter == ParameterType::TrafficClass)
+    {
+        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+        for (int i=0; i<rSystem.getModel().m(); i++)
+        {
+            double y=0;
+
+            if ((*singlePoint)->read(y, TypeForClassAndSystemState::EndCallIntensityOutForSystem, i, parametersSet.systemState))
+            {
+                if ((y > 0) || linearScale)
+                {
+                    *outPlot<<QPointF(i, y);
+                    result = true;
+                }
+            }
+        }
+    }
+    return result;
+}
+
+SettingsEndCallInIntensitySystem::SettingsEndCallInIntensitySystem()
+{
+    dependencyParameters.append(ParameterType::SystemState);
+    dependencyParameters.append(ParameterType::TrafficClass);
+    dependencyParameters.append(ParameterType::OfferedTrafficPerAS);
+
+    functionalParameter  = ParameterType::SystemState;
+    additionalParameter2 = ParameterType::TrafficClass;
+    additionalParameter1 = ParameterType::OfferedTrafficPerAS;
+}
+
+bool SettingsEndCallInIntensitySystem::getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
+{
+    bool result = false;
+
+    outPlot->clear();
+    if (functionalParameter == ParameterType::OfferedTrafficPerAS)
+    {
+        foreach(decimal a, rSystem.getAvailableAperAU())
+        {
+            const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+
+            double y=0;
+            if ((*singlePoint)->read(y, TypeForClassAndSystemState::EndCallIntensityInForSystem, parametersSet.classIndex, parametersSet.systemState))
+            {
+                if ((y > 0) || linearScale)
+                {
+                    *outPlot<<QPointF(static_cast<double>(a), y);
+                    result = true;
+                }
+            }
+        }
+    }
+
+    if (functionalParameter == ParameterType::SystemState)
+    {
+        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+        for (int n=0; n<=rSystem.getModel().V(); n++)
+        {
+            double y=0;
+
+            if ((*singlePoint)->read(y, TypeForClassAndSystemState::EndCallIntensityInForSystem, parametersSet.classIndex, n))
+            {
+                if ((y > 0) || linearScale)
+                {
+                    *outPlot<<QPointF(n, y);
+                    result = true;
+                }
+            }
+        }
+    }
+
+    if (functionalParameter == ParameterType::TrafficClass)
+    {
+        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+        for (int i=0; i<rSystem.getModel().m(); i++)
+        {
+            double y=0;
+
+            if ((*singlePoint)->read(y, TypeForClassAndSystemState::EndCallIntensityInForSystem, i, parametersSet.systemState))
+            {
+                if ((y > 0) || linearScale)
+                {
+                    *outPlot<<QPointF(i, y);
+                    result = true;
+                }
+            }
+        }
+    }
+    return result;
+}
+
+SettingsNewCallOutIntensityServer::SettingsNewCallOutIntensityServer()
+{
+    dependencyParameters.append(ParameterType::ServerState);
+    dependencyParameters.append(ParameterType::TrafficClass);
+    dependencyParameters.append(ParameterType::OfferedTrafficPerAS);
+
+    functionalParameter  = ParameterType::ServerState;
+    additionalParameter2 = ParameterType::TrafficClass;
+    additionalParameter1 = ParameterType::OfferedTrafficPerAS;
+}
+
+bool SettingsNewCallOutIntensityServer::getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
+{
+    bool result = false;
+
+    outPlot->clear();
+    if (functionalParameter == ParameterType::OfferedTrafficPerAS)
+    {
+        foreach(decimal a, rSystem.getAvailableAperAU())
+        {
+            const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+
+            double y=0;
+            if ((*singlePoint)->read(y, TypeForClassAndSystemState::OfferedNewCallIntensityOutForServer, parametersSet.classIndex, parametersSet.serverState))
+            {
+                if ((y > 0) || linearScale)
+                {
+                    *outPlot<<QPointF(static_cast<double>(a), y);
+                    result = true;
+                }
+            }
+        }
+    }
+
+    if (functionalParameter == ParameterType::SystemState)
+    {
+        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+        for (int n=0; n<=rSystem.getModel().vk_s(); n++)
+        {
+            double y=0;
+
+            if ((*singlePoint)->read(y, TypeForClassAndSystemState::OfferedNewCallIntensityOutForServer, parametersSet.classIndex, n))
+            {
+                if ((y > 0) || linearScale)
+                {
+                    *outPlot<<QPointF(n, y);
+                    result = true;
+                }
+            }
+        }
+    }
+
+    if (functionalParameter == ParameterType::TrafficClass)
+    {
+        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+        for (int i=0; i<rSystem.getModel().m(); i++)
+        {
+            double y=0;
+
+            if ((*singlePoint)->read(y, TypeForClassAndSystemState::OfferedNewCallIntensityOutForServer, i, parametersSet.serverState))
+            {
+                if ((y > 0) || linearScale)
+                {
+                    *outPlot<<QPointF(i, y);
+                    result = true;
+                }
+            }
+        }
+    }
+    return result;
+}
+
+SettingsNewCallInIntensityServer::SettingsNewCallInIntensityServer()
+{
+    dependencyParameters.append(ParameterType::ServerState);
+    dependencyParameters.append(ParameterType::TrafficClass);
+    dependencyParameters.append(ParameterType::OfferedTrafficPerAS);
+
+    functionalParameter  = ParameterType::ServerState;
+    additionalParameter2 = ParameterType::TrafficClass;
+    additionalParameter1 = ParameterType::OfferedTrafficPerAS;
+}
+
+bool SettingsNewCallInIntensityServer::getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
+{
+    bool result = false;
+
+    outPlot->clear();
+    if (functionalParameter == ParameterType::OfferedTrafficPerAS)
+    {
+        foreach(decimal a, rSystem.getAvailableAperAU())
+        {
+            const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+
+            double y=0;
+            if ((*singlePoint)->read(y, TypeForClassAndSystemState::NewCallIntensityInForServer, parametersSet.classIndex, parametersSet.serverState))
+            {
+                if ((y > 0) || linearScale)
+                {
+                    *outPlot<<QPointF(static_cast<double>(a), y);
+                    result = true;
+                }
+            }
+        }
+    }
+
+    if (functionalParameter == ParameterType::SystemState)
+    {
+        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+        for (int n=0; n<=rSystem.getModel().vk_s(); n++)
+        {
+            double y=0;
+
+            if ((*singlePoint)->read(y, TypeForClassAndSystemState::NewCallIntensityInForServer, parametersSet.classIndex, n))
+            {
+                if ((y > 0) || linearScale)
+                {
+                    *outPlot<<QPointF(n, y);
+                    result = true;
+                }
+            }
+        }
+    }
+
+    if (functionalParameter == ParameterType::TrafficClass)
+    {
+        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+        for (int i=0; i<rSystem.getModel().m(); i++)
+        {
+            double y=0;
+
+            if ((*singlePoint)->read(y, TypeForClassAndSystemState::NewCallIntensityInForServer, i, parametersSet.serverState))
+            {
+                if ((y > 0) || linearScale)
+                {
+                    *outPlot<<QPointF(i, y);
+                    result = true;
+                }
+            }
+        }
+    }
+    return result;
+}
+
+SettingsEndCallOutIntensityServer::SettingsEndCallOutIntensityServer()
+{
+    dependencyParameters.append(ParameterType::ServerState);
+    dependencyParameters.append(ParameterType::TrafficClass);
+    dependencyParameters.append(ParameterType::OfferedTrafficPerAS);
+
+    functionalParameter  = ParameterType::ServerState;
+    additionalParameter2 = ParameterType::TrafficClass;
+    additionalParameter1 = ParameterType::OfferedTrafficPerAS;
+}
+
+bool SettingsEndCallOutIntensityServer::getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
+{
+    bool result = false;
+
+    outPlot->clear();
+    if (functionalParameter == ParameterType::OfferedTrafficPerAS)
+    {
+        foreach(decimal a, rSystem.getAvailableAperAU())
+        {
+            const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+
+            double y=0;
+            if ((*singlePoint)->read(y, TypeForClassAndSystemState::EndCallIntensityOutForServer, parametersSet.classIndex, parametersSet.serverState))
+            {
+                if ((y > 0) || linearScale)
+                {
+                    *outPlot<<QPointF(static_cast<double>(a), y);
+                    result = true;
+                }
+            }
+        }
+    }
+
+    if (functionalParameter == ParameterType::SystemState)
+    {
+        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+        for (int n=0; n<=rSystem.getModel().vk_s(); n++)
+        {
+            double y=0;
+
+            if ((*singlePoint)->read(y, TypeForClassAndSystemState::EndCallIntensityOutForServer, parametersSet.classIndex, n))
+            {
+                if ((y > 0) || linearScale)
+                {
+                    *outPlot<<QPointF(n, y);
+                    result = true;
+                }
+            }
+        }
+    }
+
+    if (functionalParameter == ParameterType::TrafficClass)
+    {
+        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+        for (int i=0; i<rSystem.getModel().m(); i++)
+        {
+            double y=0;
+
+            if ((*singlePoint)->read(y, TypeForClassAndSystemState::EndCallIntensityOutForServer, i, parametersSet.serverState))
+            {
+                if ((y > 0) || linearScale)
+                {
+                    *outPlot<<QPointF(i, y);
+                    result = true;
+                }
+            }
+        }
+    }
+    return result;
+}
+
+SettingsEndCallInIntensityServer::SettingsEndCallInIntensityServer()
+{
+    dependencyParameters.append(ParameterType::ServerState);
+    dependencyParameters.append(ParameterType::TrafficClass);
+    dependencyParameters.append(ParameterType::OfferedTrafficPerAS);
+
+    functionalParameter  = ParameterType::ServerState;
+    additionalParameter2 = ParameterType::TrafficClass;
+    additionalParameter1 = ParameterType::OfferedTrafficPerAS;
+}
+
+bool SettingsEndCallInIntensityServer::getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
+{
+    bool result = false;
+
+    outPlot->clear();
+    if (functionalParameter == ParameterType::OfferedTrafficPerAS)
+    {
+        foreach(decimal a, rSystem.getAvailableAperAU())
+        {
+            const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+
+            double y=0;
+            if ((*singlePoint)->read(y, TypeForClassAndSystemState::EndCallIntensityInForServer, parametersSet.classIndex, parametersSet.serverState))
+            {
+                if ((y > 0) || linearScale)
+                {
+                    *outPlot<<QPointF(static_cast<double>(a), y);
+                    result = true;
+                }
+            }
+        }
+    }
+
+    if (functionalParameter == ParameterType::SystemState)
+    {
+        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+        for (int n=0; n<=rSystem.getModel().vk_s(); n++)
+        {
+            double y=0;
+
+            if ((*singlePoint)->read(y, TypeForClassAndSystemState::EndCallIntensityInForServer, parametersSet.classIndex, n))
+            {
+                if ((y > 0) || linearScale)
+                {
+                    *outPlot<<QPointF(n, y);
+                    result = true;
+                }
+            }
+        }
+    }
+
+    if (functionalParameter == ParameterType::TrafficClass)
+    {
+        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+        for (int i=0; i<rSystem.getModel().m(); i++)
+        {
+            double y=0;
+
+            if ((*singlePoint)->read(y, TypeForClassAndSystemState::EndCallIntensityInForServer, i, parametersSet.serverState))
+            {
+                if ((y > 0) || linearScale)
+                {
+                    *outPlot<<QPointF(i, y);
+                    result = true;
+                }
+            }
+        }
+    }
+    return result;
+}
+
+SettingsNewCallOutIntensityBuffer::SettingsNewCallOutIntensityBuffer()
+{
+    dependencyParameters.append(ParameterType::BufferState);
+    dependencyParameters.append(ParameterType::TrafficClass);
+    dependencyParameters.append(ParameterType::OfferedTrafficPerAS);
+
+    functionalParameter  = ParameterType::BufferState;
+    additionalParameter2 = ParameterType::TrafficClass;
+    additionalParameter1 = ParameterType::OfferedTrafficPerAS;
+}
+
+bool SettingsNewCallOutIntensityBuffer::getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
+{
+    bool result = false;
+
+    outPlot->clear();
+    if (functionalParameter == ParameterType::OfferedTrafficPerAS)
+    {
+        foreach(decimal a, rSystem.getAvailableAperAU())
+        {
+            const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+
+            double y=0;
+            if ((*singlePoint)->read(y, TypeForClassAndSystemState::OfferedNewCallIntensityOutForQueue, parametersSet.classIndex, parametersSet.bufferState))
+            {
+                if ((y > 0) || linearScale)
+                {
+                    *outPlot<<QPointF(static_cast<double>(a), y);
+                    result = true;
+                }
+            }
+        }
+    }
+
+    if (functionalParameter == ParameterType::SystemState)
+    {
+        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+        for (int n=0; n<=rSystem.getModel().vk_b(); n++)
+        {
+            double y=0;
+
+            if ((*singlePoint)->read(y, TypeForClassAndSystemState::OfferedNewCallIntensityOutForQueue, parametersSet.classIndex, n))
+            {
+                if ((y > 0) || linearScale)
+                {
+                    *outPlot<<QPointF(n, y);
+                    result = true;
+                }
+            }
+        }
+    }
+
+    if (functionalParameter == ParameterType::TrafficClass)
+    {
+        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+        for (int i=0; i<rSystem.getModel().m(); i++)
+        {
+            double y=0;
+
+            if ((*singlePoint)->read(y, TypeForClassAndSystemState::OfferedNewCallIntensityOutForQueue, i, parametersSet.bufferState))
+            {
+                if ((y > 0) || linearScale)
+                {
+                    *outPlot<<QPointF(i, y);
+                    result = true;
+                }
+            }
+        }
+    }
+    return result;
+}
+
+SettingsNewCallInIntensityBuffer::SettingsNewCallInIntensityBuffer()
+{
+    dependencyParameters.append(ParameterType::BufferState);
+    dependencyParameters.append(ParameterType::TrafficClass);
+    dependencyParameters.append(ParameterType::OfferedTrafficPerAS);
+
+    functionalParameter  = ParameterType::BufferState;
+    additionalParameter2 = ParameterType::TrafficClass;
+    additionalParameter1 = ParameterType::OfferedTrafficPerAS;
+}
+
+bool SettingsNewCallInIntensityBuffer::getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
+{
+    bool result = false;
+
+    outPlot->clear();
+    if (functionalParameter == ParameterType::OfferedTrafficPerAS)
+    {
+        foreach(decimal a, rSystem.getAvailableAperAU())
+        {
+            const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+
+            double y=0;
+            if ((*singlePoint)->read(y, TypeForClassAndSystemState::NewCallIntensityInForQueue, parametersSet.classIndex, parametersSet.bufferState))
+            {
+                if ((y > 0) || linearScale)
+                {
+                    *outPlot<<QPointF(static_cast<double>(a), y);
+                    result = true;
+                }
+            }
+        }
+    }
+
+    if (functionalParameter == ParameterType::SystemState)
+    {
+        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+        for (int n=0; n<=rSystem.getModel().vk_b(); n++)
+        {
+            double y=0;
+
+            if ((*singlePoint)->read(y, TypeForClassAndSystemState::NewCallIntensityInForQueue, parametersSet.classIndex, n))
+            {
+                if ((y > 0) || linearScale)
+                {
+                    *outPlot<<QPointF(n, y);
+                    result = true;
+                }
+            }
+        }
+    }
+
+    if (functionalParameter == ParameterType::TrafficClass)
+    {
+        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+        for (int i=0; i<rSystem.getModel().m(); i++)
+        {
+            double y=0;
+
+            if ((*singlePoint)->read(y, TypeForClassAndSystemState::NewCallIntensityInForQueue, i, parametersSet.bufferState))
+            {
+                if ((y > 0) || linearScale)
+                {
+                    *outPlot<<QPointF(i, y);
+                    result = true;
+                }
+            }
+        }
+    }
+    return result;
+}
+
+SettingsEndCallOutIntensityBuffer::SettingsEndCallOutIntensityBuffer()
+{
+    dependencyParameters.append(ParameterType::BufferState);
+    dependencyParameters.append(ParameterType::TrafficClass);
+    dependencyParameters.append(ParameterType::OfferedTrafficPerAS);
+
+    functionalParameter  = ParameterType::BufferState;
+    additionalParameter2 = ParameterType::TrafficClass;
+    additionalParameter1 = ParameterType::OfferedTrafficPerAS;
+}
+
+bool SettingsEndCallOutIntensityBuffer::getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
+{
+    bool result = false;
+
+    outPlot->clear();
+    if (functionalParameter == ParameterType::OfferedTrafficPerAS)
+    {
+        foreach(decimal a, rSystem.getAvailableAperAU())
+        {
+            const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+
+            double y=0;
+            if ((*singlePoint)->read(y, TypeForClassAndSystemState::EndCallIntensityOutForQueue, parametersSet.classIndex, parametersSet.bufferState))
+            {
+                if ((y > 0) || linearScale)
+                {
+                    *outPlot<<QPointF(static_cast<double>(a), y);
+                    result = true;
+                }
+            }
+        }
+    }
+
+    if (functionalParameter == ParameterType::SystemState)
+    {
+        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+        for (int n=0; n<=rSystem.getModel().vk_b(); n++)
+        {
+            double y=0;
+
+            if ((*singlePoint)->read(y, TypeForClassAndSystemState::EndCallIntensityOutForQueue, parametersSet.classIndex, n))
+            {
+                if ((y > 0) || linearScale)
+                {
+                    *outPlot<<QPointF(n, y);
+                    result = true;
+                }
+            }
+        }
+    }
+
+    if (functionalParameter == ParameterType::TrafficClass)
+    {
+        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+        for (int i=0; i<rSystem.getModel().m(); i++)
+        {
+            double y=0;
+
+            if ((*singlePoint)->read(y, TypeForClassAndSystemState::EndCallIntensityOutForQueue, i, parametersSet.bufferState))
+            {
+                if ((y > 0) || linearScale)
+                {
+                    *outPlot<<QPointF(i, y);
+                    result = true;
+                }
+            }
+        }
+    }
+    return result;
+}
+
+SettingsEndCallInIntensityBuffer::SettingsEndCallInIntensityBuffer()
+{
+    dependencyParameters.append(ParameterType::BufferState);
+    dependencyParameters.append(ParameterType::TrafficClass);
+    dependencyParameters.append(ParameterType::OfferedTrafficPerAS);
+
+    functionalParameter  = ParameterType::BufferState;
+    additionalParameter2 = ParameterType::TrafficClass;
+    additionalParameter1 = ParameterType::OfferedTrafficPerAS;
+}
+
+bool SettingsEndCallInIntensityBuffer::getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
+{
+    bool result = false;
+
+    outPlot->clear();
+    if (functionalParameter == ParameterType::OfferedTrafficPerAS)
+    {
+        foreach(decimal a, rSystem.getAvailableAperAU())
+        {
+            const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+
+            double y=0;
+            if ((*singlePoint)->read(y, TypeForClassAndSystemState::EndCallIntensityInForQueue, parametersSet.classIndex, parametersSet.bufferState))
+            {
+                if ((y > 0) || linearScale)
+                {
+                    *outPlot<<QPointF(static_cast<double>(a), y);
+                    result = true;
+                }
+            }
+        }
+    }
+
+    if (functionalParameter == ParameterType::SystemState)
+    {
+        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+        for (int n=0; n<=rSystem.getModel().vk_b(); n++)
+        {
+            double y=0;
+
+            if ((*singlePoint)->read(y, TypeForClassAndSystemState::EndCallIntensityInForQueue, parametersSet.classIndex, n))
+            {
+                if ((y > 0) || linearScale)
+                {
+                    *outPlot<<QPointF(n, y);
+                    result = true;
+                }
+            }
+        }
+    }
+
+    if (functionalParameter == ParameterType::TrafficClass)
+    {
+        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+        for (int i=0; i<rSystem.getModel().m(); i++)
+        {
+            double y=0;
+
+            if ((*singlePoint)->read(y, TypeForClassAndSystemState::EndCallIntensityInForQueue, i, parametersSet.bufferState))
+            {
+                if ((y > 0) || linearScale)
+                {
+                    *outPlot<<QPointF(i, y);
+                    result = true;
+                }
+            }
+        }
+    }
     return result;
 }
 
@@ -793,7 +1719,6 @@ bool SettingsInavailabilityForClassInAllGroupsInCombination::getSinglePlot(QLine
 
     return result;
 }
-
 
 SettingsAvailableSubroupDistribution::SettingsAvailableSubroupDistribution()
 {

@@ -7,9 +7,14 @@ namespace Algorithms
 AlgorithmHybridNoFifo::AlgorithmHybridNoFifo() : Investigator(QueueServDiscipline::NoQeue)
 {
     myQoS_Set
-       <<Results::Type::BlockingProbability
-       <<Results::Type::OccupancyDistribution;
+     << Results::Type::BlockingProbability
+     << Results::Type::LossProbability
+     << Results::Type::OccupancyDistribution
+     << Results::Type::NumberOfCallsInStateN
+     << Results::Type::NewCallOutIntensitySystem<< Results::Type::NewCallInIntensitySystem<< Results::Type::EndCallOutIntensitySystem<< Results::Type::EndCallInIntensitySystem
+        ;
 }
+
 
 void AlgorithmHybridNoFifo::calculateSystem(const ModelSyst *system
         , double a

@@ -20,6 +20,22 @@ enum class Type
     NumberOfCallsInStateN_inServer,
     NumberOfCallsInStateN_inBuffer,
 
+    //Service and arrival intensity
+    NewCallOutIntensitySystem,
+    NewCallInIntensitySystem,
+    EndCallOutIntensitySystem,
+    EndCallInIntensitySystem,
+
+    NewCallOutIntensityServer,
+    NewCallInIntensityServer,
+    EndCallOutIntensityServer,
+    EndCallInIntensityServer,
+
+    NewCallOutIntensityBuffer,
+    NewCallInIntensityBuffer,
+    EndCallOutIntensityBuffer,
+    EndCallInIntensityBuffer,
+
     //Parameters for LAG systems
     AllSugbrupsInGivenCombinationAndClassAvailable,     // LAG, all subgroups in a given combination and class are available
     AvailableSubroupDistribution,

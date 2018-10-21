@@ -256,6 +256,8 @@ void MainWindow::addAlgorithmsAndParams()
     addTestedAlgorithm(new Algorithms::algRekLagGS2());
     addTestedAlgorithm(new Algorithms::algRekLAG());
 
+    addTestedAlgorithm(new Algorithms::AlgorithmHybrid(Algorithms::AlgorithmHybrid::AlgVariant::yFAG));
+
 /*
     addExperimentalAlgorithm(new convolutionAlgorithm1());
     addExperimentalAlgorithm(new convolutionAlgorithm2());
