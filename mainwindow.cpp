@@ -1300,9 +1300,6 @@ void MainWindow::loadLanguage(const QString &rLanguage)
         switchTranslator(m_translatorQt, QString("languages/qt_%1.qm").arg(rLanguage));
         qDebug()<<tr("Current Language changed to %1 (%2)").arg(languageName, rLanguage);
 
-        //modelTrClass::sourceType tmp2 = modelTrClass::sourceType::independent;
-        //QVariant tmp = QVariant(modelTrClass::sourceType, tmp2);
-
         QVariant variant;
 
         drawSystemModel();
@@ -1468,8 +1465,8 @@ void MainWindow::drawSystemModel()
     QPen blackPen(Qt::black);
     blackPen.setWidth(2);
 
-    int kQtype = sys->K_bType();
-    int kStype = sys->K_sType();
+    int kQtype = sys->k_bType();
+    int kStype = sys->k_sType();
 
     int width  = static_cast<int>(ui->graphicsView->width());
     int height = static_cast<int>(ui->graphicsView->height());
@@ -1499,12 +1496,12 @@ void MainWindow::drawSystemModel()
         int sglQeueWidth = (wQeue/kQtype);
         qreal x, y;
         x = qIdx*sglQeueWidth + xQeue;
-        int k = sys->k_q(qIdx);
+        int k = sys->k_b(qIdx);
         for (int qIdx2=0; qIdx2<k; qIdx2++)
         {
             y = qIdx2*25-10;
             /*QGraphicsItem *itm = */sceneSysModel->addRect(x, y, sglQeueWidth*0.9, 20, blackPen, qeueBrush);
-            QGraphicsTextItem  *text = sceneSysModel->addText(QString("%1").arg(sys->v_q(qIdx)), QFont("Arial", 16));
+            QGraphicsTextItem  *text = sceneSysModel->addText(QString("%1").arg(sys->v_b(qIdx)), QFont("Arial", 16));
             text->setPos(QPoint(static_cast<int>(x), static_cast<int>(y-8)));
         }
     }
@@ -1536,12 +1533,12 @@ void MainWindow::on_comboBoxPredefinedSystems_currentIndexChanged(int index)
     this->system->id = system->id;
 
     ui->listWidgetWiazki->clear();
-    for(int grId=0; grId<system->Ks(); grId++)
+    for(int grId=0; grId<system->k_s(); grId++)
         addServer(system->k_s(grId), system->v_s(grId));
 
     ui->listWidgetKolejki->clear();
-    for(int grId=0; grId<system->Kb(); grId++)
-        addBuffer(system->k_q(grId), system->v_q(grId));
+    for(int grId=0; grId<system->k_b(); grId++)
+        addBuffer(system->k_b(grId), system->v_b(grId));
 
     ui->listWidgetKlasy->clear();
     for (int i=0; i<system->m(); i++)
@@ -1701,7 +1698,7 @@ void MainWindow::fillListWidgetWithParams(QListWidget *outList, QLabel *outLabel
         break;
 
     case Results::ParameterType::BufferState:
-        for(int n = 0; n <= resultsForSystem->getModel().V_b(); n++)
+        for(int n = 0; n <= resultsForSystem->getModel().vk_b(); n++)
         {
             tmpVariant.setValue(n);
             tmpItem = new QListWidgetItem(QString::number(n));
@@ -1725,7 +1722,7 @@ void MainWindow::fillListWidgetWithParams(QListWidget *outList, QLabel *outLabel
         break;
 
     case Results::ParameterType::NumberOfGroups:
-        for (int k = 0; k<=resultsForSystem->getModel().Ks(); k++)
+        for (int k = 0; k<=resultsForSystem->getModel().k_s(); k++)
         {
             tmpVariant.setValue(k);
             tmpItem = new QListWidgetItem(QString::number(k));

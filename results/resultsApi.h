@@ -70,6 +70,15 @@ public:
     virtual bool getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
 };
 
+class SettingsAvarageNumbersOfCallsInBuffer: public Settings
+{
+public:
+    SettingsAvarageNumbersOfCallsInBuffer();
+
+    virtual bool getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
+};
+
+
 class SettingsOccupancyDistribution: public Settings
 {
 public:

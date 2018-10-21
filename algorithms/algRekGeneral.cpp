@@ -18,7 +18,7 @@ bool AlgRekGeneral::possible(const ModelSyst *system) const
     if (
             !Investigator::possible(system) //Sprawdzanie czy w systemie jest odpowiednia kolejka
             || (system->m() < 1)            //W systemie nie ma wystarczająco dużo klas ruchu
-            || (system->K_sType() > 1)      //W systemie są podgrupy o różnych pojemnościach
+            || (system->k_sType() > 1)      //W systemie są podgrupy o różnych pojemnościach
             || (system->k_s(0) > 1)         //W systemie jest więcej niż 1 podgrupa o różnych pojemnościach
             )
         return false;

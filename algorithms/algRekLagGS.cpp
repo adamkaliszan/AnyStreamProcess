@@ -173,7 +173,7 @@ void algRekLagGS::calculateSystem(const ModelSyst *system, double a, RInvestigat
 
 bool algRekLagGS::possible(const ModelSyst *system) const
 {
-    if ((system->vk_s() == 0) || (system->K_sType() > 1) || (system->V_b() > 0))
+    if ((system->vk_s() == 0) || (system->k_sType() > 1) || (system->vk_b() > 0))
         return false;
 
     return Investigator::possible(system);
@@ -185,7 +185,7 @@ double algRekLagGS::getSigma(int classNumber, int state)
     double result = 1;
     int x = system->V() - state;
     int t = system->getClass(classNumber)->t();
-    int k = system->Ks();
+    int k = system->k_s();
     int f = system->v_s(0);
 
     if (x <= (t-1) * k)
@@ -241,7 +241,7 @@ void algRekLagGS2::calculateSystem(const ModelSyst *system, double a, RInvestiga
     {
         double Hk; //prawdopodobieńśtwo zajętości k łączy
 
-        Hk = utilsLag.H_Wariant2(static_cast<uint>(system->Ks()), states, static_cast<uint>(system->getClass(classNo)->t()), static_cast<uint>(system->Ks()), static_cast<uint>(system->v_s(0)));
+        Hk = utilsLag.H_Wariant2(static_cast<uint>(system->k_s()), states, static_cast<uint>(system->getClass(classNo)->t()), static_cast<uint>(system->k_s()), static_cast<uint>(system->v_s(0)));
         (*results)->write(TypeForClass::BlockingProbability, Hk, classNo);
     }
 
@@ -268,7 +268,7 @@ void algRekLagGS2::calculateSystem(const ModelSyst *system, double a, RInvestiga
 
 bool algRekLagGS2::possible(const ModelSyst *system) const
 {
-    if ((system->vk_s() == 0) || (system->K_sType() > 1) || (system->V_b() > 0))
+    if ((system->vk_s() == 0) || (system->k_sType() > 1) || (system->vk_b() > 0))
         return false;
 
     return Investigator::possible(system);
@@ -280,7 +280,7 @@ double algRekLagGS2::getSigma(int classNumber, int state)
     double result = 1;
     uint x = static_cast<uint>(system->V() - state);
     int t = system->getClass(classNumber)->t();
-    uint k = static_cast<uint>(system->Ks());
+    uint k = static_cast<uint>(system->k_s());
     uint f = static_cast<uint>(system->v_s(0));
 
     if (x <= static_cast<uint>(t-1) * k)

@@ -71,7 +71,7 @@ void AlgorithmHybrid::calculateSystem(const ModelSyst *system
 
     int m = system->m();
     int Vs = system->vk_s();
-    int Vb = system->V_b();
+    int Vb = system->vk_b();
     int VsVb = Vs + Vb;
 
     p_single = new TrClVector[m];
@@ -182,27 +182,35 @@ void AlgorithmHybrid::calculateSystem(const ModelSyst *system
         }
         (*results)->write(TypeForClass::LossProbability, B_n/B_d, i);
 
-        //Średnia liczba zgłoszeń w kolejce
-        double lQeue = 0;
+        //Avarage number of calls in the buffer
+        double yQeue = 0;
         for (int n=Vs+1; n<=VsVb; n++)
-            lQeue+=(Q[n] * yQEUE_VsVb[i][n]);
-        //TODO algRes->set_lQ(system->getClass(i), a, lQeue);
+            yQeue+=(Q[n] * yQEUE_VsVb[i][n]);
+        (*results)->write(TypeForClass::AvarageNumbersOfCallsInBuffer,  yQeue, i);
 
-        //Średnia liczba zajętych zasobów w kolejce
-        double ltQeue = 0;
-        for (int n=Vs+1; n<=VsVb; n++)
-            ltQeue+=(Q[n] * yQEUE_VsVb[i][n] * classes[i].t);
-        //TODO algRes->set_ltQ(system->getClass(i), a, ltQeue);
 
-        //Średnia liczba obsługiwanych zgłoszeń
-        double lSys = 0;
+        //Średnia liczba zajętych zasobów w zależności od stanu systemu
         for (int n=0; n<=VsVb; n++)
         {
-            lSys+=(Q[n] * (ySYSTEM_V[i][n]));
+            (*results)->write(TypeForClassAndSystemState::UsageForSystem, ySYSTEM_V[i][n] * classes[i].t, i, n);
+            (*results)->write(TypeForClassAndSystemState::UsageForServer, ySERVER_V[i][n] * classes[i].t, i, n);
+            (*results)->write(TypeForClassAndSystemState::UsageForBuffer, yQEUE_VsVb[i][n] * classes[i].t, i, n);
         }
-        //TODO algRes->set_lSys(system->getClass(i), a, lSys);
 
-        //Obsługiwany ruch
+        //Średnia liczba zajętych zasobów w zależności od stanu servera
+        for (int n=0; n<=Vs; n++)
+        {
+            (*results)->write(TypeForClassAndServerState::Usage, ySERVER_Vs[i][n] * classes[i].t, i, n);
+        }
+
+        //Średnia liczba zajętych zasobów w zależności od stanu bufora
+        for (int n=0; n<=Vb; n++)
+        {
+            (*results)->write(TypeForClassAndBufferState::Usage, yQEUE_Vb[i][n] * classes[i].t, i, n);
+        }
+
+
+        //Obsługiwany ruch poszczególnych klas
         double yS = 0;
 
         for (int n=0; n<=Vs; n++)
@@ -214,8 +222,9 @@ void AlgorithmHybrid::calculateSystem(const ModelSyst *system
             double tmp = Q[n] * (ySYSTEM_V[i][n]);
             yS+=((tmp *Vs)/n);
         }
-        //TODO algRes->set_ServTraffic(system->getClass(i), a, yS * classes[i].t);
+        (*results)->write(TypeForClass::CongestionTraffic, yS, i);
 
+        //TODO algRes->set_ServTraffic(system->getClass(i), a, yS * classes[i].t);
 
         //Średni czas obsługi
         //algRes->set_tService(system->getClass(i), a, lQeue / A[i] * system->getClass(i)->getMu());
@@ -224,11 +233,12 @@ void AlgorithmHybrid::calculateSystem(const ModelSyst *system
         {
             avgToS += Q[n] * ySYSTEM_V[i][n] / system->getClass(i)->getMu();
         }
+
         for (int n=Vs+1; n<=VsVb; n++)
         {
             avgToS += Q[n] * ySYSTEM_V[i][n] / system->getClass(i)->getMu() * (n - (double) (classes[i].t) / 2.0) / Vs;
         }
-        avgToS /= lSys;
+        //avgToS /= lSys;
         //TODO algRes->set_tService(system->getClass(i), a, avgToS);
 
         //Bezawzględny czas oczekiwania w kolejce
@@ -255,7 +265,7 @@ void AlgorithmHybrid::calculateSystem(const ModelSyst *system
         //algRes->set_tServer(system->getClass(i), a, 1.0/system->getClass(i)->getMu());
 
         for (int n=0; n<=Vb; n++)
-            (*results)->write(TypeForClassAndQueueState::Usage, yQEUE_VsVb[i][n+Vs] * classes[i].t, i, n);
+            (*results)->write(TypeForClassAndBufferState::Usage, yQEUE_VsVb[i][n+Vs] * classes[i].t, i, n);
             //algRes->resultsAS->setVal(resultsType::qeueYt_vs_q_n, a, system->getClass(i), n, yQEUE_VsVb[i][n+Vs] * classes[i].t, 0);
 
         for (int n=0; n<=Vs; n++)
@@ -264,7 +274,7 @@ void AlgorithmHybrid::calculateSystem(const ModelSyst *system
         for (int n=0; n<=VsVb; n++)
         {
             (*results)->write(TypeForClassAndSystemState::UsageForServer, ySERVER_V[i][n]  * classes[i].t, i, n);
-            (*results)->write(TypeForClassAndSystemState::UsageForQueue,  yQEUE_VsVb[i][n] * classes[i].t, i, n);
+            (*results)->write(TypeForClassAndSystemState::UsageForBuffer,  yQEUE_VsVb[i][n] * classes[i].t, i, n);
             (*results)->write(TypeForClassAndSystemState::UsageForSystem, ySYSTEM_V[i][n]  * classes[i].t, i, n);
 
         //Intensywności przejść klas
@@ -393,7 +403,7 @@ void AlgorithmHybrid::calculateYServer(double **ySeverVsVb, double **ySystemFAG,
 
 bool AlgorithmHybrid::possible(const ModelSyst *system) const
 {
-    if (system->V_b() == 0)
+    if (system->vk_b() == 0)
         return false;
     return Investigator::possible(system);
 }

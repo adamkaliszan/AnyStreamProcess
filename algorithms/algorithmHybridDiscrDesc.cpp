@@ -13,7 +13,7 @@ AlgorithmHybridDiscrDesc::AlgorithmHybridDiscrDesc(): Investigator(QueueServDisc
 
 bool AlgorithmHybridDiscrDesc::possible(const ModelSyst *system) const
 {
-    if (system->V_b() == 0)
+    if (system->vk_b() == 0)
         return false;
     return Investigator::possible(system);
 }
@@ -28,7 +28,7 @@ void AlgorithmHybridDiscrDesc::calculateSystem(const ModelSyst *system
     prepareTemporaryData(system, a);
     int m = system->m();
     int Vs = system->vk_s();
-    int Vb = system->V_b();
+    int Vb = system->vk_b();
     int VsVb = Vs + Vb;
 
     p_single = new TrClVector[m];             /// FAG traffic distribution
@@ -221,7 +221,7 @@ void AlgorithmHybridDiscrDesc::calculateSystem(const ModelSyst *system
         //TODO algRes->set_lSys(system->getClass(i), a, y);
 
         for (int n=0; n<=Vb; n++)
-            (*results)->write(TypeForClassAndQueueState::Usage, (ySYSTEM_V[i][Vs+n] - ySYSTEM_V[i][Vs]) * t[i] / n, i, n);
+            (*results)->write(TypeForClassAndBufferState::Usage, (ySYSTEM_V[i][Vs+n] - ySYSTEM_V[i][Vs]) * t[i] / n, i, n);
 
         for (int n=0; n<=Vs; n++)
             (*results)->write(TypeForClassAndServerState::Usage, ySYSTEM_V[i][n] *t[i] / n, i, n);
@@ -229,9 +229,9 @@ void AlgorithmHybridDiscrDesc::calculateSystem(const ModelSyst *system
         for (int n=0; n<=VsVb; n++)
         {
             if (n > Vs)
-                (*results)->write(TypeForClassAndSystemState::UsageForQueue, (ySYSTEM_V[i][n] - ySYSTEM_V[i][Vs]) *t[i] / n, i, n);
+                (*results)->write(TypeForClassAndSystemState::UsageForBuffer, (ySYSTEM_V[i][n] - ySYSTEM_V[i][Vs]) *t[i] / n, i, n);
             else
-                (*results)->write(TypeForClassAndSystemState::UsageForQueue, 0, i, n);
+                (*results)->write(TypeForClassAndSystemState::UsageForBuffer, 0, i, n);
 
 
             (*results)->write(TypeForClassAndSystemState::UsageForSystem, ySYSTEM_V[i][n]*t[i]/n, i, n);

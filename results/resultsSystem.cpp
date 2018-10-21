@@ -95,7 +95,7 @@ double RSystem::getMaxAperAU() const
 int RSystem::getNoOfGroupsCombinations() const
 {
     if (groupCombinations.length() == 0)
-        groupCombinations = Utils::UtilsLAG::getPossibleCombinations(model.Ks());
+        groupCombinations = Utils::UtilsLAG::getPossibleCombinations(model.k_s());
 
     return groupCombinations.length();
 }
@@ -103,7 +103,7 @@ int RSystem::getNoOfGroupsCombinations() const
 QVector<int> RSystem::getGroupCombination(int combinationNo)
 {
     if (groupCombinations.length() == 0)
-        groupCombinations = Utils::UtilsLAG::getPossibleCombinations(model.Ks());
+        groupCombinations = Utils::UtilsLAG::getPossibleCombinations(model.k_s());
 
     return groupCombinations[combinationNo].first;
 }

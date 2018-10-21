@@ -136,7 +136,7 @@ void Investigator::prepareTemporaryData(const ModelSyst *system, double a)
 
     for (int i=0; i<system->m(); i++)
     {
-        yQEUE_Vb[i]   = new double[system->V_b()+1];   bzero(yQEUE_Vb[i],   (system->V_b() + 1) * sizeof(double));
+        yQEUE_Vb[i]   = new double[system->vk_b()+1];   bzero(yQEUE_Vb[i],   (system->vk_b() + 1) * sizeof(double));
         yQEUE_VsVb[i] = new double[system->V()  + 1];  bzero(yQEUE_VsVb[i], (system->V() + 1)   * sizeof(double));
         ySERVER_Vs[i] = new double[system->vk_s() + 1]; bzero(ySERVER_Vs[i], (system->vk_s() + 1) * sizeof(double));
         ySERVER_V[i]  = new double[system->V() + 1];   bzero(ySERVER_V[i],  (system->V() + 1)   * sizeof(double));

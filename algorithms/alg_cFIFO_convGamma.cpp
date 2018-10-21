@@ -14,7 +14,7 @@ convolutionAlgorithmGamma::convolutionAlgorithmGamma(): Investigator(QueueServDi
 
 bool convolutionAlgorithmGamma::possible(const ModelSyst *system) const
 {
-    if (system->V_b() == 0)
+    if (system->vk_b() == 0)
         return false;
     return Investigator::possible(system);
 }
@@ -31,8 +31,8 @@ void convolutionAlgorithmGamma::calculateSystem(const ModelSyst *system
 
     for (int i=0; i<system->m(); i++)
     {
-        p_single[i] = new VectQEUE(system->vk_s(), system->V_b(), 1, i, system->getClass(i));
-        TrClVector tmp = system->getClass(i)->trDistribution(i, classes[i].A, system->vk_s(), system->V_b());
+        p_single[i] = new VectQEUE(system->vk_s(), system->vk_b(), 1, i, system->getClass(i));
+        TrClVector tmp = system->getClass(i)->trDistribution(i, classes[i].A, system->vk_s(), system->vk_b());
 
         p_single[i]->setStates(tmp);
     }
@@ -157,9 +157,9 @@ void convolutionAlgorithmGamma::calculateSystem(const ModelSyst *system
         for (int n=0; n <= system->V(); n++)
         {
             if (n > system->vk_s())
-                (*results)->write(TypeForClassAndSystemState::UsageForQueue, classes[i].t * (FD->get_y(i, n) *(n-system->vk_s())/n), i, n);
+                (*results)->write(TypeForClassAndSystemState::UsageForBuffer, classes[i].t * (FD->get_y(i, n) *(n-system->vk_s())/n), i, n);
             else
-                (*results)->write(TypeForClassAndSystemState::UsageForQueue, 0, i, n);
+                (*results)->write(TypeForClassAndSystemState::UsageForBuffer, 0, i, n);
 
             (*results)->write(TypeForClassAndSystemState::UsageForSystem, classes[i].t * (FD->get_y(i, n)), i, n);
 

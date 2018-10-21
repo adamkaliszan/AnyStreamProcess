@@ -22,7 +22,7 @@ simulatorNoQeueLag::simulatorNoQeueLag(QueueServDiscipline disc) : simulator(dis
 
 bool simulatorNoQeueLag::possible(const ModelSyst *system) const
 {
-    if (system->V_b() > 0)
+    if (system->vk_b() > 0)
         return false;
     return simulator::possible(system);
 }
@@ -73,7 +73,7 @@ simulatorNoQeueLag::System::System(const ModelSyst *system, int noOfSeries, Queu
     , disc(disc)
     , n(0)
     , old_n(0)
-    , results(system->m(), system->vk_s(), system->V_b(), noOfSeries)
+    , results(system->m(), system->vk_s(), system->vk_b(), noOfSeries)
 {
     n_i.resize(m);
 
@@ -86,7 +86,7 @@ simulatorNoQeueLag::System::System(const ModelSyst *system, int noOfSeries, Queu
     timesPerState.resize(V+1);
 
     eventsPerClass.resize(system->m());
-    eventsPerState.resize(system->vk_s()+system->V_b()+1);
+    eventsPerState.resize(system->vk_s()+system->vk_b()+1);
     eventsPerClassAndState.resize(system->m());
 
     for (int i=0; i<m; i++)
@@ -821,7 +821,7 @@ simulatorNoQeueLag::Server::Server(System *system)
     , subgroupScheduler(system->systemData->getGroupsSchedulerAlgorithm())
     , V(system->systemData->vk_s())
     , vMax(system->systemData->v_sMax())
-    , k(system->systemData->Ks())
+    , k(system->systemData->k_s())
     , m(system->systemData->m())
     , n(0)
 {
@@ -851,7 +851,7 @@ simulatorNoQeueLag::Server::Server(System *system)
 
     groups.resize(k);
     int groupNo = 0;
-    for (int grType=0; grType<system->systemData->K_sType(); grType++)
+    for (int grType=0; grType<system->systemData->k_sType(); grType++)
     {
         for (int subGroupNo=0; subGroupNo< system->systemData->k_s(grType); subGroupNo++)
         {

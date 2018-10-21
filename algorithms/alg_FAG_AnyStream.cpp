@@ -133,10 +133,10 @@ void AlgorithmAnyStreamFAG::calculateSystem(const ModelSyst *system
 
 bool AlgorithmAnyStreamFAG::possible(const ModelSyst *system) const
 {
-    if (system->V_b() > 0)
+    if (system->vk_b() > 0)
         return false;
 
-    if (system->Ks() > 1)
+    if (system->k_s() > 1)
         return false;
 
     return Investigator::possible(system);

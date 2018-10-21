@@ -15,7 +15,7 @@ SimulatorBufferFifo::SimulatorBufferFifo(QueueServDiscipline qDisc): simulator(q
 
 bool SimulatorBufferFifo::possible(ModelSyst *system)
 {
-    if (system->V_b() == 0)
+    if (system->vk_b() == 0)
         return false;
     return Investigator::possible(system);
 }
@@ -78,7 +78,7 @@ SimulatorBufferFifo::System::System(const ModelSyst *system, int numberOfSeries)
     delete []v;
     delete []k;
 
-    buffer = new Buffer(system->V_b(), system->V_b() * system->T(), this);
+    buffer = new Buffer(system->vk_b(), system->vk_b() * system->T(), this);
 
     yQ   = new double*[numberOfSeries];
     y    = new double*[numberOfSeries];

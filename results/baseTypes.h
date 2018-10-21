@@ -4,10 +4,21 @@
 namespace Results
 {
 
+enum class TypeGeneral: unsigned //TODO add new class with results for system
+{
+    SystemUtilization,     /// Expected value of system state probability distribution
+    ServerUtilization,     /// Expected value of server state probability distribution
+    BufferUtilization,     /// Expected value of buffer state probability distribution - buffer length
+    TotalTime,             /// Tatal time between call arrival and leawing the system wait+service time
+    ServiceTime,           /// Total time of service
+    WaitingTime,           /// Total time of waiting in the buffer
+};
+
 enum class TypeForClass: unsigned
 {
-    BlockingProbability = 0,    // Blocking probability
-    LossProbability,            // Loss probability or Sigma coefficient
+    BlockingProbability = 0,        /// Blocking probability
+    LossProbability,                /// Loss probability or Sigma coefficient
+    AvarageNumbersOfCallsInBuffer,  /// Avarage number of calls in buffer. Only for systems with buffer
     CongestionTraffic           // Avarage service traffic (number of occupied resourcess)
     //Time,                       // Avarage time in system
     //TimeInServer,               // Avarage time in system
@@ -50,7 +61,7 @@ enum class TypeForSystemState: unsigned
 enum class TypeForClassAndSystemState: unsigned
 {
     UsageForServer,                      /// (yServer_i(nSystem) t_i / nSystem
-    UsageForQueue,                       /// (yBuffer_i(nSystem) t_i / nSystem
+    UsageForBuffer,                       /// (yBuffer_i(nSystem) t_i / nSystem
     UsageForSystem,                      /// (y_i(n) t_i)/n
 
     CAC_ProbabilityForServer,            /// \signa_i(n)
@@ -95,7 +106,7 @@ enum class TypeForClassAndServerState: unsigned
     EndCallIntensityIn
 };
 
-enum class TypeForClassAndQueueState: unsigned
+enum class TypeForClassAndBufferState: unsigned
 {
     Usage,                      /// (y_i(n) t_i)/n
     CAC_Probability,            /// \signa_i(n)

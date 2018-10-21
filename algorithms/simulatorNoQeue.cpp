@@ -19,10 +19,10 @@ int simulatorNoQeue::complexity() const {return 100;}
 
 bool simulatorNoQeue::possible(const ModelSyst *system) const
 {
-    if (system->V_b() > 0)
+    if (system->vk_b() > 0)
         return false;
 
-    if (system->Ks() > 0)
+    if (system->k_s() > 0)
         return false;
 
     return simulator::possible(system);
@@ -66,7 +66,7 @@ void simulatorNoQeue::calculateSystem(const ModelSyst *system
     //emit this->sigCalculationDone();
 }
 
-simulatorNoQeue::System::System(const ModelSyst *system, int noOfSeries, QueueServDiscipline disc): m(system->m()), n(0), old_n(0), results(system->m(), system->vk_s(), system->V_b(), noOfSeries), disc(disc)
+simulatorNoQeue::System::System(const ModelSyst *system, int noOfSeries, QueueServDiscipline disc): m(system->m()), n(0), old_n(0), results(system->m(), system->vk_s(), system->vk_b(), noOfSeries), disc(disc)
 {
     systemData = system;
 
@@ -78,10 +78,10 @@ simulatorNoQeue::System::System(const ModelSyst *system, int noOfSeries, QueueSe
     AStime_ofOccupiedAS_byClassI_inStateN       = new double*[system->m()];
     qeueAStime_ofOccupiedAS_byClassI_inStateN   = new double*[system->m()];
     serverAStime_ofOccupiedAS_byClassI_inStateN = new double*[system->m()];
-    occupancyTimes                              = new double[system->vk_s()+system->V_b()+1];
+    occupancyTimes                              = new double[system->vk_s()+system->vk_b()+1];
 
-    outNew                                      = new long int[system->vk_s()+system->V_b()+1];
-    outEnd                                      = new long int[system->vk_s()+system->V_b()+1];
+    outNew                                      = new long int[system->vk_s()+system->vk_b()+1];
+    outEnd                                      = new long int[system->vk_s()+system->vk_b()+1];
 
     inNewSC                                     = new long int*[system->m()];
     inEndSC                                     = new long int*[system->m()];
@@ -91,17 +91,17 @@ simulatorNoQeue::System::System(const ModelSyst *system, int noOfSeries, QueueSe
 
     occupancyTimesDtl                           = new double*[system->vk_s()+1];
     for (int n=0; n<=system->vk_s(); n++)
-        occupancyTimesDtl[n] = new double[system->V_b()+1];
+        occupancyTimesDtl[n] = new double[system->vk_b()+1];
 
     for (int i=0; i<m; i++)
     {
-        AStime_ofOccupiedAS_byClassI_inStateN[i]       = new double[system->vk_s()+system->V_b()+1];
-        qeueAStime_ofOccupiedAS_byClassI_inStateN[i]   = new double[system->vk_s()+system->V_b()+1];
-        serverAStime_ofOccupiedAS_byClassI_inStateN[i] = new double[system->vk_s()+system->V_b()+1];
-        inNewSC[i]                                     = new long int[system->vk_s()+system->V_b()+1];
-        inEndSC[i]                                     = new long int[system->vk_s()+system->V_b()+1];
-        outNewSC[i]                                    = new long int[system->vk_s()+system->V_b()+1];
-        outEndSC[i]                                    = new long int[system->vk_s()+system->V_b()+1];
+        AStime_ofOccupiedAS_byClassI_inStateN[i]       = new double[system->vk_s()+system->vk_b()+1];
+        qeueAStime_ofOccupiedAS_byClassI_inStateN[i]   = new double[system->vk_s()+system->vk_b()+1];
+        serverAStime_ofOccupiedAS_byClassI_inStateN[i] = new double[system->vk_s()+system->vk_b()+1];
+        inNewSC[i]                                     = new long int[system->vk_s()+system->vk_b()+1];
+        inEndSC[i]                                     = new long int[system->vk_s()+system->vk_b()+1];
+        outNewSC[i]                                    = new long int[system->vk_s()+system->vk_b()+1];
+        outEndSC[i]                                    = new long int[system->vk_s()+system->vk_b()+1];
     }
 }
 
@@ -575,7 +575,7 @@ void simulatorNoQeue::System::collectTheStatPost(double time)
 
 void simulatorNoQeue::System::enableStatisticscollection(int serNo)
 {
-    int VsVb = systemData->vk_s() + systemData->V_b();
+    int VsVb = systemData->vk_s() + systemData->vk_b();
     bzero(yTime_ClassI, systemData->m() * sizeof(double));
     bzero(servTr_ClassI, systemData->m() * sizeof(double));
     bzero(occupancyTimes, (VsVb+1)*sizeof(double));
@@ -584,7 +584,7 @@ void simulatorNoQeue::System::enableStatisticscollection(int serNo)
     bzero(outEnd, (VsVb+1)*sizeof(long int));
 
     for (int n=0; n<=systemData->vk_s(); n++)
-        bzero(occupancyTimesDtl[n], (systemData->V_b()+1)*sizeof(double));
+        bzero(occupancyTimesDtl[n], (systemData->vk_b()+1)*sizeof(double));
 
     for (int i=0; i<m; i++)
     {
