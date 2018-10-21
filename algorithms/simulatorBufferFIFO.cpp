@@ -29,7 +29,7 @@ void SimulatorBufferFifo::calculateSystem(const ModelSyst *system
     //    return;
     this->system = system;
     System *simData = new System(system, simParameters->noOfSeries);
-    simData->initialize(a, system->totalAt(), system->V_s());
+    simData->initialize(a, system->totalAt(), system->vk_s());
 
     int seed = 1024;
 
@@ -74,7 +74,7 @@ SimulatorBufferFifo::System::System(const ModelSyst *system, int numberOfSeries)
 
     int32_t *v, *k, numberOfTypes;
     system->getLinkParameters(&k, &v, &numberOfTypes);
-    server = new Server(system->V_s(), this);
+    server = new Server(system->vk_s(), this);
     delete []v;
     delete []k;
 

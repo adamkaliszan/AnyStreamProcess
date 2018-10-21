@@ -22,7 +22,7 @@ void algRekLagGS::calculateSystem(const ModelSyst *system, double a, RInvestigat
     Utils::UtilsLAG lag;
     int f = system->v_s(0);
     int k = system->k_s(0);
-    int V = system->V_s();
+    int V = system->vk_s();
     int m = system->m();
 
 
@@ -173,7 +173,7 @@ void algRekLagGS::calculateSystem(const ModelSyst *system, double a, RInvestigat
 
 bool algRekLagGS::possible(const ModelSyst *system) const
 {
-    if ((system->V_s() == 0) || (system->K_sType() > 1) || (system->V_b() > 0))
+    if ((system->vk_s() == 0) || (system->K_sType() > 1) || (system->V_b() > 0))
         return false;
 
     return Investigator::possible(system);
@@ -268,7 +268,7 @@ void algRekLagGS2::calculateSystem(const ModelSyst *system, double a, RInvestiga
 
 bool algRekLagGS2::possible(const ModelSyst *system) const
 {
-    if ((system->V_s() == 0) || (system->K_sType() > 1) || (system->V_b() > 0))
+    if ((system->vk_s() == 0) || (system->K_sType() > 1) || (system->V_b() > 0))
         return false;
 
     return Investigator::possible(system);

@@ -36,7 +36,7 @@ void simulatorNoQeueLag::calculateSystem(const ModelSyst *system
 
 
     System *simData = new System(system, simParameters->noOfSeries, disc);
-    simData->initialize(a, system->totalAt(), system->V_s());
+    simData->initialize(a, system->totalAt(), system->vk_s());
 
     int seed = 1024;
 
@@ -73,7 +73,7 @@ simulatorNoQeueLag::System::System(const ModelSyst *system, int noOfSeries, Queu
     , disc(disc)
     , n(0)
     , old_n(0)
-    , results(system->m(), system->V_s(), system->V_b(), noOfSeries)
+    , results(system->m(), system->vk_s(), system->V_b(), noOfSeries)
 {
     n_i.resize(m);
 
@@ -86,7 +86,7 @@ simulatorNoQeueLag::System::System(const ModelSyst *system, int noOfSeries, Queu
     timesPerState.resize(V+1);
 
     eventsPerClass.resize(system->m());
-    eventsPerState.resize(system->V_s()+system->V_b()+1);
+    eventsPerState.resize(system->vk_s()+system->V_b()+1);
     eventsPerClassAndState.resize(system->m());
 
     for (int i=0; i<m; i++)
@@ -819,7 +819,7 @@ double simulatorNoQeueLag::Server::getTimeOfState(int stateNo) const
 simulatorNoQeueLag::Server::Server(System *system)
     : system(system)
     , subgroupScheduler(system->systemData->getGroupsSchedulerAlgorithm())
-    , V(system->systemData->V_s())
+    , V(system->systemData->vk_s())
     , vMax(system->systemData->v_sMax())
     , k(system->systemData->Ks())
     , m(system->systemData->m())

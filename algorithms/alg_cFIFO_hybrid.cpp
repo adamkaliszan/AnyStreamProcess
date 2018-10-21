@@ -70,7 +70,7 @@ void AlgorithmHybrid::calculateSystem(const ModelSyst *system
     prepareTemporaryData(system, a);
 
     int m = system->m();
-    int Vs = system->V_s();
+    int Vs = system->vk_s();
     int Vb = system->V_b();
     int VsVb = Vs + Vb;
 
@@ -357,11 +357,11 @@ void AlgorithmHybrid::calculateYSystemApprox(double **ySystem, double **yFAG, in
     for (int i=0; i<system->m(); i++)
     {
         yNfty[i] = (double)(infinityVal) * classes[i].A/sumAt;
-        for (int n=0; n<=system->V_s(); n++)
+        for (int n=0; n<=system->vk_s(); n++)
             ySystem[i][n] = yFAG[i][n];
 
-        for (int n=system->V_s() + 1; n<= system->V(); n++)
-            ySystem[i][n] = yFAG[i][system->V_s()] + (yNfty[i] - yFAG[i][system->V_s()]) * (double)(n-system->V_s()) / (double)(infinityVal - system->V_s());
+        for (int n=system->vk_s() + 1; n<= system->V(); n++)
+            ySystem[i][n] = yFAG[i][system->vk_s()] + (yNfty[i] - yFAG[i][system->vk_s()]) * (double)(n-system->vk_s()) / (double)(infinityVal - system->vk_s());
     }
 }
 
@@ -402,13 +402,13 @@ void AlgorithmHybrid::calculateYServerFAG(double **yServerVsVb, double **ySystem
 {
     for (int i=0; i < system->m(); i++)
     {
-        for (int n=0; n <= system->V_s(); n++)
+        for (int n=0; n <= system->vk_s(); n++)
         {
             yServerVsVb[i][n] = 0;
         }
-        for (int n = system->V_s() + 1; n<=system->V(); n++)
+        for (int n = system->vk_s() + 1; n<=system->V(); n++)
         {
-            double tmp = system->V_s();
+            double tmp = system->vk_s();
             tmp /=n;
 
             yServerVsVb[i][n] = tmp * ySystemFAG[i][n];
@@ -457,13 +457,13 @@ void AlgorithmHybrid::calculateYQeueFAG(double **yQeueVsVb, double **ySystemFAG)
 {
     for (int i=0; i<system->m(); i++)
     {
-        for (int n=0; n<=system->V_s(); n++)
+        for (int n=0; n<=system->vk_s(); n++)
         {
             yQeueVsVb[i][n] = 0;
         }
-        for (int n = system->V_s() + 1; n<=system->V(); n++)
+        for (int n = system->vk_s() + 1; n<=system->V(); n++)
         {
-            double tmp = n - system->V_s();
+            double tmp = n - system->vk_s();
             tmp /=n;
 
             yQeueVsVb[i][n] = tmp * ySystemFAG[i][n];
@@ -474,15 +474,15 @@ void AlgorithmHybrid::calculateYQeueFAG(double **yQeueVsVb, double **ySystemFAG)
 void AlgorithmHybrid::calculateYQeuePropLambdaT(double **yQeueVsVb, double **yFAG, double *Q, bool lambdaIsDependent)
 {
     for (int i=0; i < system->m(); i++)
-        for (int n=0; n <= system->V_s(); n++)
+        for (int n=0; n <= system->vk_s(); n++)
             yQeueVsVb[i][n] = 0;
 
-    for (int n=system->V_s() + 1; n <= system->V(); n++)
+    for (int n=system->vk_s() + 1; n <= system->V(); n++)
     {
         double denumerator = 0;
         for (int i=0; i < system->m(); i++)
         {
-            int x = qMin(classes[i].t, n-system->V_s());
+            int x = qMin(classes[i].t, n-system->vk_s());
             double lambda_i;
             if (lambdaIsDependent)
             {
@@ -497,7 +497,7 @@ void AlgorithmHybrid::calculateYQeuePropLambdaT(double **yQeueVsVb, double **yFA
 
         for (int i=0; i < system->m(); i++)
         {
-            int x = qMin(classes[i].t, n - system->V_s());
+            int x = qMin(classes[i].t, n - system->vk_s());
 
             double lambda_i;
             if (lambdaIsDependent)
@@ -514,7 +514,7 @@ void AlgorithmHybrid::calculateYQeuePropLambdaT(double **yQeueVsVb, double **yFA
         }
     }
 
-    for (int n = system->V_s() + 1; n <= system->V(); n++)
+    for (int n = system->vk_s() + 1; n <= system->V(); n++)
     {
         for (int i=0; i < system->m(); i++)
             yQeueVsVb[i][n] /= classes[i].t;

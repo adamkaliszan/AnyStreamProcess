@@ -804,9 +804,9 @@ ModelSyst::ModelSyst():
     _noOfTrClasses(0)
   , _groupsSchedulerAlgorithm(ModelResourcessScheduler::Sequencial)
   , _noOfTypesOfGroups(0)
-  , _noOfTypesOfQeues(0)
+  , _noOfTypesOfBuffers(0)
   , _totalQeuesCapacity(0)
-  , _totalNumberOfQeues(0)
+  , _totalNumberOfBuffers(0)
   , _totalGroupsCapacity(0)
   , _totalNumberOfGroups(0)
   , _totalAt(0), id(0)
@@ -855,9 +855,9 @@ void ModelSyst::getQeuesParameters(
         , int32_t *numberOfTypes
         ) const
 {
-    *numberOfTypes = this->_noOfTypesOfQeues;
-    *k = new int32_t[this->_noOfTypesOfQeues];
-    *v = new int32_t[this->_noOfTypesOfQeues];
+    *numberOfTypes = this->_noOfTypesOfBuffers;
+    *k = new int32_t[this->_noOfTypesOfBuffers];
+    *v = new int32_t[this->_noOfTypesOfBuffers];
 
     for (int32_t i=0; i<*numberOfTypes; i++)
     {
@@ -914,12 +914,12 @@ void ModelSyst::addGroups(ModelResourcess newGroup, bool optimize)
 
 void ModelSyst::addQeues(ModelResourcess qeue, bool optimize)
 {
-    _totalNumberOfQeues += qeue.k();
+    _totalNumberOfBuffers += qeue.k();
     _totalQeuesCapacity += qeue.V();
 
     if (optimize)
     {
-        for (int idx=0; idx < _noOfTypesOfQeues; idx++)
+        for (int idx=0; idx < _noOfTypesOfBuffers; idx++)
         {
             if (_qeues[idx].v() == qeue.v())
             {
@@ -930,7 +930,7 @@ void ModelSyst::addQeues(ModelResourcess qeue, bool optimize)
         }
     }
 
-    if (_noOfTypesOfQeues == _capacityTypeOfQeues)
+    if (_noOfTypesOfBuffers == _capacityTypeOfQeues)
     {
         ModelResourcess *newQue = new ModelResourcess[2*_capacityTypeOfQeues];
         memcpy(newQue, _qeues, static_cast<size_t>(_capacityTypeOfQeues) * sizeof(ModelResourcess));
@@ -938,8 +938,8 @@ void ModelSyst::addQeues(ModelResourcess qeue, bool optimize)
         _qeues = newQue;
         _capacityTypeOfQeues *=2;
     }
-    _qeues[_noOfTypesOfQeues] = qeue;
-    _noOfTypesOfQeues++;
+    _qeues[_noOfTypesOfBuffers] = qeue;
+    _noOfTypesOfBuffers++;
 }
 
 void ModelSyst::setSubgroupSchedulerAlgorithm(ModelResourcessScheduler algorithm)
@@ -959,8 +959,8 @@ void ModelSyst::clearAll()
     _noOfTypesOfGroups=0;
 
     _totalQeuesCapacity = 0;
-    _noOfTypesOfQeues = 0;
-    _totalNumberOfQeues = 0;
+    _noOfTypesOfBuffers = 0;
+    _totalNumberOfBuffers = 0;
 }
 
 const ModelTrClass *ModelSyst::getClass(int idx) const
@@ -980,7 +980,7 @@ bool ModelSyst::operator==(const ModelSyst &rho) const
     if (
             m()   != rho.m()
             || V()   != rho.V()
-            || V_s() != rho.V_s()
+            || vk_s() != rho.vk_s()
             || V_b() != rho.V_b()
             )
         return false;
@@ -1033,7 +1033,7 @@ bool ModelSyst::operator >(const ModelSyst &rho) const
     if (m() > rho.m())
         return true;
 
-    if (V_s() > rho.V_s())
+    if (vk_s() > rho.vk_s())
         return true;
 
     if (V_b() > rho.V_b())
@@ -1083,7 +1083,7 @@ bool ModelSyst::operator <(const ModelSyst &rho) const
     if (m() < rho.m())
         return true;
 
-    if (V_s() < rho.V_s())
+    if (vk_s() < rho.vk_s())
         return true;
 
     if (V_b() < rho.V_b())
@@ -1141,10 +1141,10 @@ int ModelSyst::v_s(int i) const
     return -1;
 }
 
-int ModelSyst::V_s(int i) const
+int ModelSyst::vk_s(int groupClNo) const
 {
-    if (i < _noOfTypesOfGroups)
-        return _groups[i].V();
+    if (groupClNo < _noOfTypesOfGroups)
+        return _groups[groupClNo].V();
     return -1;
 }
 
@@ -1157,21 +1157,21 @@ int ModelSyst::k_s(int type) const
 
 int ModelSyst::v_q(int i) const
 {
-    if (i < _noOfTypesOfQeues)
+    if (i < _noOfTypesOfBuffers)
         return _qeues[i].v();
     return -1;
 }
 
 int ModelSyst::V_b(int i) const
 {
-    if (i < _noOfTypesOfQeues)
+    if (i < _noOfTypesOfBuffers)
         return _qeues[i].V();
     return -1;
 }
 
 int ModelSyst::k_q(int i) const
 {
-    if (i < _noOfTypesOfQeues)
+    if (i < _noOfTypesOfBuffers)
         return _qeues[i].k();
     return -1;
 }
@@ -1179,7 +1179,7 @@ int ModelSyst::k_q(int i) const
 
 QTextStream& operator<<(QTextStream &stream, const ModelSyst &model)
 {
-    stream<<"S"<<model.V_s();
+    stream<<"S"<<model.vk_s();
     if (model.Ks() > 1)
     {
         stream<<"(";
@@ -1259,7 +1259,7 @@ QTextStream& operator<<(QTextStream &stream2, const ModelTrClass &trClass)
 QDebug &operator<<(QDebug &stream, const ModelSyst &model)
 {
     QDebug stream2 = stream.nospace();
-    stream2<<"S"<<model.V_s();
+    stream2<<"S"<<model.vk_s();
     if (model.Ks() > 1)
     {
         stream<<"(";

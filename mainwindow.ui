@@ -829,7 +829,7 @@
            </widget>
           </item>
           <item row="1" column="1" rowspan="3">
-           <widget class="QListWidget" name="listWidgetAlgorithmsExperimental">
+           <widget class="QListWidget" name="listWidgetAlgorithmsAlternative">
             <property name="sizePolicy">
              <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
               <horstretch>0</horstretch>
@@ -848,7 +848,7 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QLabel" name="labelAlgorithmsExperimental">
+           <widget class="QLabel" name="labelAlgorithmsAlternative">
             <property name="sizePolicy">
              <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
               <horstretch>1</horstretch>
@@ -856,7 +856,7 @@
              </sizepolicy>
             </property>
             <property name="text">
-             <string>Experimental algorithms</string>
+             <string>Alternative algorithms</string>
             </property>
            </widget>
           </item>
@@ -1243,7 +1243,7 @@
      <x>0</x>
      <y>0</y>
      <width>735</width>
-     <height>23</height>
+     <height>28</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -1798,7 +1798,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>listWidgetAlgorithmsExperimental</sender>
+   <sender>listWidgetAlgorithmsAlternative</sender>
    <signal>itemSelectionChanged()</signal>
    <receiver>MainWindow</receiver>
    <slot>on_ResultsQtChartRefresh()</slot>

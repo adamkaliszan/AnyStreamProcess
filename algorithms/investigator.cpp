@@ -28,20 +28,27 @@ QString Investigator::shortQueueDiscipline() const
 
 bool Investigator::possible(const ModelSyst *system) const
 {
+    return possibleAlternative(system);
+}
+
+bool Investigator::possibleAlternative(const ModelSyst *system) const
+{
     if (system->m() == 0)
         return false;
-    if (system->V_s() == 0)
+    if (system->vk_s() == 0)
         return false;
 
     return true;
 }
+
+
 
 bool Investigator::correctSystemParameters(ModelSyst *system, double a)
 {
     qDebug("a = %lf", a);
     for (int i=0; i<system->m(); i++)
     {
-        double A = system->getClass(i)->intensityNewCallTotal(a, system->V_s(), system->totalAt()) /system->getClass(i)->getMu();
+        double A = system->getClass(i)->intensityNewCallTotal(a, system->vk_s(), system->totalAt()) /system->getClass(i)->getMu();
         if (system->getClass(i)->srcType()==ModelTrClass::SourceType::DependentMinus)
             if (A>=system->getClass(i)->s())
             {
@@ -75,7 +82,7 @@ void Investigator::prepareTemporaryData(const ModelSyst *system, double a)
 
     for (int i=0; i<system->m(); i++)
     {
-        classes[i].A = system->getClass(i)->intensityNewCallTotal(a, system->V_s(), system->totalAt()) /system->getClass(i)->getMu();
+        classes[i].A = system->getClass(i)->intensityNewCallTotal(a, system->vk_s(), system->totalAt()) /system->getClass(i)->getMu();
         classes[i].mu = system->getClass(i)->getMu();
         classes[i].lambda = classes[i].A*classes[i].mu;
         classes[i].t = system->getClass(i)->t();
@@ -131,7 +138,7 @@ void Investigator::prepareTemporaryData(const ModelSyst *system, double a)
     {
         yQEUE_Vb[i]   = new double[system->V_b()+1];   bzero(yQEUE_Vb[i],   (system->V_b() + 1) * sizeof(double));
         yQEUE_VsVb[i] = new double[system->V()  + 1];  bzero(yQEUE_VsVb[i], (system->V() + 1)   * sizeof(double));
-        ySERVER_Vs[i] = new double[system->V_s() + 1]; bzero(ySERVER_Vs[i], (system->V_s() + 1) * sizeof(double));
+        ySERVER_Vs[i] = new double[system->vk_s() + 1]; bzero(ySERVER_Vs[i], (system->vk_s() + 1) * sizeof(double));
         ySERVER_V[i]  = new double[system->V() + 1];   bzero(ySERVER_V[i],  (system->V() + 1)   * sizeof(double));
         ySYSTEM_V[i]  = new double[system->V() + 1];   bzero(ySYSTEM_V[i],  (system->V() + 1)   * sizeof(double));
     }

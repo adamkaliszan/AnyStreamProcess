@@ -17,7 +17,7 @@ void RSingle::init(const ModelSyst *system)
     m = system->m();
     vMax = system->v_sMax();
     V = system->V();
-    Vs = system->V_s();
+    Vs = system->vk_s();
 
     dataPerClasses.fill(DataForClasses(), m);
     dataPerServerState.fill(DataForStates(), Vs+1);
@@ -186,57 +186,57 @@ bool RSingle::read(double &result, TypeForServerState type, int serverState) con
     return true;
 }
 
-RSingle &RSingle::write(TypeForQueueState type, double value, int queueState)
+RSingle &RSingle::write(TypeForBufferState type, double value, int queueState)
 {
     switch (type)
     {
-    case TypeForQueueState::StateProbability:
+    case TypeForBufferState::StateProbability:
         dataPerQueueState[queueState].probability = value;
         break;
 
-    case TypeForQueueState::IntensityNewCallIn:
+    case TypeForBufferState::IntensityNewCallIn:
         dataPerSystemState[queueState].newCallInIntensity = value;
         break;
 
-    case TypeForQueueState::IntensityEndCallIn:
+    case TypeForBufferState::IntensityEndCallIn:
         dataPerSystemState[queueState].endCallInIntensity = value;
         break;
 
-    case TypeForQueueState::IntensityNewCallOut:
+    case TypeForBufferState::IntensityNewCallOut:
         dataPerSystemState[queueState].newCallOutIntensity = value;
         break;
 
-    case TypeForQueueState::IntensityEndCallOut:
+    case TypeForBufferState::IntensityEndCallOut:
         dataPerSystemState[queueState].endCallOutIntensity = value;
         break;
     }
     return *this;
 }
 
-bool RSingle::read(double &result, TypeForQueueState type, int queueState) const
+bool RSingle::read(double &result, TypeForBufferState type, int queueState) const
 {
     if (false)
         return false;
 
     switch (type)
     {
-    case TypeForQueueState::StateProbability:
+    case TypeForBufferState::StateProbability:
         result = dataPerQueueState[queueState].probability;
         break;
 
-    case TypeForQueueState::IntensityNewCallIn:
+    case TypeForBufferState::IntensityNewCallIn:
         result = dataPerSystemState[queueState].newCallInIntensity;
         break;
 
-    case TypeForQueueState::IntensityEndCallIn:
+    case TypeForBufferState::IntensityEndCallIn:
         result = dataPerSystemState[queueState].endCallInIntensity;
         break;
 
-    case TypeForQueueState::IntensityNewCallOut:
+    case TypeForBufferState::IntensityNewCallOut:
         result = dataPerSystemState[queueState].newCallOutIntensity;
         break;
 
-    case TypeForQueueState::IntensityEndCallOut:
+    case TypeForBufferState::IntensityEndCallOut:
         result = dataPerSystemState[queueState].endCallOutIntensity;
         break;
     }

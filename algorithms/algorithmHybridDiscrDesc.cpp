@@ -27,7 +27,7 @@ void AlgorithmHybridDiscrDesc::calculateSystem(const ModelSyst *system
     (void) simParameters;
     prepareTemporaryData(system, a);
     int m = system->m();
-    int Vs = system->V_s();
+    int Vs = system->vk_s();
     int Vb = system->V_b();
     int VsVb = Vs + Vb;
 

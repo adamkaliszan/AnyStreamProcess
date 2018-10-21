@@ -15,7 +15,7 @@ algRekLAG::algRekLAG()
 
 bool algRekLAG::possible(const ModelSyst *system) const
 {
-    if ((system->V_s() == 0) || (system->K_sType() > 1) || (system->V_b() > 0))
+    if ((system->vk_s() == 0) || (system->K_sType() > 1) || (system->V_b() > 0))
         return false;
 
     return Investigator::possible(system);

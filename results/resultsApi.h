@@ -12,8 +12,6 @@
 namespace Results
 {
 
-class RSystem;
-
 enum class ParameterType
 {
     None,
@@ -21,23 +19,21 @@ enum class ParameterType
     TrafficClass,
     SystemState,
     ServerState,
-    QueueState,
+    BufferState,
     CombinationNumber,
-    NumberOfGroups,
-    NumberOfAUs
+    NumberOfGroups
 };
 
 struct ParametersSet
 {
-    decimal a;
-    double aDebug;
-    int    classIndex;
-    int    systemState;
-    int    serverState;
-    int    queueState;
-    int    combinationNumber;
-    int    numberOfGroups;
-    int    numberOfAus;
+    decimal a;                  /// Offered traffic per Servers AU
+    double aDebug;              //TODO remove it
+    int    classIndex;          /// Some QoS parameters are concerned with traffic class
+    int    systemState;         /// System state (server + buffer)
+    int    serverState;         /// Server only state, buffer state is not considered
+    int    bufferState;          /// Queue only state, server state is not considered
+    int    combinationNumber;   /// In LAG systems, we can consider specified combination of groups e.g. groups {1, 3} or {1, 2}
+    int    numberOfGroups;      /// In LAG systems, we can consider specified number of any groups e.g. 1 or 3 groups
 };
 
 class Settings
@@ -54,6 +50,8 @@ public:
     virtual bool getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const = 0;
     virtual double getXmin(RSystem &rSystem) const;
     virtual double getXmax(RSystem &rSystem) const;
+
+    virtual ~Settings() {}
 };
 
 class SettingsBlockingProbability: public Settings
@@ -76,6 +74,46 @@ class SettingsOccupancyDistribution: public Settings
 {
 public:
     SettingsOccupancyDistribution();
+
+    bool getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
+};
+
+class SettingsOccupancyDistributionServer: public Settings
+{
+public:
+    SettingsOccupancyDistributionServer();
+
+    bool getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
+};
+
+class SettingsOccupancyDistributionBuffer: public Settings
+{
+public:
+    SettingsOccupancyDistributionBuffer();
+
+    bool getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
+};
+
+class SettingsNumberOfCallsInStateN: public Settings
+{
+public:
+    SettingsNumberOfCallsInStateN();
+
+    bool getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
+};
+
+class SettingsNumberOfCallsInStateN_inServer: public Settings
+{
+public:
+    SettingsNumberOfCallsInStateN_inServer();
+
+    bool getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
+};
+
+class SettingsNumberOfCallsInStateN_inBuffer: public Settings
+{
+public:
+    SettingsNumberOfCallsInStateN_inBuffer();
 
     bool getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
 };

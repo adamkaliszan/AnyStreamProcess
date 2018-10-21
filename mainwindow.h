@@ -41,7 +41,7 @@ public:
     explicit MainWindow(QWidget *parent = 0);
 
     void addAlgorithmForCurentSystem(Investigator *newAlg);
-    void addExperimentalAlgorithmForCurentSystem(Investigator *newAlg);
+    void addAlternativeAlgorithmForCurentSystem(Investigator *newAlg);
     void addSimulationParams(SimulationParameters *par);
     void addAlgorithmsAndParams(void);
     ~MainWindow();
@@ -70,7 +70,6 @@ private:
     SimulationParameters         *currentSimulationParameter;
 
     QList<Investigator*>         algorithms;
-    QList<Investigator*>         experimentalAlgorithms;
 
     Results::RSystem             *resultsForSystem;
 
@@ -131,7 +130,7 @@ private slots:
 
     void on_listWidgetAlgorithms_itemClicked(QListWidgetItem *item);
 
-    void on_listWidgetAlgorithmsExperimental_itemClicked(QListWidgetItem *item);
+    void on_listWidgetAlgorithmsAlternative_itemClicked(QListWidgetItem *item);
 
     void on_actionAbout_triggered();
 

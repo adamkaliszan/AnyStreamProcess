@@ -59,7 +59,7 @@ void AlgRekGeneral::calculateSystem(
         (*results)->write(TypeForSystemState::StateProbability, states[n], n);
     }
 
-    for (int n=0; n<=system->V_s(); n++)
+    for (int n=0; n<=system->vk_s(); n++)
     {
         (*results)->write(TypeForServerState::StateProbability, states[n], n);
     }

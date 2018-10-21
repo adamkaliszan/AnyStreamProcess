@@ -5,10 +5,9 @@
 #include <qstack.h>
 #include <qvector.h>
 #include <qlist.h>
-
 #include <QtGlobal>
 #include <QtDebug>
-#include "results/resultsOld.h"
+
 #include "results/resultsInvestigator.h"
 
 namespace Algorithms

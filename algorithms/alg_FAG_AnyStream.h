@@ -7,8 +7,6 @@
 #include "algorithms/algorithmConv.h"
 #include "algorithms/trclvector2.h"
 
-#include "results/resultsOld.h"
-
 namespace Algorithms
 {
 

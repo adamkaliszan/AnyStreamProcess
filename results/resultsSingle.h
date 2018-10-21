@@ -33,8 +33,8 @@ public:
     RSingle &write(TypeForServerState, double value, int serverState);
     bool read(double &result, TypeForServerState type, int serverState) const;
 
-    RSingle &write(TypeForQueueState type, double value, int queueState);
-    bool read(double &result, TypeForQueueState type, int queueState) const;
+    RSingle &write(TypeForBufferState type, double value, int queueState);
+    bool read(double &result, TypeForBufferState type, int queueState) const;
 
     RSingle& write(TypeForSystemState, double value, int systemState);
     bool read(double &result, TypeForSystemState, int systemState) const;

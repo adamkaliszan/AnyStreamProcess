@@ -38,7 +38,7 @@ void SimulatorQeueSdFifo::calculateSystem(const ModelSyst *system
 
     this->system = system;
     System *simData = new System(system, simParameters->noOfSeries);
-    simData->initialize(a, system->totalAt(), system->V_s());
+    simData->initialize(a, system->totalAt(), system->vk_s());
 
     int seed = 1024;
 
@@ -69,11 +69,11 @@ void SimulatorQeueSdFifo::calculateSystem(const ModelSyst *system
 }
 
 SimulatorQeueSdFifo::System::System(const ModelSyst *system, int noOfSeries)
-    : results(system->m(), system->V_s(), system->V_b(), noOfSeries)
+    : results(system->m(), system->vk_s(), system->V_b(), noOfSeries)
     , systemData(system)
 {
     this->agenda = new simulatorDataCollection<ProcQeueSdFifo>();
-    server = new Server(system->V_s(), system->V_b(), this);
+    server = new Server(system->vk_s(), system->V_b(), this);
 }
 
 void SimulatorQeueSdFifo::System::initialize(double a, int sumPropAt, int V)

@@ -221,7 +221,7 @@ public:
         double time;
 
         SimulatorProcess(SimulatorSingleServiceSystem *system): system(system) {}
-        virtual ~SimulatorProcess() {}
+        //virtual ~SimulatorProcess() {}
 
         inline bool execute(SimulatorSingleServiceSystem *system) {return procFun(system, this); }
         virtual void initialize() = 0;
@@ -435,13 +435,13 @@ private:
     int _capacityTypeOfGroups;
 
     ModelResourcess *_qeues;
-    int _noOfTypesOfQeues;
+    int _noOfTypesOfBuffers;
     int _capacityTypeOfQeues;
 
 
     int _totalQeuesCapacity;   // Pojemność wszystkich kolejek
     int _totalTimeBuf;         /// Number of time units, that the buffer is able to store data written to them with fully supported spead
-    int _totalNumberOfQeues;   // Liczba wszystkich kolejek
+    int _totalNumberOfBuffers;   // Liczba wszystkich kolejek
     int _totalGroupsCapacity;  // Pojemność wszystkich wiązek
     int _totalNumberOfGroups;  // Liczba wszystkich wiązek
 
@@ -470,20 +470,22 @@ public:
     bool operator <(const ModelSyst& rho) const;
 
 
-    int V(void)        const {return _totalGroupsCapacity + _totalQeuesCapacity;}
-    int V_s(void)      const {return _totalGroupsCapacity; }
-    int v_sMax(void)   const;
-    int V_b(void)      const {return _totalQeuesCapacity; }
+    int V(void)             const {return _totalGroupsCapacity + _totalQeuesCapacity;}
+    int v_s(int i)          const;
+    int vk_s(void)          const {return _totalGroupsCapacity; }
+    int vk_s(int groupClNo) const;
+    int v_sMax(void)        const;                                        /// Capacity of the biggest group in the server
     int Ks(void)       const {return _totalNumberOfGroups; }
     int K_sType(void)  const {return _noOfTypesOfGroups; }
-    int Kq(void)       const {return _totalNumberOfQeues; }
-    int K_qType(void)  const {return _noOfTypesOfQeues; }
+
+    int V_b(void)      const {return _totalQeuesCapacity; }
+    int Kb(void)       const {return _totalNumberOfBuffers; }
+    int K_bType(void)  const {return _noOfTypesOfBuffers; }
+
     int totalAt(void)  const {return _totalAt;}
     int T(void)        const {return _totalTimeBuf; }
     int m(void)        const {return _noOfTrClasses;}
 
-    int v_s(int i)    const;
-    int V_s(int i)    const;
     int k_s(int type) const;
 
     int v_q(int i)    const;

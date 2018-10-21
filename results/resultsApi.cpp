@@ -16,6 +16,12 @@ void TypesAndSettings::_initialize()
     _myMap.insert(Type::LossProbability, new SettingsLossProbability());
 
     _myMap.insert(Type::OccupancyDistribution, new SettingsOccupancyDistribution());
+    _myMap.insert(Type::OccupancyDistributionServerOnly, new SettingsOccupancyDistributionServer());
+    _myMap.insert(Type::OccupancyDistributionServerBufferOnly, new SettingsOccupancyDistributionBuffer());
+
+    _myMap.insert(Type::NumberOfCallsInStateN, new SettingsNumberOfCallsInStateN());
+    _myMap.insert(Type::NumberOfCallsInStateN_inServer, new SettingsNumberOfCallsInStateN_inServer());
+    _myMap.insert(Type::NumberOfCallsInStateN_inBuffer, new SettingsNumberOfCallsInStateN_inBuffer());
 
     _myMap.insert(Type::AllSugbrupsInGivenCombinationAndClassAvailable, new SettingsInavailabilityForClassInAllGroupsInCombination());
     _myMap.insert(Type::AvailableSubroupDistribution, new SettingsAvailableSubroupDistribution());
@@ -60,10 +66,25 @@ QString TypesAndSettings::typeToString(Type type)
         result = "Traffic distribution in a system";
         break;
 
+    case Type::OccupancyDistributionServerOnly:
+        result = "Traffic distribution in a server";
+        break;
+
+    case Type::OccupancyDistributionServerBufferOnly:
+        result = "Traffic distribution in a buffer";
+        break;
+
     case Type::NumberOfCallsInStateN:
         result = "Avarage number of calls in a state";
         break;
 
+    case Type::NumberOfCallsInStateN_inServer:
+        result = "Avarage number of calls in a server";
+        break;
+
+    case Type::NumberOfCallsInStateN_inBuffer:
+        result = "Avarage number of calls in a buffer";
+        break;
 
     case Type::AllSugbrupsInGivenCombinationAndClassAvailable:
         result = "Availability of all subgroup in a combination";
@@ -98,10 +119,6 @@ QString TypesAndSettings::typeToX_AxisString(Type type)
         result = "Server state";
         break;
 
-    case ParameterType::NumberOfAUs:
-        result = "Number of AUs";
-        break;
-
     default:
         qFatal("Not supported type");
 
@@ -123,7 +140,7 @@ QString TypesAndSettings::parameterToString(ParameterType parameter)
         result = "Offered traffic per AS";
         break;
 
-    case ParameterType::QueueState:
+    case ParameterType::BufferState:
         result = "Queue state";
         break;
 
@@ -147,9 +164,6 @@ QString TypesAndSettings::parameterToString(ParameterType parameter)
         result = "Combination number";
         break;
 
-    case ParameterType::NumberOfAUs:
-        result = "Number of AUs";
-        break;
 
 //    default:
 //        qFatal("Not implemented parameter");
@@ -319,6 +333,160 @@ bool SettingsOccupancyDistribution::getSinglePlot(QLineSeries *outPlot, RSystem 
         }
     }
     return result;
+}
+
+SettingsOccupancyDistributionServer::SettingsOccupancyDistributionServer()
+{
+    dependencyParameters.append(ParameterType::OfferedTrafficPerAS);
+    dependencyParameters.append(ParameterType::ServerState);
+
+    functionalParameter  = ParameterType::ServerState;
+    additionalParameter1 = ParameterType::OfferedTrafficPerAS;
+    additionalParameter2 = ParameterType::None;
+}
+
+bool SettingsOccupancyDistributionServer::getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
+{
+    bool result = false;
+
+    outPlot->clear();
+    if (functionalParameter == ParameterType::OfferedTrafficPerAS)
+    {
+        foreach(decimal a, rSystem.getAvailableAperAU())
+        {
+            const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+
+            double y=0;
+            if ((*singlePoint)->read(y, TypeForServerState::StateProbability, parametersSet.serverState))
+            {
+                if ((y > 0) || linearScale)
+                {
+                    *outPlot<<QPointF(static_cast<double>(a), y);
+                    result = true;
+                }
+            }
+        }
+    }
+
+    if (functionalParameter == ParameterType::ServerState)
+    {
+        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+        for (int n=0; n<=rSystem.getModel().vk_s(); n++)
+        {
+            double y=0;
+
+            if ((*singlePoint)->read(y, TypeForServerState::StateProbability, n))
+            {
+                if ((y > 0) || linearScale)
+                {
+                    *outPlot<<QPointF(n, y);
+                    result = true;
+                }
+            }
+        }
+    }
+    return result;
+}
+
+SettingsOccupancyDistributionBuffer::SettingsOccupancyDistributionBuffer()
+{
+    dependencyParameters.append(ParameterType::OfferedTrafficPerAS);
+    dependencyParameters.append(ParameterType::BufferState);
+
+    functionalParameter  = ParameterType::BufferState;
+    additionalParameter1 = ParameterType::OfferedTrafficPerAS;
+    additionalParameter2 = ParameterType::None;
+}
+
+bool SettingsOccupancyDistributionBuffer::getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
+{
+    bool result = false;
+
+    outPlot->clear();
+    if (functionalParameter == ParameterType::OfferedTrafficPerAS)
+    {
+        foreach(decimal a, rSystem.getAvailableAperAU())
+        {
+            const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+
+            double y=0;
+            if ((*singlePoint)->read(y, TypeForBufferState::StateProbability, parametersSet.bufferState))
+            {
+                if ((y > 0) || linearScale)
+                {
+                    *outPlot<<QPointF(static_cast<double>(a), y);
+                    result = true;
+                }
+            }
+        }
+    }
+
+    if (functionalParameter == ParameterType::BufferState)
+    {
+        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+        for (int n=0; n<=rSystem.getModel().V_b(); n++)
+        {
+            double y=0;
+
+            if ((*singlePoint)->read(y, TypeForSystemState::StateProbability, n))
+            {
+                if ((y > 0) || linearScale)
+                {
+                    *outPlot<<QPointF(n, y);
+                    result = true;
+                }
+            }
+        }
+    }
+    return result;
+}
+
+SettingsNumberOfCallsInStateN::SettingsNumberOfCallsInStateN()
+{
+    dependencyParameters.append(ParameterType::SystemState);
+    dependencyParameters.append(ParameterType::TrafficClass);
+    dependencyParameters.append(ParameterType::OfferedTrafficPerAS);
+
+    functionalParameter  = ParameterType::SystemState;
+    additionalParameter2 = ParameterType::TrafficClass;
+    additionalParameter1 = ParameterType::OfferedTrafficPerAS;
+}
+
+bool SettingsNumberOfCallsInStateN::getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
+{
+
+}
+
+SettingsNumberOfCallsInStateN_inServer::SettingsNumberOfCallsInStateN_inServer()
+{
+    dependencyParameters.append(ParameterType::ServerState);
+    dependencyParameters.append(ParameterType::TrafficClass);
+    dependencyParameters.append(ParameterType::OfferedTrafficPerAS);
+
+    functionalParameter  = ParameterType::ServerState;
+    additionalParameter2 = ParameterType::TrafficClass;
+    additionalParameter1 = ParameterType::OfferedTrafficPerAS;
+}
+
+bool SettingsNumberOfCallsInStateN_inServer::getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
+{
+
+}
+
+SettingsNumberOfCallsInStateN_inBuffer::SettingsNumberOfCallsInStateN_inBuffer()
+{
+    dependencyParameters.append(ParameterType::BufferState);
+    dependencyParameters.append(ParameterType::TrafficClass);
+    dependencyParameters.append(ParameterType::OfferedTrafficPerAS);
+
+    functionalParameter  = ParameterType::BufferState;
+    additionalParameter2 = ParameterType::TrafficClass;
+    additionalParameter1 = ParameterType::OfferedTrafficPerAS;
+}
+
+bool SettingsNumberOfCallsInStateN_inBuffer::getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
+{
+
 }
 
 SettingsInavailabilityForClassInAllGroupsInCombination::SettingsInavailabilityForClassInAllGroupsInCombination()
@@ -512,8 +680,7 @@ double Settings::getXmin(RSystem &rSystem) const
     case ParameterType::TrafficClass:
     case ParameterType::SystemState:
     case ParameterType::ServerState:
-    case ParameterType::QueueState:
-    case ParameterType::NumberOfAUs:
+    case ParameterType::BufferState:
     case ParameterType::NumberOfGroups:
     case ParameterType::CombinationNumber:
         result = 0;
@@ -549,15 +716,14 @@ double Settings::getXmax(RSystem &rSystem) const
         break;
 
     case ParameterType::SystemState:
-    case ParameterType::NumberOfAUs:
         result = rSystem.getModel().V();
         break;
 
     case ParameterType::ServerState:
-        result = rSystem.getModel().V_s();
+        result = rSystem.getModel().vk_s();
         break;
 
-    case ParameterType::QueueState:
+    case ParameterType::BufferState:
         result = rSystem.getModel().V_b();
         break;
 
@@ -568,6 +734,5 @@ double Settings::getXmax(RSystem &rSystem) const
 
     return result;
 }
-
 
 } //namespace Results

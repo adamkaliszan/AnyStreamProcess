@@ -35,7 +35,7 @@ MOVE          = mv -f
 TAR           = tar -cf
 COMPRESS      = gzip -9f
 DISTNAME      = kolejki1.0.0
-DISTDIR = /home/adam/projekty/kolejki/.tmp/kolejki1.0.0
+DISTDIR = /home/adam/GIT/AnyStreamProcess/.tmp/kolejki1.0.0
 LINK          = g++
 LFLAGS        = -Wl,-rpath,/opt/Qt/5.11.2/gcc_64/lib
 LIBS          = $(SUBLIBS) -lboost_iostreams -lboost_system -lboost_filesystem -L/opt/Qt/5.11.2/gcc_64/lib -lQt5Charts -lQt5PrintSupport -lQt5Widgets -lQt5Xlsx -lQt5Gui -lQt5Sql -lQt5Core -lGL -lpthread 
@@ -74,14 +74,12 @@ SOURCES       = main.cpp \
 		algorithms/simulator.cpp \
 		algorithms/algorithmConv3d.cpp \
 		algorithms/simulationParameters.cpp \
-		results/results.cpp \
 		results/resultsGnuplot.cpp \
 		utils/probDistributions.cpp \
 		utils/lag.cpp \
 		utils/vectorUtils.cpp \
 		algorithms/algRekGeneral.cpp \
 		algorithms/algRekLag.cpp \
-		results/baseTypes.cpp \
 		results/resultsSingle.cpp \
 		results/resultsInvestigator.cpp \
 		results/resultsSystem.cpp \
@@ -89,7 +87,6 @@ SOURCES       = main.cpp \
 		results/resultsXlsx.cpp \
 		utils/utilsMisc.cpp \
 		results/resultsSingleGroup.cpp \
-		results/resultsOld.cpp \
 		results/resultsApi.cpp qrc_resources.cpp \
 		moc_mainwindow.cpp \
 		moc_dialogAbout.cpp
@@ -117,14 +114,12 @@ OBJECTS       = main.o \
 		simulator.o \
 		algorithmConv3d.o \
 		simulationParameters.o \
-		results.o \
 		resultsGnuplot.o \
 		probDistributions.o \
 		lag.o \
 		vectorUtils.o \
 		algRekGeneral.o \
 		algRekLag.o \
-		baseTypes.o \
 		resultsSingle.o \
 		resultsInvestigator.o \
 		resultsSystem.o \
@@ -132,7 +127,6 @@ OBJECTS       = main.o \
 		resultsXlsx.o \
 		utilsMisc.o \
 		resultsSingleGroup.o \
-		resultsOld.o \
 		resultsApi.o \
 		qrc_resources.o \
 		moc_mainwindow.o \
@@ -354,9 +348,7 @@ DIST          = languages/kolejki_pl.ts \
 		algorithms/simulatorQeueFIFO.h \
 		algorithms/algorithmConvGamma3.h \
 		gnuplot-iostream.h \
-		results/results.h \
 		results/resultsGnuplot.h \
-		results/resultsOld.h \
 		results/resultsSingle.h \
 		utils/lag.h \
 		utils/probDistributions.h \
@@ -398,14 +390,12 @@ DIST          = languages/kolejki_pl.ts \
 		algorithms/simulator.cpp \
 		algorithms/algorithmConv3d.cpp \
 		algorithms/simulationParameters.cpp \
-		results/results.cpp \
 		results/resultsGnuplot.cpp \
 		utils/probDistributions.cpp \
 		utils/lag.cpp \
 		utils/vectorUtils.cpp \
 		algorithms/algRekGeneral.cpp \
 		algorithms/algRekLag.cpp \
-		results/baseTypes.cpp \
 		results/resultsSingle.cpp \
 		results/resultsInvestigator.cpp \
 		results/resultsSystem.cpp \
@@ -413,7 +403,6 @@ DIST          = languages/kolejki_pl.ts \
 		results/resultsXlsx.cpp \
 		utils/utilsMisc.cpp \
 		results/resultsSingleGroup.cpp \
-		results/resultsOld.cpp \
 		results/resultsApi.cpp
 QMAKE_TARGET  = kolejki
 DESTDIR       = 
@@ -843,8 +832,8 @@ distdir: FORCE
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents resources.qrc $(DISTDIR)/
 	$(COPY_FILE) --parents /opt/Qt/5.11.2/gcc_64/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents mainwindow.h model.h dialogAbout.h algorithms/algorithmConvGamma2d.h algorithms/algorithmHybridDiscr.h algorithms/algorithmHybridDiscrDesc.h algorithms/simulatorQeueSdFIFO.h algorithms/alg_cFIFO_hybrid.h algorithms/alg_cFIFO_convGamma.h algorithms/alg_noFIFO.h algorithms/simulatorNoQeue.h algorithms/alg_FAG_AnyStream.h algorithms/simulatorNoQeueLag.h algorithms/investigator.h algorithms/trclvector2.h algorithms/algorithmConv.h algorithms/simulatordatacollection.h algorithms/simulatorBufferFIFO.h algorithms/simulator.h algorithms/algorithmConv3d.h algorithms/simulationParameters.h algorithms/simulatorQeueFIFO.h algorithms/algorithmConvGamma3.h gnuplot-iostream.h results/results.h results/resultsGnuplot.h results/resultsOld.h results/resultsSingle.h utils/lag.h utils/probDistributions.h utils/decimal.h utils/vectorUtils.h algorithms/algRekGeneral.h algorithms/algRekLag.h results/baseTypes.h results/resultsInvestigator.h results/resultsSystem.h algorithms/algRekLagGS.h results/resultsUtils.h utils/utilsMisc.h results/resultsSingleGroup.h results/resultsSingleGroup.h results/resultsXlsx.h results/resultsApi.h results/resultsApiTypes.h $(DISTDIR)/
-	$(COPY_FILE) --parents main.cpp mainwindow.cpp model.cpp dialogAbout.cpp algorithms/investigator.cpp algorithms/simulatorQeueFIFO.cpp algorithms/algorithmConvGamma3.cpp algorithms/algorithmConvGamma2d.cpp algorithms/algorithmHybridDiscr.cpp algorithms/algorithmHybridDiscrDesc.cpp algorithms/simulatorQeueSdFIFO.cpp algorithms/alg_cFIFO_hybrid.cpp algorithms/alg_cFIFO_convGamma.cpp algorithms/alg_noFIFO.cpp algorithms/simulatorNoQeue.cpp algorithms/alg_FAG_AnyStream.cpp algorithms/simulatorNoQeueLag.cpp algorithms/trclvector2.cpp algorithms/algorithmConv.cpp algorithms/simulatordatacollection.cpp algorithms/simulatorBufferFIFO.cpp algorithms/simulator.cpp algorithms/algorithmConv3d.cpp algorithms/simulationParameters.cpp results/results.cpp results/resultsGnuplot.cpp utils/probDistributions.cpp utils/lag.cpp utils/vectorUtils.cpp algorithms/algRekGeneral.cpp algorithms/algRekLag.cpp results/baseTypes.cpp results/resultsSingle.cpp results/resultsInvestigator.cpp results/resultsSystem.cpp algorithms/algRekLagGS.cpp results/resultsXlsx.cpp utils/utilsMisc.cpp results/resultsSingleGroup.cpp results/resultsOld.cpp results/resultsApi.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents mainwindow.h model.h dialogAbout.h algorithms/algorithmConvGamma2d.h algorithms/algorithmHybridDiscr.h algorithms/algorithmHybridDiscrDesc.h algorithms/simulatorQeueSdFIFO.h algorithms/alg_cFIFO_hybrid.h algorithms/alg_cFIFO_convGamma.h algorithms/alg_noFIFO.h algorithms/simulatorNoQeue.h algorithms/alg_FAG_AnyStream.h algorithms/simulatorNoQeueLag.h algorithms/investigator.h algorithms/trclvector2.h algorithms/algorithmConv.h algorithms/simulatordatacollection.h algorithms/simulatorBufferFIFO.h algorithms/simulator.h algorithms/algorithmConv3d.h algorithms/simulationParameters.h algorithms/simulatorQeueFIFO.h algorithms/algorithmConvGamma3.h gnuplot-iostream.h results/resultsGnuplot.h results/resultsSingle.h utils/lag.h utils/probDistributions.h utils/decimal.h utils/vectorUtils.h algorithms/algRekGeneral.h algorithms/algRekLag.h results/baseTypes.h results/resultsInvestigator.h results/resultsSystem.h algorithms/algRekLagGS.h results/resultsUtils.h utils/utilsMisc.h results/resultsSingleGroup.h results/resultsSingleGroup.h results/resultsXlsx.h results/resultsApi.h results/resultsApiTypes.h $(DISTDIR)/
+	$(COPY_FILE) --parents main.cpp mainwindow.cpp model.cpp dialogAbout.cpp algorithms/investigator.cpp algorithms/simulatorQeueFIFO.cpp algorithms/algorithmConvGamma3.cpp algorithms/algorithmConvGamma2d.cpp algorithms/algorithmHybridDiscr.cpp algorithms/algorithmHybridDiscrDesc.cpp algorithms/simulatorQeueSdFIFO.cpp algorithms/alg_cFIFO_hybrid.cpp algorithms/alg_cFIFO_convGamma.cpp algorithms/alg_noFIFO.cpp algorithms/simulatorNoQeue.cpp algorithms/alg_FAG_AnyStream.cpp algorithms/simulatorNoQeueLag.cpp algorithms/trclvector2.cpp algorithms/algorithmConv.cpp algorithms/simulatordatacollection.cpp algorithms/simulatorBufferFIFO.cpp algorithms/simulator.cpp algorithms/algorithmConv3d.cpp algorithms/simulationParameters.cpp results/resultsGnuplot.cpp utils/probDistributions.cpp utils/lag.cpp utils/vectorUtils.cpp algorithms/algRekGeneral.cpp algorithms/algRekLag.cpp results/resultsSingle.cpp results/resultsInvestigator.cpp results/resultsSystem.cpp algorithms/algRekLagGS.cpp results/resultsXlsx.cpp utils/utilsMisc.cpp results/resultsSingleGroup.cpp results/resultsApi.cpp $(DISTDIR)/
 	$(COPY_FILE) --parents mainwindow.ui dialogAbout.ui $(DISTDIR)/
 	$(COPY_FILE) --parents languages/kolejki_en.ts languages/kolejki_pl.ts $(DISTDIR)/
 
@@ -1456,10 +1445,7 @@ moc_mainwindow.cpp: /opt/Qt/5.11.2/gcc_64/include/QtWidgets/QMainWindow \
 		results/resultsSingleGroup.h \
 		results/resultsApi.h \
 		results/resultsGnuplot.h \
-		results/results.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QFile \
 		gnuplot-iostream.h \
-		results/resultsOld.h \
 		results/resultsXlsx.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtXlsx/xlsxdocument.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtXlsx/xlsxglobal.h \
@@ -1480,7 +1466,7 @@ moc_mainwindow.cpp: /opt/Qt/5.11.2/gcc_64/include/QtWidgets/QMainWindow \
 		mainwindow.h \
 		moc_predefs.h \
 		/opt/Qt/5.11.2/gcc_64/bin/moc
-	/opt/Qt/5.11.2/gcc_64/bin/moc $(DEFINES) --include /home/adam/projekty/kolejki/moc_predefs.h -I/opt/Qt/5.11.2/gcc_64/mkspecs/linux-g++ -I/home/adam/projekty/kolejki -I/home/adam/projekty/kolejki/3rd/QtXlsxWriter/include/QtXlsx -I/opt/Qt/5.11.2/gcc_64/include -I/opt/Qt/5.11.2/gcc_64/include/QtCharts -I/opt/Qt/5.11.2/gcc_64/include/QtPrintSupport -I/opt/Qt/5.11.2/gcc_64/include/QtWidgets -I/opt/Qt/5.11.2/gcc_64/include/QtXlsx -I/opt/Qt/5.11.2/gcc_64/include/QtGui -I/opt/Qt/5.11.2/gcc_64/include/QtSql -I/opt/Qt/5.11.2/gcc_64/include/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include mainwindow.h -o moc_mainwindow.cpp
+	/opt/Qt/5.11.2/gcc_64/bin/moc $(DEFINES) --include /home/adam/GIT/AnyStreamProcess/moc_predefs.h -I/opt/Qt/5.11.2/gcc_64/mkspecs/linux-g++ -I/home/adam/GIT/AnyStreamProcess -I/home/adam/GIT/AnyStreamProcess/3rd/QtXlsxWriter/include/QtXlsx -I/opt/Qt/5.11.2/gcc_64/include -I/opt/Qt/5.11.2/gcc_64/include/QtCharts -I/opt/Qt/5.11.2/gcc_64/include/QtPrintSupport -I/opt/Qt/5.11.2/gcc_64/include/QtWidgets -I/opt/Qt/5.11.2/gcc_64/include/QtXlsx -I/opt/Qt/5.11.2/gcc_64/include/QtGui -I/opt/Qt/5.11.2/gcc_64/include/QtSql -I/opt/Qt/5.11.2/gcc_64/include/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include mainwindow.h -o moc_mainwindow.cpp
 
 moc_dialogAbout.cpp: /opt/Qt/5.11.2/gcc_64/include/QtWidgets/QDialog \
 		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qdialog.h \
@@ -1808,7 +1794,7 @@ moc_dialogAbout.cpp: /opt/Qt/5.11.2/gcc_64/include/QtWidgets/QDialog \
 		dialogAbout.h \
 		moc_predefs.h \
 		/opt/Qt/5.11.2/gcc_64/bin/moc
-	/opt/Qt/5.11.2/gcc_64/bin/moc $(DEFINES) --include /home/adam/projekty/kolejki/moc_predefs.h -I/opt/Qt/5.11.2/gcc_64/mkspecs/linux-g++ -I/home/adam/projekty/kolejki -I/home/adam/projekty/kolejki/3rd/QtXlsxWriter/include/QtXlsx -I/opt/Qt/5.11.2/gcc_64/include -I/opt/Qt/5.11.2/gcc_64/include/QtCharts -I/opt/Qt/5.11.2/gcc_64/include/QtPrintSupport -I/opt/Qt/5.11.2/gcc_64/include/QtWidgets -I/opt/Qt/5.11.2/gcc_64/include/QtXlsx -I/opt/Qt/5.11.2/gcc_64/include/QtGui -I/opt/Qt/5.11.2/gcc_64/include/QtSql -I/opt/Qt/5.11.2/gcc_64/include/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include dialogAbout.h -o moc_dialogAbout.cpp
+	/opt/Qt/5.11.2/gcc_64/bin/moc $(DEFINES) --include /home/adam/GIT/AnyStreamProcess/moc_predefs.h -I/opt/Qt/5.11.2/gcc_64/mkspecs/linux-g++ -I/home/adam/GIT/AnyStreamProcess -I/home/adam/GIT/AnyStreamProcess/3rd/QtXlsxWriter/include/QtXlsx -I/opt/Qt/5.11.2/gcc_64/include -I/opt/Qt/5.11.2/gcc_64/include/QtCharts -I/opt/Qt/5.11.2/gcc_64/include/QtPrintSupport -I/opt/Qt/5.11.2/gcc_64/include/QtWidgets -I/opt/Qt/5.11.2/gcc_64/include/QtXlsx -I/opt/Qt/5.11.2/gcc_64/include/QtGui -I/opt/Qt/5.11.2/gcc_64/include/QtSql -I/opt/Qt/5.11.2/gcc_64/include/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include dialogAbout.h -o moc_dialogAbout.cpp
 
 compiler_moc_objc_header_make_all:
 compiler_moc_objc_header_clean:
@@ -2405,10 +2391,7 @@ main.o: main.cpp mainwindow.h \
 		results/resultsSingleGroup.h \
 		results/resultsApi.h \
 		results/resultsGnuplot.h \
-		results/results.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QFile \
 		gnuplot-iostream.h \
-		results/resultsOld.h \
 		results/resultsXlsx.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtXlsx/xlsxdocument.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtXlsx/xlsxglobal.h \
@@ -2999,10 +2982,7 @@ mainwindow.o: mainwindow.cpp mainwindow.h \
 		results/resultsSingleGroup.h \
 		results/resultsApi.h \
 		results/resultsGnuplot.h \
-		results/results.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QFile \
 		gnuplot-iostream.h \
-		results/resultsOld.h \
 		results/resultsXlsx.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtXlsx/xlsxdocument.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtXlsx/xlsxglobal.h \
@@ -3021,6 +3001,24 @@ mainwindow.o: mainwindow.cpp mainwindow.h \
 		dialogAbout.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/QDialog \
 		ui_mainwindow.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtGui/QIcon \
+		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/QAction \
+		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/QApplication \
+		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/QCheckBox \
+		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/QComboBox \
+		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/QDoubleSpinBox \
+		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/QFrame \
+		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/QGridLayout \
+		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/QHBoxLayout \
+		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/QLabel \
+		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/QListWidget \
+		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/QMenu \
+		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/QMenuBar \
+		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/QProgressBar \
+		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/QPushButton \
+		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/QSpinBox \
+		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/QTabWidget \
+		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/QVBoxLayout \
 		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/QFileDialog \
 		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/QMessageBox \
 		algorithms/algorithmConv.h \
@@ -3462,7 +3460,24 @@ dialogAbout.o: dialogAbout.cpp dialogAbout.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qgraphicsscene.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/QGraphicsItem \
 		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qgraphicsitem.h \
-		ui_dialogAbout.h
+		ui_dialogAbout.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/QVariant \
+		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/QApplication \
+		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qapplication.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qdesktopwidget.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/QGraphicsView \
+		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qgraphicsview.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qscrollarea.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qabstractscrollarea.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qframe.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/QTextBrowser \
+		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qtextbrowser.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qtextedit.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/QVBoxLayout \
+		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qboxlayout.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qlayout.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qlayoutitem.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qgridlayout.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o dialogAbout.o dialogAbout.cpp
 
 investigator.o: algorithms/investigator.cpp algorithms/investigator.h \
@@ -4577,10 +4592,7 @@ simulatorQeueFIFO.o: algorithms/simulatorQeueFIFO.cpp algorithms/simulatorQeueFI
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/QVector \
 		results/resultsSingleGroup.h \
 		algorithms/simulatordatacollection.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QtDebug \
-		results/resultsOld.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QMap \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QFile
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/QtDebug
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o simulatorQeueFIFO.o algorithms/simulatorQeueFIFO.cpp
 
 algorithmConvGamma3.o: algorithms/algorithmConvGamma3.cpp algorithms/algorithmConvGamma3.h \
@@ -5136,10 +5148,7 @@ algorithmConvGamma3.o: algorithms/algorithmConvGamma3.cpp algorithms/algorithmCo
 		algorithms/trclvector2.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtGui/QList \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/QVector \
-		results/resultsSingleGroup.h \
-		results/resultsOld.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QMap \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QFile
+		results/resultsSingleGroup.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o algorithmConvGamma3.o algorithms/algorithmConvGamma3.cpp
 
 algorithmConvGamma2d.o: algorithms/algorithmConvGamma2d.cpp algorithms/algorithmConvGamma2d.h \
@@ -5784,10 +5793,7 @@ algorithmHybridDiscr.o: algorithms/algorithmHybridDiscr.cpp algorithms/algorithm
 		/opt/Qt/5.11.2/gcc_64/include/QtGui/QList \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/QVector \
 		results/resultsSingleGroup.h \
-		algorithms/algorithmConv.h \
-		results/resultsOld.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QMap \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QFile
+		algorithms/algorithmConv.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o algorithmHybridDiscr.o algorithms/algorithmHybridDiscr.cpp
 
 algorithmHybridDiscrDesc.o: algorithms/algorithmHybridDiscrDesc.cpp algorithms/algorithmHybridDiscrDesc.h \
@@ -6344,10 +6350,7 @@ algorithmHybridDiscrDesc.o: algorithms/algorithmHybridDiscrDesc.cpp algorithms/a
 		/opt/Qt/5.11.2/gcc_64/include/QtGui/QList \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/QVector \
 		results/resultsSingleGroup.h \
-		algorithms/algorithmConv.h \
-		results/resultsOld.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QMap \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QFile
+		algorithms/algorithmConv.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o algorithmHybridDiscrDesc.o algorithms/algorithmHybridDiscrDesc.cpp
 
 simulatorQeueSdFIFO.o: algorithms/simulatorQeueSdFIFO.cpp algorithms/simulatorQeueSdFIFO.h \
@@ -6907,10 +6910,7 @@ simulatorQeueSdFIFO.o: algorithms/simulatorQeueSdFIFO.cpp algorithms/simulatorQe
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/QVector \
 		results/resultsSingleGroup.h \
 		algorithms/simulatordatacollection.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QtDebug \
-		results/resultsOld.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QMap \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QFile
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/QtDebug
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o simulatorQeueSdFIFO.o algorithms/simulatorQeueSdFIFO.cpp
 
 alg_cFIFO_hybrid.o: algorithms/alg_cFIFO_hybrid.cpp algorithms/alg_cFIFO_hybrid.h \
@@ -7467,10 +7467,7 @@ alg_cFIFO_hybrid.o: algorithms/alg_cFIFO_hybrid.cpp algorithms/alg_cFIFO_hybrid.
 		/opt/Qt/5.11.2/gcc_64/include/QtGui/QList \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/QVector \
 		results/resultsSingleGroup.h \
-		algorithms/algorithmConv.h \
-		results/resultsOld.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QMap \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QFile
+		algorithms/algorithmConv.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o alg_cFIFO_hybrid.o algorithms/alg_cFIFO_hybrid.cpp
 
 alg_cFIFO_convGamma.o: algorithms/alg_cFIFO_convGamma.cpp algorithms/alg_cFIFO_convGamma.h \
@@ -8026,10 +8023,7 @@ alg_cFIFO_convGamma.o: algorithms/alg_cFIFO_convGamma.cpp algorithms/alg_cFIFO_c
 		algorithms/trclvector2.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtGui/QList \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/QVector \
-		results/resultsSingleGroup.h \
-		results/resultsOld.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QMap \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QFile
+		results/resultsSingleGroup.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o alg_cFIFO_convGamma.o algorithms/alg_cFIFO_convGamma.cpp
 
 alg_noFIFO.o: algorithms/alg_noFIFO.cpp algorithms/alg_noFIFO.h \
@@ -8586,10 +8580,7 @@ alg_noFIFO.o: algorithms/alg_noFIFO.cpp algorithms/alg_noFIFO.h \
 		model.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/QDebug \
 		utils/probDistributions.h \
-		results/resultsSingleGroup.h \
-		results/resultsOld.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QMap \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QFile
+		results/resultsSingleGroup.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o alg_noFIFO.o algorithms/alg_noFIFO.cpp
 
 simulatorNoQeue.o: algorithms/simulatorNoQeue.cpp algorithms/simulatorNoQeue.h \
@@ -9149,10 +9140,7 @@ simulatorNoQeue.o: algorithms/simulatorNoQeue.cpp algorithms/simulatorNoQeue.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/QVector \
 		results/resultsSingleGroup.h \
 		algorithms/simulatordatacollection.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QtDebug \
-		results/resultsOld.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QMap \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QFile
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/QtDebug
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o simulatorNoQeue.o algorithms/simulatorNoQeue.cpp
 
 alg_FAG_AnyStream.o: algorithms/alg_FAG_AnyStream.cpp algorithms/alg_FAG_AnyStream.h \
@@ -9709,10 +9697,7 @@ alg_FAG_AnyStream.o: algorithms/alg_FAG_AnyStream.cpp algorithms/alg_FAG_AnyStre
 		/opt/Qt/5.11.2/gcc_64/include/QtGui/QList \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/QVector \
 		results/resultsSingleGroup.h \
-		algorithms/algorithmConv.h \
-		results/resultsOld.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QMap \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QFile
+		algorithms/algorithmConv.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o alg_FAG_AnyStream.o algorithms/alg_FAG_AnyStream.cpp
 
 simulatorNoQeueLag.o: algorithms/simulatorNoQeueLag.cpp algorithms/simulatorNoQeueLag.h \
@@ -10274,9 +10259,6 @@ simulatorNoQeueLag.o: algorithms/simulatorNoQeueLag.cpp algorithms/simulatorNoQe
 		results/resultsSingleGroup.h \
 		algorithms/simulatordatacollection.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/QtDebug \
-		results/resultsOld.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QMap \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QFile \
 		utils/lag.h \
 		utils/utilsMisc.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o simulatorNoQeueLag.o algorithms/simulatorNoQeueLag.cpp
@@ -10523,35 +10505,6 @@ simulatordatacollection.o: algorithms/simulatordatacollection.cpp algorithms/sim
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qcontiguouscache.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qsharedpointer.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qsharedpointer_impl.h \
-		results/resultsOld.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/QList \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qevent.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qtguiglobal.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qtgui-config.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qwindowdefs.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qwindowdefs_win.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qregion.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qrect.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qmargins.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qsize.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qdatastream.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qkeysequence.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qurl.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qurlquery.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qfile.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qfiledevice.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qvector2d.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qtouchdevice.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QMap \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QVector \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QDebug \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QFile \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QMetaType \
-		algorithms/simulationParameters.h \
-		model.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QTextStream \
-		utils/probDistributions.h \
-		algorithms/trclvector2.h \
 		results/resultsInvestigator.h \
 		results/baseTypes.h \
 		results/resultsSingle.h \
@@ -10580,11 +10533,14 @@ simulatordatacollection.o: algorithms/simulatordatacollection.cpp algorithms/sim
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qcommandlineparser.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qcoreapplication.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qcryptographichash.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qdatastream.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qdatetime.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qdeadlinetimer.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qelapsedtimer.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qdir.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qfileinfo.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qfile.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qfiledevice.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qdiriterator.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qeasingcurve.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qendian.h \
@@ -10617,6 +10573,7 @@ simulatordatacollection.o: algorithms/simulatordatacollection.cpp algorithms/sim
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qlinkedlist.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qlockfile.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qloggingcategory.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qmargins.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qmath.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qmessageauthenticationcode.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qmetaobject.h \
@@ -10636,6 +10593,8 @@ simulatordatacollection.o: algorithms/simulatordatacollection.cpp algorithms/sim
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qqueue.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qrandom.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qreadwritelock.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qrect.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qsize.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qregularexpression.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qresource.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qsavefile.h \
@@ -10666,6 +10625,8 @@ simulatordatacollection.o: algorithms/simulatordatacollection.cpp algorithms/sim
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qtimezone.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qtranslator.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qtypetraits.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qurl.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qurlquery.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/quuid.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qwaitcondition.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qwineventnotifier.h \
@@ -10673,11 +10634,20 @@ simulatordatacollection.o: algorithms/simulatordatacollection.cpp algorithms/sim
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qtcoreversion.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtGui/QtGui \
 		/opt/Qt/5.11.2/gcc_64/include/QtGui/QtGuiDepends \
+		/opt/Qt/5.11.2/gcc_64/include/QtGui/qtguiglobal.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtGui/qtgui-config.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtGui/qabstracttextdocumentlayout.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtGui/qtextlayout.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtGui/qcolor.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtGui/qrgb.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtGui/qrgba64.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtGui/qevent.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtGui/qwindowdefs.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtGui/qwindowdefs_win.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtGui/qregion.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtGui/qkeysequence.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtGui/qvector2d.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtGui/qtouchdevice.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtGui/qtextformat.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtGui/qfont.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtGui/qpen.h \
@@ -10896,6 +10866,7 @@ simulatordatacollection.o: algorithms/simulatordatacollection.cpp algorithms/sim
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/QPointF \
 		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/QScrollerProperties \
 		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qscrollerproperties.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/QMetaType \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/QVariant \
 		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qshortcut.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qsizegrip.h \
@@ -11008,6 +10979,13 @@ simulatordatacollection.o: algorithms/simulatordatacollection.cpp algorithms/sim
 		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qvxymodelmapper.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qxylegendmarker.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qtchartsversion.h \
+		model.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/QTextStream \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/QDebug \
+		utils/probDistributions.h \
+		algorithms/trclvector2.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtGui/QList \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/QVector \
 		results/resultsSingleGroup.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o simulatordatacollection.o algorithms/simulatordatacollection.cpp
 
@@ -11568,10 +11546,7 @@ simulatorBufferFIFO.o: algorithms/simulatorBufferFIFO.cpp /opt/Qt/5.11.2/gcc_64/
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/QVector \
 		results/resultsSingleGroup.h \
 		algorithms/simulatordatacollection.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QtDebug \
-		results/resultsOld.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QMap \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QFile
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/QtDebug
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o simulatorBufferFIFO.o algorithms/simulatorBufferFIFO.cpp
 
 simulator.o: algorithms/simulator.cpp algorithms/simulator.h \
@@ -12261,97 +12236,6 @@ simulationParameters.o: algorithms/simulationParameters.cpp algorithms/simulatio
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qstringbuilder.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o simulationParameters.o algorithms/simulationParameters.cpp
 
-results.o: results/results.cpp /opt/Qt/5.11.2/gcc_64/include/QtCore/QTranslator \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qtranslator.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qobject.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qobjectdefs.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qnamespace.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qglobal.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qconfig-bootstrapped.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qconfig.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qtcore-config.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qsystemdetection.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qprocessordetection.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qcompilerdetection.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qtypeinfo.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qsysinfo.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qlogging.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qflags.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qatomic.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qbasicatomic.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qatomic_bootstrap.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qgenericatomic.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qatomic_cxx11.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qatomic_msvc.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qglobalstatic.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qmutex.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qnumeric.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qversiontagging.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qobjectdefs_impl.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qstring.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qchar.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qbytearray.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qrefcount.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qarraydata.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qstringliteral.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qstringalgorithms.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qstringview.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qstringbuilder.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qlist.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qalgorithms.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qiterator.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qhashfunctions.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qpair.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qbytearraylist.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qstringlist.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qregexp.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qstringmatcher.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qcoreevent.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qscopedpointer.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qmetatype.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qvarlengtharray.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qcontainerfwd.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qobject_impl.h \
-		results/results.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/QList \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qevent.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qtguiglobal.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qtgui-config.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qwindowdefs.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qwindowdefs_win.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qregion.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qrect.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qmargins.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qsize.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qpoint.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qdatastream.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qiodevice.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qkeysequence.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qvariant.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qmap.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qdebug.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qhash.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qtextstream.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qlocale.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qshareddata.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qvector.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qset.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qcontiguouscache.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qsharedpointer.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qsharedpointer_impl.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qurl.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qurlquery.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qfile.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qfiledevice.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qvector2d.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qtouchdevice.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QString \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QMap \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QVector \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QDebug \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QFile
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o results.o results/results.cpp
-
 resultsGnuplot.o: results/resultsGnuplot.cpp results/resultsGnuplot.h \
 		algorithms/investigator.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/QMetaType \
@@ -12906,11 +12790,7 @@ resultsGnuplot.o: results/resultsGnuplot.cpp results/resultsGnuplot.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtGui/QList \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/QVector \
 		results/resultsSingleGroup.h \
-		results/results.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QMap \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QFile \
-		gnuplot-iostream.h \
-		results/resultsOld.h
+		gnuplot-iostream.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o resultsGnuplot.o results/resultsGnuplot.cpp
 
 probDistributions.o: utils/probDistributions.cpp utils/probDistributions.h
@@ -14122,9 +14002,6 @@ algRekLag.o: algorithms/algRekLag.cpp algorithms/algRekLag.h \
 		results/resultsSingleGroup.h \
 		utils/lag.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o algRekLag.o algorithms/algRekLag.cpp
-
-baseTypes.o: results/baseTypes.cpp results/baseTypes.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o baseTypes.o results/baseTypes.cpp
 
 resultsSingle.o: results/resultsSingle.cpp /opt/Qt/5.11.2/gcc_64/include/QtCore/qmath.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qglobal.h \
@@ -16987,564 +16864,6 @@ resultsSingleGroup.o: results/resultsSingleGroup.cpp results/resultsSingleGroup.
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qversiontagging.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qalgorithms.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o resultsSingleGroup.o results/resultsSingleGroup.cpp
-
-resultsOld.o: results/resultsOld.cpp results/resultsOld.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/QList \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qevent.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qtguiglobal.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qglobal.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qconfig-bootstrapped.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qconfig.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qtcore-config.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qsystemdetection.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qprocessordetection.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qcompilerdetection.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qtypeinfo.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qsysinfo.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qlogging.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qflags.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qatomic.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qbasicatomic.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qatomic_bootstrap.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qgenericatomic.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qatomic_cxx11.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qatomic_msvc.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qglobalstatic.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qmutex.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qnumeric.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qversiontagging.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qtgui-config.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qwindowdefs.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qobjectdefs.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qnamespace.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qobjectdefs_impl.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qwindowdefs_win.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qregion.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qrect.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qmargins.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qsize.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qpoint.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qdatastream.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qscopedpointer.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qiodevice.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qobject.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qstring.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qchar.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qbytearray.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qrefcount.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qarraydata.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qstringliteral.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qstringalgorithms.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qstringview.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qstringbuilder.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qlist.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qalgorithms.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qiterator.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qhashfunctions.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qpair.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qbytearraylist.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qstringlist.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qregexp.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qstringmatcher.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qcoreevent.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qmetatype.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qvarlengtharray.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qcontainerfwd.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qobject_impl.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qkeysequence.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qvariant.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qmap.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qdebug.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qhash.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qtextstream.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qlocale.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qshareddata.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qvector.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qset.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qcontiguouscache.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qsharedpointer.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qsharedpointer_impl.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qurl.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qurlquery.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qfile.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qfiledevice.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qvector2d.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qtouchdevice.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QMap \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QVector \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QDebug \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QFile \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QMetaType \
-		algorithms/simulationParameters.h \
-		model.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QTextStream \
-		utils/probDistributions.h \
-		algorithms/trclvector2.h \
-		algorithms/investigator.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QSet \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QString \
-		results/resultsApiTypes.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QHash \
-		results/resultsInvestigator.h \
-		results/baseTypes.h \
-		results/resultsSingle.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/QtCharts \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/QtChartsDepends \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QtCore \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QtCoreDepends \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qabstractanimation.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qabstracteventdispatcher.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qeventloop.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qabstractitemmodel.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qabstractnativeeventfilter.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qabstractproxymodel.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qabstractstate.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qabstracttransition.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qanimationgroup.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qarraydataops.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qarraydatapointer.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qbasictimer.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qbitarray.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qbuffer.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qbytearraymatcher.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qcache.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qcollator.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qcommandlineoption.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qcommandlineparser.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qcoreapplication.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qcryptographichash.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qdatetime.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qdeadlinetimer.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qelapsedtimer.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qdir.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qfileinfo.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qdiriterator.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qeasingcurve.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qendian.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qeventtransition.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qexception.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qfactoryinterface.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qfileselector.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QObject \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QStringList \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qfilesystemwatcher.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qfinalstate.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qfuture.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qfutureinterface.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qrunnable.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qresultstore.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qfuturesynchronizer.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qfuturewatcher.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qhistorystate.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qidentityproxymodel.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qisenum.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qitemselectionmodel.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qjsonarray.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qjsonvalue.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qjsondocument.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qjsonobject.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qlibrary.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qlibraryinfo.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qversionnumber.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qline.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qlinkedlist.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qlockfile.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qloggingcategory.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qmath.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qmessageauthenticationcode.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qmetaobject.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qmimedata.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qmimedatabase.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qmimetype.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qobjectcleanuphandler.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qoperatingsystemversion.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qparallelanimationgroup.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qpauseanimation.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qplugin.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qpointer.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qpluginloader.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qprocess.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qpropertyanimation.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qvariantanimation.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qqueue.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qrandom.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qreadwritelock.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qregularexpression.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qresource.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qsavefile.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qscopedvaluerollback.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qsemaphore.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qsequentialanimationgroup.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qsettings.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qsharedmemory.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qsignalmapper.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qsignaltransition.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qsocketnotifier.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qsortfilterproxymodel.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qstack.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qstandardpaths.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qstate.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qstatemachine.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qstorageinfo.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qstringlistmodel.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qsystemsemaphore.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qtemporarydir.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qtemporaryfile.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qtextboundaryfinder.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qtextcodec.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qthread.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qthreadpool.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qthreadstorage.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qtimeline.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qtimer.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qtimezone.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qtranslator.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qtypetraits.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/quuid.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qwaitcondition.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qwineventnotifier.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qxmlstream.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qtcoreversion.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/QtGui \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/QtGuiDepends \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qabstracttextdocumentlayout.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qtextlayout.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qcolor.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qrgb.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qrgba64.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qtextformat.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qfont.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qpen.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qbrush.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qmatrix.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qpolygon.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qtransform.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qpainterpath.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qimage.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qpaintdevice.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qpixelformat.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qpixmap.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qtextoption.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qglyphrun.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qrawfont.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qfontdatabase.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qtextcursor.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qtextdocument.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qpalette.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qaccessible.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qaccessiblebridge.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qaccessibleobject.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qaccessibleplugin.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qbackingstore.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qwindow.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QEvent \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QMargins \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QRect \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qsurface.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qsurfaceformat.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qicon.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qcursor.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qbitmap.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qclipboard.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qdesktopservices.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qdrag.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qfontinfo.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qfontmetrics.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qgenericmatrix.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qgenericplugin.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qgenericpluginfactory.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qguiapplication.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qinputmethod.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qiconengine.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qiconengineplugin.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qimageiohandler.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qimagereader.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qimagewriter.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qmatrix4x4.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qvector3d.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qvector4d.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qquaternion.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qmovie.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qoffscreensurface.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qopengl.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qt_windows.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qopengles2ext.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qopenglext.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qopenglbuffer.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qopenglcontext.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QScopedPointer \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/QSurfaceFormat \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qopenglversionfunctions.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qopengldebug.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qopenglextrafunctions.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qopenglfunctions.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qopenglframebufferobject.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qopenglpaintdevice.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qopenglpixeltransferoptions.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QSharedDataPointer \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qopenglshaderprogram.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qopengltexture.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qopengltextureblitter.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/QMatrix3x3 \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/QMatrix4x4 \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qopengltimerquery.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qopenglvertexarrayobject.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qopenglwindow.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/QPaintDeviceWindow \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qpaintdevicewindow.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/QWindow \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/QPaintDevice \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/QOpenGLContext \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/QImage \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qpagedpaintdevice.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qpagelayout.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qpagesize.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qpaintengine.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qpainter.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qpdfwriter.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qpicture.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qpictureformatplugin.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qpixmapcache.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qrasterwindow.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qscreen.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QList \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QSize \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QSizeF \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/QTransform \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qsessionmanager.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qstandarditemmodel.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qstatictext.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qstylehints.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qsyntaxhighlighter.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qtextobject.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qtextdocumentfragment.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qtextdocumentwriter.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qtextlist.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qtexttable.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qvalidator.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/qtguiversion.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/QtWidgets \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/QtWidgetsDepends \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qtwidgetsglobal.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qtwidgets-config.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qabstractbutton.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qwidget.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qsizepolicy.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qabstractitemdelegate.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qstyleoption.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qabstractspinbox.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qslider.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qabstractslider.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qstyle.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qtabbar.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qtabwidget.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qrubberband.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qframe.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qabstractitemview.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qabstractscrollarea.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qaccessiblewidget.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qaction.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qactiongroup.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qapplication.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qdesktopwidget.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qboxlayout.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qlayout.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qlayoutitem.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qgridlayout.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qbuttongroup.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qcalendarwidget.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qcheckbox.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qcolordialog.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qdialog.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qcolormap.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qcolumnview.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qcombobox.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qcommandlinkbutton.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qpushbutton.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qcommonstyle.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qcompleter.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qdatawidgetmapper.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qdatetimeedit.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qdial.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qdialogbuttonbox.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qdirmodel.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qfileiconprovider.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qdockwidget.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qdrawutil.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qerrormessage.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qfiledialog.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qfilesystemmodel.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qfocusframe.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qfontcombobox.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qfontdialog.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qformlayout.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/QLayout \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qgesture.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qgesturerecognizer.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qgraphicsanchorlayout.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qgraphicsitem.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qgraphicslayout.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qgraphicslayoutitem.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qgraphicseffect.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qgraphicsgridlayout.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qgraphicsitemanimation.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qgraphicslinearlayout.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qgraphicsproxywidget.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qgraphicswidget.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qgraphicsscene.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qgraphicssceneevent.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qgraphicstransform.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/QVector3D \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qgraphicsview.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qscrollarea.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qgroupbox.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qheaderview.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qinputdialog.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qlineedit.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qitemdelegate.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qitemeditorfactory.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qkeyeventtransition.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qkeysequenceedit.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qlabel.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qlcdnumber.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qlistview.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qlistwidget.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qmainwindow.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qmdiarea.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qmdisubwindow.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qmenu.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qmenubar.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qmessagebox.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qmouseeventtransition.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qopenglwidget.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/QWidget \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qplaintextedit.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qtextedit.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qprogressbar.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qprogressdialog.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qproxystyle.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/QCommonStyle \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qradiobutton.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qscrollbar.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qscroller.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QPointF \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/QScrollerProperties \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qscrollerproperties.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QVariant \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qshortcut.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qsizegrip.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qspinbox.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qsplashscreen.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qsplitter.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qstackedlayout.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qstackedwidget.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qstatusbar.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qstyleditemdelegate.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qstylefactory.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qstylepainter.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qstyleplugin.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qsystemtrayicon.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qtableview.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qtablewidget.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qtextbrowser.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qtoolbar.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qtoolbox.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qtoolbutton.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qtooltip.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qtreeview.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qtreewidget.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qtreewidgetitemiterator.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qundogroup.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qundostack.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qundoview.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qwhatsthis.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qwidgetaction.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qwizard.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qtwidgetsversion.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qchartglobal.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QtGlobal \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/chartsnamespace.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qabstractaxis.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/QChartGlobal \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/QPen \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/QFont \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qabstractbarseries.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/QAbstractSeries \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qabstractseries.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/QAbstractAxis \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qarealegendmarker.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/QLegendMarker \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qlegendmarker.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/QLegend \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qlegend.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/QGraphicsWidget \
-		/opt/Qt/5.11.2/gcc_64/include/QtGui/QBrush \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/QAreaSeries \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qareaseries.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qbarcategoryaxis.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qbarlegendmarker.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/QAbstractBarSeries \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/QBarSet \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qbarset.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qbarmodelmapper.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qbarseries.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qboxplotlegendmarker.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/QBoxPlotSeries \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qboxplotseries.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/QBoxSet \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qboxset.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qboxplotmodelmapper.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qcandlesticklegendmarker.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/QCandlestickSeries \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qcandlestickseries.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qcandlestickmodelmapper.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qcandlestickset.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qcategoryaxis.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/QValueAxis \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qvalueaxis.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qchart.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qchartview.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/QChart \
-		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/QGraphicsView \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qdatetimeaxis.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qhbarmodelmapper.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/QBarModelMapper \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qhboxplotmodelmapper.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/QBoxPlotModelMapper \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qhcandlestickmodelmapper.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/QCandlestickModelMapper \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qhorizontalbarseries.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qhorizontalpercentbarseries.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qhorizontalstackedbarseries.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qhpiemodelmapper.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/QPieModelMapper \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qpiemodelmapper.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qhxymodelmapper.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/QXYModelMapper \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qxymodelmapper.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qlineseries.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/QXYSeries \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qxyseries.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qlogvalueaxis.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qpercentbarseries.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qpielegendmarker.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/QPieSeries \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qpieseries.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/QPieSlice \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qpieslice.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qpolarchart.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qscatterseries.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qsplineseries.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qstackedbarseries.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qvbarmodelmapper.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qvboxplotmodelmapper.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qvcandlestickmodelmapper.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qvpiemodelmapper.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qvxymodelmapper.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qxylegendmarker.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qtchartsversion.h \
-		results/resultsSingleGroup.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o resultsOld.o results/resultsOld.cpp
 
 resultsApi.o: results/resultsApi.cpp results/resultsApi.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/QString \
