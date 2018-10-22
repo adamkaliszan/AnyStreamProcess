@@ -209,16 +209,7 @@ void AlgorithmHybridDiscr::calculateSystem(const ModelSyst *system
         }
         (*results)->write(TypeForClass::LossProbability, B_n/B_d, i);
 
-        //Średnia liczba zgłoszeń w kolejce
-        double yQ = 0;
-        for (int n=Vs+1; n<=VsVb; n++)
-        {
-            yQ+=(Q[n].p * (ySYSTEM_V[i][n] - ySYSTEM_V[i][Vs]));
-        }
-        (*results)->write(TypeForClass::AvarageNumbersOfCallsInBuffer, yQ, i);
-
-
-        //Średnia liczba obsługiwanych zgłoszeń
+        //Średnia liczba obsługiwanych zgłoszeń w całym systemie
         double y = 0;
         for (int n=0; n<=VsVb; n++)
         {
@@ -226,16 +217,43 @@ void AlgorithmHybridDiscr::calculateSystem(const ModelSyst *system
         }
         (*results)->write(TypeForClass::AvarageNumbersOfCallsInSystem, y, i);
 
-        //TODO algRes->set_lSys(system->getClass(i), a, y);
+        //Średnia liczba zgłoszeń w serwerze
+        y = 0;
+        for (int n=0; n<=VsVb; n++)
+        {
+            y+=(Q[n].p * (n < Vs ?  ySYSTEM_V[i][n] : ySYSTEM_V[i][Vs]));
+        }
+        (*results)->write(TypeForClass::AvarageNumbersOfCallsInServer, y, i);
+
+        //Średnia liczba zgłoszeń w kolejce
+        double yQ = 0;
+        for (int n=Vs+1; n<=VsVb; n++)
+        {
+            yQ+=(Q[n].p * (ySYSTEM_V[i][n] - ySYSTEM_V[i][Vs]));
+        }
+        (*results)->write(TypeForClass::AvarageNumbersOfCallsInBuffer, yQ, i);
     }
 
+    double avgLen;
+
+    //Średnia liczba zajętych zasobów systemu
+    avgLen= 0;
+    for (int n=0; n<=VsVb; n++)
+        avgLen += Q[n].p * n;
+    (*results)->write(TypeGeneral::SystemUtilization, avgLen);
+
+
+    //Średnia liczba zajętych zasobów serwera
+    avgLen= 0;
+    for (int n=0; n<=VsVb; n++)
+        avgLen += Q[n].p * (n <= Vs ? n : Vs);
+    (*results)->write(TypeGeneral::ServerUtilization, avgLen);
+
     //Średnia długość kolejki
-    double AvgLen = 0;
+    avgLen= 0;
     for (int n=Vs+1; n<=VsVb; n++)
-    {
-        AvgLen += (n-Vs)*Q[n].p;
-    }
-    //TODO algRes->set_Qlen(a, AvgLen);
+        avgLen += (n-Vs)*Q[n].p;
+    (*results)->write(TypeGeneral::BufferUtilization, avgLen);
 
     for (int i=0; i<m; i++)
     {
@@ -246,8 +264,8 @@ void AlgorithmHybridDiscr::calculateSystem(const ModelSyst *system
         }
     }
 
-    //TODO for (int n=0; n<=VsVb; n++)
-    //    algRes->resultsAS->setVal(resultsType::trDistribSystem, a, n, Q[n].p, 0);
+    for (int n=0; n<=VsVb; n++)
+        (*results)->write(TypeForSystemState::StateProbability, Q[n].p, n);
 
     for (int n_s=0; n_s<=Vs; n_s++)
     {
@@ -263,6 +281,10 @@ void AlgorithmHybridDiscr::calculateSystem(const ModelSyst *system
                 if (n_b >= unused)
                     val = Qdetail[n_s + n_b][unused].p;
             }
+<<<<<<< HEAD
+=======
+
+>>>>>>> d9381e61e9e319e0e07ec435bbd71125c8b50997
             (*results)->write(TypeForServerAngBufferState::StateProbability, val, n_s, n_b);
         }
     }
@@ -272,7 +294,6 @@ void AlgorithmHybridDiscr::calculateSystem(const ModelSyst *system
     delete []P_without_i;
     delete []p_single;
     delete []delta;
-    //emit this->sigCalculationDone();
 }
 
 } // namespace Algorithms
