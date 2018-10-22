@@ -4,7 +4,7 @@
 namespace Results
 {
 
-enum class TypeGeneral: unsigned //TODO add new class with results for system
+enum class TypeGeneral: unsigned
 {
     SystemUtilization,     /// Expected value of system state probability distribution
     ServerUtilization,     /// Expected value of server state probability distribution
@@ -18,6 +18,8 @@ enum class TypeForClass: unsigned
 {
     BlockingProbability = 0,        /// Blocking probability
     LossProbability,                /// Loss probability or Sigma coefficient
+    AvarageNumbersOfCallsInSystem,  /// Avarage number of calls in whole system (server + buffer)
+    AvarageNumbersOfCallsInServer,  /// Avarage number of calls in server
     AvarageNumbersOfCallsInBuffer,  /// Avarage number of calls in buffer. Only for systems with buffer
     CongestionTraffic           // Avarage service traffic (number of occupied resourcess)
     //Time,                       // Avarage time in system
@@ -51,6 +53,12 @@ enum class TypeForSystemState: unsigned
     IntensityNewCallIn,
     IntensityEndCallIn
 };
+
+enum class TypeForServerAngBufferState: unsigned
+{
+    StateProbability
+};
+
 
 /**
  * @brief The TypeForClassAndSystemState enum

@@ -21,9 +21,10 @@ void RSingle::init(const ModelSyst *system)
 
     dataGeneral.clear();
     dataPerClasses.fill(DataForClasses(), m);
-    dataPerServerState.fill(DataForStates(), Vs+1);
-    dataPerQueueState.fill(DataForStates(), V-Vs+1);
     dataPerSystemState.fill(DataForStates(), V+1);
+    dataPerServerState.fill(DataForStates(), Vs+1);
+    dataPerBufferState.fill(DataForStates(), V-Vs+1);
+    dataPerServerAndBufferState.fill(DataForStates(), (Vs+1) * (V-Vs+1));
     dataPerClassAndServerState.fill(DataForClassesAndState(), (Vs+1)*m);
     dataPerClassAndQueueState.fill(DataForClassesAndState(), (V-Vs+1)*m);
     dataPerClassAndSystemStateForSystem.fill(DataForClassesAndState(), (V+1)*m);
@@ -111,10 +112,17 @@ RSingle &RSingle::write(TypeForClass type, double value, int classNo)
         dataPerClasses[classNo].congestionTraffic = value;
         break;
 
+    case TypeForClass::AvarageNumbersOfCallsInSystem:
+        dataPerClasses[classNo].avarageNumbersOfCallsInSystem = value;
+        break;
+
+    case TypeForClass::AvarageNumbersOfCallsInServer:
+        dataPerClasses[classNo].avarageNumbersOfCallsInServer = value;
+        break;
+
     case TypeForClass::AvarageNumbersOfCallsInBuffer:
         dataPerClasses[classNo].avarageNumbersOfCallsInBuffer = value;
         break;
-
     }
     return *this;
 }
@@ -133,6 +141,14 @@ bool RSingle::read(double &result, TypeForClass type, int classNo) const
 
     case TypeForClass::CongestionTraffic:
         result = dataPerClasses[classNo].congestionTraffic;
+        break;
+
+    case TypeForClass::AvarageNumbersOfCallsInSystem:
+        result = dataPerClasses[classNo].avarageNumbersOfCallsInSystem;
+        break;
+
+    case TypeForClass::AvarageNumbersOfCallsInServer:
+        result = dataPerClasses[classNo].avarageNumbersOfCallsInServer;
         break;
 
     case TypeForClass::AvarageNumbersOfCallsInBuffer:
@@ -256,7 +272,7 @@ RSingle &RSingle::write(TypeForBufferState type, double value, int queueState)
     switch (type)
     {
     case TypeForBufferState::StateProbability:
-        dataPerQueueState[queueState].probability = value;
+        dataPerBufferState[queueState].probability = value;
         break;
 
     case TypeForBufferState::IntensityNewCallIn:
@@ -283,7 +299,7 @@ bool RSingle::read(double &result, TypeForBufferState type, int queueState) cons
     switch (type)
     {
     case TypeForBufferState::StateProbability:
-        result = dataPerQueueState[queueState].probability;
+        result = dataPerBufferState[queueState].probability;
         break;
 
     case TypeForBufferState::IntensityNewCallIn:
@@ -300,6 +316,31 @@ bool RSingle::read(double &result, TypeForBufferState type, int queueState) cons
 
     case TypeForBufferState::IntensityEndCallOut:
         result = dataPerSystemState[queueState].endCallOutIntensity;
+        break;
+    }
+    return true;
+}
+
+RSingle &RSingle::write(TypeForServerAngBufferState type, double value, int serverState, int bufferState)
+{
+    int index = serverState + (Vs+1) * bufferState;
+    switch (type)
+    {
+    case TypeForServerAngBufferState::StateProbability:
+        dataPerServerAndBufferState[index].probability = value;
+        break;
+    }
+    return *this;
+}
+
+bool RSingle::read(double &result, TypeForServerAngBufferState type, int serverState, int bufferState) const
+{
+    int index = serverState + (Vs+1) * bufferState;
+
+    switch (type)
+    {
+    case TypeForServerAngBufferState::StateProbability:
+        result = dataPerServerAndBufferState[index].probability;
         break;
     }
     return true;
@@ -949,9 +990,10 @@ void RSingle::DataGeneral::clear()
 RSingle& RSingle::operator+=(const RSingle &rho)
 {
     Utils::addElementsToFirst<RSingle::DataForClasses>(dataPerClasses, rho.dataPerClasses);
-    Utils::addElementsToFirst<RSingle::DataForStates>(dataPerServerState, rho.dataPerServerState);
-    Utils::addElementsToFirst<RSingle::DataForStates>(dataPerQueueState, rho.dataPerQueueState);
     Utils::addElementsToFirst<RSingle::DataForStates>(dataPerSystemState, rho.dataPerSystemState);
+    Utils::addElementsToFirst<RSingle::DataForStates>(dataPerServerState, rho.dataPerServerState);
+    Utils::addElementsToFirst<RSingle::DataForStates>(dataPerBufferState, rho.dataPerBufferState);
+    Utils::addElementsToFirst<RSingle::DataForStates>(dataPerServerAndBufferState, rho.dataPerServerAndBufferState);
     Utils::addElementsToFirst<DataForClassesAndState>(dataPerClassAndServerState, rho.dataPerClassAndServerState);
     Utils::addElementsToFirst<DataForClassesAndState>(dataPerClassAndQueueState, rho.dataPerClassAndQueueState);
     Utils::addElementsToFirst<DataForClassesAndState>(dataPerClassAndSystemStateForServer, rho.dataPerClassAndSystemStateForServer);
@@ -967,9 +1009,10 @@ RSingle RSingle::operator-(const RSingle &rho) const
 {
     RSingle result = *this;
     result.dataPerClasses                      = Utils::subtractElements<RSingle::DataForClasses>(dataPerClasses, rho.dataPerClasses);
-    result.dataPerServerState                  = Utils::subtractElements<RSingle::DataForStates>(dataPerServerState, rho.dataPerServerState);
-    result.dataPerQueueState                   = Utils::subtractElements<RSingle::DataForStates>(dataPerQueueState, rho.dataPerQueueState);
     result.dataPerSystemState                  = Utils::subtractElements<RSingle::DataForStates>(dataPerSystemState, rho.dataPerSystemState);
+    result.dataPerServerState                  = Utils::subtractElements<RSingle::DataForStates>(dataPerServerState, rho.dataPerServerState);
+    result.dataPerBufferState                  = Utils::subtractElements<RSingle::DataForStates>(dataPerBufferState, rho.dataPerBufferState);
+    result.dataPerServerAndBufferState         = Utils::subtractElements<RSingle::DataForStates>(dataPerServerAndBufferState, rho.dataPerServerAndBufferState);
     result.dataPerClassAndServerState          = Utils::subtractElements<DataForClassesAndState>(dataPerClassAndServerState, rho.dataPerClassAndServerState);
     result.dataPerClassAndQueueState           = Utils::subtractElements<DataForClassesAndState>(dataPerClassAndQueueState, rho.dataPerClassAndQueueState);
     result.dataPerClassAndSystemStateForServer = Utils::subtractElements<DataForClassesAndState>(dataPerClassAndSystemStateForServer, rho.dataPerClassAndSystemStateForServer);
@@ -985,9 +1028,10 @@ RSingle RSingle::operator^(double rho) const
 {
     RSingle result = *this;
     result.dataPerClasses                      = Utils::powerElementTempl<DataForClasses>(result.dataPerClasses, rho);
-    result.dataPerServerState                  = Utils::powerElementTempl<RSingle::DataForStates>(dataPerServerState, rho);
-    result.dataPerQueueState                   = Utils::powerElementTempl<RSingle::DataForStates>(dataPerQueueState, rho);
     result.dataPerSystemState                  = Utils::powerElementTempl<RSingle::DataForStates>(dataPerSystemState, rho);
+    result.dataPerServerState                  = Utils::powerElementTempl<RSingle::DataForStates>(dataPerServerState, rho);
+    result.dataPerBufferState                  = Utils::powerElementTempl<RSingle::DataForStates>(dataPerBufferState, rho);
+    result.dataPerServerAndBufferState         = Utils::powerElementTempl<RSingle::DataForStates>(dataPerServerAndBufferState, rho);
     result.dataPerClassAndServerState          = Utils::powerElementTempl<DataForClassesAndState>(dataPerClassAndServerState, rho);
     result.dataPerClassAndQueueState           = Utils::powerElementTempl<DataForClassesAndState>(dataPerClassAndQueueState, rho);
     result.dataPerClassAndSystemStateForServer = Utils::powerElementTempl<DataForClassesAndState>(dataPerClassAndSystemStateForServer, rho);
@@ -1003,9 +1047,10 @@ RSingle RSingle::operator*(const RSingle &rho)
 {
     RSingle result = *this;
     result.dataPerClasses                      = Utils::multiplyElement<RSingle::DataForClasses>(dataPerClasses, rho.dataPerClasses);
-    result.dataPerServerState                  = Utils::multiplyElement<RSingle::DataForStates>(dataPerServerState, rho.dataPerServerState);
-    result.dataPerQueueState                   = Utils::multiplyElement<RSingle::DataForStates>(dataPerQueueState, rho.dataPerQueueState);
     result.dataPerSystemState                  = Utils::multiplyElement<RSingle::DataForStates>(dataPerSystemState, rho.dataPerSystemState);
+    result.dataPerServerState                  = Utils::multiplyElement<RSingle::DataForStates>(dataPerServerState, rho.dataPerServerState);
+    result.dataPerBufferState                  = Utils::multiplyElement<RSingle::DataForStates>(dataPerBufferState, rho.dataPerBufferState);
+    result.dataPerServerAndBufferState         = Utils::multiplyElement<RSingle::DataForStates>(dataPerServerAndBufferState, rho.dataPerServerAndBufferState);
     result.dataPerClassAndServerState          = Utils::multiplyElement<DataForClassesAndState>(dataPerClassAndServerState, rho.dataPerClassAndServerState);
     result.dataPerClassAndQueueState           = Utils::multiplyElement<DataForClassesAndState>(dataPerClassAndQueueState, rho.dataPerClassAndQueueState);
     result.dataPerClassAndSystemStateForServer = Utils::multiplyElement<DataForClassesAndState>(dataPerClassAndSystemStateForServer, rho.dataPerClassAndSystemStateForServer);
@@ -1018,9 +1063,10 @@ RSingle RSingle::operator*(const RSingle &rho)
 RSingle &RSingle::operator/=(double rho)
 {
     Utils::divideElementToFirst<RSingle::DataForClasses>(dataPerClasses, rho);
-    Utils::divideElementToFirst<RSingle::DataForStates>(dataPerServerState, rho);
-    Utils::divideElementToFirst<RSingle::DataForStates>(dataPerQueueState, rho);
     Utils::divideElementToFirst<RSingle::DataForStates>(dataPerSystemState, rho);
+    Utils::divideElementToFirst<RSingle::DataForStates>(dataPerServerState, rho);
+    Utils::divideElementToFirst<RSingle::DataForStates>(dataPerBufferState, rho);
+    Utils::divideElementToFirst<RSingle::DataForStates>(dataPerServerAndBufferState, rho);
     Utils::divideElementToFirst<RSingle::DataForClassesAndState>(dataPerClassAndServerState, rho);
     Utils::divideElementToFirst<RSingle::DataForClassesAndState>(dataPerClassAndQueueState, rho);
     Utils::divideElementToFirst<RSingle::DataForClassesAndState>(dataPerClassAndSystemStateForServer, rho);
@@ -1035,9 +1081,10 @@ RSingle &RSingle::operator/=(double rho)
 RSingle &RSingle::operator*=(double rho)
 {
     Utils::multiplyElementToFirst<RSingle::DataForClasses>(dataPerClasses, rho);
-    Utils::multiplyElementToFirst<RSingle::DataForStates>(dataPerServerState, rho);
-    Utils::multiplyElementToFirst<RSingle::DataForStates>(dataPerQueueState, rho);
     Utils::multiplyElementToFirst<RSingle::DataForStates>(dataPerSystemState, rho);
+    Utils::multiplyElementToFirst<RSingle::DataForStates>(dataPerServerState, rho);
+    Utils::multiplyElementToFirst<RSingle::DataForStates>(dataPerBufferState, rho);
+    Utils::multiplyElementToFirst<RSingle::DataForStates>(dataPerServerAndBufferState, rho);
     Utils::multiplyElementToFirst<RSingle::DataForClassesAndState>(dataPerClassAndServerState, rho);
     Utils::multiplyElementToFirst<RSingle::DataForClassesAndState>(dataPerClassAndQueueState, rho);
     Utils::multiplyElementToFirst<RSingle::DataForClassesAndState>(dataPerClassAndSystemStateForServer, rho);
@@ -1052,9 +1099,10 @@ RSingle &RSingle::operator*=(double rho)
 void RSingle::sqrt()
 { 
     Utils::sqrtTemplate<DataForClasses>(this->dataPerClasses);
-    Utils::sqrtTemplate<RSingle::DataForStates>(dataPerServerState);
-    Utils::sqrtTemplate<RSingle::DataForStates>(dataPerQueueState);
     Utils::sqrtTemplate<RSingle::DataForStates>(dataPerSystemState);
+    Utils::sqrtTemplate<RSingle::DataForStates>(dataPerServerState);
+    Utils::sqrtTemplate<RSingle::DataForStates>(dataPerBufferState);
+    Utils::sqrtTemplate<RSingle::DataForStates>(dataPerServerAndBufferState);
     Utils::sqrtTemplate<RSingle::DataForClassesAndState>(dataPerClassAndServerState);
     Utils::sqrtTemplate<RSingle::DataForClassesAndState>(dataPerClassAndQueueState);
     Utils::sqrtTemplate<RSingle::DataForClassesAndState>(dataPerClassAndSystemStateForServer);
@@ -1078,6 +1126,8 @@ RSingle::DataForClasses &RSingle::DataForClasses::operator+=(const RSingle::Data
     blockingProbability          +=rho.blockingProbability;
     lossProbability              +=rho.lossProbability;
     congestionTraffic            +=rho.congestionTraffic;
+    avarageNumbersOfCallsInSystem+=rho.avarageNumbersOfCallsInSystem;
+    avarageNumbersOfCallsInServer+=rho.avarageNumbersOfCallsInServer;
     avarageNumbersOfCallsInBuffer+=rho.avarageNumbersOfCallsInBuffer;
 
     return *this;
@@ -1090,6 +1140,8 @@ RSingle::DataForClasses RSingle::DataForClasses::operator-(const RSingle::DataFo
     result.blockingProbability           = blockingProbability - rho.blockingProbability;
     result.lossProbability               = lossProbability - rho.lossProbability;
     result.congestionTraffic             = congestionTraffic - rho.congestionTraffic;
+    result.avarageNumbersOfCallsInSystem = avarageNumbersOfCallsInSystem - rho.avarageNumbersOfCallsInSystem;
+    result.avarageNumbersOfCallsInServer = avarageNumbersOfCallsInServer - rho.avarageNumbersOfCallsInServer;
     result.avarageNumbersOfCallsInBuffer = avarageNumbersOfCallsInBuffer - rho.avarageNumbersOfCallsInBuffer;
     return result;
 }
@@ -1101,6 +1153,8 @@ RSingle::DataForClasses RSingle::DataForClasses::operator^(double rho) const
     result.blockingProbability           = qPow(this->blockingProbability, rho);
     result.lossProbability               = qPow(this->lossProbability, rho);
     result.congestionTraffic             = qPow(this->congestionTraffic, rho);
+    result.avarageNumbersOfCallsInSystem = qPow(this->avarageNumbersOfCallsInSystem, rho);
+    result.avarageNumbersOfCallsInServer = qPow(this->avarageNumbersOfCallsInServer, rho);
     result.avarageNumbersOfCallsInBuffer = qPow(this->avarageNumbersOfCallsInBuffer, rho);
 
     return result;
@@ -1113,8 +1167,9 @@ RSingle::DataForClasses RSingle::DataForClasses::operator*(const RSingle::DataFo
     result.blockingProbability           = this->blockingProbability * rho.blockingProbability;
     result.lossProbability               = this->lossProbability * rho.lossProbability;
     result.congestionTraffic             = this->congestionTraffic * rho.congestionTraffic;
+    result.avarageNumbersOfCallsInSystem = this->avarageNumbersOfCallsInSystem * rho.avarageNumbersOfCallsInSystem;
+    result.avarageNumbersOfCallsInServer = this->avarageNumbersOfCallsInServer * rho.avarageNumbersOfCallsInServer;
     result.avarageNumbersOfCallsInBuffer = this->avarageNumbersOfCallsInBuffer * rho.avarageNumbersOfCallsInBuffer;
-
     return result;
 }
 
@@ -1123,6 +1178,8 @@ RSingle::DataForClasses &RSingle::DataForClasses::operator/=(double rho)
     blockingProbability           /= rho;
     lossProbability               /= rho;
     congestionTraffic             /= rho;
+    avarageNumbersOfCallsInSystem /= rho;
+    avarageNumbersOfCallsInServer /= rho;
     avarageNumbersOfCallsInBuffer /= rho;
     return *this;
 }
@@ -1132,6 +1189,8 @@ RSingle::DataForClasses &RSingle::DataForClasses::operator*=(double rho)
     blockingProbability           *= rho;
     lossProbability               *= rho;
     congestionTraffic             *= rho;
+    avarageNumbersOfCallsInSystem *=rho;
+    avarageNumbersOfCallsInServer *=rho;
     avarageNumbersOfCallsInBuffer *=rho;
     return *this;
 }
@@ -1141,6 +1200,8 @@ RSingle::DataForClasses& RSingle::DataForClasses::sqrt()
     blockingProbability           = qSqrt(blockingProbability);
     lossProbability               = qSqrt(lossProbability);
     congestionTraffic             = qSqrt(congestionTraffic);
+    avarageNumbersOfCallsInSystem = qSqrt(avarageNumbersOfCallsInSystem);
+    avarageNumbersOfCallsInServer = qSqrt(avarageNumbersOfCallsInServer);
     avarageNumbersOfCallsInBuffer = qSqrt(avarageNumbersOfCallsInBuffer);
     return *this;
 }
@@ -1151,6 +1212,8 @@ RSingle::DataForClasses RSingle::DataForClasses::pow(double rho) const
     result.blockingProbability           = qPow(blockingProbability, rho);
     result.lossProbability               = qPow(lossProbability, rho);
     result.congestionTraffic             = qPow(congestionTraffic, rho);
+    result.avarageNumbersOfCallsInSystem = qPow(avarageNumbersOfCallsInSystem, rho);
+    result.avarageNumbersOfCallsInServer = qPow(avarageNumbersOfCallsInServer, rho);
     result.avarageNumbersOfCallsInBuffer = qPow(avarageNumbersOfCallsInBuffer, rho);
     return result;
 }
@@ -1160,6 +1223,8 @@ void RSingle::DataForClasses::clear()
     blockingProbability           = 0;
     lossProbability               = 0;
     congestionTraffic             = 0;
+    avarageNumbersOfCallsInSystem = 0;
+    avarageNumbersOfCallsInServer = 0;
     avarageNumbersOfCallsInBuffer = 0;
 }
 

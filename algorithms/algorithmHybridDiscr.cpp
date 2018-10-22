@@ -215,15 +215,8 @@ void AlgorithmHybridDiscr::calculateSystem(const ModelSyst *system
         {
             yQ+=(Q[n].p * (ySYSTEM_V[i][n] - ySYSTEM_V[i][Vs]));
         }
-        //TODO algRes->set_lQ(system->getClass(i), a, yQ);
+        (*results)->write(TypeForClass::AvarageNumbersOfCallsInBuffer, yQ, i);
 
-        //Średnia liczba zajętych zasobów w kolejce
-        double ytQ = 0;
-        for (int n=Vs+1; n<=VsVb; n++)
-        {
-            ytQ+=(Q[n].p * t[i] * (ySYSTEM_V[i][n] - ySYSTEM_V[i][Vs]));
-        }
-        //TODO algRes->set_ltQ(system->getClass(i), a, ytQ);
 
         //Średnia liczba obsługiwanych zgłoszeń
         double y = 0;
@@ -231,6 +224,8 @@ void AlgorithmHybridDiscr::calculateSystem(const ModelSyst *system
         {
             y+=(Q[n].p * (ySYSTEM_V[i][n]));
         }
+        (*results)->write(TypeForClass::AvarageNumbersOfCallsInSystem, y, i);
+
         //TODO algRes->set_lSys(system->getClass(i), a, y);
     }
 
@@ -265,7 +260,7 @@ void AlgorithmHybridDiscr::calculateSystem(const ModelSyst *system
             else
             {
                 int unused = n_s - Vs;
-                if ((int)n_b >= unused)
+                if (n_b >= unused)
                     val = Qdetail[n_s + n_b][unused].p;
             }
 

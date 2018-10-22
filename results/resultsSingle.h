@@ -30,23 +30,26 @@ public:
     RSingle& write(TypeForClass type, double value, int classNo);
     bool read(double &result, TypeForClass type, int classNo) const;
 
+    RSingle& write(TypeForSystemState, double value, int systemState);
+    bool read(double &result, TypeForSystemState, int systemState) const;
+
     RSingle &write(TypeForServerState, double value, int serverState);
     bool read(double &result, TypeForServerState type, int serverState) const;
 
     RSingle &write(TypeForBufferState type, double value, int queueState);
     bool read(double &result, TypeForBufferState type, int queueState) const;
 
-    RSingle& write(TypeForSystemState, double value, int systemState);
-    bool read(double &result, TypeForSystemState, int systemState) const;
+    RSingle &write(TypeForServerAngBufferState type, double value, int serverState, int bufferState);
+    bool read(double &result, TypeForServerAngBufferState type, int serverState, int bufferState) const;
+
+    RSingle& write(TypeForClassAndSystemState type, double value, int classNo, int systemState);
+    bool read(double &result, TypeForClassAndSystemState type, int classNo, int systemState) const;
 
     RSingle& write(TypeForClassAndServerState type, double value, int classNo, int serverState);
     bool read(double &result, TypeForClassAndServerState type, int classNo, int serverState) const;
 
     RSingle& write(TypeForClassAndBufferState type, double value, int classNo, int queueState);
     bool read(double &result, TypeForClassAndBufferState type, int classNo, int queueState) const;
-
-    RSingle& write(TypeForClassAndSystemState type, double value, int classNo, int systemState);
-    bool read(double &result, TypeForClassAndSystemState type, int classNo, int systemState) const;
 
     RSingle &write(TypeStateForServerGroupsCombination, double value, int numberOfResourcess, int groupCombinationIndex);
     bool read(double &result, TypeStateForServerGroupsCombination type, int numberOfResourcess, int groupCombinationIndex) const;
@@ -91,11 +94,11 @@ private:
     struct DataForClassesAndState;
 
 
-
     QVector<DataForClasses>             dataPerClasses;
-    QVector<DataForStates>              dataPerServerState;
-    QVector<DataForStates>              dataPerQueueState;
     QVector<DataForStates>              dataPerSystemState;
+    QVector<DataForStates>              dataPerServerState;
+    QVector<DataForStates>              dataPerBufferState;
+    QVector<DataForStates>              dataPerServerAndBufferState;
     QVector<DataForClassesAndState>     dataPerClassAndServerState;
     QVector<DataForClassesAndState>     dataPerClassAndQueueState;
     QVector<DataForClassesAndState>     dataPerClassAndSystemStateForServer;
@@ -104,6 +107,7 @@ private:
     QVector<DataPerGroups>              dataPerGroupCombination;
     QVector<DataPerGroups>              dataPerBestGroups;
     QVector<DataPerGroups>              dataPerExactGroupNumber;
+
 
     struct DataGeneral
     {
@@ -135,9 +139,12 @@ private:
         double blockingProbability;
         double lossProbability;
         double congestionTraffic;
+        double avarageNumbersOfCallsInSystem;
+        double avarageNumbersOfCallsInServer;
         double avarageNumbersOfCallsInBuffer;
 
-        DataForClasses(): blockingProbability(0), lossProbability(0), congestionTraffic(0), avarageNumbersOfCallsInBuffer(0) {}
+        DataForClasses(): blockingProbability(0), lossProbability(0), congestionTraffic(0)
+          , avarageNumbersOfCallsInSystem(0), avarageNumbersOfCallsInServer(0), avarageNumbersOfCallsInBuffer(0) {}
 
         DataForClasses &operator+=(const DataForClasses& rho);
         DataForClasses operator-(const DataForClasses& rho) const;

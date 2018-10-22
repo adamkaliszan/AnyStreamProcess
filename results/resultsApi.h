@@ -54,171 +54,74 @@ public:
     virtual ~Settings() {}
 };
 
-class SettingsBlockingProbability: public Settings
+class SettingsTypeForClass: public Settings
 {
+private:
+    TypeForClass qos;//::AvarageNumbersOfCallsInBuffer
+
 public:
-    SettingsBlockingProbability();
-
-    virtual bool getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
-};
-
-class SettingsLossProbability: public Settings
-{
-public:
-    SettingsLossProbability();
-
-    virtual bool getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
-};
-
-class SettingsAvarageNumbersOfCallsInBuffer: public Settings
-{
-public:
-    SettingsAvarageNumbersOfCallsInBuffer();
+    SettingsTypeForClass(TypeForClass qos);
 
     virtual bool getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
 };
 
 
-class SettingsOccupancyDistribution: public Settings
+class SettingsTypeForSystemState: public Settings
 {
+private:
+    const TypeForSystemState qos;
 public:
-    SettingsOccupancyDistribution();
+    SettingsTypeForSystemState(TypeForSystemState qos);
 
     bool getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
 };
 
-class SettingsOccupancyDistributionServer: public Settings
+class SettingsTypeForServerState: public Settings
 {
+private:
+    const TypeForServerState qos;
 public:
-    SettingsOccupancyDistributionServer();
+    SettingsTypeForServerState(TypeForServerState qos);
 
     bool getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
 };
 
-class SettingsOccupancyDistributionBuffer: public Settings
+class SettingsTypeForBufferState: public Settings
 {
+private:
+    const TypeForBufferState qos;
 public:
-    SettingsOccupancyDistributionBuffer();
+    SettingsTypeForBufferState(TypeForBufferState qos);
 
     bool getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
 };
 
-class SettingsNumberOfCallsInStateN: public Settings
+class SettingsTypeForClassAndSystemState: public Settings
 {
+private:
+    const TypeForClassAndSystemState qos;
 public:
-    SettingsNumberOfCallsInStateN();
+    SettingsTypeForClassAndSystemState(TypeForClassAndSystemState qos);
 
     bool getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
 };
 
-class SettingsNumberOfCallsInStateN_inServer: public Settings
+class SettingsTypeForClassAndServerState: public Settings
 {
+private:
+    const TypeForClassAndServerState qos;
 public:
-    SettingsNumberOfCallsInStateN_inServer();
+    SettingsTypeForClassAndServerState(TypeForClassAndServerState qos);
 
     bool getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
 };
 
-class SettingsNumberOfCallsInStateN_inBuffer: public Settings
+class SettingsTypeForClassAndBufferState: public Settings
 {
+private:
+    const TypeForClassAndBufferState qos;
 public:
-    SettingsNumberOfCallsInStateN_inBuffer();
-
-    bool getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
-};
-
-class SettingsNewCallOutIntensitySystem: public Settings
-{
-public:
-    SettingsNewCallOutIntensitySystem();
-
-    bool getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
-};
-
-class SettingsNewCallInIntensitySystem: public Settings
-{
-public:
-    SettingsNewCallInIntensitySystem();
-
-    bool getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
-};
-
-class SettingsEndCallOutIntensitySystem: public Settings
-{
-public:
-    SettingsEndCallOutIntensitySystem();
-
-    bool getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
-};
-
-class SettingsEndCallInIntensitySystem: public Settings
-{
-public:
-    SettingsEndCallInIntensitySystem();
-
-    bool getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
-};
-
-class SettingsNewCallOutIntensityServer: public Settings
-{
-public:
-    SettingsNewCallOutIntensityServer();
-
-    bool getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
-};
-
-class SettingsNewCallInIntensityServer: public Settings
-{
-public:
-    SettingsNewCallInIntensityServer();
-
-    bool getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
-};
-
-class SettingsEndCallOutIntensityServer: public Settings
-{
-public:
-    SettingsEndCallOutIntensityServer();
-
-    bool getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
-};
-
-class SettingsEndCallInIntensityServer: public Settings
-{
-public:
-    SettingsEndCallInIntensityServer();
-
-    bool getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
-};
-
-class SettingsNewCallOutIntensityBuffer: public Settings
-{
-public:
-    SettingsNewCallOutIntensityBuffer();
-
-    bool getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
-};
-
-class SettingsNewCallInIntensityBuffer: public Settings
-{
-public:
-    SettingsNewCallInIntensityBuffer();
-
-    bool getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
-};
-
-class SettingsEndCallOutIntensityBuffer: public Settings
-{
-public:
-    SettingsEndCallOutIntensityBuffer();
-
-    bool getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
-};
-
-class SettingsEndCallInIntensityBuffer: public Settings
-{
-public:
-    SettingsEndCallInIntensityBuffer();
+    SettingsTypeForClassAndBufferState(TypeForClassAndBufferState qos);
 
     bool getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
 };
@@ -265,4 +168,3 @@ Q_DECLARE_METATYPE(Results::Type)
 Q_DECLARE_METATYPE(Results::ParameterType)
 
 #endif // RESULTS_API_H
-
