@@ -4,7 +4,7 @@
 void GnuplotScript::WriteScript(QTextStream &script, QString dataFileName, QString graphFileName, double minY, double maxY, resultsType QoS_MainParam)
 {
     double logMinY = 0.0000001;
-    double logMaxY = 1;
+    //double logMaxY = 1;
 
     while (logMinY < minY)
         logMinY *=10;

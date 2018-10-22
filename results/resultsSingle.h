@@ -102,7 +102,7 @@ private:
     QVector<DataForClassesAndState>     dataPerClassAndServerState;
     QVector<DataForClassesAndState>     dataPerClassAndQueueState;
     QVector<DataForClassesAndState>     dataPerClassAndSystemStateForServer;
-    QVector<DataForClassesAndState>     dataPerClassAndSystemStateForQueue;
+    QVector<DataForClassesAndState>     dataPerClassAndSystemStateForBuffer;
     QVector<DataForClassesAndState>     dataPerClassAndSystemStateForSystem;
     QVector<DataPerGroups>              dataPerGroupCombination;
     QVector<DataPerGroups>              dataPerBestGroups;
