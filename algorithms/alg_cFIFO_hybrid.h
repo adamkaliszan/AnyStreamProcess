@@ -6,7 +6,6 @@
 #include "algorithms/investigator.h"
 #include "algorithms/algorithmConv.h"
 #include "algorithms/trclvector2.h"
-#include "results/resultsOld.h"
 
 namespace Algorithms
 {
@@ -14,10 +13,10 @@ namespace Algorithms
 class AlgorithmHybrid : public Investigator
 {
 public:
-    enum class algVariant;
+    enum class AlgVariant;
 
     AlgorithmHybrid();
-    AlgorithmHybrid(algVariant variant);
+    AlgorithmHybrid(AlgVariant variant);
 
     QString shortName()      const;
     virtual int complexity() const {return 1; }
@@ -31,7 +30,7 @@ public:
 
 
 public:
-    enum class algVariant
+    enum class AlgVariant
     {
         yFAG,
         yAprox,
@@ -45,7 +44,7 @@ protected:
     TrClVector *p_singleQ;
 
 
-    algVariant variant;
+    AlgVariant variant;
 
 public:
 

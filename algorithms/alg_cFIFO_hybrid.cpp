@@ -8,24 +8,46 @@ namespace Algorithms
  * W stanie n w obszarze serwera zmieniają się y po dodaniu kolejki
  * Zatem zmieniają się prawdopodobieństwa mikrostanów
  * Suma prawdopodobieńśtw mikrostanów zachowuje proporcje podobnei jak prawdipodobieństwa makrostanóœ w obszarze serwera
- * Jest to możliwe gdy zostqnie zachowany lokalny balans. Róœnania rekurencyjne pomijają yki, brany jest pod uwagę suma yt
+ * Jest to możliwe gdy zostanie zachowany lokalny balans. Róœnania rekurencyjne pomijają yki, brany jest pod uwagę suma yt
  * Co się dzieje, gdy różne są intensywności obsługi ?
  * Sumy prawdopodobieństw kombinacji l, n-l jest poprawna, w odniesieniu do symulacji. Podejrzenie p`[l] = xp[l] i P`[n-l] = 1/xP[n-l]. Dla FAG x = 1
  *
  *
  */
-AlgorithmHybrid::AlgorithmHybrid() : Investigator(QueueServDiscipline::cFIFO), variant(algVariant::yFAG)
+AlgorithmHybrid::AlgorithmHybrid() : Investigator(QueueServDiscipline::cFIFO), variant(AlgVariant::yFAG)
 {
     myQoS_Set
-       <<Results::Type::BlockingProbability
-       <<Results::Type::OccupancyDistribution;
+     << Results::Type::BlockingProbability
+     << Results::Type::LossProbability
+     << Results::Type::OccupancyDistribution
+     << Results::Type::OccupancyDistributionServerOnly
+     << Results::Type::OccupancyDistributionServerBufferOnly
+     << Results::Type::NumberOfCallsInStateN
+     << Results::Type::NumberOfCallsInStateN_inServer
+     << Results::Type::NumberOfCallsInStateN_inBuffer
+     << Results::Type::NewCallOutIntensitySystem<<Results::Type::NewCallOutIntensityServer<<Results::Type::NewCallOutIntensityBuffer
+     << Results::Type::NewCallInIntensitySystem <<Results::Type::NewCallInIntensityServer <<Results::Type::NewCallInIntensityBuffer
+     << Results::Type::EndCallOutIntensitySystem<<Results::Type::EndCallOutIntensityServer<<Results::Type::EndCallOutIntensityBuffer
+     << Results::Type::EndCallInIntensitySystem <<Results::Type::EndCallInIntensityServer <<Results::Type::EndCallInIntensityBuffer
+         ;
 }
 
-AlgorithmHybrid::AlgorithmHybrid(AlgorithmHybrid::algVariant var) : Investigator(QueueServDiscipline::cFIFO), variant(var)
+AlgorithmHybrid::AlgorithmHybrid(AlgorithmHybrid::AlgVariant var) : Investigator(QueueServDiscipline::cFIFO), variant(var)
 {
     myQoS_Set
-       <<Results::Type::BlockingProbability
-       <<Results::Type::OccupancyDistribution;
+     << Results::Type::BlockingProbability
+     << Results::Type::LossProbability
+     << Results::Type::OccupancyDistribution
+     << Results::Type::OccupancyDistributionServerOnly
+     << Results::Type::OccupancyDistributionServerBufferOnly
+     << Results::Type::NumberOfCallsInStateN
+     << Results::Type::NumberOfCallsInStateN_inServer
+     << Results::Type::NumberOfCallsInStateN_inBuffer
+     << Results::Type::NewCallOutIntensitySystem<<Results::Type::NewCallOutIntensityServer<<Results::Type::NewCallOutIntensityBuffer
+     << Results::Type::NewCallInIntensitySystem <<Results::Type::NewCallInIntensityServer <<Results::Type::NewCallInIntensityBuffer
+     << Results::Type::EndCallOutIntensitySystem<<Results::Type::EndCallOutIntensityServer<<Results::Type::EndCallOutIntensityBuffer
+     << Results::Type::EndCallInIntensitySystem <<Results::Type::EndCallInIntensityServer <<Results::Type::EndCallInIntensityBuffer
+        ;
 }
 
 QString AlgorithmHybrid::shortName() const
@@ -33,19 +55,19 @@ QString AlgorithmHybrid::shortName() const
     QString result;
     switch (variant)
     {
-    case algVariant::yFAG:
+    case AlgVariant::yFAG:
         result = "hybr cFIFO FAG";
         break;
 
-    case algVariant::yProp:
+    case AlgVariant::yProp:
         result = "hybr cFIFO prop";
         break;
 
-    case algVariant::yPropPlus:
+    case AlgVariant::yPropPlus:
         result = "hybr cFIFO prop+";
         break;
 
-    case algVariant::yAprox:
+    case AlgVariant::yAprox:
         result = "hybr cFIFO lin aprox ";
 
         result += "At alg";
@@ -70,8 +92,8 @@ void AlgorithmHybrid::calculateSystem(const ModelSyst *system
     prepareTemporaryData(system, a);
 
     int m = system->m();
-    int Vs = system->V_s();
-    int Vb = system->V_b();
+    int Vs = system->vk_s();
+    int Vb = system->vk_b();
     int VsVb = Vs + Vb;
 
     p_single = new TrClVector[m];
@@ -182,27 +204,35 @@ void AlgorithmHybrid::calculateSystem(const ModelSyst *system
         }
         (*results)->write(TypeForClass::LossProbability, B_n/B_d, i);
 
-        //Średnia liczba zgłoszeń w kolejce
-        double lQeue = 0;
+        //Avarage number of calls in the buffer
+        double yQeue = 0;
         for (int n=Vs+1; n<=VsVb; n++)
-            lQeue+=(Q[n] * yQEUE_VsVb[i][n]);
-        //TODO algRes->set_lQ(system->getClass(i), a, lQeue);
+            yQeue+=(Q[n] * yQEUE_VsVb[i][n]);
+        (*results)->write(TypeForClass::AvarageNumbersOfCallsInBuffer,  yQeue, i);
 
-        //Średnia liczba zajętych zasobów w kolejce
-        double ltQeue = 0;
-        for (int n=Vs+1; n<=VsVb; n++)
-            ltQeue+=(Q[n] * yQEUE_VsVb[i][n] * classes[i].t);
-        //TODO algRes->set_ltQ(system->getClass(i), a, ltQeue);
 
-        //Średnia liczba obsługiwanych zgłoszeń
-        double lSys = 0;
+        //Średnia liczba zajętych zasobów w zależności od stanu systemu
         for (int n=0; n<=VsVb; n++)
         {
-            lSys+=(Q[n] * (ySYSTEM_V[i][n]));
+            (*results)->write(TypeForClassAndSystemState::UsageForSystem, ySYSTEM_V[i][n] * classes[i].t, i, n);
+            (*results)->write(TypeForClassAndSystemState::UsageForServer, ySERVER_V[i][n] * classes[i].t, i, n);
+            (*results)->write(TypeForClassAndSystemState::UsageForBuffer, yQEUE_VsVb[i][n] * classes[i].t, i, n);
         }
-        //TODO algRes->set_lSys(system->getClass(i), a, lSys);
 
-        //Obsługiwany ruch
+        //Średnia liczba zajętych zasobów w zależności od stanu servera
+        for (int n=0; n<=Vs; n++)
+        {
+            (*results)->write(TypeForClassAndServerState::Usage, ySERVER_Vs[i][n] * classes[i].t, i, n);
+        }
+
+        //Średnia liczba zajętych zasobów w zależności od stanu bufora
+        for (int n=0; n<=Vb; n++)
+        {
+            (*results)->write(TypeForClassAndBufferState::Usage, yQEUE_Vb[i][n] * classes[i].t, i, n);
+        }
+
+
+        //Obsługiwany ruch poszczególnych klas
         double yS = 0;
 
         for (int n=0; n<=Vs; n++)
@@ -214,8 +244,9 @@ void AlgorithmHybrid::calculateSystem(const ModelSyst *system
             double tmp = Q[n] * (ySYSTEM_V[i][n]);
             yS+=((tmp *Vs)/n);
         }
-        //TODO algRes->set_ServTraffic(system->getClass(i), a, yS * classes[i].t);
+        (*results)->write(TypeForClass::CongestionTraffic, yS, i);
 
+        //TODO algRes->set_ServTraffic(system->getClass(i), a, yS * classes[i].t);
 
         //Średni czas obsługi
         //algRes->set_tService(system->getClass(i), a, lQeue / A[i] * system->getClass(i)->getMu());
@@ -224,11 +255,12 @@ void AlgorithmHybrid::calculateSystem(const ModelSyst *system
         {
             avgToS += Q[n] * ySYSTEM_V[i][n] / system->getClass(i)->getMu();
         }
+
         for (int n=Vs+1; n<=VsVb; n++)
         {
             avgToS += Q[n] * ySYSTEM_V[i][n] / system->getClass(i)->getMu() * (n - (double) (classes[i].t) / 2.0) / Vs;
         }
-        avgToS /= lSys;
+        //avgToS /= lSys;
         //TODO algRes->set_tService(system->getClass(i), a, avgToS);
 
         //Bezawzględny czas oczekiwania w kolejce
@@ -242,7 +274,7 @@ void AlgorithmHybrid::calculateSystem(const ModelSyst *system
         //{
         //    totInt += A[i2] * system->getClass(i2)->getMu();
         //}
-        double lambda = classes[i].lambda;
+        //double lambda = classes[i].lambda;
         //algRes->set_tQeue(system->getClass(i), a, medY / totInt);
         //TODO algRes->set_tQeue(system->getClass(i), a, medY/lambda);
 
@@ -255,7 +287,7 @@ void AlgorithmHybrid::calculateSystem(const ModelSyst *system
         //algRes->set_tServer(system->getClass(i), a, 1.0/system->getClass(i)->getMu());
 
         for (int n=0; n<=Vb; n++)
-            (*results)->write(TypeForClassAndQueueState::Usage, yQEUE_VsVb[i][n+Vs] * classes[i].t, i, n);
+            (*results)->write(TypeForClassAndBufferState::Usage, yQEUE_VsVb[i][n+Vs] * classes[i].t, i, n);
             //algRes->resultsAS->setVal(resultsType::qeueYt_vs_q_n, a, system->getClass(i), n, yQEUE_VsVb[i][n+Vs] * classes[i].t, 0);
 
         for (int n=0; n<=Vs; n++)
@@ -264,7 +296,7 @@ void AlgorithmHybrid::calculateSystem(const ModelSyst *system
         for (int n=0; n<=VsVb; n++)
         {
             (*results)->write(TypeForClassAndSystemState::UsageForServer, ySERVER_V[i][n]  * classes[i].t, i, n);
-            (*results)->write(TypeForClassAndSystemState::UsageForQueue,  yQEUE_VsVb[i][n] * classes[i].t, i, n);
+            (*results)->write(TypeForClassAndSystemState::UsageForBuffer,  yQEUE_VsVb[i][n] * classes[i].t, i, n);
             (*results)->write(TypeForClassAndSystemState::UsageForSystem, ySYSTEM_V[i][n]  * classes[i].t, i, n);
 
         //Intensywności przejść klas
@@ -276,14 +308,32 @@ void AlgorithmHybrid::calculateSystem(const ModelSyst *system
         }
     }
 
+    double avgLen;
+    //Średnia liczba zajętych zasobów (serwera i bufora)
+    avgLen = 0;
+    for (int n=0; n<=VsVb; n++)
+    {
+        avgLen += (n * Q[n]);
+    }
+    (*results)->write(TypeGeneral::SystemUtilization, avgLen);
+
+
+    //Średnia liczba zajętych zasobów serwera
+    avgLen = 0;
+    for (int n=0; n<=VsVb; n++)
+    {
+        avgLen += (Q[n] * ((n <= Vs) ? n : Vs));
+    }
+    (*results)->write(TypeGeneral::ServerUtilization, avgLen);
+
+
     //Średnia długość kolejki
-    double AvgLen = 0;
+    avgLen = 0;
     for (int n=Vs+1; n<=VsVb; n++)
     {
-        AvgLen += (n-Vs)*Q[n];
+        avgLen += (n-Vs)*Q[n];
     }
-    //TODOalgRes->set_Qlen(a, AvgLen);
-
+    (*results)->write(TypeGeneral::BufferUtilization, avgLen);
 
     for (int n=0; n<=VsVb; n++)
     {
@@ -323,14 +373,14 @@ void AlgorithmHybrid::calculateYSystem(
 
     switch (variant)
     {
-    case algVariant::yFAG:
+    case AlgVariant::yFAG:
         calculateYSystemFAG(ySYSTEM_VsVb, yFAG);
         break;
-    case algVariant::yAprox:
+    case AlgVariant::yAprox:
         calculateYSystemApprox(ySYSTEM_VsVb, yFAG, 5);
         break;
-    case algVariant::yProp:
-    case algVariant::yPropPlus:
+    case AlgVariant::yProp:
+    case AlgVariant::yPropPlus:
         calculateYSystemLambdaT(ySYSTEM_VsVb, yFAG);
         break;
     }
@@ -357,11 +407,11 @@ void AlgorithmHybrid::calculateYSystemApprox(double **ySystem, double **yFAG, in
     for (int i=0; i<system->m(); i++)
     {
         yNfty[i] = (double)(infinityVal) * classes[i].A/sumAt;
-        for (int n=0; n<=system->V_s(); n++)
+        for (int n=0; n<=system->vk_s(); n++)
             ySystem[i][n] = yFAG[i][n];
 
-        for (int n=system->V_s() + 1; n<= system->V(); n++)
-            ySystem[i][n] = yFAG[i][system->V_s()] + (yNfty[i] - yFAG[i][system->V_s()]) * (double)(n-system->V_s()) / (double)(infinityVal - system->V_s());
+        for (int n=system->vk_s() + 1; n<= system->V(); n++)
+            ySystem[i][n] = yFAG[i][system->vk_s()] + (yNfty[i] - yFAG[i][system->vk_s()]) * (double)(n-system->vk_s()) / (double)(infinityVal - system->vk_s());
     }
 }
 
@@ -378,14 +428,14 @@ void AlgorithmHybrid::calculateYServer(double **ySeverVsVb, double **ySystemFAG,
 {
     switch (variant)
     {
-    case algVariant::yFAG:
+    case AlgVariant::yFAG:
         calculateYServerFAG(ySeverVsVb, ySystemFAG);
         break;
-    case algVariant::yAprox:
+    case AlgVariant::yAprox:
         calculateYServerFAG(ySeverVsVb, ySystemFAG);
         break;
-    case algVariant::yProp:
-    case algVariant::yPropPlus:
+    case AlgVariant::yProp:
+    case AlgVariant::yPropPlus:
         calculateYServerPropLambdaT(ySeverVsVb, ySystemFAG, Q);
         break;
     }
@@ -393,7 +443,7 @@ void AlgorithmHybrid::calculateYServer(double **ySeverVsVb, double **ySystemFAG,
 
 bool AlgorithmHybrid::possible(const ModelSyst *system) const
 {
-    if (system->V_b() == 0)
+    if (system->vk_b() == 0)
         return false;
     return Investigator::possible(system);
 }
@@ -402,13 +452,13 @@ void AlgorithmHybrid::calculateYServerFAG(double **yServerVsVb, double **ySystem
 {
     for (int i=0; i < system->m(); i++)
     {
-        for (int n=0; n <= system->V_s(); n++)
+        for (int n=0; n <= system->vk_s(); n++)
         {
             yServerVsVb[i][n] = 0;
         }
-        for (int n = system->V_s() + 1; n<=system->V(); n++)
+        for (int n = system->vk_s() + 1; n<=system->V(); n++)
         {
-            double tmp = system->V_s();
+            double tmp = system->vk_s();
             tmp /=n;
 
             yServerVsVb[i][n] = tmp * ySystemFAG[i][n];
@@ -438,16 +488,16 @@ void AlgorithmHybrid::calculateYQeue(double **yQeueVsVb, double **ySystemFAG, do
 {
     switch (variant)
     {
-    case algVariant::yFAG:
+    case AlgVariant::yFAG:
         calculateYQeueFAG(yQeueVsVb, ySystemFAG);
         break;
-    case algVariant::yAprox:
+    case AlgVariant::yAprox:
         calculateYQeueFAG(yQeueVsVb, ySystemFAG);
         break;
-    case algVariant::yProp:
+    case AlgVariant::yProp:
         calculateYQeuePropLambdaT(yQeueVsVb, ySystemFAG, Q, false);
         break;
-    case algVariant::yPropPlus:
+    case AlgVariant::yPropPlus:
         calculateYQeuePropLambdaT(yQeueVsVb, ySystemFAG, Q, true);
         break;
     }
@@ -457,13 +507,13 @@ void AlgorithmHybrid::calculateYQeueFAG(double **yQeueVsVb, double **ySystemFAG)
 {
     for (int i=0; i<system->m(); i++)
     {
-        for (int n=0; n<=system->V_s(); n++)
+        for (int n=0; n<=system->vk_s(); n++)
         {
             yQeueVsVb[i][n] = 0;
         }
-        for (int n = system->V_s() + 1; n<=system->V(); n++)
+        for (int n = system->vk_s() + 1; n<=system->V(); n++)
         {
-            double tmp = n - system->V_s();
+            double tmp = n - system->vk_s();
             tmp /=n;
 
             yQeueVsVb[i][n] = tmp * ySystemFAG[i][n];
@@ -474,15 +524,15 @@ void AlgorithmHybrid::calculateYQeueFAG(double **yQeueVsVb, double **ySystemFAG)
 void AlgorithmHybrid::calculateYQeuePropLambdaT(double **yQeueVsVb, double **yFAG, double *Q, bool lambdaIsDependent)
 {
     for (int i=0; i < system->m(); i++)
-        for (int n=0; n <= system->V_s(); n++)
+        for (int n=0; n <= system->vk_s(); n++)
             yQeueVsVb[i][n] = 0;
 
-    for (int n=system->V_s() + 1; n <= system->V(); n++)
+    for (int n=system->vk_s() + 1; n <= system->V(); n++)
     {
         double denumerator = 0;
         for (int i=0; i < system->m(); i++)
         {
-            int x = qMin(classes[i].t, n-system->V_s());
+            int x = qMin(classes[i].t, n-system->vk_s());
             double lambda_i;
             if (lambdaIsDependent)
             {
@@ -497,7 +547,7 @@ void AlgorithmHybrid::calculateYQeuePropLambdaT(double **yQeueVsVb, double **yFA
 
         for (int i=0; i < system->m(); i++)
         {
-            int x = qMin(classes[i].t, n - system->V_s());
+            int x = qMin(classes[i].t, n - system->vk_s());
 
             double lambda_i;
             if (lambdaIsDependent)
@@ -514,7 +564,7 @@ void AlgorithmHybrid::calculateYQeuePropLambdaT(double **yQeueVsVb, double **yFA
         }
     }
 
-    for (int n = system->V_s() + 1; n <= system->V(); n++)
+    for (int n = system->vk_s() + 1; n <= system->V(); n++)
     {
         for (int i=0; i < system->m(); i++)
             yQeueVsVb[i][n] /= classes[i].t;

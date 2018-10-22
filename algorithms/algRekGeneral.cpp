@@ -18,7 +18,7 @@ bool AlgRekGeneral::possible(const ModelSyst *system) const
     if (
             !Investigator::possible(system) //Sprawdzanie czy w systemie jest odpowiednia kolejka
             || (system->m() < 1)            //W systemie nie ma wystarczająco dużo klas ruchu
-            || (system->K_sType() > 1)      //W systemie są podgrupy o różnych pojemnościach
+            || (system->k_sType() > 1)      //W systemie są podgrupy o różnych pojemnościach
             || (system->k_s(0) > 1)         //W systemie jest więcej niż 1 podgrupa o różnych pojemnościach
             )
         return false;
@@ -59,7 +59,7 @@ void AlgRekGeneral::calculateSystem(
         (*results)->write(TypeForSystemState::StateProbability, states[n], n);
     }
 
-    for (int n=0; n<=system->V_s(); n++)
+    for (int n=0; n<=system->vk_s(); n++)
     {
         (*results)->write(TypeForServerState::StateProbability, states[n], n);
     }

@@ -58,7 +58,7 @@ void resultsXlsx::spreadshetWriteAUsAvailabilityOnlyForGroupSets(QXlsx::Workshee
     QVector<QXlsx::Chart *>chartAUsAvailability;
     QXlsx::Chart *chartClassServicePossibility;
 
-    int k = system.Ks();
+    int k = system.k_s();
 
     int vMax = system.v_sMax();
     chartAUsAvailability.resize(noOfAlgorithms);
@@ -258,7 +258,7 @@ void resultsXlsx::spreadshetWriteAUsAvailabilityForBestGroupSets(QXlsx::Workshee
     QVector<QXlsx::Chart *>chartAUsAvailability;
     QXlsx::Chart *chartClassServicePossibility;
 
-    int k = system.Ks();
+    int k = system.k_s();
 
     int vMax = system.v_sMax();
     chartAUsAvailability.resize(noOfAlgorithms);
@@ -455,7 +455,7 @@ void resultsXlsx::_spreadshetWriteForGroupCombinations(
         )
 {
     const ModelSyst& system = results->getModel();
-    int k = system.Ks();
+    int k = system.k_s();
 
     QVector<QPair<QVector<int>, QVector<int> > > combinations = Utils::UtilsLAG::getPossibleCombinations(k);
     int vMax = system.v_sMax();
@@ -667,7 +667,7 @@ void resultsXlsx::spreadshetWriteAUsFreeForGroupCombinations(QXlsx::Worksheet *s
 {
     const ModelSyst& system = results->getModel();
 
-    int k = system.Ks();
+    int k = system.k_s();
 
     QVector<QPair<QVector<int>, QVector<int> > > combinations = Utils::UtilsLAG::getPossibleCombinations(k);
     int vMax = system.v_sMax();
@@ -838,7 +838,7 @@ void resultsXlsx::spreadshetWriteQoS_ForClasses(QXlsx::Worksheet *sheet, int &ro
 {
     const ModelSyst& system = results->getModel();
 
-    int k = system.Ks();
+    int k = system.k_s();
 
     QVector<QPair<QVector<int>, QVector<int> > > combinations = Utils::UtilsLAG::getPossibleCombinations(k);
     int vMax = system.v_sMax();
@@ -1015,7 +1015,7 @@ void resultsXlsx::SaveGroupsAvailability(QString fileName)
     int colNo = 1;
 
     const ModelSyst& system = results->getModel();
-    int k = system.Ks();
+    int k = system.k_s();
     if (k <= 1)
         return;
 

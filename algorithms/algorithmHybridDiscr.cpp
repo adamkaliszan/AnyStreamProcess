@@ -13,7 +13,7 @@ AlgorithmHybridDiscr::AlgorithmHybridDiscr(): Investigator(QueueServDiscipline::
 
 bool AlgorithmHybridDiscr::possible(ModelSyst *system)
 {
-    if (system->V_b() == 0)
+    if (system->vk_b() == 0)
         return false;
     return Investigator::possible(system);
 }
@@ -26,8 +26,8 @@ void AlgorithmHybridDiscr::calculateSystem(const ModelSyst *system
 {
     (void) simParameters;
     int m = system->m();
-    int Vs = system->V_s();
-    int Vb = system->V_b();
+    int Vs = system->vk_s();
+    int Vb = system->vk_b();
     int VsVb = Vs + Vb;
     prepareTemporaryData(system, a);
 

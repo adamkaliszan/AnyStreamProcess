@@ -32,7 +32,7 @@ int SimulatorQeueFifo::complexity() const {return 100;}
 
 bool SimulatorQeueFifo::possible(const ModelSyst *system) const
 {
-    if (system->V_b() <= 0)
+    if (system->vk_b() <= 0)
         return false;
     return simulator::possible(system);
 }
@@ -44,7 +44,7 @@ void SimulatorQeueFifo::calculateSystem(const ModelSyst *system
 {
     this->system = system;
     System *simData = new System(system, simParameters->noOfSeries, disc);
-    simData->initialize(a, system->totalAt(), system->V_s());
+    simData->initialize(a, system->totalAt(), system->vk_s());
 
     int seed = 1024;
 
@@ -83,24 +83,24 @@ SimulatorQeueFifo::System::System(
     m(system->m())
   , n(0)
   , old_n(0)
-  , results(system->m(), system->V_s(), system->V_b(), noOfSeries)
+  , results(system->m(), system->vk_s(), system->vk_b(), noOfSeries)
   , disc(disc)
 {
     systemData = system;
 
     agenda = new simulatorDataCollection<ProcQeueFifo>();
-    server = new Server(system->V_s(), this);
-    qeue   = new Qeue(system->V_b(), this);
+    server = new Server(system->vk_s(), this);
+    qeue   = new Qeue(system->vk_b(), this);
 
     yTime_ClassI                                = new double[system->m()];
     servTr_ClassI                               = new double[system->m()];
     AStime_ofOccupiedAS_byClassI_inStateN       = new double*[system->m()];
     qeueAStime_ofOccupiedAS_byClassI_inStateN   = new double*[system->m()];
     serverAStime_ofOccupiedAS_byClassI_inStateN = new double*[system->m()];
-    occupancyTimes                              = new double[system->V_s()+system->V_b()+1];
+    occupancyTimes                              = new double[system->vk_s()+system->vk_b()+1];
 
-    outNew                                      = new int[system->V_s()+system->V_b()+1];
-    outEnd                                      = new int[system->V_s()+system->V_b()+1];
+    outNew                                      = new int[system->vk_s()+system->vk_b()+1];
+    outEnd                                      = new int[system->vk_s()+system->vk_b()+1];
 
     outNewSCof                                  = new int*[system->m()];
     outEndSCof                                  = new int*[system->m()];
@@ -108,19 +108,19 @@ SimulatorQeueFifo::System::System(
     outEndSCserv                                = new int*[system->m()];
 
 
-    occupancyTimesDtl                           = new double*[system->V_s()+1];
-    for (int n=0; n<=system->V_s(); n++)
-        occupancyTimesDtl[n] = new double[system->V_b()+1];
+    occupancyTimesDtl                           = new double*[system->vk_s()+1];
+    for (int n=0; n<=system->vk_s(); n++)
+        occupancyTimesDtl[n] = new double[system->vk_b()+1];
 
     for (int i=0; i<m; i++)
     {
-        AStime_ofOccupiedAS_byClassI_inStateN[i]       = new double[system->V_s()+system->V_b()+1];
-        qeueAStime_ofOccupiedAS_byClassI_inStateN[i]   = new double[system->V_s()+system->V_b()+1];
-        serverAStime_ofOccupiedAS_byClassI_inStateN[i] = new double[system->V_s()+system->V_b()+1];
-        outNewSCof[i]                                    = new int[system->V_s()+system->V_b()+1];
-        outEndSCof[i]                                    = new int[system->V_s()+system->V_b()+1];
-        outNewSCserv[i]                                  = new int[system->V_s()+system->V_b()+1];
-        outEndSCserv[i]                                  = new int[system->V_s()+system->V_b()+1];    }
+        AStime_ofOccupiedAS_byClassI_inStateN[i]       = new double[system->vk_s()+system->vk_b()+1];
+        qeueAStime_ofOccupiedAS_byClassI_inStateN[i]   = new double[system->vk_s()+system->vk_b()+1];
+        serverAStime_ofOccupiedAS_byClassI_inStateN[i] = new double[system->vk_s()+system->vk_b()+1];
+        outNewSCof[i]                                    = new int[system->vk_s()+system->vk_b()+1];
+        outEndSCof[i]                                    = new int[system->vk_s()+system->vk_b()+1];
+        outNewSCserv[i]                                  = new int[system->vk_s()+system->vk_b()+1];
+        outEndSCserv[i]                                  = new int[system->vk_s()+system->vk_b()+1];    }
 }
 
 SimulatorQeueFifo::System::~System()
@@ -690,7 +690,7 @@ void SimulatorQeueFifo::System::collectTheStatPost(double time)
 
 void SimulatorQeueFifo::System::enableStatisticscollection(int serNo)
 {
-    int VsVb = systemData->V_s() + systemData->V_b();
+    int VsVb = systemData->vk_s() + systemData->vk_b();
     bzero(yTime_ClassI, systemData->m() * sizeof(double));
     bzero(servTr_ClassI, systemData->m() * sizeof(double));
     bzero(occupancyTimes, (VsVb+1)*sizeof(double));
@@ -698,8 +698,8 @@ void SimulatorQeueFifo::System::enableStatisticscollection(int serNo)
     bzero(outNew, (VsVb+1)*sizeof(int));
     bzero(outEnd, (VsVb+1)*sizeof(int));
 
-    for (int n=0; n<=systemData->V_s(); n++)
-        bzero(occupancyTimesDtl[n], (systemData->V_b()+1)*sizeof(double));
+    for (int n=0; n<=systemData->vk_s(); n++)
+        bzero(occupancyTimesDtl[n], (systemData->vk_b()+1)*sizeof(double));
 
     for (int i=0; i<m; i++)
     {

@@ -804,9 +804,9 @@ ModelSyst::ModelSyst():
     _noOfTrClasses(0)
   , _groupsSchedulerAlgorithm(ModelResourcessScheduler::Sequencial)
   , _noOfTypesOfGroups(0)
-  , _noOfTypesOfQeues(0)
-  , _totalQeuesCapacity(0)
-  , _totalNumberOfQeues(0)
+  , _noOfTypesOfBuffers(0)
+  , _totalBufferCapacity(0)
+  , _totalNumberOfBuffers(0)
   , _totalGroupsCapacity(0)
   , _totalNumberOfGroups(0)
   , _totalAt(0), id(0)
@@ -815,10 +815,10 @@ ModelSyst::ModelSyst():
     _trClasses = new ModelTrClass*[_capacityTrClasses];
 
     _capacityTypeOfGroups = 2;
-    _groups = new ModelResourcess[_capacityTypeOfGroups];
+    _servers = new ModelResourcess[_capacityTypeOfGroups];
 
     _capacityTypeOfQeues = 2;
-    _qeues = new ModelResourcess[_capacityTypeOfQeues];
+    _bufers = new ModelResourcess[_capacityTypeOfQeues];
 
     _totalTimeBuf = 10;
 }
@@ -829,8 +829,8 @@ ModelSyst::~ModelSyst()
         delete _trClasses[i];
     delete []_trClasses;
 
-    delete []_groups;
-    delete []_qeues;
+    delete []_servers;
+    delete []_bufers;
 }
 
 void ModelSyst::getLinkParameters(int32_t **k
@@ -844,8 +844,8 @@ void ModelSyst::getLinkParameters(int32_t **k
 
     for (int32_t i=0; i<*numberOfTypes; i++)
     {
-        *k[i] = this->_groups[i].k();
-        *v[i] = this->_groups[i].v();
+        *k[i] = this->_servers[i].k();
+        *v[i] = this->_servers[i].v();
     }
 }
 
@@ -855,14 +855,14 @@ void ModelSyst::getQeuesParameters(
         , int32_t *numberOfTypes
         ) const
 {
-    *numberOfTypes = this->_noOfTypesOfQeues;
-    *k = new int32_t[this->_noOfTypesOfQeues];
-    *v = new int32_t[this->_noOfTypesOfQeues];
+    *numberOfTypes = this->_noOfTypesOfBuffers;
+    *k = new int32_t[this->_noOfTypesOfBuffers];
+    *v = new int32_t[this->_noOfTypesOfBuffers];
 
     for (int32_t i=0; i<*numberOfTypes; i++)
     {
-        *k[i] = this->_qeues[i].k();
-        *v[i] = this->_qeues[i].v();
+        *k[i] = this->_bufers[i].k();
+        *v[i] = this->_bufers[i].v();
     }
 }
 
@@ -891,10 +891,10 @@ void ModelSyst::addGroups(ModelResourcess newGroup, bool optimize)
     {
         for (int idx=0; idx < _noOfTypesOfGroups; idx++)
         {
-            if (_groups[idx].v() == newGroup.v())
+            if (_servers[idx].v() == newGroup.v())
             {
-                int k = _groups[idx].k();
-                _groups[idx].set_k(k + newGroup.k());
+                int k = _servers[idx].k();
+                _servers[idx].set_k(k + newGroup.k());
                     return;
             }
         }
@@ -903,43 +903,43 @@ void ModelSyst::addGroups(ModelResourcess newGroup, bool optimize)
     if (_noOfTypesOfGroups == _capacityTypeOfGroups)
     {
         ModelResourcess *newRes = new ModelResourcess[2*_capacityTypeOfGroups];
-        memcpy(newRes, _groups, static_cast<size_t>(_capacityTypeOfGroups) * sizeof(ModelResourcess));
-        delete _groups;
-        _groups = newRes;
+        memcpy(newRes, _servers, static_cast<size_t>(_capacityTypeOfGroups) * sizeof(ModelResourcess));
+        delete _servers;
+        _servers = newRes;
         _capacityTypeOfGroups *=2;
     }
-    _groups[_noOfTypesOfGroups] = newGroup;
+    _servers[_noOfTypesOfGroups] = newGroup;
     _noOfTypesOfGroups++;
 }
 
 void ModelSyst::addQeues(ModelResourcess qeue, bool optimize)
 {
-    _totalNumberOfQeues += qeue.k();
-    _totalQeuesCapacity += qeue.V();
+    _totalNumberOfBuffers += qeue.k();
+    _totalBufferCapacity += qeue.V();
 
     if (optimize)
     {
-        for (int idx=0; idx < _noOfTypesOfQeues; idx++)
+        for (int idx=0; idx < _noOfTypesOfBuffers; idx++)
         {
-            if (_qeues[idx].v() == qeue.v())
+            if (_bufers[idx].v() == qeue.v())
             {
-                int k = _qeues[idx].k();
-                _qeues[idx].set_k(k + qeue.k());
+                int k = _bufers[idx].k();
+                _bufers[idx].set_k(k + qeue.k());
                 return;
             }
         }
     }
 
-    if (_noOfTypesOfQeues == _capacityTypeOfQeues)
+    if (_noOfTypesOfBuffers == _capacityTypeOfQeues)
     {
         ModelResourcess *newQue = new ModelResourcess[2*_capacityTypeOfQeues];
-        memcpy(newQue, _qeues, static_cast<size_t>(_capacityTypeOfQeues) * sizeof(ModelResourcess));
-        delete _qeues;
-        _qeues = newQue;
+        memcpy(newQue, _bufers, static_cast<size_t>(_capacityTypeOfQeues) * sizeof(ModelResourcess));
+        delete _bufers;
+        _bufers = newQue;
         _capacityTypeOfQeues *=2;
     }
-    _qeues[_noOfTypesOfQeues] = qeue;
-    _noOfTypesOfQeues++;
+    _bufers[_noOfTypesOfBuffers] = qeue;
+    _noOfTypesOfBuffers++;
 }
 
 void ModelSyst::setSubgroupSchedulerAlgorithm(ModelResourcessScheduler algorithm)
@@ -958,9 +958,9 @@ void ModelSyst::clearAll()
     _totalGroupsCapacity = 0;
     _noOfTypesOfGroups=0;
 
-    _totalQeuesCapacity = 0;
-    _noOfTypesOfQeues = 0;
-    _totalNumberOfQeues = 0;
+    _totalBufferCapacity = 0;
+    _noOfTypesOfBuffers = 0;
+    _totalNumberOfBuffers = 0;
 }
 
 const ModelTrClass *ModelSyst::getClass(int idx) const
@@ -980,8 +980,8 @@ bool ModelSyst::operator==(const ModelSyst &rho) const
     if (
             m()   != rho.m()
             || V()   != rho.V()
-            || V_s() != rho.V_s()
-            || V_b() != rho.V_b()
+            || vk_s() != rho.vk_s()
+            || vk_b() != rho.vk_b()
             )
         return false;
 
@@ -1033,10 +1033,10 @@ bool ModelSyst::operator >(const ModelSyst &rho) const
     if (m() > rho.m())
         return true;
 
-    if (V_s() > rho.V_s())
+    if (vk_s() > rho.vk_s())
         return true;
 
-    if (V_b() > rho.V_b())
+    if (vk_b() > rho.vk_b())
         return true;
 
     for(int classIdx=0; classIdx<m(); classIdx++)
@@ -1083,10 +1083,10 @@ bool ModelSyst::operator <(const ModelSyst &rho) const
     if (m() < rho.m())
         return true;
 
-    if (V_s() < rho.V_s())
+    if (vk_s() < rho.vk_s())
         return true;
 
-    if (V_b() < rho.V_b())
+    if (vk_b() < rho.vk_b())
         return true;
 
     for(int classIdx=0; classIdx<m(); classIdx++)
@@ -1129,58 +1129,58 @@ int ModelSyst::v_sMax() const
 {
     int result=0;
     for (int grType=0; grType<_noOfTypesOfGroups; grType++)
-        if (result < _groups[grType].v())
-            result = _groups[grType].v();
+        if (result < _servers[grType].v())
+            result = _servers[grType].v();
     return result;
 }
 
-int ModelSyst::v_s(int i) const
+int ModelSyst::v_s(int groupClNo) const
 {
-    if (i < _noOfTypesOfGroups)
-        return _groups[i].v();
+    if (groupClNo < _noOfTypesOfGroups)
+        return _servers[groupClNo].v();
     return -1;
 }
 
-int ModelSyst::V_s(int i) const
+int ModelSyst::vk_s(int groupClNo) const
 {
-    if (i < _noOfTypesOfGroups)
-        return _groups[i].V();
+    if (groupClNo < _noOfTypesOfGroups)
+        return _servers[groupClNo].V();
     return -1;
 }
 
-int ModelSyst::k_s(int type) const
+int ModelSyst::k_s(int groupClNo) const
 {
-    if (type < _noOfTypesOfGroups)
-        return _groups[type].k();
+    if (groupClNo < _noOfTypesOfGroups)
+        return _servers[groupClNo].k();
     return -1;
 }
 
-int ModelSyst::v_q(int i) const
+int ModelSyst::v_b(int bufferClNo) const
 {
-    if (i < _noOfTypesOfQeues)
-        return _qeues[i].v();
+    if (bufferClNo < _noOfTypesOfBuffers)
+        return _bufers[bufferClNo].v();
     return -1;
 }
 
-int ModelSyst::V_b(int i) const
+int ModelSyst::vk_b(int bufferClNo) const
 {
-    if (i < _noOfTypesOfQeues)
-        return _qeues[i].V();
+    if (bufferClNo < _noOfTypesOfBuffers)
+        return _bufers[bufferClNo].v() * _bufers[bufferClNo].k();
     return -1;
 }
 
-int ModelSyst::k_q(int i) const
+int ModelSyst::k_b(int i) const
 {
-    if (i < _noOfTypesOfQeues)
-        return _qeues[i].k();
+    if (i < _noOfTypesOfBuffers)
+        return _bufers[i].k();
     return -1;
 }
 
 
 QTextStream& operator<<(QTextStream &stream, const ModelSyst &model)
 {
-    stream<<"S"<<model.V_s();
-    if (model.Ks() > 1)
+    stream<<"S"<<model.vk_s();
+    if (model.k_s() > 1)
     {
         stream<<"(";
         switch (model._groupsSchedulerAlgorithm)
@@ -1192,10 +1192,10 @@ QTextStream& operator<<(QTextStream &stream, const ModelSyst &model)
             stream<<"S";
             break;
         }
-        stream<<model.Ks()<<")";
+        stream<<model.k_s()<<")";
     }
-    if (model.V_b() > 0)
-        stream<<"_B"<<model.V_b();
+    if (model.vk_b() > 0)
+        stream<<"_B"<<model.vk_b();
     stream<<"_m"<<model.m();
     if (model.m()>0)
     {
@@ -1259,8 +1259,8 @@ QTextStream& operator<<(QTextStream &stream2, const ModelTrClass &trClass)
 QDebug &operator<<(QDebug &stream, const ModelSyst &model)
 {
     QDebug stream2 = stream.nospace();
-    stream2<<"S"<<model.V_s();
-    if (model.Ks() > 1)
+    stream2<<"S"<<model.vk_s();
+    if (model.k_s() > 1)
     {
         stream<<"(";
         switch (model._groupsSchedulerAlgorithm)
@@ -1272,9 +1272,9 @@ QDebug &operator<<(QDebug &stream, const ModelSyst &model)
             stream<<"S";
             break;
         }
-        stream<<model.Ks()<<")";
+        stream<<model.k_s()<<")";
     }
-    stream2<<"_B"<<model.V_b();
+    stream2<<"_B"<<model.vk_b();
     stream2<<"_m"<<model.m();
     if (model.m()>0)
     {

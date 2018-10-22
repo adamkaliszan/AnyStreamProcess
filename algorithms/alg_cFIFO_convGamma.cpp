@@ -14,7 +14,7 @@ convolutionAlgorithmGamma::convolutionAlgorithmGamma(): Investigator(QueueServDi
 
 bool convolutionAlgorithmGamma::possible(const ModelSyst *system) const
 {
-    if (system->V_b() == 0)
+    if (system->vk_b() == 0)
         return false;
     return Investigator::possible(system);
 }
@@ -31,8 +31,8 @@ void convolutionAlgorithmGamma::calculateSystem(const ModelSyst *system
 
     for (int i=0; i<system->m(); i++)
     {
-        p_single[i] = new VectQEUE(system->V_s(), system->V_b(), 1, i, system->getClass(i));
-        TrClVector tmp = system->getClass(i)->trDistribution(i, classes[i].A, system->V_s(), system->V_b());
+        p_single[i] = new VectQEUE(system->vk_s(), system->vk_b(), 1, i, system->getClass(i));
+        TrClVector tmp = system->getClass(i)->trDistribution(i, classes[i].A, system->vk_s(), system->vk_b());
 
         p_single[i]->setStates(tmp);
     }
@@ -79,31 +79,31 @@ void convolutionAlgorithmGamma::calculateSystem(const ModelSyst *system
         //Obsługiwany ruch
         double yS = 0;
 
-        for (int n=0; n <= system->V_s(); n++)
+        for (int n=0; n <= system->vk_s(); n++)
         {
             yS+=(FD->getState(n) * FD->get_y(i, n));
         }
-        for (int n=system->V_s() + 1; n <= system->V(); n++)
+        for (int n=system->vk_s() + 1; n <= system->V(); n++)
         {
             double tmp = FD->getState(n) * FD->get_y(i, n);
-            yS+=((tmp * system->V_s())/n);
+            yS+=((tmp * system->vk_s())/n);
         }
         //TODO algResults->set_ServTraffic(system->getClass(i), a, yS * classes[i].t);
 
         //Średnia liczba zgłoszeń w kolejce
         double lQeue = 0;
-        for (int n=system->V_s() + 1; n<=system->V(); n++)
+        for (int n=system->vk_s() + 1; n<=system->V(); n++)
         {
-            double tmp = (double)(n - system->V_s()) / (double)(n);
+            double tmp = (double)(n - system->vk_s()) / (double)(n);
             lQeue+=(FD->getState(n) * FD->get_y(i, n) * tmp);
         }
         //TODO algResults->set_lQ(system->getClass(i), a, lQeue);
 
         //Średnia liczba zajętych zasobów w kolejce
         double ltQeue = 0;
-        for (int n = system->V_s() + 1; n <= system->V(); n++)
+        for (int n = system->vk_s() + 1; n <= system->V(); n++)
         {
-            double tmp = (double)(n - system->V_s()) / (double)(n);
+            double tmp = (double)(n - system->vk_s()) / (double)(n);
             ltQeue+=(FD->getState(n) * FD->get_y(i, n) * tmp * classes[i].t);
         }
         //TODO algResults->set_ltQ(system->getClass(i), a, ltQeue);
@@ -119,13 +119,13 @@ void convolutionAlgorithmGamma::calculateSystem(const ModelSyst *system
 
         //Średni czas obsługi
         double avgToS = 0;
-        for (int n=0; n <= system->V_s(); n++)
+        for (int n=0; n <= system->vk_s(); n++)
         {
             avgToS += FD->getState(n) * FD->get_y(i, n) / system->getClass(i)->getMu();
         }
-        for (int n = system->V_s() + 1; n <= system->V(); n++)
+        for (int n = system->vk_s() + 1; n <= system->V(); n++)
         {
-            avgToS += FD->getState(n) * FD->get_y(i, n) / system->getClass(i)->getMu() * (n - (double) (classes[i].t-1) / 2.0) / system->V_s();
+            avgToS += FD->getState(n) * FD->get_y(i, n) / system->getClass(i)->getMu() * (n - (double) (classes[i].t-1) / 2.0) / system->vk_s();
         }
         avgToS /= y;
         //TODO algResults->set_tService(system->getClass(i), a, avgToS);
@@ -137,8 +137,8 @@ void convolutionAlgorithmGamma::calculateSystem(const ModelSyst *system
     }
     //Średnia długość kolejki
     double AvgLen = 0;
-    for (int n = system->V_s() + 1; n <= system->V(); n++)
-        AvgLen += ((n-system->V_s())*FD->getState(n));
+    for (int n = system->vk_s() + 1; n <= system->V(); n++)
+        AvgLen += ((n-system->vk_s())*FD->getState(n));
     //TODO algResults->set_Qlen(a, AvgLen);
 
     for (int i=0; i < system->m(); i++)
@@ -151,26 +151,26 @@ void convolutionAlgorithmGamma::calculateSystem(const ModelSyst *system
 //            (*results)->write(TypeForClassAndQueueState, FD->get_y(i, n) * tmpClass->t(), i, n);
 //            algResults->resultsAS->setVal(resultsType::qeueYt_vs_q_n, a, system->getClass(i), n, classes[i].t * (FD->get_y(i, n) * n/(system->V_s() + n)), 0);
 
-        for (int n=0; n <= system->V_s(); n++)
+        for (int n=0; n <= system->vk_s(); n++)
             (*results)->write(TypeForClassAndServerState::Usage, FD->get_y(i, n) * tmpClass->t(), i, n);
 
         for (int n=0; n <= system->V(); n++)
         {
-            if (n > system->V_s())
-                (*results)->write(TypeForClassAndSystemState::UsageForQueue, classes[i].t * (FD->get_y(i, n) *(n-system->V_s())/n), i, n);
+            if (n > system->vk_s())
+                (*results)->write(TypeForClassAndSystemState::UsageForBuffer, classes[i].t * (FD->get_y(i, n) *(n-system->vk_s())/n), i, n);
             else
-                (*results)->write(TypeForClassAndSystemState::UsageForQueue, 0, i, n);
+                (*results)->write(TypeForClassAndSystemState::UsageForBuffer, 0, i, n);
 
             (*results)->write(TypeForClassAndSystemState::UsageForSystem, classes[i].t * (FD->get_y(i, n)), i, n);
 
 
-            if (n <= system->V_s())
+            if (n <= system->vk_s())
             {
                 (*results)->write(TypeForClassAndSystemState::UsageForServer, FD->get_y(i, n) * classes[i].t, i, n);
             }
             else
             {
-                (*results)->write(TypeForClassAndSystemState::UsageForServer, FD->get_y(i, n) * classes[i].t * system->V_s()/n, i, n);
+                (*results)->write(TypeForClassAndSystemState::UsageForServer, FD->get_y(i, n) * classes[i].t * system->vk_s()/n, i, n);
             }
         }
     }

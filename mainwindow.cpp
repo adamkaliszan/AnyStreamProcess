@@ -25,7 +25,6 @@
 #include "algorithms/algRekLag.h"
 #include "algorithms/algRekLagGS.h"
 
-#include "results/resultsOld.h"
 #include "results/resultsGnuplot.h"
 #include "results/resultsInvestigator.h"
 #include "results/resultsSystem.h"
@@ -84,7 +83,7 @@ MainWindow::~MainWindow()
     dlgAbout->close();
     delete dlgAbout;
 
-    foreach (QListWidgetItem *item, ui->listWidgetAlgorithms->findItems(QString("*"), Qt::MatchWrap | Qt::MatchWildcard)+ui->listWidgetAlgorithmsExperimental->findItems(QString("*"), Qt::MatchWrap | Qt::MatchWildcard))
+    foreach (QListWidgetItem *item, ui->listWidgetAlgorithms->findItems(QString("*"), Qt::MatchWrap | Qt::MatchWildcard)+ui->listWidgetAlgorithmsAlternative->findItems(QString("*"), Qt::MatchWrap | Qt::MatchWildcard))
     {
         Investigator *alg = item->data(Qt::UserRole).value<Investigator *>();
         delete alg;
@@ -188,7 +187,7 @@ void MainWindow::addAlgorithmForCurentSystem(Investigator *newAlg)
     ui->listWidgetAlgorithms->addItem(newListItem);
 }
 
-void MainWindow::addExperimentalAlgorithmForCurentSystem(Investigator *newAlg)
+void MainWindow::addAlternativeAlgorithmForCurentSystem(Investigator *newAlg)
 {
     QVariant variant;
     variant.setValue(newAlg);
@@ -198,7 +197,7 @@ void MainWindow::addExperimentalAlgorithmForCurentSystem(Investigator *newAlg)
     newListItem->setData(Qt::DisplayRole, variant.value<Investigator *>()->shortQueueDiscipline() + ": " + variant.value<Investigator *>()->shortName());
     newListItem->setData(Qt::UserRole, variant);
 
-    ui->listWidgetAlgorithmsExperimental->addItem(newListItem);
+    ui->listWidgetAlgorithmsAlternative->addItem(newListItem);
 }
 
 void MainWindow::addSimulationParams(SimulationParameters *par)
@@ -256,6 +255,8 @@ void MainWindow::addAlgorithmsAndParams()
     addTestedAlgorithm(new Algorithms::algRekLagGS());
     addTestedAlgorithm(new Algorithms::algRekLagGS2());
     addTestedAlgorithm(new Algorithms::algRekLAG());
+
+    addTestedAlgorithm(new Algorithms::AlgorithmHybrid(Algorithms::AlgorithmHybrid::AlgVariant::yFAG));
 
 /*
     addExperimentalAlgorithm(new convolutionAlgorithm1());
@@ -815,20 +816,17 @@ ModelTrClass::StreamType MainWindow::DBstrTostreamType(QString str)
 void MainWindow::updateAlgorithmsList()
 {
     ui->listWidgetAlgorithms->clear();
+    ui->listWidgetAlgorithmsAlternative->clear();
     foreach (Investigator *alg, this->algorithms)
     {
         if (alg->possible(this->system))
              addAlgorithmForCurentSystem(alg);
+        else if (alg->possibleAlternative(this->system))
+             addAlternativeAlgorithmForCurentSystem(alg);
     }
 
-    ui->listWidgetAlgorithmsExperimental->clear();
-    foreach (Investigator *alg, this->experimentalAlgorithms)
-    {
-        if (alg->possible(this->system))
-             addExperimentalAlgorithmForCurentSystem(alg);
-    }
     ui->listWidgetAlgorithms->update();
-    ui->listWidgetAlgorithmsExperimental->update();
+    ui->listWidgetAlgorithmsAlternative->update();
 
     update(); //Update Window form
 }
@@ -837,7 +835,7 @@ void MainWindow::updateQoS_ComboBox()
 {
     QSet<Results::Type> possibleQoS_Types;
 
-    foreach (Investigator *alg, this->algorithms + this->experimentalAlgorithms)
+    foreach (Investigator *alg, this->algorithms)
     {
         if (alg->possible(this->system) && alg->calculationDone && alg->isSelected)
             possibleQoS_Types += alg->getQoS_Set();
@@ -1001,7 +999,7 @@ void MainWindow::on_pushButtonStart_clicked()
     ui->progressBar->setValue(0);
     int total = 0;
 
-    foreach (QListWidgetItem *tmpItem, ui->listWidgetAlgorithms->selectedItems()+ui->listWidgetAlgorithmsExperimental->selectedItems())
+    foreach (QListWidgetItem *tmpItem, ui->listWidgetAlgorithms->selectedItems()+ui->listWidgetAlgorithmsAlternative->selectedItems())
     {
         Investigator *tmpAlg = tmpItem->data(Qt::UserRole).value<Investigator *>();
         if (tmpAlg != nullptr)
@@ -1023,7 +1021,7 @@ void MainWindow::on_pushButtonStart_clicked()
         if ( qFuzzyIsNull(a))
             qFatal("a = 0");
 
-        foreach (QListWidgetItem *tmpItem, ui->listWidgetAlgorithms->selectedItems()+ui->listWidgetAlgorithmsExperimental->selectedItems())
+        foreach (QListWidgetItem *tmpItem, ui->listWidgetAlgorithms->selectedItems()+ui->listWidgetAlgorithmsAlternative->selectedItems())
         {
             Investigator *tmpAlg = tmpItem->data(Qt::UserRole).value<Investigator *>();
             if (tmpAlg != nullptr)
@@ -1055,7 +1053,7 @@ void MainWindow::on_pushButtonStart_clicked()
     tmpStream<<" ready";
     setWindowTitle(title);
 
-    foreach (QListWidgetItem *tmpItem, ui->listWidgetAlgorithms->selectedItems()+ui->listWidgetAlgorithmsExperimental->selectedItems())
+    foreach (QListWidgetItem *tmpItem, ui->listWidgetAlgorithms->selectedItems()+ui->listWidgetAlgorithmsAlternative->selectedItems())
     {
         Investigator *tmpAlg = tmpItem->data(Qt::UserRole).value<Investigator *>();
         tmpAlg->calculationDone = true;
@@ -1090,18 +1088,14 @@ QString MainWindow::updateParameters(struct Results::ParametersSet &outParameter
         result = QString("%1").arg(outParameters.serverState);
         break;
 
-    case Results::ParameterType::QueueState:
-        outParameters.queueState = variant.value<int>();
-        result = QString("%1").arg(outParameters.queueState);
+    case Results::ParameterType::BufferState:
+        outParameters.bufferState = variant.value<int>();
+        result = QString("%1").arg(outParameters.bufferState);
         break;
 
     case Results::ParameterType::CombinationNumber:
         outParameters.combinationNumber = variant.value<int>();
         result = QString("%1").arg(resultsForSystem->getGroupCombinationStr(outParameters.combinationNumber));
-        break;
-
-    case Results::ParameterType::NumberOfAUs:
-        outParameters.numberOfAus = variant.value<int>();
         break;
 
     case Results::ParameterType::NumberOfGroups:
@@ -1121,10 +1115,9 @@ void MainWindow::clearParameters(ParametersSet &outParameters)
     outParameters.classIndex = -1;
     outParameters.systemState = -1;
     outParameters.serverState = -1;
-    outParameters.queueState = -1;
+    outParameters.bufferState = -1;
     outParameters.combinationNumber = -1;
     outParameters.numberOfGroups = -1;
-    outParameters.numberOfAus = -1;
 }
 
 void MainWindow::saveTheResults(QString &fileName, resultsType QoStype)
@@ -1238,7 +1231,7 @@ bool MainWindow::areCalculationsRequired()
     bool result = false;
 
 
-    foreach (Investigator *alg, algorithms + experimentalAlgorithms)
+    foreach (Investigator *alg, algorithms)
         if ((alg->isSelected) && (alg->calculationDone))
                 result = true;
 
@@ -1308,9 +1301,6 @@ void MainWindow::loadLanguage(const QString &rLanguage)
         switchTranslator(m_translator, QString("languages/kolejki_%1.qm").arg(rLanguage));
         switchTranslator(m_translatorQt, QString("languages/qt_%1.qm").arg(rLanguage));
         qDebug()<<tr("Current Language changed to %1 (%2)").arg(languageName, rLanguage);
-
-        //modelTrClass::sourceType tmp2 = modelTrClass::sourceType::independent;
-        //QVariant tmp = QVariant(modelTrClass::sourceType, tmp2);
 
         QVariant variant;
 
@@ -1411,9 +1401,9 @@ void MainWindow::on_Pages_currentChanged(int index)
             Investigator *alg = tmp->data(Qt::UserRole).value<Investigator *>();
             tmp->setSelected(alg->isSelected);
         }
-        for(int idx=0; idx<ui->listWidgetAlgorithmsExperimental->count(); idx++)
+        for(int idx=0; idx<ui->listWidgetAlgorithmsAlternative->count(); idx++)
         {
-            QListWidgetItem *tmp = ui->listWidgetAlgorithmsExperimental->item(idx);
+            QListWidgetItem *tmp = ui->listWidgetAlgorithmsAlternative->item(idx);
             Investigator *alg = tmp->data(Qt::UserRole).value<Investigator *>();
             tmp->setSelected(alg->isSelected);
         }
@@ -1431,7 +1421,7 @@ void MainWindow::on_listWidgetAlgorithms_itemClicked(QListWidgetItem *item)
         ui->pushButtonStart->setEnabled(areCalculationsRequired());
 }
 
-void MainWindow::on_listWidgetAlgorithmsExperimental_itemClicked(QListWidgetItem *item)
+void MainWindow::on_listWidgetAlgorithmsAlternative_itemClicked(QListWidgetItem *item)
 {
     Investigator *selAlg = item->data(Qt::UserRole).value<Investigator *>();
     selAlg->isSelected = item->isSelected();
@@ -1477,8 +1467,8 @@ void MainWindow::drawSystemModel()
     QPen blackPen(Qt::black);
     blackPen.setWidth(2);
 
-    int kQtype = sys->K_qType();
-    int kStype = sys->K_sType();
+    int kQtype = sys->k_bType();
+    int kStype = sys->k_sType();
 
     int width  = static_cast<int>(ui->graphicsView->width());
     int height = static_cast<int>(ui->graphicsView->height());
@@ -1508,12 +1498,12 @@ void MainWindow::drawSystemModel()
         int sglQeueWidth = (wQeue/kQtype);
         qreal x, y;
         x = qIdx*sglQeueWidth + xQeue;
-        int k = sys->k_q(qIdx);
+        int k = sys->k_b(qIdx);
         for (int qIdx2=0; qIdx2<k; qIdx2++)
         {
             y = qIdx2*25-10;
             /*QGraphicsItem *itm = */sceneSysModel->addRect(x, y, sglQeueWidth*0.9, 20, blackPen, qeueBrush);
-            QGraphicsTextItem  *text = sceneSysModel->addText(QString("%1").arg(sys->v_q(qIdx)), QFont("Arial", 16));
+            QGraphicsTextItem  *text = sceneSysModel->addText(QString("%1").arg(sys->v_b(qIdx)), QFont("Arial", 16));
             text->setPos(QPoint(static_cast<int>(x), static_cast<int>(y-8)));
         }
     }
@@ -1545,12 +1535,12 @@ void MainWindow::on_comboBoxPredefinedSystems_currentIndexChanged(int index)
     this->system->id = system->id;
 
     ui->listWidgetWiazki->clear();
-    for(int grId=0; grId<system->Ks(); grId++)
+    for(int grId=0; grId<system->k_s(); grId++)
         addServer(system->k_s(grId), system->v_s(grId));
 
     ui->listWidgetKolejki->clear();
-    for(int grId=0; grId<system->Kq(); grId++)
-        addBuffer(system->k_q(grId), system->v_q(grId));
+    for(int grId=0; grId<system->k_b(); grId++)
+        addBuffer(system->k_b(grId), system->v_b(grId));
 
     ui->listWidgetKlasy->clear();
     for (int i=0; i<system->m(); i++)
@@ -1699,7 +1689,7 @@ void MainWindow::fillListWidgetWithParams(QListWidget *outList, QLabel *outLabel
         break;
 
     case Results::ParameterType::ServerState:
-        for(int n = 0; n <= resultsForSystem->getModel().V_s(); n++)
+        for(int n = 0; n <= resultsForSystem->getModel().vk_s(); n++)
         {
             tmpVariant.setValue(n);
             tmpItem = new QListWidgetItem(QString::number(n));
@@ -1709,19 +1699,8 @@ void MainWindow::fillListWidgetWithParams(QListWidget *outList, QLabel *outLabel
         }
         break;
 
-    case Results::ParameterType::QueueState:
-        for(int n = 0; n <= resultsForSystem->getModel().V_b(); n++)
-        {
-            tmpVariant.setValue(n);
-            tmpItem = new QListWidgetItem(QString::number(n));
-            tmpItem->setData(Qt::UserRole, tmpVariant);
-
-            outList->addItem(tmpItem);
-        }
-        break;
-
-    case Results::ParameterType::NumberOfAUs:
-        for(int n = 0; n <= resultsForSystem->getModel().v_sMax(); n++)
+    case Results::ParameterType::BufferState:
+        for(int n = 0; n <= resultsForSystem->getModel().vk_b(); n++)
         {
             tmpVariant.setValue(n);
             tmpItem = new QListWidgetItem(QString::number(n));
@@ -1745,7 +1724,7 @@ void MainWindow::fillListWidgetWithParams(QListWidget *outList, QLabel *outLabel
         break;
 
     case Results::ParameterType::NumberOfGroups:
-        for (int k = 0; k<=resultsForSystem->getModel().Ks(); k++)
+        for (int k = 0; k<=resultsForSystem->getModel().k_s(); k++)
         {
             tmpVariant.setValue(k);
             tmpItem = new QListWidgetItem(QString::number(k));
@@ -1773,7 +1752,7 @@ void MainWindow::on_ResultsQtChartRefresh()
 
     int noOfAlgorithms = 0;
 
-    foreach (QListWidgetItem *itm, ui->listWidgetAlgorithms->selectedItems() + ui->listWidgetAlgorithmsExperimental->selectedItems())
+    foreach (QListWidgetItem *itm, ui->listWidgetAlgorithms->selectedItems() + ui->listWidgetAlgorithmsAlternative->selectedItems())
     {
         Investigator *algorithm = itm->data(Qt::UserRole).value<Investigator *>();
         if (algorithm->calculationDone)
@@ -1782,7 +1761,7 @@ void MainWindow::on_ResultsQtChartRefresh()
 
     foreach (QListWidgetItem *itm,
              ui->listWidgetAlgorithms->findItems(QString("*"), Qt::MatchWrap | Qt::MatchWildcard) +
-             ui->listWidgetAlgorithmsExperimental->findItems(QString("*"), Qt::MatchWrap | Qt::MatchWildcard))
+             ui->listWidgetAlgorithmsAlternative->findItems(QString("*"), Qt::MatchWrap | Qt::MatchWildcard))
     {
         if (itm->data(Qt::UserRole).value<Investigator *>()->calculationDone)
             itm->setBackground(QBrush(QColor(0, 255, 0, 32)));
@@ -1872,7 +1851,7 @@ void MainWindow::on_ResultsQtChartRefresh()
     };
 
     int algColIdx = 0;
-    foreach (QListWidgetItem *itm, ui->listWidgetAlgorithms->selectedItems() + ui->listWidgetAlgorithmsExperimental->selectedItems())
+    foreach (QListWidgetItem *itm, ui->listWidgetAlgorithms->selectedItems() + ui->listWidgetAlgorithmsAlternative->selectedItems())
     {
         int par1BrushIdx = 0;
         Investigator *algorithm = itm->data(Qt::UserRole).value<Investigator *>();

@@ -17,8 +17,9 @@ void RSingle::init(const ModelSyst *system)
     m = system->m();
     vMax = system->v_sMax();
     V = system->V();
-    Vs = system->V_s();
+    Vs = system->vk_s();
 
+    dataGeneral.clear();
     dataPerClasses.fill(DataForClasses(), m);
     dataPerServerState.fill(DataForStates(), Vs+1);
     dataPerQueueState.fill(DataForStates(), V-Vs+1);
@@ -26,9 +27,72 @@ void RSingle::init(const ModelSyst *system)
     dataPerClassAndServerState.fill(DataForClassesAndState(), (Vs+1)*m);
     dataPerClassAndQueueState.fill(DataForClassesAndState(), (V-Vs+1)*m);
     dataPerClassAndSystemStateForSystem.fill(DataForClassesAndState(), (V+1)*m);
-    dataPerGroupCombination.fill(DataPerGroups(vMax+1, m), ::Utils::UtilsLAG::getPossibleCombinations(system->Ks()).length());
-    dataPerBestGroups.fill(DataPerGroups(vMax+1, m), (system->Ks())+1);
-    dataPerExactGroupNumber.fill(DataPerGroups(vMax+1, m), (system->Ks())+1);
+    dataPerGroupCombination.fill(DataPerGroups(vMax+1, m), ::Utils::UtilsLAG::getPossibleCombinations(system->k_s()).length());
+    dataPerBestGroups.fill(DataPerGroups(vMax+1, m), (system->k_s())+1);
+    dataPerExactGroupNumber.fill(DataPerGroups(vMax+1, m), (system->k_s())+1);
+}
+
+RSingle &RSingle::write(TypeGeneral type, double value)
+{
+    switch (type)
+    {
+    case TypeGeneral::SystemUtilization:
+        dataGeneral.systemUtilization = value;
+        break;
+
+    case TypeGeneral::ServerUtilization:
+        dataGeneral.serverUtilization = value;
+        break;
+
+    case TypeGeneral::BufferUtilization:
+        dataGeneral.bufferUtilization = value;
+        break;
+
+    case TypeGeneral::TotalTime:
+        dataGeneral.totalTime = value;
+        break;
+
+    case TypeGeneral::ServiceTime:
+        dataGeneral.serviceTime = value;
+        break;
+
+    case TypeGeneral::WaitingTime:
+        dataGeneral.waitingTime = value;
+        break;
+
+    }
+    return *this;
+}
+
+bool RSingle::read(double &result, TypeGeneral type) const
+{
+    switch (type)
+    {
+    case TypeGeneral::SystemUtilization:
+        result = dataGeneral.systemUtilization;
+        break;
+
+    case TypeGeneral::ServerUtilization:
+        result = dataGeneral.serverUtilization;
+        break;
+
+    case TypeGeneral::BufferUtilization:
+        result = dataGeneral.bufferUtilization;
+        break;
+
+    case TypeGeneral::TotalTime:
+        result = dataGeneral.totalTime;
+        break;
+
+    case TypeGeneral::ServiceTime:
+        result = dataGeneral.serviceTime;
+        break;
+
+    case TypeGeneral::WaitingTime:
+        result = dataGeneral.waitingTime;
+        break;
+    }
+    return true;
 }
 
 RSingle &RSingle::write(TypeForClass type, double value, int classNo)
@@ -47,15 +111,16 @@ RSingle &RSingle::write(TypeForClass type, double value, int classNo)
         dataPerClasses[classNo].congestionTraffic = value;
         break;
 
+    case TypeForClass::AvarageNumbersOfCallsInBuffer:
+        dataPerClasses[classNo].avarageNumbersOfCallsInBuffer = value;
+        break;
+
     }
     return *this;
 }
 
 bool RSingle::read(double &result, TypeForClass type, int classNo) const
 {
-    if (false)
-        return false;
-
     switch (type)
     {
     case TypeForClass::BlockingProbability:
@@ -69,6 +134,11 @@ bool RSingle::read(double &result, TypeForClass type, int classNo) const
     case TypeForClass::CongestionTraffic:
         result = dataPerClasses[classNo].congestionTraffic;
         break;
+
+    case TypeForClass::AvarageNumbersOfCallsInBuffer:
+        result = dataPerClasses[classNo].avarageNumbersOfCallsInBuffer;
+        break;
+
     }
     return true;
 }
@@ -102,8 +172,6 @@ RSingle &RSingle::write(TypeForSystemState type, double value, int systemState)
 
 bool RSingle::read(double &result, TypeForSystemState type, int systemState) const
 {
-    if (false)
-        return false;
     switch (type)
     {
     case TypeForSystemState::StateProbability:
@@ -158,9 +226,6 @@ RSingle &RSingle::write(TypeForServerState type, double value, int serverState)
 
 bool RSingle::read(double &result, TypeForServerState type, int serverState) const
 {
-    if (false)
-        return false;
-
     switch (type)
     {
     case TypeForServerState::StateProbability:
@@ -186,57 +251,54 @@ bool RSingle::read(double &result, TypeForServerState type, int serverState) con
     return true;
 }
 
-RSingle &RSingle::write(TypeForQueueState type, double value, int queueState)
+RSingle &RSingle::write(TypeForBufferState type, double value, int queueState)
 {
     switch (type)
     {
-    case TypeForQueueState::StateProbability:
+    case TypeForBufferState::StateProbability:
         dataPerQueueState[queueState].probability = value;
         break;
 
-    case TypeForQueueState::IntensityNewCallIn:
+    case TypeForBufferState::IntensityNewCallIn:
         dataPerSystemState[queueState].newCallInIntensity = value;
         break;
 
-    case TypeForQueueState::IntensityEndCallIn:
+    case TypeForBufferState::IntensityEndCallIn:
         dataPerSystemState[queueState].endCallInIntensity = value;
         break;
 
-    case TypeForQueueState::IntensityNewCallOut:
+    case TypeForBufferState::IntensityNewCallOut:
         dataPerSystemState[queueState].newCallOutIntensity = value;
         break;
 
-    case TypeForQueueState::IntensityEndCallOut:
+    case TypeForBufferState::IntensityEndCallOut:
         dataPerSystemState[queueState].endCallOutIntensity = value;
         break;
     }
     return *this;
 }
 
-bool RSingle::read(double &result, TypeForQueueState type, int queueState) const
+bool RSingle::read(double &result, TypeForBufferState type, int queueState) const
 {
-    if (false)
-        return false;
-
     switch (type)
     {
-    case TypeForQueueState::StateProbability:
+    case TypeForBufferState::StateProbability:
         result = dataPerQueueState[queueState].probability;
         break;
 
-    case TypeForQueueState::IntensityNewCallIn:
+    case TypeForBufferState::IntensityNewCallIn:
         result = dataPerSystemState[queueState].newCallInIntensity;
         break;
 
-    case TypeForQueueState::IntensityEndCallIn:
+    case TypeForBufferState::IntensityEndCallIn:
         result = dataPerSystemState[queueState].endCallInIntensity;
         break;
 
-    case TypeForQueueState::IntensityNewCallOut:
+    case TypeForBufferState::IntensityNewCallOut:
         result = dataPerSystemState[queueState].newCallOutIntensity;
         break;
 
-    case TypeForQueueState::IntensityEndCallOut:
+    case TypeForBufferState::IntensityEndCallOut:
         result = dataPerSystemState[queueState].endCallOutIntensity;
         break;
     }
@@ -279,10 +341,8 @@ RSingle &RSingle::write(TypeForClassAndServerState type, double value, int class
     return *this;
 }
 
-bool RSingle::read(double &result, TypeForClassAndServerState type, int classNo, int serverState)
+bool RSingle::read(double &result, TypeForClassAndServerState type, int classNo, int serverState) const
 {
-    if (false)
-        return false;
     int index = classNo * (Vs+1) + serverState;
 
     switch(type)
@@ -318,75 +378,73 @@ bool RSingle::read(double &result, TypeForClassAndServerState type, int classNo,
     return true;
 }
 
-RSingle &RSingle::write(TypeForClassAndQueueState type, double value, int classNo, int queueState)
+RSingle &RSingle::write(TypeForClassAndBufferState type, double value, int classNo, int queueState)
 {
     int index = classNo * (V-Vs+1) + queueState;
     switch(type)
     {
-    case TypeForClassAndQueueState::RealNewCallIntensityOut:
+    case TypeForClassAndBufferState::RealNewCallIntensityOut:
         dataPerClassAndQueueState[index].realNewCallIntensityOut = value;
         break;
 
-    case TypeForClassAndQueueState::OfferedNewCallIntensityOut:
+    case TypeForClassAndBufferState::OfferedNewCallIntensityOut:
         dataPerClassAndQueueState[index].offeredCallIntensityOut = value;
         break;
 
-    case TypeForClassAndQueueState::EndCallIntensityOut:
+    case TypeForClassAndBufferState::EndCallIntensityOut:
         dataPerClassAndQueueState[index].endCallIntensityOut = value;
         break;
 
-    case TypeForClassAndQueueState::NewCallIntensityIn:
+    case TypeForClassAndBufferState::NewCallIntensityIn:
         dataPerClassAndQueueState[index].newCallIntensityIn = value;
         break;
 
-    case TypeForClassAndQueueState::EndCallIntensityIn:
+    case TypeForClassAndBufferState::EndCallIntensityIn:
         dataPerClassAndQueueState[index].endCallIntensityIn = value;
         break;
 
-    case TypeForClassAndQueueState::CAC_Probability:
+    case TypeForClassAndBufferState::CAC_Probability:
         dataPerClassAndQueueState[index].cac_probability = value;
         break;
 
-    case TypeForClassAndQueueState::Usage:
+    case TypeForClassAndBufferState::Usage:
         dataPerClassAndQueueState[index].utilization = value;
         break;
     }
     return *this;
 }
 
-bool RSingle::read(double &result, TypeForClassAndQueueState type, int classNo, int queueState)
+bool RSingle::read(double &result, TypeForClassAndBufferState type, int classNo, int queueState) const
 {
-    if (false)
-        return false;
     int index = classNo * (V-Vs+1) + queueState;
 
     switch(type)
     {
-    case TypeForClassAndQueueState::RealNewCallIntensityOut:
+    case TypeForClassAndBufferState::RealNewCallIntensityOut:
         result = dataPerClassAndQueueState[index].realNewCallIntensityOut;
         break;
 
-    case TypeForClassAndQueueState::OfferedNewCallIntensityOut:
+    case TypeForClassAndBufferState::OfferedNewCallIntensityOut:
         result = dataPerClassAndQueueState[index].offeredCallIntensityOut;
         break;
 
-    case TypeForClassAndQueueState::EndCallIntensityOut:
+    case TypeForClassAndBufferState::EndCallIntensityOut:
         result = dataPerClassAndQueueState[index].endCallIntensityOut;
         break;
 
-    case TypeForClassAndQueueState::NewCallIntensityIn:
+    case TypeForClassAndBufferState::NewCallIntensityIn:
         result = dataPerClassAndQueueState[index].newCallIntensityIn;
         break;
 
-    case TypeForClassAndQueueState::EndCallIntensityIn:
+    case TypeForClassAndBufferState::EndCallIntensityIn:
         result = dataPerClassAndQueueState[index].endCallIntensityIn;
         break;
 
-    case TypeForClassAndQueueState::CAC_Probability:
+    case TypeForClassAndBufferState::CAC_Probability:
         result = dataPerClassAndQueueState[index].cac_probability;
         break;
 
-    case TypeForClassAndQueueState::Usage:
+    case TypeForClassAndBufferState::Usage:
         result = dataPerClassAndQueueState[index].utilization;
         break;
     }
@@ -474,7 +532,7 @@ RSingle &RSingle::write(TypeForClassAndSystemState type, double value, int class
         dataPerClassAndSystemStateForServer[index].utilization = value;
         break;
 
-    case TypeForClassAndSystemState::UsageForQueue:
+    case TypeForClassAndSystemState::UsageForBuffer:
         dataPerClassAndSystemStateForQueue[index].utilization = value;
         break;
 
@@ -485,10 +543,8 @@ RSingle &RSingle::write(TypeForClassAndSystemState type, double value, int class
     return *this;
 }
 
-bool RSingle::read(double &result, TypeForClassAndSystemState type, int classNo, int systemState)
+bool RSingle::read(double &result, TypeForClassAndSystemState type, int classNo, int systemState) const
 {
-    if (false)
-        return false;
     int index = classNo * (V+1) + systemState;
 
     switch(type)
@@ -569,7 +625,7 @@ bool RSingle::read(double &result, TypeForClassAndSystemState type, int classNo,
         result = dataPerClassAndSystemStateForServer[index].utilization;
         break;
 
-    case TypeForClassAndSystemState::UsageForQueue:
+    case TypeForClassAndSystemState::UsageForBuffer:
         result = dataPerClassAndSystemStateForQueue[index].utilization;
         break;
 
@@ -609,9 +665,6 @@ RSingle &RSingle::write(TypeStateForServerGroupsCombination type, double value, 
 
 bool RSingle::read(double &result, TypeStateForServerGroupsCombination type, int numberOfResourcess, int groupCombinationIndex) const
 {
-    if (false)
-        return false;
-
     switch(type)
     {
     case TypeStateForServerGroupsCombination::FreeAUsInBestGroup:
@@ -663,9 +716,6 @@ RSingle &RSingle::write(TypeClassForServerGroupsCombination type, double value, 
 
 bool RSingle::read(double &result, TypeClassForServerGroupsCombination type, int classNumber, int groupCombinationIndex) const
 {
-    if (false)
-        return false;
-
     switch(type)
     {
     case TypeClassForServerGroupsCombination::SerPossibilityInBestSubgroup:
@@ -710,9 +760,6 @@ RSingle &RSingle::write(TypeClassForServerBestGroupsSet type, double value, int 
 
 bool RSingle::read(double &result, TypeClassForServerBestGroupsSet type, int classNumber, int numberOfGroups) const
 {
-    if (false)
-        return false;
-
     switch(type)
     {
     case TypeClassForServerBestGroupsSet::ServPossibilityInBestSubgroup:
@@ -731,7 +778,7 @@ bool RSingle::read(double &result, TypeClassForServerBestGroupsSet type, int cla
         result = dataPerBestGroups[numberOfGroups].availabilityClasses[classNumber].inavailabilityInAllSubgroups;
         break;
     }
-    return result;
+    return true;
 }
 
 RSingle &RSingle::write(TypeStateForServerGroupsSet type, double value, int numberOfResourcess, int numberOfGroups)
@@ -753,9 +800,6 @@ RSingle &RSingle::write(TypeStateForServerGroupsSet type, double value, int numb
 
 bool RSingle::read(double &result, TypeStateForServerGroupsSet type, int numberOfResourcess, int numberOfGroups) const
 {
-    if (false)
-        return false;
-
     switch(type)
     {
     case TypeStateForServerGroupsSet::AvailabilityOnlyInAllTheGroups:
@@ -797,9 +841,6 @@ RSingle &RSingle::write(TypeClassForServerExactGroupsSet type, double value, int
 
 bool RSingle::read(double &result, TypeClassForServerExactGroupsSet type, int classNumber, int numberOfGroups) const
 {
-    if (false)
-        return false;
-
     switch(type)
     {
     case TypeClassForServerExactGroupsSet::ServPossibilityInBestSubgroup:
@@ -817,24 +858,93 @@ bool RSingle::read(double &result, TypeClassForServerExactGroupsSet type, int cl
         break;
 
     }
-    return result;
+    return true;
 }
 
-/*
-RSingle RSingle::operator=(const RSingle &rho)
+RSingle::DataGeneral &RSingle::DataGeneral::operator+=(const RSingle::DataGeneral &rho)
 {
-    RSingle result;
-    result.dataPerBestGroups           = rho.dataPerBestGroups;
-    result.dataPerClassAndServerState  = rho.dataPerClassAndServerState;
-    result.dataPerClasses              = rho.dataPerClasses;
-    result.dataPerExactGroupNumber     = rho.dataPerExactGroupNumber;
-    result.dataPerGroupCombination     = rho.dataPerGroupCombination;
-    result.dataPerServerState          = rho.dataPerServerState;
-    result.dataPerSystemState          = rho.dataPerSystemState;
+    systemUtilization+= rho.systemUtilization;
+    serverUtilization+= rho.serverUtilization;
+    bufferUtilization+= rho.bufferUtilization;
+    totalTime        += rho.totalTime;
+    serviceTime      += rho.serviceTime;
+    waitingTime      += rho.waitingTime;
+
+    return *this;
+}
+
+RSingle::DataGeneral RSingle::DataGeneral::operator-(const RSingle::DataGeneral &rho) const
+{
+    RSingle::DataGeneral result;
+    result.systemUtilization = systemUtilization + rho.serverUtilization;
+    result.serverUtilization = serverUtilization + rho.serverUtilization;
+    result.bufferUtilization = bufferUtilization + rho.bufferUtilization;
+    result.totalTime         = totalTime         + rho.totalTime;
+    result.serviceTime       = serviceTime       + rho.serviceTime;
+    result.waitingTime       = waitingTime       + rho.waitingTime;
 
     return result;
 }
-*/
+
+RSingle::DataGeneral RSingle::DataGeneral::operator^(double rho) const
+{
+    RSingle::DataGeneral result;
+    result.systemUtilization = qPow(systemUtilization, rho);
+    result.serverUtilization = qPow(serverUtilization, rho);
+    result.bufferUtilization = qPow(bufferUtilization, rho);
+    result.totalTime         = qPow(totalTime,         rho);
+    result.serviceTime       = qPow(serviceTime,       rho);
+    result.waitingTime       = qPow(waitingTime,       rho);
+
+    return *this;
+}
+
+RSingle::DataGeneral RSingle::DataGeneral::operator*(const RSingle::DataGeneral &rho) const
+{
+    RSingle::DataGeneral result;
+    result.systemUtilization = systemUtilization * rho.serverUtilization;
+    result.serverUtilization = serverUtilization * rho.serverUtilization;
+    result.bufferUtilization = bufferUtilization * rho.bufferUtilization;
+    result.totalTime         = totalTime         * rho.totalTime;
+    result.serviceTime       = serviceTime       * rho.serviceTime;
+    result.waitingTime       = waitingTime       * rho.waitingTime;
+
+    return result;
+}
+
+RSingle::DataGeneral &RSingle::DataGeneral::operator/=(double rho)
+{
+    systemUtilization/= rho;
+    serverUtilization/= rho;
+    bufferUtilization/= rho;
+    totalTime        /= rho;
+    serviceTime      /= rho;
+    waitingTime      /= rho;
+
+    return *this;
+}
+
+RSingle::DataGeneral &RSingle::DataGeneral::operator*=(double rho)
+{
+    systemUtilization*= rho;
+    serverUtilization*= rho;
+    bufferUtilization*= rho;
+    totalTime        *= rho;
+    serviceTime      *= rho;
+    waitingTime      *= rho;
+
+    return *this;
+}
+
+void RSingle::DataGeneral::clear()
+{
+    systemUtilization = 0;
+    serverUtilization = 0;
+    bufferUtilization = 0;
+    totalTime         = 0;
+    serviceTime       = 0;
+    waitingTime       = 0;
+}
 
 RSingle& RSingle::operator+=(const RSingle &rho)
 {
@@ -965,9 +1075,10 @@ void RSingle::clear()
 
 RSingle::DataForClasses &RSingle::DataForClasses::operator+=(const RSingle::DataForClasses &rho)
 {
-    blockingProbability +=rho.blockingProbability;
-    congestionTraffic +=rho.congestionTraffic;
-    lossProbability +=rho.lossProbability;
+    blockingProbability          +=rho.blockingProbability;
+    lossProbability              +=rho.lossProbability;
+    congestionTraffic            +=rho.congestionTraffic;
+    avarageNumbersOfCallsInBuffer+=rho.avarageNumbersOfCallsInBuffer;
 
     return *this;
 }
@@ -976,10 +1087,10 @@ RSingle::DataForClasses RSingle::DataForClasses::operator-(const RSingle::DataFo
 {
     RSingle::DataForClasses result;
 
-    result.blockingProbability = blockingProbability - rho.blockingProbability;
-    result.congestionTraffic = congestionTraffic - rho.congestionTraffic;
-    result.lossProbability = lossProbability - rho.lossProbability;
-
+    result.blockingProbability           = blockingProbability - rho.blockingProbability;
+    result.lossProbability               = lossProbability - rho.lossProbability;
+    result.congestionTraffic             = congestionTraffic - rho.congestionTraffic;
+    result.avarageNumbersOfCallsInBuffer = avarageNumbersOfCallsInBuffer - rho.avarageNumbersOfCallsInBuffer;
     return result;
 }
 
@@ -987,9 +1098,10 @@ RSingle::DataForClasses RSingle::DataForClasses::operator^(double rho) const
 {
     RSingle::DataForClasses result;
 
-    result.blockingProbability = qPow(this->blockingProbability, rho);
-    result.congestionTraffic = qPow(this->congestionTraffic, rho);
-    result.lossProbability = qPow(this->lossProbability, rho);
+    result.blockingProbability           = qPow(this->blockingProbability, rho);
+    result.lossProbability               = qPow(this->lossProbability, rho);
+    result.congestionTraffic             = qPow(this->congestionTraffic, rho);
+    result.avarageNumbersOfCallsInBuffer = qPow(this->avarageNumbersOfCallsInBuffer, rho);
 
     return result;
 }
@@ -998,53 +1110,57 @@ RSingle::DataForClasses RSingle::DataForClasses::operator*(const RSingle::DataFo
 {
     RSingle::DataForClasses result;
 
-    result.blockingProbability = this->blockingProbability * rho.blockingProbability;
-    result.congestionTraffic   = this->congestionTraffic * rho.congestionTraffic;
-    result.lossProbability     = this->lossProbability * rho.lossProbability;
+    result.blockingProbability           = this->blockingProbability * rho.blockingProbability;
+    result.lossProbability               = this->lossProbability * rho.lossProbability;
+    result.congestionTraffic             = this->congestionTraffic * rho.congestionTraffic;
+    result.avarageNumbersOfCallsInBuffer = this->avarageNumbersOfCallsInBuffer * rho.avarageNumbersOfCallsInBuffer;
 
     return result;
 }
 
 RSingle::DataForClasses &RSingle::DataForClasses::operator/=(double rho)
 {
-    blockingProbability /= rho;
-    congestionTraffic   /= rho;
-    lossProbability     /= rho;
-
+    blockingProbability           /= rho;
+    lossProbability               /= rho;
+    congestionTraffic             /= rho;
+    avarageNumbersOfCallsInBuffer /= rho;
     return *this;
 }
 
 RSingle::DataForClasses &RSingle::DataForClasses::operator*=(double rho)
 {
-    blockingProbability *= rho;
-    congestionTraffic   *= rho;
-    lossProbability     *= rho;
-
+    blockingProbability           *= rho;
+    lossProbability               *= rho;
+    congestionTraffic             *= rho;
+    avarageNumbersOfCallsInBuffer *=rho;
     return *this;
 }
 
 RSingle::DataForClasses& RSingle::DataForClasses::sqrt()
 {
-    blockingProbability = qSqrt(blockingProbability);
-    congestionTraffic   = qSqrt(congestionTraffic);
-    lossProbability     = qSqrt(lossProbability);
+    blockingProbability           = qSqrt(blockingProbability);
+    lossProbability               = qSqrt(lossProbability);
+    congestionTraffic             = qSqrt(congestionTraffic);
+    avarageNumbersOfCallsInBuffer = qSqrt(avarageNumbersOfCallsInBuffer);
     return *this;
 }
 
 RSingle::DataForClasses RSingle::DataForClasses::pow(double rho) const
 {
     RSingle::DataForClasses result;
-    result.blockingProbability = qPow(blockingProbability, rho);
-    result.congestionTraffic   = qPow(congestionTraffic, rho);
-    result.lossProbability     = qPow(lossProbability, rho);
+    result.blockingProbability           = qPow(blockingProbability, rho);
+    result.lossProbability               = qPow(lossProbability, rho);
+    result.congestionTraffic             = qPow(congestionTraffic, rho);
+    result.avarageNumbersOfCallsInBuffer = qPow(avarageNumbersOfCallsInBuffer, rho);
     return result;
 }
 
 void RSingle::DataForClasses::clear()
 {
-    blockingProbability = 0;
-    congestionTraffic   = 0;
-    lossProbability     = 0;
+    blockingProbability           = 0;
+    lossProbability               = 0;
+    congestionTraffic             = 0;
+    avarageNumbersOfCallsInBuffer = 0;
 }
 
 RSingle::DataForStates &RSingle::DataForStates::operator+=(const RSingle::DataForStates &rho)

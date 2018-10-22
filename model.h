@@ -263,7 +263,7 @@ public:
         template <class P> static bool endOfCallService(SimulatorSingleServiceSystem *system, SimulatorProcess *proc);
 
     public:
-        SimulatorProcess_DepPlus(SimulatorSingleServiceSystem *system): SimulatorProcess(system), child(NULL), parent(NULL) {}
+        SimulatorProcess_DepPlus(SimulatorSingleServiceSystem *system): SimulatorProcess(system), child(nullptr), parent(nullptr) {}
 
         SimulatorProcess_DepPlus *child;
         SimulatorProcess_DepPlus *parent;
@@ -277,6 +277,7 @@ public:
     {\
     public:\
         SimulatorProcess_Indep##X##Y(SimulatorSingleServiceSystem *system): SimulatorProcess_Indep(system) {}\
+        ~SimulatorProcess_Indep##X##Y() {}\
     \
         void initialize()\
         {\
@@ -293,6 +294,7 @@ public:
     {\
     public:\
         SimulatorProcess_DepMinus##X##Y(SimulatorSingleServiceSystem *system) : SimulatorProcess_DepMinus(system) {}\
+        ~SimulatorProcess_DepMinus##X##Y() {}\
     \
         void initialize()\
         {\
@@ -309,7 +311,7 @@ public:
     {\
     public:\
         SimulatorProcess_DepPlus##X##Y(SimulatorSingleServiceSystem *system): SimulatorProcess_DepPlus(system) {}\
-    \
+        ~SimulatorProcess_DepPlus##X##Y() {}\
     \
         void initialize()\
         {\
@@ -430,18 +432,18 @@ private:
     int _capacityTrClasses;
 
     ModelResourcessScheduler _groupsSchedulerAlgorithm;
-    ModelResourcess *_groups;
+    ModelResourcess *_servers;
     int _noOfTypesOfGroups;
     int _capacityTypeOfGroups;
 
-    ModelResourcess *_qeues;
-    int _noOfTypesOfQeues;
+    ModelResourcess *_bufers;
+    int _noOfTypesOfBuffers;
     int _capacityTypeOfQeues;
 
 
-    int _totalQeuesCapacity;   // Pojemność wszystkich kolejek
+    int _totalBufferCapacity;   // Pojemność wszystkich kolejek
     int _totalTimeBuf;         /// Number of time units, that the buffer is able to store data written to them with fully supported spead
-    int _totalNumberOfQeues;   // Liczba wszystkich kolejek
+    int _totalNumberOfBuffers;   // Liczba wszystkich kolejek
     int _totalGroupsCapacity;  // Pojemność wszystkich wiązek
     int _totalNumberOfGroups;  // Liczba wszystkich wiązek
 
@@ -470,25 +472,27 @@ public:
     bool operator <(const ModelSyst& rho) const;
 
 
-    int V(void)        const {return _totalGroupsCapacity + _totalQeuesCapacity;}
-    int V_s(void)      const {return _totalGroupsCapacity; }
-    int v_sMax(void)   const;
-    int V_b(void)      const {return _totalQeuesCapacity; }
-    int Ks(void)       const {return _totalNumberOfGroups; }
-    int K_sType(void)  const {return _noOfTypesOfGroups; }
-    int Kq(void)       const {return _totalNumberOfQeues; }
-    int K_qType(void)  const {return _noOfTypesOfQeues; }
     int totalAt(void)  const {return _totalAt;}
-    int T(void)        const {return _totalTimeBuf; }
     int m(void)        const {return _noOfTrClasses;}
+    int V(void)              const {return _totalGroupsCapacity + _totalBufferCapacity;}
 
-    int v_s(int i)    const;
-    int V_s(int i)    const;
-    int k_s(int type) const;
+    int v_s(int groupClNo)   const;                                        /// Single server group capacity
+    int vk_s(void)           const {return _totalGroupsCapacity; }         /// Server capacity
+    int vk_s(int groupClNo)  const;                                        /// Capacity of givens class of server's groups
+    int v_sMax(void)         const;                                        /// Capacity of the biggest group in the server
+    int k_s(void)            const {return _totalNumberOfGroups; }         /// Total number of server groups
+    int k_s(int groupClNo)   const;                                        /// Number of servers group of given class (GLAG model)
+    int k_sType(void)        const {return _noOfTypesOfGroups; }           /// Total number of servers group classes (1 for FAG and LAG, >1 for GLAG)
 
-    int v_q(int i)    const;
-    int V_b(int i)    const;
-    int k_q(int i)    const;
+    int v_b(int bufferClNo)  const;                                        /// Single buffer group capacity
+    int vk_b(void)           const {return _totalBufferCapacity; }         /// Buffer capacity
+    int vk_b(int bufferClNo) const;                                        /// Capacity of givens class of buffers's groups
+    int v_bMax(void)         const;                                        /// Capacity of the biggest group in the buffer
+    int k_b(void)            const {return _totalNumberOfBuffers; }        /// Total number of buffer groups
+    int k_b(int bufferClNo)  const;                                        /// Number of buffers group of given class
+    int k_bType(void)        const {return _noOfTypesOfBuffers; }          /// Total number of buffers group classes
+
+    int T(void)        const {return _totalTimeBuf; } //TODO remove it, time buffer simulator wasn't developed and difussion systems are not considered
 
     int id;
 

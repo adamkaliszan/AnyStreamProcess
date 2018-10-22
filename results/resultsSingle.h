@@ -24,8 +24,8 @@ public:
 
     void init(const ModelSyst *system);
 
-    //RSingle& write(Scope scope, Type type, double value, std::initializer_list<unsigned> params);
-    //double read(Scope scope, Type type, std::initializer_list<unsigned> params);
+    RSingle& write(TypeGeneral type, double value);
+    bool read(double &result, TypeGeneral type) const;
 
     RSingle& write(TypeForClass type, double value, int classNo);
     bool read(double &result, TypeForClass type, int classNo) const;
@@ -33,20 +33,20 @@ public:
     RSingle &write(TypeForServerState, double value, int serverState);
     bool read(double &result, TypeForServerState type, int serverState) const;
 
-    RSingle &write(TypeForQueueState type, double value, int queueState);
-    bool read(double &result, TypeForQueueState type, int queueState) const;
+    RSingle &write(TypeForBufferState type, double value, int queueState);
+    bool read(double &result, TypeForBufferState type, int queueState) const;
 
     RSingle& write(TypeForSystemState, double value, int systemState);
     bool read(double &result, TypeForSystemState, int systemState) const;
 
     RSingle& write(TypeForClassAndServerState type, double value, int classNo, int serverState);
-    bool read(double &result, TypeForClassAndServerState type, int classNo, int serverState);
+    bool read(double &result, TypeForClassAndServerState type, int classNo, int serverState) const;
 
-    RSingle& write(TypeForClassAndQueueState type, double value, int classNo, int queueState);
-    bool read(double &result, TypeForClassAndQueueState type, int classNo, int queueState);
+    RSingle& write(TypeForClassAndBufferState type, double value, int classNo, int queueState);
+    bool read(double &result, TypeForClassAndBufferState type, int classNo, int queueState) const;
 
     RSingle& write(TypeForClassAndSystemState type, double value, int classNo, int systemState);
-    bool read(double &result, TypeForClassAndSystemState type, int classNo, int systemState);
+    bool read(double &result, TypeForClassAndSystemState type, int classNo, int systemState) const;
 
     RSingle &write(TypeStateForServerGroupsCombination, double value, int numberOfResourcess, int groupCombinationIndex);
     bool read(double &result, TypeStateForServerGroupsCombination type, int numberOfResourcess, int groupCombinationIndex) const;
@@ -84,10 +84,13 @@ private:
     int V;
     int Vs;
 
+    struct DataGeneral;
     struct DataForClasses;
     struct DataForStates;
     struct DataPerGroups;
     struct DataForClassesAndState;
+
+
 
     QVector<DataForClasses>             dataPerClasses;
     QVector<DataForStates>              dataPerServerState;
@@ -102,13 +105,39 @@ private:
     QVector<DataPerGroups>              dataPerBestGroups;
     QVector<DataPerGroups>              dataPerExactGroupNumber;
 
+    struct DataGeneral
+    {
+        double systemUtilization;     /// Expected value of system state probability distribution
+        double serverUtilization;     /// Expected value of server state probability distribution
+        double bufferUtilization;     /// Expected value of buffer state probability distribution - buffer length
+        double totalTime;             /// Tatal time between call arrival and leawing the system wait+service time
+        double serviceTime;           /// Total time of service
+        double waitingTime;           /// Total time of waiting in the buffer
+
+        DataGeneral(): systemUtilization(0), serverUtilization(0), bufferUtilization(0), totalTime(0), serviceTime(0), waitingTime(0) {}
+
+        DataGeneral &operator+=(const DataGeneral& rho);
+        DataGeneral operator-(const DataGeneral& rho) const;
+        DataGeneral operator^(double rho) const;
+        DataGeneral operator*(const DataGeneral& rho) const;
+        DataGeneral &operator/=(double rho);
+        DataGeneral &operator*=(double rho);
+
+        DataGeneral& sqrt();
+        DataGeneral pow(double rho) const;
+        void clear();
+    };
+
+    struct DataGeneral                  dataGeneral;
+
     struct DataForClasses
     {
         double blockingProbability;
         double lossProbability;
         double congestionTraffic;
+        double avarageNumbersOfCallsInBuffer;
 
-        DataForClasses(): blockingProbability(0), lossProbability(0), congestionTraffic(0) {}
+        DataForClasses(): blockingProbability(0), lossProbability(0), congestionTraffic(0), avarageNumbersOfCallsInBuffer(0) {}
 
         DataForClasses &operator+=(const DataForClasses& rho);
         DataForClasses operator-(const DataForClasses& rho) const;

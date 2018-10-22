@@ -53,14 +53,12 @@ SOURCES += main.cpp\
     algorithms/simulator.cpp \
     algorithms/algorithmConv3d.cpp \
     algorithms/simulationParameters.cpp \
-    results/results.cpp \
     results/resultsGnuplot.cpp \
     utils/probDistributions.cpp \
     utils/lag.cpp \
     utils/vectorUtils.cpp \
     algorithms/algRekGeneral.cpp \
     algorithms/algRekLag.cpp \
-    results/baseTypes.cpp \
     results/resultsSingle.cpp \
     results/resultsInvestigator.cpp \
     results/resultsSystem.cpp \
@@ -68,7 +66,6 @@ SOURCES += main.cpp\
     results/resultsXlsx.cpp \
     utils/utilsMisc.cpp \
     results/resultsSingleGroup.cpp \
-    results/resultsOld.cpp \
     results/resultsApi.cpp
 
 HEADERS  += mainwindow.h \
@@ -95,9 +92,7 @@ HEADERS  += mainwindow.h \
     algorithms/simulatorQeueFIFO.h \
     algorithms/algorithmConvGamma3.h \
     gnuplot-iostream.h \
-    results/results.h \
     results/resultsGnuplot.h \
-    results/resultsOld.h \
     results/resultsSingle.h \
     utils/lag.h \
     utils/probDistributions.h \

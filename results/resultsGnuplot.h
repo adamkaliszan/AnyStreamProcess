@@ -4,10 +4,7 @@
 #include <boost/tuple/tuple.hpp>
 
 #include "algorithms/investigator.h"
-#include "results.h"
 #include "gnuplot-iostream.h"
-#include "results/resultsOld.h"
-
 
 enum class resultsType;
 

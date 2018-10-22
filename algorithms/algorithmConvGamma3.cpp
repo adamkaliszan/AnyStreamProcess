@@ -13,7 +13,7 @@ convolutionAlgorithmGamma3::convolutionAlgorithmGamma3(): Investigator(QueueServ
 
 bool convolutionAlgorithmGamma3::possible(ModelSyst *system)
 {
-    if (system->V_b() == 0)
+    if (system->vk_b() == 0)
         return false;
     return Investigator::possible(system);
 }
@@ -27,8 +27,8 @@ void convolutionAlgorithmGamma3::calculateSystem(const ModelSyst& system
     prepareTemporaryData(&system, a);
     (void) simParameters;
     int m = system.m();
-    int Vs = system.V_s();
-    int Vb = system.V_b();
+    int Vs = system.vk_s();
+    int Vb = system.vk_b();
     int VsVb = Vs + Vb;
 
 
@@ -75,12 +75,12 @@ void convolutionAlgorithmGamma3::calculateSystem(const ModelSyst& system
         (*results)->write(TypeForClass::LossProbability, B_n/B_d, i);
 
         //Średnia liczba zgłoszeń w kolejce
-        //double yQ = 0;
-        //for (int n=Vs+1; n<=VsVb; n++)
-        //{
-        //    yQ+=(FD->getState(n) * ());
-        //}
-        //algRes->set_yQ(system->getClass(i), a, yQ);
+        double yQ = 0;
+        for (int n=Vs+1; n<=VsVb; n++)
+        {
+            yQ+=(FD->getState(n) * yQEUE_VsVb[i][n]);
+        }
+        (*results)->write(TypeForClass::AvarageNumbersOfCallsInBuffer, yQ, i);
 
         //Średnia liczba zajętych zasobów w kolejce
         //double ytQ = 0;
@@ -98,22 +98,37 @@ void convolutionAlgorithmGamma3::calculateSystem(const ModelSyst& system
         }
         //TODO algRes->set_lSys(system.getClass(i), a, y);
     }
+
+    double avgLen;
+
+    //Średnie wykorzystanie systemu
+    avgLen = 0;
+    for (int n=0; n<=VsVb; n++)
+        avgLen += n*FD->getState(n);
+    (*results)->write(TypeGeneral::SystemUtilization, avgLen);
+
+
+    //Średnie wykorzystanie serwera
+    avgLen = 0;
+    for (int n=0; n<=VsVb; n++)
+        avgLen += FD->getState(n) * (n <= Vs ? n : Vs);
+    (*results)->write(TypeGeneral::SystemUtilization, avgLen);
+
+
     //Średnia długość kolejki
-    double AvgLen = 0;
+    avgLen = 0;
     for (int n=Vs+1; n<=VsVb; n++)
-        AvgLen += ((n-Vs)*FD->getState(n));
-    //TODO algRes->set_Qlen(a, AvgLen);
+        avgLen += ((n-Vs)*FD->getState(n));
+    (*results)->write(TypeGeneral::BufferUtilization, avgLen);
 
     for (int i=0; i<m; i++)
     {
-        const ModelTrClass *tmpClass = system.getClass(i);
         for (int n=0; n<=VsVb; n++)
         {
-            ; //TODO algRes->resultsAS->setVal(resultsType::systemYt_vs_sys_n, a, tmpClass, n, FD->get_y(i, n) * tmpClass->t(), 0);
+            (*results)->write(TypeForClassAndSystemState::UsageForSystem, FD->get_y(i, n), i, n);
         }
     }
     deleteTemporaryData();
-    //emit this->sigCalculationDone();
 }
 
 void convolutionAlgorithmGamma3::prepareTemporaryData(const ModelSyst *system, double a)
@@ -153,30 +168,30 @@ convolutionAlgorithmGamma3::VectQEUE::VectQEUE(int Vs, int Vb, int m, int i, con
 
 convolutionAlgorithmGamma3::VectQEUE::~VectQEUE()
 {
-    if (ySYSTEM != NULL)
+    if (ySYSTEM != nullptr)
     {
         for (int i=0; i<m; i++)
             delete []ySYSTEM[i];
         delete []ySYSTEM;
-        ySYSTEM = NULL;
+        ySYSTEM = nullptr;
     }
 
-    if (loc2globIdx != NULL)
+    if (loc2globIdx != nullptr)
     {
         delete []loc2globIdx;
-        loc2globIdx = NULL;
+        loc2globIdx = nullptr;
     }
 
-    if (states != NULL)
+    if (states != nullptr)
     {
         delete []states;
-        states = NULL;
+        states = nullptr;
     }
 
-    if (trClasses != NULL)
+    if (trClasses != nullptr)
     {
         delete []trClasses;
-        trClasses = NULL;
+        trClasses = nullptr;
     }
 }
 

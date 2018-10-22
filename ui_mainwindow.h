@@ -128,8 +128,8 @@ public:
     QVBoxLayout *verticalLayout;
     QGridLayout *gridLayoutQoS_Algorithms;
     QLabel *label_Amin;
-    QListWidget *listWidgetAlgorithmsExperimental;
-    QLabel *labelAlgorithmsExperimental;
+    QListWidget *listWidgetAlgorithmsAlternative;
+    QLabel *labelAlgorithmsAlternative;
     QDoubleSpinBox *doubleSpinBox_aMax;
     QLabel *label;
     QLabel *label_Amax;
@@ -729,24 +729,24 @@ public:
 
         gridLayoutQoS_Algorithms->addWidget(label_Amin, 0, 3, 1, 1);
 
-        listWidgetAlgorithmsExperimental = new QListWidget(tabWidgetQoS);
-        listWidgetAlgorithmsExperimental->setObjectName(QStringLiteral("listWidgetAlgorithmsExperimental"));
-        sizePolicy11.setHeightForWidth(listWidgetAlgorithmsExperimental->sizePolicy().hasHeightForWidth());
-        listWidgetAlgorithmsExperimental->setSizePolicy(sizePolicy11);
-        listWidgetAlgorithmsExperimental->setBaseSize(QSize(0, 0));
-        listWidgetAlgorithmsExperimental->setSelectionMode(QAbstractItemView::MultiSelection);
+        listWidgetAlgorithmsAlternative = new QListWidget(tabWidgetQoS);
+        listWidgetAlgorithmsAlternative->setObjectName(QStringLiteral("listWidgetAlgorithmsAlternative"));
+        sizePolicy11.setHeightForWidth(listWidgetAlgorithmsAlternative->sizePolicy().hasHeightForWidth());
+        listWidgetAlgorithmsAlternative->setSizePolicy(sizePolicy11);
+        listWidgetAlgorithmsAlternative->setBaseSize(QSize(0, 0));
+        listWidgetAlgorithmsAlternative->setSelectionMode(QAbstractItemView::MultiSelection);
 
-        gridLayoutQoS_Algorithms->addWidget(listWidgetAlgorithmsExperimental, 1, 1, 3, 1);
+        gridLayoutQoS_Algorithms->addWidget(listWidgetAlgorithmsAlternative, 1, 1, 3, 1);
 
-        labelAlgorithmsExperimental = new QLabel(tabWidgetQoS);
-        labelAlgorithmsExperimental->setObjectName(QStringLiteral("labelAlgorithmsExperimental"));
+        labelAlgorithmsAlternative = new QLabel(tabWidgetQoS);
+        labelAlgorithmsAlternative->setObjectName(QStringLiteral("labelAlgorithmsAlternative"));
         QSizePolicy sizePolicy12(QSizePolicy::MinimumExpanding, QSizePolicy::Maximum);
         sizePolicy12.setHorizontalStretch(1);
         sizePolicy12.setVerticalStretch(0);
-        sizePolicy12.setHeightForWidth(labelAlgorithmsExperimental->sizePolicy().hasHeightForWidth());
-        labelAlgorithmsExperimental->setSizePolicy(sizePolicy12);
+        sizePolicy12.setHeightForWidth(labelAlgorithmsAlternative->sizePolicy().hasHeightForWidth());
+        labelAlgorithmsAlternative->setSizePolicy(sizePolicy12);
 
-        gridLayoutQoS_Algorithms->addWidget(labelAlgorithmsExperimental, 0, 1, 1, 1);
+        gridLayoutQoS_Algorithms->addWidget(labelAlgorithmsAlternative, 0, 1, 1, 1);
 
         doubleSpinBox_aMax = new QDoubleSpinBox(tabWidgetQoS);
         doubleSpinBox_aMax->setObjectName(QStringLiteral("doubleSpinBox_aMax"));
@@ -957,7 +957,7 @@ public:
         MainWindow->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(MainWindow);
         menuBar->setObjectName(QStringLiteral("menuBar"));
-        menuBar->setGeometry(QRect(0, 0, 735, 23));
+        menuBar->setGeometry(QRect(0, 0, 735, 28));
         menuFile = new QMenu(menuBar);
         menuFile->setObjectName(QStringLiteral("menuFile"));
         menuSave_results_to_gnuplot = new QMenu(menuFile);
@@ -1015,7 +1015,7 @@ public:
         QObject::connect(listWidgetResultsQtAdditionalParameters2, SIGNAL(pressed(QModelIndex)), MainWindow, SLOT(on_ResultsQtChartRefresh()));
         QObject::connect(listWidgetResultsQtAdditionalParameters1, SIGNAL(itemSelectionChanged()), MainWindow, SLOT(on_ResultsQtChartRefresh()));
         QObject::connect(listWidgetAlgorithms, SIGNAL(itemSelectionChanged()), MainWindow, SLOT(on_ResultsQtChartRefresh()));
-        QObject::connect(listWidgetAlgorithmsExperimental, SIGNAL(itemSelectionChanged()), MainWindow, SLOT(on_ResultsQtChartRefresh()));
+        QObject::connect(listWidgetAlgorithmsAlternative, SIGNAL(itemSelectionChanged()), MainWindow, SLOT(on_ResultsQtChartRefresh()));
         QObject::connect(listWidgetSimulationParameters, SIGNAL(itemSelectionChanged()), MainWindow, SLOT(on_ResultsQtChartRefresh()));
 
         Pages->setCurrentIndex(1);
@@ -1096,7 +1096,7 @@ public:
         label_CallServStreamType->setText(QApplication::translate("MainWindow", "Service stream type", nullptr));
         Pages->setTabText(Pages->indexOf(tabWidgetPage_SystemModel), QApplication::translate("MainWindow", "Model of the system", nullptr));
         label_Amin->setText(QApplication::translate("MainWindow", "<html><head/><body><p>a<span style=\" vertical-align:sub;\">min</span></p></body></html>", nullptr));
-        labelAlgorithmsExperimental->setText(QApplication::translate("MainWindow", "Experimental algorithms", nullptr));
+        labelAlgorithmsAlternative->setText(QApplication::translate("MainWindow", "Alternative algorithms", nullptr));
         label->setText(QApplication::translate("MainWindow", "Simulation's exp param", nullptr));
         label_Amax->setText(QApplication::translate("MainWindow", "<html><head/><body><p>a<span style=\" vertical-align:sub;\">max</span></p></body></html>", nullptr));
         labelAlgorithms->setText(QApplication::translate("MainWindow", "Working algorithms", nullptr));

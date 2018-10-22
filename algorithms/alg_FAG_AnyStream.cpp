@@ -88,14 +88,14 @@ void AlgorithmAnyStreamFAG::calculateSystem(const ModelSyst *system
         //Średni czas obsługi
         //algRes->set_tService(system->getClass(i), a, lQeue / A[i] * system->getClass(i)->getMu());
         double avgToS = 0;
-        for (int n=0; n <= system->V_s(); n++)
+        for (int n=0; n <= system->vk_s(); n++)
         {
             avgToS += P[n] / P.getIntOutEnd(n, i);
         }
         //TODO algResults->set_tService(system->getClass(i), a, avgToS);
 
 
-        for (int n=0; n <= system->V_s(); n++)
+        for (int n=0; n <= system->vk_s(); n++)
         {
             (*results)->write(TypeForClassAndServerState::Usage, P.getY(n, i)*classes[i].t, i, n);
         }
@@ -133,10 +133,10 @@ void AlgorithmAnyStreamFAG::calculateSystem(const ModelSyst *system
 
 bool AlgorithmAnyStreamFAG::possible(const ModelSyst *system) const
 {
-    if (system->V_b() > 0)
+    if (system->vk_b() > 0)
         return false;
 
-    if (system->Ks() > 1)
+    if (system->k_s() > 1)
         return false;
 
     return Investigator::possible(system);
