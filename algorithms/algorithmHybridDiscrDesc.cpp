@@ -288,9 +288,7 @@ void AlgorithmHybridDiscrDesc::calculateSystem(const ModelSyst *system
                 if (n_b >= unused)
                     val = Q_X[n_s + n_b][unused];
             }
-
-            //if (n_s+n_b)
-            //TODO dudać typeForServerAndSystem algRes->resultsAS->setVal(resultsType::trDistrib, a, n_s, n_b, val, 0);
+            (*results)->write(TypeForServerAngBufferState::StateProbability, val, n_s, n_b);
         }
     }
 

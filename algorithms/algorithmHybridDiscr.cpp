@@ -281,7 +281,10 @@ void AlgorithmHybridDiscr::calculateSystem(const ModelSyst *system
                 if (n_b >= unused)
                     val = Qdetail[n_s + n_b][unused].p;
             }
+<<<<<<< HEAD
+=======
 
+>>>>>>> d9381e61e9e319e0e07ec435bbd71125c8b50997
             (*results)->write(TypeForServerAngBufferState::StateProbability, val, n_s, n_b);
         }
     }

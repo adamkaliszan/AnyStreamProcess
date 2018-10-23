@@ -28,6 +28,8 @@ void RSingle::init(const ModelSyst *system)
     dataPerClassAndServerState.fill(DataForClassesAndState(), (Vs+1)*m);
     dataPerClassAndQueueState.fill(DataForClassesAndState(), (V-Vs+1)*m);
     dataPerClassAndSystemStateForSystem.fill(DataForClassesAndState(), (V+1)*m);
+    dataPerClassAndSystemStateForServer.fill(DataForClassesAndState(), (V+1)*m);
+    dataPerClassAndSystemStateForBuffer.fill(DataForClassesAndState(), (V+1)*m);
     dataPerGroupCombination.fill(DataPerGroups(vMax+1, m), ::Utils::UtilsLAG::getPossibleCombinations(system->k_s()).length());
     dataPerBestGroups.fill(DataPerGroups(vMax+1, m), (system->k_s())+1);
     dataPerExactGroupNumber.fill(DataPerGroups(vMax+1, m), (system->k_s())+1);
@@ -502,7 +504,7 @@ RSingle &RSingle::write(TypeForClassAndSystemState type, double value, int class
         break;
 
     case TypeForClassAndSystemState::RealNewCallIntensityOutForQueue:
-        dataPerClassAndSystemStateForQueue[index].realNewCallIntensityOut = value;
+        dataPerClassAndSystemStateForBuffer[index].realNewCallIntensityOut = value;
         break;
 
     case TypeForClassAndSystemState::RealNewCallIntensityOutForSystem:
@@ -514,7 +516,7 @@ RSingle &RSingle::write(TypeForClassAndSystemState type, double value, int class
         break;
 
     case TypeForClassAndSystemState::OfferedNewCallIntensityOutForQueue:
-        dataPerClassAndSystemStateForQueue[index].offeredCallIntensityOut = value;
+        dataPerClassAndSystemStateForBuffer[index].offeredCallIntensityOut = value;
         break;
 
     case TypeForClassAndSystemState::OfferedNewCallIntensityOutForSystem:
@@ -526,7 +528,7 @@ RSingle &RSingle::write(TypeForClassAndSystemState type, double value, int class
         break;
 
     case TypeForClassAndSystemState::EndCallIntensityOutForQueue:
-        dataPerClassAndSystemStateForQueue[index].endCallIntensityOut = value;
+        dataPerClassAndSystemStateForBuffer[index].endCallIntensityOut = value;
         break;
 
     case TypeForClassAndSystemState::EndCallIntensityOutForSystem:
@@ -538,7 +540,7 @@ RSingle &RSingle::write(TypeForClassAndSystemState type, double value, int class
         break;
 
     case TypeForClassAndSystemState::NewCallIntensityInForQueue:
-        dataPerClassAndSystemStateForQueue[index].newCallIntensityIn = value;
+        dataPerClassAndSystemStateForBuffer[index].newCallIntensityIn = value;
         break;
 
     case TypeForClassAndSystemState::NewCallIntensityInForSystem:
@@ -550,7 +552,7 @@ RSingle &RSingle::write(TypeForClassAndSystemState type, double value, int class
         break;
 
     case TypeForClassAndSystemState::EndCallIntensityInForQueue:
-        dataPerClassAndSystemStateForQueue[index].endCallIntensityIn = value;
+        dataPerClassAndSystemStateForBuffer[index].endCallIntensityIn = value;
         break;
 
     case TypeForClassAndSystemState::EndCallIntensityInForSystem:
@@ -562,7 +564,7 @@ RSingle &RSingle::write(TypeForClassAndSystemState type, double value, int class
         break;
 
     case TypeForClassAndSystemState::CAC_ProbabilityForQueue:
-        dataPerClassAndSystemStateForQueue[index].cac_probability = value;
+        dataPerClassAndSystemStateForBuffer[index].cac_probability = value;
         break;
 
     case TypeForClassAndSystemState::CAC_ProbabilityForSystem:
@@ -574,7 +576,7 @@ RSingle &RSingle::write(TypeForClassAndSystemState type, double value, int class
         break;
 
     case TypeForClassAndSystemState::UsageForBuffer:
-        dataPerClassAndSystemStateForQueue[index].utilization = value;
+        dataPerClassAndSystemStateForBuffer[index].utilization = value;
         break;
 
     case TypeForClassAndSystemState::UsageForSystem:
@@ -595,7 +597,7 @@ bool RSingle::read(double &result, TypeForClassAndSystemState type, int classNo,
         break;
 
     case TypeForClassAndSystemState::RealNewCallIntensityOutForQueue:
-        result = dataPerClassAndSystemStateForQueue[index].realNewCallIntensityOut;
+        result = dataPerClassAndSystemStateForBuffer[index].realNewCallIntensityOut;
         break;
 
     case TypeForClassAndSystemState::RealNewCallIntensityOutForSystem:
@@ -607,7 +609,7 @@ bool RSingle::read(double &result, TypeForClassAndSystemState type, int classNo,
         break;
 
     case TypeForClassAndSystemState::OfferedNewCallIntensityOutForQueue:
-        result = dataPerClassAndSystemStateForQueue[index].offeredCallIntensityOut;
+        result = dataPerClassAndSystemStateForBuffer[index].offeredCallIntensityOut;
         break;
 
     case TypeForClassAndSystemState::OfferedNewCallIntensityOutForSystem:
@@ -619,7 +621,7 @@ bool RSingle::read(double &result, TypeForClassAndSystemState type, int classNo,
         break;
 
     case TypeForClassAndSystemState::EndCallIntensityOutForQueue:
-        result = dataPerClassAndSystemStateForQueue[index].endCallIntensityOut;
+        result = dataPerClassAndSystemStateForBuffer[index].endCallIntensityOut;
         break;
 
     case TypeForClassAndSystemState::EndCallIntensityOutForSystem:
@@ -631,7 +633,7 @@ bool RSingle::read(double &result, TypeForClassAndSystemState type, int classNo,
         break;
 
     case TypeForClassAndSystemState::NewCallIntensityInForQueue:
-        result = dataPerClassAndSystemStateForQueue[index].newCallIntensityIn;
+        result = dataPerClassAndSystemStateForBuffer[index].newCallIntensityIn;
         break;
 
     case TypeForClassAndSystemState::NewCallIntensityInForSystem:
@@ -643,7 +645,7 @@ bool RSingle::read(double &result, TypeForClassAndSystemState type, int classNo,
         break;
 
     case TypeForClassAndSystemState::EndCallIntensityInForQueue:
-        result = dataPerClassAndSystemStateForQueue[index].endCallIntensityIn;
+        result = dataPerClassAndSystemStateForBuffer[index].endCallIntensityIn;
         break;
 
     case TypeForClassAndSystemState::EndCallIntensityInForSystem:
@@ -655,7 +657,7 @@ bool RSingle::read(double &result, TypeForClassAndSystemState type, int classNo,
         break;
 
     case TypeForClassAndSystemState::CAC_ProbabilityForQueue:
-        result = dataPerClassAndSystemStateForQueue[index].cac_probability;
+        result = dataPerClassAndSystemStateForBuffer[index].cac_probability;
         break;
 
     case TypeForClassAndSystemState::CAC_ProbabilityForSystem:
@@ -667,7 +669,7 @@ bool RSingle::read(double &result, TypeForClassAndSystemState type, int classNo,
         break;
 
     case TypeForClassAndSystemState::UsageForBuffer:
-        result = dataPerClassAndSystemStateForQueue[index].utilization;
+        result = dataPerClassAndSystemStateForBuffer[index].utilization;
         break;
 
     case TypeForClassAndSystemState::UsageForSystem:
@@ -997,7 +999,7 @@ RSingle& RSingle::operator+=(const RSingle &rho)
     Utils::addElementsToFirst<DataForClassesAndState>(dataPerClassAndServerState, rho.dataPerClassAndServerState);
     Utils::addElementsToFirst<DataForClassesAndState>(dataPerClassAndQueueState, rho.dataPerClassAndQueueState);
     Utils::addElementsToFirst<DataForClassesAndState>(dataPerClassAndSystemStateForServer, rho.dataPerClassAndSystemStateForServer);
-    Utils::addElementsToFirst<DataForClassesAndState>(dataPerClassAndSystemStateForQueue, rho.dataPerClassAndSystemStateForQueue);
+    Utils::addElementsToFirst<DataForClassesAndState>(dataPerClassAndSystemStateForBuffer, rho.dataPerClassAndSystemStateForBuffer);
     Utils::addElementsToFirst<DataForClassesAndState>(dataPerClassAndSystemStateForSystem, rho.dataPerClassAndSystemStateForSystem);
     Utils::addElementsToFirst<RSingle::DataPerGroups>(dataPerGroupCombination, rho.dataPerGroupCombination);
     Utils::addElementsToFirst<RSingle::DataPerGroups>(dataPerBestGroups, rho.dataPerBestGroups);
@@ -1016,7 +1018,7 @@ RSingle RSingle::operator-(const RSingle &rho) const
     result.dataPerClassAndServerState          = Utils::subtractElements<DataForClassesAndState>(dataPerClassAndServerState, rho.dataPerClassAndServerState);
     result.dataPerClassAndQueueState           = Utils::subtractElements<DataForClassesAndState>(dataPerClassAndQueueState, rho.dataPerClassAndQueueState);
     result.dataPerClassAndSystemStateForServer = Utils::subtractElements<DataForClassesAndState>(dataPerClassAndSystemStateForServer, rho.dataPerClassAndSystemStateForServer);
-    result.dataPerClassAndSystemStateForQueue  = Utils::subtractElements<DataForClassesAndState>(dataPerClassAndSystemStateForQueue,  rho.dataPerClassAndSystemStateForQueue);
+    result.dataPerClassAndSystemStateForBuffer  = Utils::subtractElements<DataForClassesAndState>(dataPerClassAndSystemStateForBuffer,  rho.dataPerClassAndSystemStateForBuffer);
     result.dataPerClassAndSystemStateForSystem = Utils::subtractElements<DataForClassesAndState>(dataPerClassAndSystemStateForSystem, rho.dataPerClassAndSystemStateForSystem);
     result.dataPerGroupCombination             = Utils::subtractElements<RSingle::DataPerGroups> (this->dataPerGroupCombination, rho.dataPerGroupCombination);
     result.dataPerBestGroups                   = Utils::subtractElements<RSingle::DataPerGroups> (this->dataPerBestGroups, rho.dataPerBestGroups);
@@ -1035,7 +1037,7 @@ RSingle RSingle::operator^(double rho) const
     result.dataPerClassAndServerState          = Utils::powerElementTempl<DataForClassesAndState>(dataPerClassAndServerState, rho);
     result.dataPerClassAndQueueState           = Utils::powerElementTempl<DataForClassesAndState>(dataPerClassAndQueueState, rho);
     result.dataPerClassAndSystemStateForServer = Utils::powerElementTempl<DataForClassesAndState>(dataPerClassAndSystemStateForServer, rho);
-    result.dataPerClassAndSystemStateForQueue  = Utils::powerElementTempl<DataForClassesAndState>(dataPerClassAndSystemStateForQueue, rho);
+    result.dataPerClassAndSystemStateForBuffer  = Utils::powerElementTempl<DataForClassesAndState>(dataPerClassAndSystemStateForBuffer, rho);
     result.dataPerClassAndSystemStateForSystem = Utils::powerElementTempl<DataForClassesAndState>(dataPerClassAndSystemStateForSystem, rho);
     result.dataPerGroupCombination             = Utils::powerElementTempl<RSingle::DataPerGroups> (this->dataPerGroupCombination, rho);
     result.dataPerBestGroups                   = Utils::powerElementTempl<RSingle::DataPerGroups> (this->dataPerBestGroups, rho);
@@ -1054,7 +1056,7 @@ RSingle RSingle::operator*(const RSingle &rho)
     result.dataPerClassAndServerState          = Utils::multiplyElement<DataForClassesAndState>(dataPerClassAndServerState, rho.dataPerClassAndServerState);
     result.dataPerClassAndQueueState           = Utils::multiplyElement<DataForClassesAndState>(dataPerClassAndQueueState, rho.dataPerClassAndQueueState);
     result.dataPerClassAndSystemStateForServer = Utils::multiplyElement<DataForClassesAndState>(dataPerClassAndSystemStateForServer, rho.dataPerClassAndSystemStateForServer);
-    result.dataPerClassAndSystemStateForQueue  = Utils::multiplyElement<DataForClassesAndState>(dataPerClassAndSystemStateForQueue, rho.dataPerClassAndSystemStateForQueue);
+    result.dataPerClassAndSystemStateForBuffer  = Utils::multiplyElement<DataForClassesAndState>(dataPerClassAndSystemStateForBuffer, rho.dataPerClassAndSystemStateForBuffer);
     result.dataPerClassAndSystemStateForSystem = Utils::multiplyElement<DataForClassesAndState>(dataPerClassAndSystemStateForSystem, rho.dataPerClassAndSystemStateForSystem);
     result.dataPerGroupCombination             = Utils::multiplyElement<RSingle::DataPerGroups> (this->dataPerGroupCombination, rho.dataPerGroupCombination);
     return result;
@@ -1070,7 +1072,7 @@ RSingle &RSingle::operator/=(double rho)
     Utils::divideElementToFirst<RSingle::DataForClassesAndState>(dataPerClassAndServerState, rho);
     Utils::divideElementToFirst<RSingle::DataForClassesAndState>(dataPerClassAndQueueState, rho);
     Utils::divideElementToFirst<RSingle::DataForClassesAndState>(dataPerClassAndSystemStateForServer, rho);
-    Utils::divideElementToFirst<RSingle::DataForClassesAndState>(dataPerClassAndSystemStateForQueue, rho);
+    Utils::divideElementToFirst<RSingle::DataForClassesAndState>(dataPerClassAndSystemStateForBuffer, rho);
     Utils::divideElementToFirst<RSingle::DataForClassesAndState>(dataPerClassAndSystemStateForSystem, rho);
     Utils::divideElementToFirst<RSingle::DataPerGroups>(dataPerGroupCombination, rho);
     Utils::divideElementToFirst<RSingle::DataPerGroups>(dataPerBestGroups, rho);
@@ -1088,7 +1090,7 @@ RSingle &RSingle::operator*=(double rho)
     Utils::multiplyElementToFirst<RSingle::DataForClassesAndState>(dataPerClassAndServerState, rho);
     Utils::multiplyElementToFirst<RSingle::DataForClassesAndState>(dataPerClassAndQueueState, rho);
     Utils::multiplyElementToFirst<RSingle::DataForClassesAndState>(dataPerClassAndSystemStateForServer, rho);
-    Utils::multiplyElementToFirst<RSingle::DataForClassesAndState>(dataPerClassAndSystemStateForQueue, rho);
+    Utils::multiplyElementToFirst<RSingle::DataForClassesAndState>(dataPerClassAndSystemStateForBuffer, rho);
     Utils::multiplyElementToFirst<RSingle::DataForClassesAndState>(dataPerClassAndSystemStateForSystem, rho);
     Utils::multiplyElementToFirst<RSingle::DataPerGroups>(dataPerGroupCombination, rho);
     Utils::multiplyElementToFirst<RSingle::DataPerGroups>(dataPerBestGroups, rho);
@@ -1106,7 +1108,7 @@ void RSingle::sqrt()
     Utils::sqrtTemplate<RSingle::DataForClassesAndState>(dataPerClassAndServerState);
     Utils::sqrtTemplate<RSingle::DataForClassesAndState>(dataPerClassAndQueueState);
     Utils::sqrtTemplate<RSingle::DataForClassesAndState>(dataPerClassAndSystemStateForServer);
-    Utils::sqrtTemplate<RSingle::DataForClassesAndState>(dataPerClassAndSystemStateForQueue);
+    Utils::sqrtTemplate<RSingle::DataForClassesAndState>(dataPerClassAndSystemStateForBuffer);
     Utils::sqrtTemplate<RSingle::DataForClassesAndState>(dataPerClassAndSystemStateForSystem);
     Utils::sqrtTemplate<RSingle::DataPerGroups>(dataPerGroupCombination);
     Utils::sqrtTemplate<RSingle::DataPerGroups>(dataPerBestGroups);
