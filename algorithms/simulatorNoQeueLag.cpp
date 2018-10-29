@@ -9,7 +9,7 @@
 namespace Algorithms
 {
 
-simulatorNoQeueLag::simulatorNoQeueLag(QueueServDiscipline disc) : simulator(disc)
+simulatorNoQeueLag::simulatorNoQeueLag(BufferResourcessScheduler disc) : simulator(disc)
 {
     myQoS_Set << Results::Type::BlockingProbability;
     myQoS_Set << Results::Type::OccupancyDistribution;
@@ -67,7 +67,7 @@ void simulatorNoQeueLag::calculateSystem(const ModelSyst *system
     //emit this->sigCalculationDone();
 }
 
-simulatorNoQeueLag::System::System(const ModelSyst *system, int noOfSeries, QueueServDiscipline disc)
+simulatorNoQeueLag::System::System(const ModelSyst *system, int noOfSeries, BufferResourcessScheduler disc)
     : m(system->m())
     , V(system->V())
     , disc(disc)
@@ -739,7 +739,7 @@ bool simulatorNoQeueLag::Server::findAS(int noOfAUs, int& groupNo, QList<int>& a
 
     switch (subgroupScheduler)
     {
-    case ModelResourcessScheduler::Random:
+    case ServerResourcessScheduler::Random:
         Utils::UtilsMisc::suffle(groupSequence);
         foreach (groupNoTmp, groupSequence)
         {
@@ -752,7 +752,7 @@ bool simulatorNoQeueLag::Server::findAS(int noOfAUs, int& groupNo, QList<int>& a
         }
         break;
 
-    case ModelResourcessScheduler::Sequencial:
+    case ServerResourcessScheduler::Sequencial:
         foreach (groupNoTmp, groupSequence)
         {
             groupNo = groupNoTmp;

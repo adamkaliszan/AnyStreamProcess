@@ -4,7 +4,7 @@
 namespace Algorithms
 {
 
-AlgorithmHybridNoFifo::AlgorithmHybridNoFifo() : Investigator(QueueServDiscipline::NoQeue)
+AlgorithmHybridNoFifo::AlgorithmHybridNoFifo() : Investigator(BufferResourcessScheduler::Disabled)
 {
     myQoS_Set
      << Results::Type::BlockingProbability

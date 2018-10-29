@@ -5,7 +5,7 @@
 namespace Algorithms
 {
 
-SimulatorQeueSdFifo::SimulatorQeueSdFifo(): simulator(QueueServDiscipline::SD_FIFO) { }
+SimulatorQeueSdFifo::SimulatorQeueSdFifo(): simulator(BufferResourcessScheduler::SD_FIFO) { }
 
 bool SimulatorQeueSdFifo::possible(const ModelSyst *system) const
 {

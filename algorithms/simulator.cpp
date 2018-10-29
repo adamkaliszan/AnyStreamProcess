@@ -3,7 +3,7 @@
 namespace Algorithms
 {
 
-simulator::simulator(QueueServDiscipline qDisc): Investigator(qDisc)
+simulator::simulator(BufferResourcessScheduler qDisc): Investigator(qDisc)
 {
     _hasConfIntervall = true;
     myQoS_Set

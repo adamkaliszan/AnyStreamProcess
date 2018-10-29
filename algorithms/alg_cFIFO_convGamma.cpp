@@ -5,7 +5,7 @@
 namespace Algorithms
 {
 
-convolutionAlgorithmGamma::convolutionAlgorithmGamma(): Investigator(QueueServDiscipline::cFIFO)
+convolutionAlgorithmGamma::convolutionAlgorithmGamma(): Investigator(BufferResourcessScheduler::Continuos)
 {
     myQoS_Set
        <<Results::Type::BlockingProbability

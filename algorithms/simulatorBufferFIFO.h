@@ -20,7 +20,7 @@ class CallData;
 class SimulatorBufferFifo: public simulator
 {
 public:
-    SimulatorBufferFifo(QueueServDiscipline qDisc);
+    SimulatorBufferFifo(BufferResourcessScheduler qDisc);
 
 
     QString shortName() { return "Sim. Buffer FIFO"; }

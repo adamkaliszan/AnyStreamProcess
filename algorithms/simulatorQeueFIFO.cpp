@@ -5,7 +5,7 @@
 namespace Algorithms
 {
 
-SimulatorQeueFifo::SimulatorQeueFifo(QueueServDiscipline qDisc): simulator(qDisc)
+SimulatorQeueFifo::SimulatorQeueFifo(BufferResourcessScheduler qDisc): simulator(qDisc)
 {
     myQoS_Set
        <<Results::Type::BlockingProbability
@@ -16,11 +16,11 @@ QString SimulatorQeueFifo::shortName() const
 {
     switch (disc)
     {
-    case QueueServDiscipline::cFIFO:
+    case BufferResourcessScheduler::Continuos:
         return "Sim. cFIFO";
-    case QueueServDiscipline::dFIFO:
+    case BufferResourcessScheduler::dFIFO_Seq:
         return "Sim. dFIFO";
-    case QueueServDiscipline::qFIFO:
+    case BufferResourcessScheduler::qFIFO_Seq:
         return "Sim. qFIFO";
     default:
         qFatal("Not supported FIFO discipline");
@@ -78,7 +78,7 @@ void SimulatorQeueFifo::calculateSystem(const ModelSyst *system
 SimulatorQeueFifo::System::System(
           const ModelSyst *system
         , int noOfSeries
-        , QueueServDiscipline disc
+        , BufferResourcessScheduler disc
         ):
     m(system->m())
   , n(0)
@@ -245,7 +245,7 @@ void SimulatorQeueFifo::System::writesResultsOfSingleExperiment(Results::RSingle
             {
                 tmp=getOccupancyTimeOfState(n_server, n_Buffer);
 
-                if (this->disc == QueueServDiscipline::dFIFO || (this->disc == QueueServDiscipline::qFIFO))
+                if (this->disc == BufferResourcessScheduler::dFIFO_Seq || (this->disc == BufferResourcessScheduler::qFIFO_Seq))
                     E += tmp;
                 else if (n_server + n_Buffer + t > Vs + Vb)
                     E += tmp;
@@ -360,8 +360,8 @@ bool SimulatorQeueFifo::System::serveNewCall(SimulatorQeueFifo::Call *newCall)
 
     int serverFreeAS = server->getNoOfFreeAS();
     int bufferFreeAS = qeue->getNoOfFreeAS();
-    if (((disc==QueueServDiscipline::cFIFO || disc==QueueServDiscipline::qFIFO) && serverFreeAS >= newCall->reqAS)
-            || (disc==QueueServDiscipline::dFIFO  && serverFreeAS >= newCall->reqAS && qeue->n == 0))
+    if (((disc==BufferResourcessScheduler::Continuos || disc==BufferResourcessScheduler::qFIFO_Seq) && serverFreeAS >= newCall->reqAS)
+            || (disc==BufferResourcessScheduler::dFIFO_Seq  && serverFreeAS >= newCall->reqAS && qeue->n == 0))
     {
         callsInSystem.append(newCall);
 
@@ -384,7 +384,7 @@ bool SimulatorQeueFifo::System::serveNewCall(SimulatorQeueFifo::Call *newCall)
         callsInSystem.append(newCall);
         qeue->addCall(newCall);
 
-        if (disc==QueueServDiscipline::cFIFO && serverFreeAS > 0)
+        if (disc==BufferResourcessScheduler::Continuos && serverFreeAS > 0)
             serveCallsInEque();
         n += newCall->reqAS;
         return true;
@@ -601,7 +601,7 @@ void SimulatorQeueFifo::System::serveCallsInEque()
         if (tmpCall == NULL)
             break;
 
-        if (disc != QueueServDiscipline::cFIFO && tmpCall->reqAS > numberOfAvailableAS)
+        if (disc != BufferResourcessScheduler::Continuos && tmpCall->reqAS > numberOfAvailableAS)
             break;
 
         int maxResToAll = tmpCall->reqAS - tmpCall->allocatedAS;

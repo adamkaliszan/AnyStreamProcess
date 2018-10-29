@@ -36,7 +36,7 @@ protected:
     QSet<Results::Type> myQoS_Set;
 
 public:
-    Investigator(QueueServDiscipline queueDisc);
+    Investigator(BufferResourcessScheduler queueDisc);
     virtual ~Investigator() {}
 
 
@@ -79,7 +79,7 @@ protected:
     double **yQEUE_VsVb;    ///Avarage number of calls of class i in qeue   vs number of occupied AS in system
     double **ySYSTEM_V;     ///Avarage number of calls of class i in system vs number of occupied AS in system
 
-    const QueueServDiscipline disc;
+    const BufferResourcessScheduler disc;
 
     class ClassParameters
     {

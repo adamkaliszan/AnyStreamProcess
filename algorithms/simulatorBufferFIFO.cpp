@@ -6,7 +6,7 @@
 namespace Algorithms
 {
 
-SimulatorBufferFifo::SimulatorBufferFifo(QueueServDiscipline qDisc): simulator(qDisc)
+SimulatorBufferFifo::SimulatorBufferFifo(BufferResourcessScheduler qDisc): simulator(qDisc)
 {
     myQoS_Set
        <<Results::Type::BlockingProbability

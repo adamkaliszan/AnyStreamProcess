@@ -802,7 +802,7 @@ double ModelTrClass::intensityNewCallForY(double lambdaZero, double y) const
 
 ModelSyst::ModelSyst():
     _noOfTrClasses(0)
-  , _groupsSchedulerAlgorithm(ModelResourcessScheduler::Sequencial)
+  , _groupsSchedulerAlgorithm(ServerResourcessScheduler::Sequencial)
   , _noOfTypesOfGroups(0)
   , _noOfTypesOfBuffers(0)
   , _totalBufferCapacity(0)
@@ -942,7 +942,7 @@ void ModelSyst::addQeues(ModelResourcess qeue, bool optimize)
     _noOfTypesOfBuffers++;
 }
 
-void ModelSyst::setSubgroupSchedulerAlgorithm(ModelResourcessScheduler algorithm)
+void ModelSyst::setSubgroupSchedulerAlgorithm(ServerResourcessScheduler algorithm)
 {
     this->_groupsSchedulerAlgorithm = algorithm;
 }
@@ -970,7 +970,7 @@ const ModelTrClass *ModelSyst::getClass(int idx) const
     return nullptr;
 }
 
-ModelResourcessScheduler ModelSyst::getGroupsSchedulerAlgorithm() const
+ServerResourcessScheduler ModelSyst::getGroupsSchedulerAlgorithm() const
 {
     return _groupsSchedulerAlgorithm;
 }
@@ -1185,10 +1185,10 @@ QTextStream& operator<<(QTextStream &stream, const ModelSyst &model)
         stream<<"(";
         switch (model._groupsSchedulerAlgorithm)
         {
-        case ModelResourcessScheduler::Random:
+        case ServerResourcessScheduler::Random:
             stream<<"R";
             break;
-        case ModelResourcessScheduler::Sequencial:
+        case ServerResourcessScheduler::Sequencial:
             stream<<"S";
             break;
         }
@@ -1265,10 +1265,10 @@ QDebug &operator<<(QDebug &stream, const ModelSyst &model)
         stream<<"(";
         switch (model._groupsSchedulerAlgorithm)
         {
-        case ModelResourcessScheduler::Random:
+        case ServerResourcessScheduler::Random:
             stream<<"R";
             break;
-        case ModelResourcessScheduler::Sequencial:
+        case ServerResourcessScheduler::Sequencial:
             stream<<"S";
             break;
         }

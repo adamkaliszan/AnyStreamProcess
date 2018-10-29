@@ -5,7 +5,7 @@
 namespace Algorithms
 {
 
-AlgRekGeneral::AlgRekGeneral(): Investigator(QueueServDiscipline::NoQeue)
+AlgRekGeneral::AlgRekGeneral(): Investigator(BufferResourcessScheduler::Disabled)
     //: data(new algRekLagGSData)
 {
     myQoS_Set

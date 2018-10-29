@@ -5,7 +5,7 @@
 namespace Algorithms
 {
 
-simulatorNoQeue::simulatorNoQeue(QueueServDiscipline disc) : simulator(disc)
+simulatorNoQeue::simulatorNoQeue(BufferResourcessScheduler disc) : simulator(disc)
 {
     system = NULL;
 }
@@ -66,7 +66,7 @@ void simulatorNoQeue::calculateSystem(const ModelSyst *system
     //emit this->sigCalculationDone();
 }
 
-simulatorNoQeue::System::System(const ModelSyst *system, int noOfSeries, QueueServDiscipline disc): m(system->m()), n(0), old_n(0), results(system->m(), system->vk_s(), system->vk_b(), noOfSeries), disc(disc)
+simulatorNoQeue::System::System(const ModelSyst *system, int noOfSeries, BufferResourcessScheduler disc): m(system->m()), n(0), old_n(0), results(system->m(), system->vk_s(), system->vk_b(), noOfSeries), disc(disc)
 {
     systemData = system;
 

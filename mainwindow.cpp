@@ -246,9 +246,9 @@ void MainWindow::addAlgorithmsAndParams()
 //    algorithms.append(new AlgorithmHybrid(AlgorithmHybrid::algVariant::yAprox));
 //    algorithms.append(new AlgorithmHybridDiscrDesc());
 
-    addTestedAlgorithm(new Algorithms::SimulatorQeueFifo(QueueServDiscipline::cFIFO));
-    addTestedAlgorithm(new Algorithms::SimulatorQeueFifo(QueueServDiscipline::dFIFO));
-    addTestedAlgorithm(new Algorithms::SimulatorQeueFifo(QueueServDiscipline::qFIFO));
+    addTestedAlgorithm(new Algorithms::SimulatorQeueFifo(BufferResourcessScheduler::Continuos));
+    addTestedAlgorithm(new Algorithms::SimulatorQeueFifo(BufferResourcessScheduler::dFIFO_Seq));
+    addTestedAlgorithm(new Algorithms::SimulatorQeueFifo(BufferResourcessScheduler::qFIFO_Seq));
     addTestedAlgorithm(new Algorithms::SimulatorQeueSdFifo());
     addTestedAlgorithm(new Algorithms::simulatorNoQeue());
     addTestedAlgorithm(new Algorithms::simulatorNoQeueLag());
@@ -1341,10 +1341,10 @@ void MainWindow::loadLanguage(const QString &rLanguage)
         ui->comboBox_CallServStrType->addItem("Pareto", variant);
 
         ui->comboBoxSubgoupSchedulerAlgorithm->clear();
-        variant.setValue(ModelResourcessScheduler::Random);
+        variant.setValue(ServerResourcessScheduler::Random);
         ui->comboBoxSubgoupSchedulerAlgorithm->addItem("Random", variant);
 
-        variant.setValue(ModelResourcessScheduler::Sequencial);
+        variant.setValue(ServerResourcessScheduler::Sequencial);
         ui->comboBoxSubgoupSchedulerAlgorithm->addItem("Sequencial", variant);
     }
 }
@@ -1633,7 +1633,7 @@ void MainWindow::on_actionSaveXLSX_subroupAvailability_triggered()
 void MainWindow::on_comboBoxSubgoupSchedulerAlgorithm_currentIndexChanged(int index)
 {
     (void) index;
-    system->setSubgroupSchedulerAlgorithm(ui->comboBoxSubgoupSchedulerAlgorithm->currentData().value<ModelResourcessScheduler>());
+    system->setSubgroupSchedulerAlgorithm(ui->comboBoxSubgoupSchedulerAlgorithm->currentData().value<ServerResourcessScheduler>());
     fillSystem();
 }
 
@@ -1810,7 +1810,23 @@ void MainWindow::on_ResultsQtChartRefresh()
         3, 5, 1, 2, 4
     };
 
-    QPair<double, double> yMinAndMax = {.first = DBL_MAX, .second = -DBL_MAX};
+    QPair<double, double> yMinAndMax(DBL_MAX, -DBL_MAX);
+
+    if (ui->checkBoxResultsQtLogScaleOnAxisY->isChecked())
+    {
+        axisYlinear->setVisible(false);
+        axisY = axisYlog;
+
+        axisYlog->setLabelFormat("%f");
+    }
+    else
+    {
+        axisYlog->setVisible(false);
+        axisY = axisYlinear;
+
+        axisYlinear->setLabelFormat("%f");
+    }
+
 
     int algColIdx = 0;
     foreach (QListWidgetItem *itm, ui->listWidgetAlgorithms->selectedItems() + ui->listWidgetAlgorithmsAlternative->selectedItems())
@@ -1897,31 +1913,18 @@ void MainWindow::on_ResultsQtChartRefresh()
 //    chart-
     if (ui->checkBoxResultsQtLogScaleOnAxisY->isChecked())
     {
-        axisYlinear->setVisible(false);
-        axisY = axisYlog;
-
-
-        axisYlog->setLabelFormat("%f");
-
-        axisYlog->setMin(0.0001);
-        axisYlog->setMax(1);
-
-        //chart->removeAxis(axisYlinear);
-        //chart->addAxis(axisYlog, Qt::AlignLeft);
+        if (yMinAndMax.first <= 0)
+            axisYlog->setMin(0.0001);
+        else
+            axisYlog->setMin(yMinAndMax.first);
     }
     else
     {
-        axisYlog->setVisible(false);
-        axisY = axisYlinear;
-
-        axisYlinear->setLabelFormat("%f");
-
         axisYlinear->setMin(yMinAndMax.first);
-        axisYlinear->setMax(yMinAndMax.second);
-
-        //chart->removeAxis(axisYlog);
-        //chart->addAxis(axisYlinear, Qt::AlignLeft);
     }
+    axisYlog->setMax(yMinAndMax.second);
+
+
     axisY->setVisible();
     axisY->setLinePenColor(QColor::fromRgb(0, 0, 0));
     axisY->setLabelsAngle(315);

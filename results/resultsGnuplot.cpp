@@ -518,7 +518,7 @@ std::ostream &operator<<(std::ostream &st, GnuplotScript &results)
 
 QTextStream &operator<<(QTextStream &st, GnuplotScript &results)
 {
-    st<<results;
+//    st<<results;
     return st;
 }
 

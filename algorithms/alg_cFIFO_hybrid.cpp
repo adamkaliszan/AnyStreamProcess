@@ -14,7 +14,7 @@ namespace Algorithms
  *
  *
  */
-AlgorithmHybrid::AlgorithmHybrid() : Investigator(QueueServDiscipline::cFIFO), variant(AlgVariant::yFAG)
+AlgorithmHybrid::AlgorithmHybrid() : Investigator(BufferResourcessScheduler::Continuos), variant(AlgVariant::yFAG)
 {
     myQoS_Set
      << Results::Type::BlockingProbability
@@ -32,7 +32,7 @@ AlgorithmHybrid::AlgorithmHybrid() : Investigator(QueueServDiscipline::cFIFO), v
          ;
 }
 
-AlgorithmHybrid::AlgorithmHybrid(AlgorithmHybrid::AlgVariant var) : Investigator(QueueServDiscipline::cFIFO), variant(var)
+AlgorithmHybrid::AlgorithmHybrid(AlgorithmHybrid::AlgVariant var) : Investigator(BufferResourcessScheduler::Continuos), variant(var)
 {
     myQoS_Set
      << Results::Type::BlockingProbability

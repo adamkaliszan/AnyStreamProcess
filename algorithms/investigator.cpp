@@ -1,6 +1,6 @@
 #include "algorithms/investigator.h"
 
-Investigator::Investigator(QueueServDiscipline queueDisc): classes(0), ySERVER_Vs(NULL), ySERVER_V(NULL), yQEUE_Vb(NULL), yQEUE_VsVb(NULL), ySYSTEM_V(NULL), disc(queueDisc)
+Investigator::Investigator(BufferResourcessScheduler queueDisc): classes(0), ySERVER_Vs(NULL), ySERVER_V(NULL), yQEUE_Vb(NULL), yQEUE_VsVb(NULL), ySYSTEM_V(NULL), disc(queueDisc)
 {
     calculationDone = false;
     _hasConfIntervall = false;
@@ -11,15 +11,15 @@ QString Investigator::shortQueueDiscipline() const
 {
     switch(disc)
     {
-    case QueueServDiscipline::cFIFO:
+    case BufferResourcessScheduler::Continuos:
         return QString("cFIFO");
-    case QueueServDiscipline::dFIFO:
+    case BufferResourcessScheduler::dFIFO_Seq:
         return QString("dFIFO");
-    case QueueServDiscipline::SD_FIFO:
+    case BufferResourcessScheduler::SD_FIFO:
         return QString("SD-FIFO");
-    case QueueServDiscipline::qFIFO:
+    case BufferResourcessScheduler::qFIFO_Seq:
         return QString("qFIFO");
-    case QueueServDiscipline::NoQeue:
+    case BufferResourcessScheduler::Disabled:
         return QString("no Queue");
     default:
         qFatal("Unknown queueing discipline");

@@ -5,7 +5,7 @@
 namespace Algorithms
 {
 
-AlgorithmAnyStreamFAG::AlgorithmAnyStreamFAG(): Investigator(QueueServDiscipline::NoQeue)
+AlgorithmAnyStreamFAG::AlgorithmAnyStreamFAG(): Investigator(BufferResourcessScheduler::Disabled)
 {
     myQoS_Set
        <<Results::Type::BlockingProbability

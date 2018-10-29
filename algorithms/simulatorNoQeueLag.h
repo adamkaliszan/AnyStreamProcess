@@ -18,7 +18,7 @@ class ProcNoQeueLag;
 class simulatorNoQeueLag: public simulator
 {
 public:
-    simulatorNoQeueLag(QueueServDiscipline disc = QueueServDiscipline::NoQeue);
+    simulatorNoQeueLag(BufferResourcessScheduler disc = BufferResourcessScheduler::Disabled);
 
     QString shortName()  const { return "Sim. noQueue LAG"; }
     int complexity()     const { return 100; }
@@ -78,7 +78,7 @@ public:
     private:
         int m;
         int V;
-        const QueueServDiscipline disc;
+        const BufferResourcessScheduler disc;
 
         int n;
         QVector<int> n_i;
@@ -111,7 +111,7 @@ public:
         int       totalNumberOfLostCalls;
         const ModelSyst * systemData;
 
-        System(const ModelSyst *system, int noOfSeries, QueueServDiscipline disc);
+        System(const ModelSyst *system, int noOfSeries, BufferResourcessScheduler disc);
         ~System();
 
         void initialize(double a, int sumPropAt, int V);
@@ -166,7 +166,7 @@ public:
     private:
         System const *system;
 
-        const ModelResourcessScheduler subgroupScheduler;
+        const ServerResourcessScheduler subgroupScheduler;
 
         const int V;      ///Server capacity
         const int vMax;   ///Max number of AU in a single group

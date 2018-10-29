@@ -17,7 +17,7 @@ class ProcNoQeue;
 class simulatorNoQeue: public simulator
 {
 public:
-    simulatorNoQeue(QueueServDiscipline disc = QueueServDiscipline::NoQeue);
+    simulatorNoQeue(BufferResourcessScheduler disc = BufferResourcessScheduler::Disabled);
 
     QString shortName() const;
     int complexity()    const;
@@ -61,7 +61,7 @@ public:
         long int   **outNewSC;
         long int   **outEndSC;
 
-        const QueueServDiscipline disc;
+        const BufferResourcessScheduler disc;
 
     public:
         int       totalNumberOfServicedCalls;
@@ -74,7 +74,7 @@ public:
         double     **qeueAStime_ofOccupiedAS_byClassI_inStateN;
         double     **serverAStime_ofOccupiedAS_byClassI_inStateN;
 
-        System(const ModelSyst *system, int noOfSeries, QueueServDiscipline disc);
+        System(const ModelSyst *system, int noOfSeries, BufferResourcessScheduler disc);
         ~System();
 
         void initialize(double a, int sumPropAt, int V);

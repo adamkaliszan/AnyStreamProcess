@@ -10,14 +10,26 @@
 #include "utils/probDistributions.h"
 #include "algorithms/trclvector2.h"
 
-enum class QueueServDiscipline
+
+/*
+ * Server
+ */
+enum class ServerResourcessScheduler
 {
-    cFIFO,   //Ciągła fifo
-    dFIFO,   //Dyskretna fifo, zgłoszenie trafia do bufora jeśli bufor jest zajęty
-    qFIFO,   //Zgłoszenie może trafić do serwera, jeśli jest tam miejsce, a w buforze są inne zgłoszenia
-    SD_FIFO, //State dependent
-    NoQeue   //Brak kolejki
+    Random,
+    Sequencial
 };
+
+enum class BufferResourcessScheduler
+{
+    Continuos,     //Call can be splited between server and buffers resourcess
+    SD_FIFO,       //All calls are being served. If there is no room in server, the service time is increased
+    dFIFO_Seq,     //Dyskretna fifo, zgłoszenie trafia do bufora jeśli bufor jest zajęty
+    qFIFO_Seq,     //Zgłoszenie może trafić do serwera, jeśli jest tam miejsce, a w buforze są inne zgłoszenia
+    Disabled   //Brak kolejki
+};
+
+
 
 class ModelResourcess
 {
@@ -414,13 +426,6 @@ public:
     CLASS_SIMULATOR_DEP_PLUS(P, P, NewCallPareto, ServEndPareto)
 };
 
-
-enum class ModelResourcessScheduler
-{
-    Random,
-    Sequencial
-};
-
 class ModelSyst
 {
     friend QTextStream& operator<<(QTextStream &stream, const ModelSyst &model);
@@ -431,7 +436,7 @@ private:
     ModelTrClass **_trClasses;
     int _capacityTrClasses;
 
-    ModelResourcessScheduler _groupsSchedulerAlgorithm;
+    ServerResourcessScheduler _groupsSchedulerAlgorithm;
     ModelResourcess *_servers;
     int _noOfTypesOfGroups;
     int _capacityTypeOfGroups;
@@ -464,7 +469,7 @@ public:
             ) const;
     const ModelTrClass *getClass(int idx) const;
 
-    ModelResourcessScheduler getGroupsSchedulerAlgorithm() const;
+    ServerResourcessScheduler getGroupsSchedulerAlgorithm() const;
 
     bool operator ==(const ModelSyst& rho) const;
     bool operator !=(const ModelSyst& rho) const;
@@ -500,7 +505,7 @@ public:
     void addGroups(ModelResourcess newGroup, bool optimize = true);   //Add groups to the system. Previous types of group are checked before
     void addQeues(ModelResourcess qeue, bool optimize = true);        //Add qeues to the system
 
-    void setSubgroupSchedulerAlgorithm(ModelResourcessScheduler algorithm);
+    void setSubgroupSchedulerAlgorithm(ServerResourcessScheduler algorithm);
 
     void clearAll();
 };
@@ -519,7 +524,7 @@ Q_DECLARE_METATYPE(const ModelTrClass*)
 Q_DECLARE_METATYPE(ModelSyst*)
 Q_DECLARE_METATYPE(ModelTrClass::SourceType)
 Q_DECLARE_METATYPE(ModelTrClass::StreamType)
-Q_DECLARE_METATYPE(ModelResourcessScheduler)
+Q_DECLARE_METATYPE(ServerResourcessScheduler)
 
 
 #endif // MODEL_H
