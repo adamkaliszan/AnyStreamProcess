@@ -1781,46 +1781,10 @@ void MainWindow::on_ResultsQtChartRefresh()
 
     QAbstractAxis *axisY;
 
-    if (ui->checkBoxResultsQtLogScaleOnAxisY->isChecked())
-    {
-        axisYlinear->setVisible(false);
-        axisY = axisYlog;
-
-
-        axisYlog->setLabelFormat("%f");
-
-        axisYlog->setMin(0.0001);
-        axisYlog->setMax(1);
-
-        //chart->removeAxis(axisYlinear);
-        //chart->addAxis(axisYlog, Qt::AlignLeft);
-    }
-    else
-    {
-        axisYlog->setVisible(false);
-        axisY = axisYlinear;
-
-        axisYlinear->setLabelFormat("%f");
-
-        axisYlinear->setMin(0);
-        axisYlinear->setMax(1);
-
-        //chart->removeAxis(axisYlog);
-        //chart->addAxis(axisYlinear, Qt::AlignLeft);
-    }
-    axisY->setVisible();
-    axisY->setLinePenColor(QColor::fromRgb(0, 0, 0));
-    axisY->setLabelsAngle(315);
-    axisY->setLineVisible();
-    axisY->setTitleText(Results::TypesAndSettings::typeToString(type));
-
 
     axisX->setVisible();
-
     axisX->setLinePenColor(QColor::fromRgb(0, 0, 0));
     axisX->setTickCount(1);
-
-
 
     if (chart->geometry().width() > 800)
     {
@@ -1829,16 +1793,12 @@ void MainWindow::on_ResultsQtChartRefresh()
     else
         chart->legend()->setAlignment(Qt::AlignBottom);
 
-
     static QVector<QColor> algColors =
     {
         QColor::fromRgb(255,   0, 0), QColor::fromRgb(  0, 255,   0), QColor::fromRgb(  0,   0, 255)
       , QColor::fromRgb(128, 128, 0), QColor::fromRgb(128,   0, 128), QColor::fromRgb(  0, 128, 128), QColor::fromRgb(128, 128, 128)
       , QColor::fromRgb(128,   0, 0), QColor::fromRgb(  0, 128,   0), QColor::fromRgb(  0,   0, 128)
     };
-
-
-
 
     static QVector<Qt::PenStyle> par1lineStyle =
     {
@@ -1849,6 +1809,8 @@ void MainWindow::on_ResultsQtChartRefresh()
     {
         3, 5, 1, 2, 4
     };
+
+    QPair<double, double> yMinAndMax = {.first = DBL_MAX, .second = -DBL_MAX};
 
     int algColIdx = 0;
     foreach (QListWidgetItem *itm, ui->listWidgetAlgorithms->selectedItems() + ui->listWidgetAlgorithmsAlternative->selectedItems())
@@ -1875,9 +1837,7 @@ void MainWindow::on_ResultsQtChartRefresh()
                     {
                         QString name2 = updateParameters(parameters, tmpItem2->data(Qt::UserRole), setting->additionalParameter2);
                         QLineSeries *series = new QLineSeries();
-                        setting->getSinglePlot(series, *resultsForSystem, algorithm, parameters, !ui->checkBoxResultsQtLogScaleOnAxisY->isChecked());
-
-
+                        setting->getSinglePlot(series, yMinAndMax, *resultsForSystem, algorithm, parameters, !ui->checkBoxResultsQtLogScaleOnAxisY->isChecked());
 
                         series->setName(algorithm->shortName() + " " + name + " " + name2);
 
@@ -1900,7 +1860,7 @@ void MainWindow::on_ResultsQtChartRefresh()
                 else
                 {
                     QLineSeries *series = new QLineSeries();
-                    setting->getSinglePlot(series, *resultsForSystem, algorithm, parameters, !ui->checkBoxResultsQtLogScaleOnAxisY->isChecked());
+                    setting->getSinglePlot(series, yMinAndMax, *resultsForSystem, algorithm, parameters, !ui->checkBoxResultsQtLogScaleOnAxisY->isChecked());
 
                     series->setName(algorithm->shortName() + " " + name);
                     QPen tmpPen = QPen(algColors[algColIdx]);
@@ -1919,7 +1879,7 @@ void MainWindow::on_ResultsQtChartRefresh()
         else
         {
             QLineSeries *series = new QLineSeries();
-            setting->getSinglePlot(series, *resultsForSystem, algorithm, parameters, !ui->checkBoxResultsQtLogScaleOnAxisY->isChecked());
+            setting->getSinglePlot(series, yMinAndMax, *resultsForSystem, algorithm, parameters, !ui->checkBoxResultsQtLogScaleOnAxisY->isChecked());
 
             series->setName(algorithm->shortName());
             series->setColor(algColors[algColIdx]);
@@ -1935,6 +1895,40 @@ void MainWindow::on_ResultsQtChartRefresh()
 
 
 //    chart-
+    if (ui->checkBoxResultsQtLogScaleOnAxisY->isChecked())
+    {
+        axisYlinear->setVisible(false);
+        axisY = axisYlog;
+
+
+        axisYlog->setLabelFormat("%f");
+
+        axisYlog->setMin(0.0001);
+        axisYlog->setMax(1);
+
+        //chart->removeAxis(axisYlinear);
+        //chart->addAxis(axisYlog, Qt::AlignLeft);
+    }
+    else
+    {
+        axisYlog->setVisible(false);
+        axisY = axisYlinear;
+
+        axisYlinear->setLabelFormat("%f");
+
+        axisYlinear->setMin(yMinAndMax.first);
+        axisYlinear->setMax(yMinAndMax.second);
+
+        //chart->removeAxis(axisYlog);
+        //chart->addAxis(axisYlinear, Qt::AlignLeft);
+    }
+    axisY->setVisible();
+    axisY->setLinePenColor(QColor::fromRgb(0, 0, 0));
+    axisY->setLabelsAngle(315);
+    axisY->setLineVisible();
+    axisY->setTitleText(Results::TypesAndSettings::typeToString(type));
+
+
     axisX->setMin(setting->getXmin(*resultsForSystem));
     axisX->setMax(setting->getXmax(*resultsForSystem));
 

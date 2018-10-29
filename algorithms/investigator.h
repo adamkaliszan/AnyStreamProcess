@@ -1,11 +1,10 @@
 #ifndef INVESTIGATOR_321_H
 #define INVESTIGATOR_321_H
 
-#include <QMetaType>
+//#include <QMetaType>
 #include <QSet>
 
 #include <QString>
-//#include <QObject>
 
 #include <iostream>
 #include <math.h>
@@ -14,7 +13,6 @@
 
 #include "results/resultsApiTypes.h"
 #include "results/resultsInvestigator.h"
-//#include "results/resultsOld.h"
 #include "model.h"
 
 

@@ -247,7 +247,7 @@ SettingsTypeForClass::SettingsTypeForClass(TypeForClass qos): qos(qos)
     additionalParameter2 = ParameterType::None;
 }
 
-bool SettingsTypeForClass::getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
+bool SettingsTypeForClass::getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
 {
     bool result = false;
 
@@ -265,6 +265,11 @@ bool SettingsTypeForClass::getSinglePlot(QLineSeries *outPlot, RSystem &rSystem,
             {
                 if ((y>0) || linearScale)
                 {
+                    if (yMinAndMax.first > y)
+                        yMinAndMax.first = y;
+                    if (yMinAndMax.second < y)
+                        yMinAndMax.second = y;
+
                     *outPlot<<QPointF(x, y);
                     result = true;
                 }
@@ -303,7 +308,7 @@ SettingsTypeForSystemState::SettingsTypeForSystemState(TypeForSystemState qos) :
     additionalParameter2 = ParameterType::None;
 }
 
-bool SettingsTypeForSystemState::getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
+bool SettingsTypeForSystemState::getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
 {
     bool result = false;
 
@@ -335,6 +340,11 @@ bool SettingsTypeForSystemState::getSinglePlot(QLineSeries *outPlot, RSystem &rS
 
             if ((*singlePoint)->read(y, qos, n))
             {
+                if (yMinAndMax.first > y)
+                    yMinAndMax.first = y;
+                if (yMinAndMax.second < y)
+                    yMinAndMax.second = y;
+
                 if ((y > 0) || linearScale)
                 {
                     *outPlot<<QPointF(n, y);
@@ -356,7 +366,7 @@ SettingsTypeForServerState::SettingsTypeForServerState(TypeForServerState qos): 
     additionalParameter2 = ParameterType::None;
 }
 
-bool SettingsTypeForServerState::getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
+bool SettingsTypeForServerState::getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
 {
     bool result = false;
 
@@ -372,6 +382,11 @@ bool SettingsTypeForServerState::getSinglePlot(QLineSeries *outPlot, RSystem &rS
             {
                 if ((y > 0) || linearScale)
                 {
+                    if (yMinAndMax.first > y)
+                        yMinAndMax.first = y;
+                    if (yMinAndMax.second < y)
+                        yMinAndMax.second = y;
+
                     *outPlot<<QPointF(static_cast<double>(a), y);
                     result = true;
                 }
@@ -409,7 +424,7 @@ SettingsTypeForBufferState::SettingsTypeForBufferState(TypeForBufferState qos): 
     additionalParameter2 = ParameterType::None;
 }
 
-bool SettingsTypeForBufferState::getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
+bool SettingsTypeForBufferState::getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
 {
     bool result = false;
 
@@ -425,6 +440,11 @@ bool SettingsTypeForBufferState::getSinglePlot(QLineSeries *outPlot, RSystem &rS
             {
                 if ((y > 0) || linearScale)
                 {
+                    if (yMinAndMax.first > y)
+                        yMinAndMax.first = y;
+                    if (yMinAndMax.second < y)
+                        yMinAndMax.second = y;
+
                     *outPlot<<QPointF(static_cast<double>(a), y);
                     result = true;
                 }
@@ -463,7 +483,7 @@ SettingsTypeForClassAndSystemState::SettingsTypeForClassAndSystemState(TypeForCl
     additionalParameter1 = ParameterType::OfferedTrafficPerAS;
 }
 
-bool SettingsTypeForClassAndSystemState::getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
+bool SettingsTypeForClassAndSystemState::getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
 {
     bool result = false;
 
@@ -478,6 +498,11 @@ bool SettingsTypeForClassAndSystemState::getSinglePlot(QLineSeries *outPlot, RSy
             {
                 if ((y > 0) || linearScale)
                 {
+                    if (yMinAndMax.first > y)
+                        yMinAndMax.first = y;
+                    if (yMinAndMax.second < y)
+                        yMinAndMax.second = y;
+
                     *outPlot<<QPointF(static_cast<double>(a), y);
                     result = true;
                 }
@@ -532,7 +557,7 @@ SettingsTypeForClassAndServerState::SettingsTypeForClassAndServerState(TypeForCl
     additionalParameter1 = ParameterType::OfferedTrafficPerAS;
 }
 
-bool SettingsTypeForClassAndServerState::getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
+bool SettingsTypeForClassAndServerState::getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
 {
     bool result = false;
 
@@ -546,6 +571,11 @@ bool SettingsTypeForClassAndServerState::getSinglePlot(QLineSeries *outPlot, RSy
             double y=0;
             if ((*singlePoint)->read(y, qos, parametersSet.classIndex, parametersSet.serverState))
             {
+                if (yMinAndMax.first > y)
+                    yMinAndMax.first = y;
+                if (yMinAndMax.second < y)
+                    yMinAndMax.second = y;
+
                 if ((y > 0) || linearScale)
                 {
                     *outPlot<<QPointF(static_cast<double>(a), y);
@@ -604,7 +634,7 @@ SettingsTypeForClassAndBufferState::SettingsTypeForClassAndBufferState(TypeForCl
     additionalParameter1 = ParameterType::OfferedTrafficPerAS;
 }
 
-bool SettingsTypeForClassAndBufferState::getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
+bool SettingsTypeForClassAndBufferState::getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
 {
     bool result = false;
 
@@ -618,6 +648,11 @@ bool SettingsTypeForClassAndBufferState::getSinglePlot(QLineSeries *outPlot, RSy
             double y=0;
             if ((*singlePoint)->read(y, qos, parametersSet.classIndex, parametersSet.bufferState))
             {
+                if (yMinAndMax.first > y)
+                    yMinAndMax.first = y;
+                if (yMinAndMax.second < y)
+                    yMinAndMax.second = y;
+
                 if ((y > 0) || linearScale)
                 {
                     *outPlot<<QPointF(static_cast<double>(a), y);
@@ -676,7 +711,7 @@ SettingsInavailabilityForClassInAllGroupsInCombination::SettingsInavailabilityFo
     additionalParameter2 = ParameterType::CombinationNumber;
 }
 
-bool SettingsInavailabilityForClassInAllGroupsInCombination::getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
+bool SettingsInavailabilityForClassInAllGroupsInCombination::getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
 {
     bool result = false;
 
@@ -694,6 +729,11 @@ bool SettingsInavailabilityForClassInAllGroupsInCombination::getSinglePlot(QLine
             {
                 if ((y > 0) || linearScale)
                 {
+                    if (yMinAndMax.first > y)
+                        yMinAndMax.first = y;
+                    if (yMinAndMax.second < y)
+                        yMinAndMax.second = y;
+
                     *outPlot<<QPointF(x, y);
                     result = true;
                 }
@@ -754,7 +794,7 @@ SettingsAvailableSubroupDistribution::SettingsAvailableSubroupDistribution()
     additionalParameter2 = ParameterType::NumberOfGroups;
 }
 
-bool SettingsAvailableSubroupDistribution::getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
+bool SettingsAvailableSubroupDistribution::getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
 {
     bool result = false;
 
@@ -772,6 +812,11 @@ bool SettingsAvailableSubroupDistribution::getSinglePlot(QLineSeries *outPlot, R
             {
                 if ((y > 0) || linearScale)
                 {
+                    if (yMinAndMax.first > y)
+                        yMinAndMax.first = y;
+                    if (yMinAndMax.second < y)
+                        yMinAndMax.second = y;
+
                     *outPlot<<QPointF(x, y);
                     result = true;
                 }
