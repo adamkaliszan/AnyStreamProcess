@@ -47,7 +47,7 @@ public:
 
     bool setFunctionalParameter(ParameterType param);
 
-    virtual bool getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const = 0;
+    virtual bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const = 0;
     virtual double getXmin(RSystem &rSystem) const;
     virtual double getXmax(RSystem &rSystem) const;
 
@@ -62,7 +62,7 @@ private:
 public:
     SettingsTypeForClass(TypeForClass qos);
 
-    virtual bool getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
+    virtual bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
 };
 
 
@@ -73,7 +73,7 @@ private:
 public:
     SettingsTypeForSystemState(TypeForSystemState qos);
 
-    bool getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
+    bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
 };
 
 class SettingsTypeForServerState: public Settings
@@ -83,7 +83,7 @@ private:
 public:
     SettingsTypeForServerState(TypeForServerState qos);
 
-    bool getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
+    bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
 };
 
 class SettingsTypeForBufferState: public Settings
@@ -93,7 +93,7 @@ private:
 public:
     SettingsTypeForBufferState(TypeForBufferState qos);
 
-    bool getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
+    bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
 };
 
 class SettingsTypeForClassAndSystemState: public Settings
@@ -103,7 +103,7 @@ private:
 public:
     SettingsTypeForClassAndSystemState(TypeForClassAndSystemState qos);
 
-    bool getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
+    bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
 };
 
 class SettingsTypeForClassAndServerState: public Settings
@@ -113,7 +113,7 @@ private:
 public:
     SettingsTypeForClassAndServerState(TypeForClassAndServerState qos);
 
-    bool getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
+    bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
 };
 
 class SettingsTypeForClassAndBufferState: public Settings
@@ -123,7 +123,7 @@ private:
 public:
     SettingsTypeForClassAndBufferState(TypeForClassAndBufferState qos);
 
-    bool getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
+    bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
 };
 
 class SettingsInavailabilityForClassInAllGroupsInCombination: public Settings
@@ -131,7 +131,7 @@ class SettingsInavailabilityForClassInAllGroupsInCombination: public Settings
 public:
     SettingsInavailabilityForClassInAllGroupsInCombination();
 
-    bool getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
+    bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
 };
 
 class SettingsAvailableSubroupDistribution: public Settings
@@ -139,7 +139,7 @@ class SettingsAvailableSubroupDistribution: public Settings
 public:
     SettingsAvailableSubroupDistribution();
 
-    bool getSinglePlot(QLineSeries *outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
+    bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
 };
 
 

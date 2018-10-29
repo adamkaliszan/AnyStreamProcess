@@ -282,6 +282,7 @@ void AlgorithmHybridDiscr::calculateSystem(const ModelSyst *system
                     val = Qdetail[n_s + n_b][unused].p;
             }
             (*results)->write(TypeForServerAngBufferState::StateProbability, val, n_s, n_b);
+
         }
     }
 
