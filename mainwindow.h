@@ -152,9 +152,6 @@ private slots:
 
 private:
     QVector<ModelSyst*>  vectPredefinedSystems;
-    QVector<resultsType> vectComboBoxGraphParametr;
-    QVector<resultsType> vectComboBoxGraphY_parameter;
-    QVector<resultsType> vectComboBoxGraphTrDistribParam;
 
     int getNoOfPoints(double aMin, double aMax, double aDelta) const;
 
@@ -187,7 +184,7 @@ private:
     QString configureTrClass(ModelTrClass *trClass);
 
 
-    void saveTheResults(QString &filename, resultsType QoStype);
+    void saveTheResults(QString &filename, Results::Type QoStype);
 
 
     QString ReadFilename(QString extension="ods");

@@ -33,9 +33,6 @@
 
 using namespace QtCharts;
 
-
-enum class resultsType;
-
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -1120,7 +1117,7 @@ void MainWindow::clearParameters(ParametersSet &outParameters)
     outParameters.numberOfGroups = -1;
 }
 
-void MainWindow::saveTheResults(QString &fileName, resultsType QoStype)
+void MainWindow::saveTheResults(QString &fileName, Results::Type QoStype)
 {
     QString scriptFileName = fileName + QString(".gp");
     QString dataFileName = fileName + QString(".dat");

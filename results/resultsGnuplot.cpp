@@ -1,10 +1,10 @@
 #include "results/resultsGnuplot.h"
 
 
-void GnuplotScript::WriteScript(QTextStream &script, QString dataFileName, QString graphFileName, double minY, double maxY, resultsType QoS_MainParam)
+void GnuplotScript::WriteScript(QTextStream &script, QString dataFileName, QString graphFileName, Results::Type qosParam, double minY, double maxY, bool isLogScale)
 {
     double logMinY = 0.0000001;
-    //double logMaxY = 1;
+    double logMaxY = 1;
 
     while (logMinY < minY)
         logMinY *=10;
@@ -17,10 +17,9 @@ void GnuplotScript::WriteScript(QTextStream &script, QString dataFileName, QStri
         script<<"set terminal postscript enhanced \"Times\" 6\n";
 
     script<<"set encoding cp1250\n";
-#if 0
-    script<<"set xrange ["<<results->min_a()<<":"<<results->max_a()<<"]\n";
+    script<<"set xrange ["<<systemResults->getMinAperAU()<<":"<<systemResults->getMaxAperAU()<<"]\n";
 
-    if (ResultsTmp::resTypeHasLogScale(QoS_MainParam))
+    if (isLogScale)
         script<<"set yrange ["<<logMinY<<":"<<logMaxY<<"]\n";
     else
         script<<"set yrange ["<<minY<<":"<<maxY<<"]\n";
@@ -30,7 +29,7 @@ void GnuplotScript::WriteScript(QTextStream &script, QString dataFileName, QStri
     script<<"set xtics 0.1\n";
     script<<"set xtics nomirror\n";
 
-    if (results->resTypeHasLogScale(QoS_MainParam))
+    if (isLogScale)
     {
         script<<"set ytics (\\\n";
         script<<"0.00000001, 0.00000002, \"\" 0.00000003, \"\" 0.00000004, 0.00000005, \"\" 0.00000006, \"\" 0.00000008, \"\" 0.00000009, \\\n";
@@ -48,7 +47,7 @@ void GnuplotScript::WriteScript(QTextStream &script, QString dataFileName, QStri
         script<<"unset ytics\n";
     }
 
-    script<<"set "<<results->resType2yScale(QoS_MainParam)<<" y\n";
+    script<<"set "<<Results::TypesAndSettings::typeToString(qosParam)<<" y\n";
 
     script<<"set ytics nomirror\n";
     script<<"set border 3\n";
@@ -56,6 +55,9 @@ void GnuplotScript::WriteScript(QTextStream &script, QString dataFileName, QStri
     script<<"set grid\n";
     script<<"set style line 1 lt 1 lw 0\n";
     script<<"set key box linestyle 1\n";
+
+
+#if 0
     switch (QoS_MainParam)
     {
     case resultsType::y:
@@ -152,7 +154,7 @@ void GnuplotScript::WriteScript(QTextStream &script, QString dataFileName, QStri
     script<<"\n";
 }
 
-void GnuplotScript::WriteData(QTextStream &scriptData, double &minY, double &maxY, resultsType type)
+void GnuplotScript::WriteData(QTextStream &scriptData, double &minY, double &maxY, Results::Type type)
 {
     int clColumns = 0;
 #if 0
@@ -248,7 +250,7 @@ void GnuplotScript::WriteData(QTextStream &scriptData, double &minY, double &max
 #endif
 }
 
-void GnuplotScript::WriteScript(QString scriptFileName, QString dataFileName, QString graphFileName, double minY, double maxY, resultsType QoS_MainParam)
+void GnuplotScript::WriteScript(QString scriptFileName, QString dataFileName, QString graphFileName, double minY, double maxY, Results::Type QoS_MainParam)
 {
     QFile file(scriptFileName);
     file.open(QFile::WriteOnly | QFile::Text);
@@ -257,7 +259,7 @@ void GnuplotScript::WriteScript(QString scriptFileName, QString dataFileName, QS
     file.close();
 }
 
-void GnuplotScript::WriteData(QString dataFileName, double &minY, double &maxY, resultsType QoS_MainParam)
+void GnuplotScript::WriteData(QString dataFileName, double &minY, double &maxY, Results::Type QoS_MainParam)
 {
     QFile file(dataFileName);
     file.open(QFile::WriteOnly | QFile::Text);
@@ -266,7 +268,7 @@ void GnuplotScript::WriteData(QString dataFileName, double &minY, double &maxY, 
     file.close();
 }
 
-void GnuplotScript::Show(resultsType QoS_par, QList<ModelTrClass*> selClasses, bool useColors)
+void GnuplotScript::Show(Results::Type QoS_par, QList<ModelTrClass*> selClasses, bool useColors)
 {
     (void) useColors;
     double minY =  1.7976931348623158e+308;
@@ -522,7 +524,7 @@ QTextStream &operator<<(QTextStream &st, GnuplotScript &results)
     return st;
 }
 
-GnuplotScript::GnuplotScript()
+GnuplotScript::GnuplotScript(Results::RSystem *systemResults): systemResults(systemResults)
 {
     plotCi = true;
     plotWithColors = true;

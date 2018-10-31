@@ -156,6 +156,8 @@ public:
     static const Settings *getSettingConst(Type type);
     static  Settings *getSetting(Type type);
     static QString typeToString(Type type);
+    static QString typeToGnuplotKeyPlacement(Type type);
+
     static QString parameterToString(ParameterType parameter);
 
     static QString typeToX_AxisString(Type type);

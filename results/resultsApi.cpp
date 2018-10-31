@@ -161,6 +161,103 @@ QString TypesAndSettings::typeToString(Type type)
     return result;
 }
 
+QString TypesAndSettings::typeToGnuplotKeyPlacement(Type type)
+{
+    QString result;
+    switch (type)
+    {
+    case Type::BlockingProbability:
+        result = "Blocking probability";
+        break;
+
+    case Type::LossProbability:
+        result = "Loss probability";
+        break;
+
+    case Type::OccupancyDistribution:
+        result = "Traffic distribution in a system";
+        break;
+
+    case Type::OccupancyDistributionServerOnly:
+        result = "Traffic distribution in a server";
+        break;
+
+    case Type::OccupancyDistributionServerBufferOnly:
+        result = "Traffic distribution in a buffer";
+        break;
+
+    case Type::NumberOfCallsInStateN:
+        result = "Avarage number of calls in a state";
+        break;
+
+    case Type::NumberOfCallsInStateN_inServer:
+        result = "Avarage number of calls in a server";
+        break;
+
+    case Type::NumberOfCallsInStateN_inBuffer:
+        result = "Avarage number of calls in a buffer";
+        break;
+
+    case Type::NewCallOutIntensitySystem:
+        result = "New call intensity from state N in a system";
+        break;
+
+    case Type::NewCallInIntensitySystem:
+        result = "New call intensity to state N in a system";
+        break;
+
+    case Type::EndCallOutIntensitySystem:
+        result = "New call intensity from state N in a system";
+        break;
+
+    case Type::EndCallInIntensitySystem:
+        result = "End call intensity to state N in a system";
+        break;
+
+    case Type::NewCallOutIntensityServer:
+        result = "New call intensity from state N in a server";
+        break;
+
+    case Type::NewCallInIntensityServer:
+        result = "New call intensity to state N in a server";
+        break;
+
+    case Type::EndCallOutIntensityServer:
+        result = "New call intensity from state N in a server";
+        break;
+
+    case Type::EndCallInIntensityServer:
+        result = "End call intensity to state N in a server";
+        break;
+
+    case Type::NewCallOutIntensityBuffer:
+        result = "New call intensity from state N in a buffer";
+        break;
+
+    case Type::NewCallInIntensityBuffer:
+        result = "New call intensity to state N in a buffer";
+        break;
+
+    case Type::EndCallOutIntensityBuffer:
+        result = "New call intensity from state N in a buffer";
+        break;
+
+    case Type::EndCallInIntensityBuffer:
+        result = "End call intensity to state N in a buffer";
+        break;
+
+    case Type::AllSugbrupsInGivenCombinationAndClassAvailable:
+        result = "Availability of all subgroup in a combination";
+        break;
+
+    case Type::AvailableSubroupDistribution:
+        result = "Distribution of subgroup availability";
+        break;
+    }
+    return result;
+}
+
+
 QString TypesAndSettings::typeToX_AxisString(Type type)
 {
     QString result;
