@@ -82,7 +82,7 @@ public:
     QPushButton *pushButton_kolejkidodaj;
     QPushButton *pushButton_kolejkiZmien;
     QPushButton *pushButton_kolejkiUsun;
-    QComboBox *comboBoxSubBufferScheduler;
+    QComboBox *comboBoxBufferScheduler;
     QLabel *label_subbufferScheduler;
     QLabel *labelModelQeue;
     QGridLayout *gridLayoutModelServer;
@@ -95,7 +95,7 @@ public:
     QPushButton *pushButton_wiazkiDodaj;
     QPushButton *pushButton_wiazkiZmien;
     QPushButton *pushButton_wiazkiUsun;
-    QComboBox *comboBoxSubgoupSchedulerAlgorithm;
+    QComboBox *comboBoxServerScheduler;
     QLabel *label_subgroupSchedulerAlgorithm;
     QHBoxLayout *horizontalLayoutGroupChooseAlg;
     QFrame *line_ModelSeparator;
@@ -390,10 +390,10 @@ public:
 
         gridLayoutModelQeue->addLayout(horizontalLayoutModelQeueListButtons, 3, 0, 1, 3);
 
-        comboBoxSubBufferScheduler = new QComboBox(verticalLayoutModel);
-        comboBoxSubBufferScheduler->setObjectName(QStringLiteral("comboBoxSubBufferScheduler"));
+        comboBoxBufferScheduler = new QComboBox(verticalLayoutModel);
+        comboBoxBufferScheduler->setObjectName(QStringLiteral("comboBoxBufferScheduler"));
 
-        gridLayoutModelQeue->addWidget(comboBoxSubBufferScheduler, 0, 2, 1, 1);
+        gridLayoutModelQeue->addWidget(comboBoxBufferScheduler, 0, 2, 1, 1);
 
         label_subbufferScheduler = new QLabel(verticalLayoutModel);
         label_subbufferScheduler->setObjectName(QStringLiteral("label_subbufferScheduler"));
@@ -487,10 +487,10 @@ public:
 
         gridLayoutModelServer->addLayout(horizontalLayoutModelServerListButtons, 3, 0, 1, 3);
 
-        comboBoxSubgoupSchedulerAlgorithm = new QComboBox(verticalLayoutModel);
-        comboBoxSubgoupSchedulerAlgorithm->setObjectName(QStringLiteral("comboBoxSubgoupSchedulerAlgorithm"));
+        comboBoxServerScheduler = new QComboBox(verticalLayoutModel);
+        comboBoxServerScheduler->setObjectName(QStringLiteral("comboBoxServerScheduler"));
 
-        gridLayoutModelServer->addWidget(comboBoxSubgoupSchedulerAlgorithm, 0, 2, 1, 1);
+        gridLayoutModelServer->addWidget(comboBoxServerScheduler, 0, 2, 1, 1);
 
         label_subgroupSchedulerAlgorithm = new QLabel(verticalLayoutModel);
         label_subgroupSchedulerAlgorithm->setObjectName(QStringLiteral("label_subgroupSchedulerAlgorithm"));
@@ -957,7 +957,7 @@ public:
         MainWindow->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(MainWindow);
         menuBar->setObjectName(QStringLiteral("menuBar"));
-        menuBar->setGeometry(QRect(0, 0, 735, 28));
+        menuBar->setGeometry(QRect(0, 0, 735, 22));
         menuFile = new QMenu(menuBar);
         menuFile->setObjectName(QStringLiteral("menuFile"));
         menuSave_results_to_gnuplot = new QMenu(menuFile);
@@ -1018,7 +1018,7 @@ public:
         QObject::connect(listWidgetAlgorithmsAlternative, SIGNAL(itemSelectionChanged()), MainWindow, SLOT(on_ResultsQtChartRefresh()));
         QObject::connect(listWidgetSimulationParameters, SIGNAL(itemSelectionChanged()), MainWindow, SLOT(on_ResultsQtChartRefresh()));
 
-        Pages->setCurrentIndex(1);
+        Pages->setCurrentIndex(0);
 
 
         QMetaObject::connectSlotsByName(MainWindow);

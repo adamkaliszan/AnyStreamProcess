@@ -27,10 +27,12 @@ private:
     QString fontName;
     int     fontSize;
 
-    Results::RSystem *systemResults;
 
 public:
-    GnuplotScript(Results::RSystem *systemResults);
+    Results::RSystem *systemResults;
+
+
+    GnuplotScript();
 
     bool    plotCi;
     bool    plotWithColors;

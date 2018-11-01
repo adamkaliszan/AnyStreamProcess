@@ -223,7 +223,7 @@ public:
         bool addCall(SimulatorProcess *call, double timeOfService);
         void endCallService(SimulatorProcess *call);
 
-        static bool simProcComparer(const ModelTrClass::SimulatorProcess *a, const ModelTrClass::SimulatorProcess *b) { return a->time < b->time; }
+        static bool simProcComparer(const ModelTrClass::SimulatorProcess *a, const ModelTrClass::SimulatorProcess *b);
     };
 
     class SimulatorProcess
@@ -232,10 +232,10 @@ public:
         SimulatorSingleServiceSystem *system;
         double time;
 
-        SimulatorProcess(SimulatorSingleServiceSystem *system): system(system) {}
-        virtual ~SimulatorProcess() {}
+        SimulatorProcess(SimulatorSingleServiceSystem *system);
+        virtual ~SimulatorProcess();
 
-        inline bool execute(SimulatorSingleServiceSystem *system) {return procFun(system, this); }
+        inline bool execute(SimulatorSingleServiceSystem *system);
         virtual void initialize() = 0;
         bool operator<(const SimulatorProcess &rho) const;
         bool (*procFun)(SimulatorSingleServiceSystem *system, SimulatorProcess *proc);
@@ -245,7 +245,7 @@ public:
     class SimulatorProcess_Indep: public SimulatorProcess
     {
     protected:
-        SimulatorProcess_Indep(SimulatorSingleServiceSystem *system): SimulatorProcess(system) {}
+        SimulatorProcess_Indep(SimulatorSingleServiceSystem *system);
 
         template <class P> void initializeT(double timeOfNewCall);
         template <class P> static bool newCall(SimulatorSingleServiceSystem *system, SimulatorProcess *proc, double EOS_TIME);
@@ -258,7 +258,7 @@ public:
     class SimulatorProcess_DepMinus: public SimulatorProcess
     {
     protected:
-        SimulatorProcess_DepMinus(SimulatorSingleServiceSystem *system): SimulatorProcess(system) {}
+        SimulatorProcess_DepMinus(SimulatorSingleServiceSystem *system);
 
         template <class P> void initializeT(double timeOfNewCall);
         template <class P> static bool newCall(SimulatorSingleServiceSystem *system, SimulatorProcess *proc, double EOS_TIME);
@@ -275,7 +275,7 @@ public:
         template <class P> static bool endOfCallService(SimulatorSingleServiceSystem *system, SimulatorProcess *proc);
 
     public:
-        SimulatorProcess_DepPlus(SimulatorSingleServiceSystem *system): SimulatorProcess(system), child(nullptr), parent(nullptr) {}
+        SimulatorProcess_DepPlus(SimulatorSingleServiceSystem *system);
 
         SimulatorProcess_DepPlus *child;
         SimulatorProcess_DepPlus *parent;
@@ -290,15 +290,9 @@ public:
     public:\
         SimulatorProcess_Indep##X##Y(SimulatorSingleServiceSystem *system): SimulatorProcess_Indep(system) {}\
         ~SimulatorProcess_Indep##X##Y() {}\
-    \
-        void initialize()\
-        {\
-            initializeT<SimulatorProcess_Indep##X##Y>(system->time##FUN_TIME_NEW());\
-        }\
-        static bool newCall(SimulatorSingleServiceSystem *system, SimulatorProcess *proc)\
-        {\
-            return SimulatorProcess_Indep::newCall<SimulatorProcess_Indep##X##Y>(system, proc, system->time##FUN_TIME_END());\
-    }   \
+\
+        void initialize();\
+        static bool newCall(SimulatorSingleServiceSystem *system, SimulatorProcess *proc);\
     };
 
 #define CLASS_SIMULATOR_DEP_MINUS(X,Y,FUN_TIME_NEW,FUN_TIME_END) \
@@ -308,15 +302,12 @@ public:
         SimulatorProcess_DepMinus##X##Y(SimulatorSingleServiceSystem *system) : SimulatorProcess_DepMinus(system) {}\
         ~SimulatorProcess_DepMinus##X##Y() {}\
     \
-        void initialize()\
-        {\
-            this->procFun = SimulatorProcess_DepMinus##X##Y::newCall;\
-            system->addProcess(this, system->time##FUN_TIME_NEW());\
-        }\
+        void initialize();\
     \
-        static bool newCall(SimulatorSingleServiceSystem *system, SimulatorProcess *proc)          { return SimulatorProcess_DepMinus::newCall<SimulatorProcess_DepMinus##X##Y>(system, proc, system->time##FUN_TIME_END()); }\
-        static bool endOfCallService(SimulatorSingleServiceSystem *system, SimulatorProcess *proc) { return SimulatorProcess_DepMinus::endOfCallService<SimulatorProcess_DepMinus##X##Y>(system, proc); }\
+        static bool newCall(SimulatorSingleServiceSystem *system, SimulatorProcess *proc);\
+        static bool endOfCallService(SimulatorSingleServiceSystem *system, SimulatorProcess *proc);\
     };
+
 
 #define CLASS_SIMULATOR_DEP_PLUS(X,Y,FUN_TIME_NEW,FUN_TIME_END) \
     class SimulatorProcess_DepPlus##X##Y: public SimulatorProcess_DepPlus\
@@ -325,14 +316,10 @@ public:
         SimulatorProcess_DepPlus##X##Y(SimulatorSingleServiceSystem *system): SimulatorProcess_DepPlus(system) {}\
         ~SimulatorProcess_DepPlus##X##Y() {}\
     \
-        void initialize()\
-        {\
-            this->procFun = SimulatorProcess_DepPlus##X##Y::newCall;\
-            system->addProcess(this, system->time##FUN_TIME_NEW());\
-        }\
+        void initialize();\
     \
-        static bool newCall(SimulatorSingleServiceSystem *system, SimulatorProcess *proc){ return SimulatorProcess_DepPlus::newCall<SimulatorProcess_DepPlus##X##Y>(system, proc, system->time##FUN_TIME_END()); }\
-        static bool endOfCallService(SimulatorSingleServiceSystem *system, SimulatorProcess *proc) {return SimulatorProcess_DepPlus::endOfCallService<SimulatorProcess_DepPlus##X##Y>(system, proc); }\
+        static bool newCall(SimulatorSingleServiceSystem *system, SimulatorProcess *proc);\
+        static bool endOfCallService(SimulatorSingleServiceSystem *system, SimulatorProcess *proc);\
     };
 
     CLASS_SIMULATOR_INDEP(M, M, NewCallExp, ServEndExp)
@@ -525,6 +512,7 @@ Q_DECLARE_METATYPE(ModelSyst*)
 Q_DECLARE_METATYPE(ModelTrClass::SourceType)
 Q_DECLARE_METATYPE(ModelTrClass::StreamType)
 Q_DECLARE_METATYPE(ServerResourcessScheduler)
+Q_DECLARE_METATYPE(BufferResourcessScheduler)
 
 
 #endif // MODEL_H

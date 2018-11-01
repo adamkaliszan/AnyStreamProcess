@@ -1349,6 +1349,8 @@ template <class P> bool ModelTrClass::SimulatorProcess_Indep::newCall(ModelTrCla
     return system->addCall(proc, EOS_TIME);
 }
 
+ModelTrClass::SimulatorProcess_Indep::SimulatorProcess_Indep(ModelTrClass::SimulatorSingleServiceSystem *system): SimulatorProcess(system) {}
+
 bool ModelTrClass::SimulatorProcess_Indep::endOfCallService(ModelTrClass::SimulatorSingleServiceSystem *system, ModelTrClass::SimulatorProcess *proc)
 {
     system->endCallService(proc);
@@ -1386,12 +1388,12 @@ template <class P> bool ModelTrClass::SimulatorProcess_DepPlus::newCall(ModelTrC
     P *newProc = new P(system);
     newProc->initialize();
 
-    if (procPascal->parent != NULL)
+    if (procPascal->parent != nullptr)
     {
         procPascal->parent->child = newProc;
         newProc->parent = procPascal->parent;
-        procPascal->parent = NULL;
-        procPascal->child = NULL;
+        procPascal->parent = nullptr;
+        procPascal->child = nullptr;
     }
 
 
@@ -1412,12 +1414,12 @@ template <class P> bool ModelTrClass::SimulatorProcess_DepPlus::endOfCallService
     P *procPascal = static_cast<P *>(proc);
     system->endCallService(procPascal);
 
-    if (procPascal->child != NULL)
+    if (procPascal->child != nullptr)
     {
-        if (procPascal->child->child != NULL)
+        if (procPascal->child->child != nullptr)
             qFatal("Something is wrong");
         system->removeProcess(procPascal->child);
-        procPascal->child = NULL;
+        procPascal->child = nullptr;
     }
 
 
@@ -1789,7 +1791,156 @@ void ModelTrClass::SimulatorSingleServiceSystem::endCallService(ModelTrClass::Si
     }
 }
 
+bool ModelTrClass::SimulatorSingleServiceSystem::simProcComparer(const ModelTrClass::SimulatorProcess *a, const ModelTrClass::SimulatorProcess *b) { return a->time < b->time; }
+
+
 bool ModelTrClass::SimulatorProcess::operator<(const ModelTrClass::SimulatorProcess &rho) const
 {
     return time < rho.time;
 }
+
+ModelTrClass::SimulatorProcess::SimulatorProcess(ModelTrClass::SimulatorSingleServiceSystem *system): system(system) {}
+
+ModelTrClass::SimulatorProcess::~SimulatorProcess() {}
+
+bool ModelTrClass::SimulatorProcess::execute(ModelTrClass::SimulatorSingleServiceSystem *system)
+{
+    return procFun(system, this);
+}
+
+ModelTrClass::SimulatorProcess_DepMinus::SimulatorProcess_DepMinus(ModelTrClass::SimulatorSingleServiceSystem *system): SimulatorProcess(system) {}
+
+ModelTrClass::SimulatorProcess_DepPlus::SimulatorProcess_DepPlus(ModelTrClass::SimulatorSingleServiceSystem *system): SimulatorProcess(system), child(nullptr), parent(nullptr) {}
+
+
+#define CLASS_SIMULATOR_INDEP_CPP(X,Y,FUN_TIME_NEW,FUN_TIME_END) \
+void ModelTrClass::SimulatorProcess_Indep##X##Y::initialize()\
+{\
+    initializeT<SimulatorProcess_Indep##X##Y>(system->time##FUN_TIME_NEW());\
+}\
+\
+bool ModelTrClass::SimulatorProcess_Indep##X##Y::newCall(SimulatorSingleServiceSystem *system, SimulatorProcess *proc)\
+{\
+    return SimulatorProcess_Indep::newCall<SimulatorProcess_Indep##X##Y>(system, proc, system->time##FUN_TIME_END());\
+}
+
+#define CLASS_SIMULATOR_DEP_MINUS_CPP(X,Y,FUN_TIME_NEW,FUN_TIME_END) \
+void ModelTrClass::SimulatorProcess_DepMinus##X##Y::initialize()\
+{\
+    this->procFun = SimulatorProcess_DepMinus##X##Y::newCall;\
+    system->addProcess(this, system->time##FUN_TIME_NEW());\
+}\
+bool ModelTrClass::SimulatorProcess_DepMinus##X##Y::newCall(SimulatorSingleServiceSystem *system, SimulatorProcess *proc)\
+{\
+    return SimulatorProcess_DepMinus::newCall<SimulatorProcess_DepMinus##X##Y>(system, proc, system->time##FUN_TIME_END());\
+}\
+bool ModelTrClass::SimulatorProcess_DepMinus##X##Y::endOfCallService(SimulatorSingleServiceSystem *system, SimulatorProcess *proc)\
+{\
+    return SimulatorProcess_DepMinus::endOfCallService<SimulatorProcess_DepMinus##X##Y>(system, proc);\
+}
+
+#define CLASS_SIMULATOR_DEP_PLUS_CPP(X,Y,FUN_TIME_NEW,FUN_TIME_END) \
+void ModelTrClass::SimulatorProcess_DepPlus##X##Y::initialize()\
+{\
+    this->procFun = SimulatorProcess_DepPlus##X##Y::newCall;\
+    system->addProcess(this, system->time##FUN_TIME_NEW());\
+}\
+\
+bool ModelTrClass::SimulatorProcess_DepPlus##X##Y::newCall(SimulatorSingleServiceSystem *system, SimulatorProcess *proc)\
+{\
+    return SimulatorProcess_DepPlus::newCall<SimulatorProcess_DepPlus##X##Y>(system, proc, system->time##FUN_TIME_END());\
+}\
+bool ModelTrClass::SimulatorProcess_DepPlus##X##Y::endOfCallService(SimulatorSingleServiceSystem *system, SimulatorProcess *proc)\
+{\
+    return SimulatorProcess_DepPlus::endOfCallService<SimulatorProcess_DepPlus##X##Y>(system, proc);\
+}
+
+CLASS_SIMULATOR_INDEP_CPP(M, M, NewCallExp, ServEndExp)
+CLASS_SIMULATOR_INDEP_CPP(M, U, NewCallExp, ServEndUni)
+CLASS_SIMULATOR_INDEP_CPP(M, N, NewCallExp, ServEndNormal)
+CLASS_SIMULATOR_INDEP_CPP(M, G, NewCallExp, ServEndGamma)
+CLASS_SIMULATOR_INDEP_CPP(M, P, NewCallExp, ServEndPareto)
+
+CLASS_SIMULATOR_INDEP_CPP(U, M, NewCallUni, ServEndExp)
+CLASS_SIMULATOR_INDEP_CPP(U, U, NewCallUni, ServEndUni)
+CLASS_SIMULATOR_INDEP_CPP(U, N, NewCallUni, ServEndNormal)
+CLASS_SIMULATOR_INDEP_CPP(U, G, NewCallUni, ServEndGamma)
+CLASS_SIMULATOR_INDEP_CPP(U, P, NewCallUni, ServEndPareto)
+
+CLASS_SIMULATOR_INDEP_CPP(N, M, NewCallNormal, ServEndExp)
+CLASS_SIMULATOR_INDEP_CPP(N, U, NewCallNormal, ServEndUni)
+CLASS_SIMULATOR_INDEP_CPP(N, N, NewCallNormal, ServEndNormal)
+CLASS_SIMULATOR_INDEP_CPP(N, G, NewCallNormal, ServEndGamma)
+CLASS_SIMULATOR_INDEP_CPP(N, P, NewCallNormal, ServEndPareto)
+
+CLASS_SIMULATOR_INDEP_CPP(G, M, NewCallGamma, ServEndExp)
+CLASS_SIMULATOR_INDEP_CPP(G, U, NewCallGamma, ServEndUni)
+CLASS_SIMULATOR_INDEP_CPP(G, N, NewCallGamma, ServEndNormal)
+CLASS_SIMULATOR_INDEP_CPP(G, G, NewCallGamma, ServEndGamma)
+CLASS_SIMULATOR_INDEP_CPP(G, P, NewCallGamma, ServEndPareto)
+
+CLASS_SIMULATOR_INDEP_CPP(P, M, NewCallPareto, ServEndExp)
+CLASS_SIMULATOR_INDEP_CPP(P, U, NewCallPareto, ServEndUni)
+CLASS_SIMULATOR_INDEP_CPP(P, N, NewCallPareto, ServEndNormal)
+CLASS_SIMULATOR_INDEP_CPP(P, G, NewCallPareto, ServEndGamma)
+CLASS_SIMULATOR_INDEP_CPP(P, P, NewCallPareto, ServEndPareto)
+
+CLASS_SIMULATOR_DEP_MINUS_CPP(M, M, NewCallExp, ServEndExp)
+CLASS_SIMULATOR_DEP_MINUS_CPP(M, U, NewCallExp, ServEndUni)
+CLASS_SIMULATOR_DEP_MINUS_CPP(M, N, NewCallExp, ServEndNormal)
+CLASS_SIMULATOR_DEP_MINUS_CPP(M, G, NewCallExp, ServEndGamma)
+CLASS_SIMULATOR_DEP_MINUS_CPP(M, P, NewCallExp, ServEndPareto)
+
+CLASS_SIMULATOR_DEP_MINUS_CPP(U, M, NewCallUni, ServEndExp)
+CLASS_SIMULATOR_DEP_MINUS_CPP(U, U, NewCallUni, ServEndUni)
+CLASS_SIMULATOR_DEP_MINUS_CPP(U, N, NewCallUni, ServEndNormal)
+CLASS_SIMULATOR_DEP_MINUS_CPP(U, G, NewCallUni, ServEndGamma)
+CLASS_SIMULATOR_DEP_MINUS_CPP(U, P, NewCallUni, ServEndPareto)
+
+CLASS_SIMULATOR_DEP_MINUS_CPP(N, M, NewCallNormal, ServEndExp)
+CLASS_SIMULATOR_DEP_MINUS_CPP(N, U, NewCallNormal, ServEndUni)
+CLASS_SIMULATOR_DEP_MINUS_CPP(N, N, NewCallNormal, ServEndNormal)
+CLASS_SIMULATOR_DEP_MINUS_CPP(N, G, NewCallNormal, ServEndGamma)
+CLASS_SIMULATOR_DEP_MINUS_CPP(N, P, NewCallNormal, ServEndPareto)
+
+CLASS_SIMULATOR_DEP_MINUS_CPP(G, M, NewCallGamma, ServEndExp)
+CLASS_SIMULATOR_DEP_MINUS_CPP(G, U, NewCallGamma, ServEndUni)
+CLASS_SIMULATOR_DEP_MINUS_CPP(G, N, NewCallGamma, ServEndNormal)
+CLASS_SIMULATOR_DEP_MINUS_CPP(G, G, NewCallGamma, ServEndGamma)
+CLASS_SIMULATOR_DEP_MINUS_CPP(G, P, NewCallGamma, ServEndPareto)
+
+CLASS_SIMULATOR_DEP_MINUS_CPP(P, M, NewCallPareto, ServEndExp)
+CLASS_SIMULATOR_DEP_MINUS_CPP(P, U, NewCallPareto, ServEndUni)
+CLASS_SIMULATOR_DEP_MINUS_CPP(P, N, NewCallPareto, ServEndNormal)
+CLASS_SIMULATOR_DEP_MINUS_CPP(P, G, NewCallPareto, ServEndGamma)
+CLASS_SIMULATOR_DEP_MINUS_CPP(P, P, NewCallPareto, ServEndPareto)
+
+CLASS_SIMULATOR_DEP_PLUS_CPP(M, M, NewCallExp, ServEndExp)
+CLASS_SIMULATOR_DEP_PLUS_CPP(M, U, NewCallExp, ServEndUni)
+CLASS_SIMULATOR_DEP_PLUS_CPP(M, N, NewCallExp, ServEndNormal)
+CLASS_SIMULATOR_DEP_PLUS_CPP(M, G, NewCallExp, ServEndGamma)
+CLASS_SIMULATOR_DEP_PLUS_CPP(M, P, NewCallExp, ServEndPareto)
+
+CLASS_SIMULATOR_DEP_PLUS_CPP(U, M, NewCallUni, ServEndExp)
+CLASS_SIMULATOR_DEP_PLUS_CPP(U, U, NewCallUni, ServEndUni)
+CLASS_SIMULATOR_DEP_PLUS_CPP(U, N, NewCallUni, ServEndNormal)
+CLASS_SIMULATOR_DEP_PLUS_CPP(U, G, NewCallUni, ServEndGamma)
+CLASS_SIMULATOR_DEP_PLUS_CPP(U, P, NewCallUni, ServEndPareto)
+
+CLASS_SIMULATOR_DEP_PLUS_CPP(N, M, NewCallNormal, ServEndExp)
+CLASS_SIMULATOR_DEP_PLUS_CPP(N, U, NewCallNormal, ServEndUni)
+CLASS_SIMULATOR_DEP_PLUS_CPP(N, N, NewCallNormal, ServEndNormal)
+CLASS_SIMULATOR_DEP_PLUS_CPP(N, G, NewCallNormal, ServEndGamma)
+CLASS_SIMULATOR_DEP_PLUS_CPP(N, P, NewCallNormal, ServEndPareto)
+
+CLASS_SIMULATOR_DEP_PLUS_CPP(G, M, NewCallGamma, ServEndExp)
+CLASS_SIMULATOR_DEP_PLUS_CPP(G, U, NewCallGamma, ServEndUni)
+CLASS_SIMULATOR_DEP_PLUS_CPP(G, N, NewCallGamma, ServEndNormal)
+CLASS_SIMULATOR_DEP_PLUS_CPP(G, G, NewCallGamma, ServEndGamma)
+CLASS_SIMULATOR_DEP_PLUS_CPP(G, P, NewCallGamma, ServEndPareto)
+
+CLASS_SIMULATOR_DEP_PLUS_CPP(P, M, NewCallPareto, ServEndExp)
+CLASS_SIMULATOR_DEP_PLUS_CPP(P, U, NewCallPareto, ServEndUni)
+CLASS_SIMULATOR_DEP_PLUS_CPP(P, N, NewCallPareto, ServEndNormal)
+CLASS_SIMULATOR_DEP_PLUS_CPP(P, G, NewCallPareto, ServEndGamma)
+CLASS_SIMULATOR_DEP_PLUS_CPP(P, P, NewCallPareto, ServEndPareto)

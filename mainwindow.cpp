@@ -1337,12 +1337,13 @@ void MainWindow::loadLanguage(const QString &rLanguage)
         variant.setValue(ModelTrClass::StreamType::Pareto);
         ui->comboBox_CallServStrType->addItem("Pareto", variant);
 
-        ui->comboBoxSubgoupSchedulerAlgorithm->clear();
+        ui->comboBoxServerScheduler->clear();
         variant.setValue(ServerResourcessScheduler::Random);
-        ui->comboBoxSubgoupSchedulerAlgorithm->addItem("Random", variant);
-
+        ui->comboBoxServerScheduler->addItem("Random", variant);
         variant.setValue(ServerResourcessScheduler::Sequencial);
-        ui->comboBoxSubgoupSchedulerAlgorithm->addItem("Sequencial", variant);
+        ui->comboBoxServerScheduler->addItem("Sequencial", variant);
+        variant.setValue(BufferResourcessScheduler::Continuos);
+        ui->comboBoxBufferScheduler->addItem("Continuos");
     }
 }
 
@@ -1630,7 +1631,7 @@ void MainWindow::on_actionSaveXLSX_subroupAvailability_triggered()
 void MainWindow::on_comboBoxSubgoupSchedulerAlgorithm_currentIndexChanged(int index)
 {
     (void) index;
-    system->setSubgroupSchedulerAlgorithm(ui->comboBoxSubgoupSchedulerAlgorithm->currentData().value<ServerResourcessScheduler>());
+    system->setSubgroupSchedulerAlgorithm(ui->comboBoxServerScheduler->currentData().value<ServerResourcessScheduler>());
     fillSystem();
 }
 

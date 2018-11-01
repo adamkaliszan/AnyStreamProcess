@@ -255,7 +255,7 @@ void GnuplotScript::WriteScript(QString scriptFileName, QString dataFileName, QS
     QFile file(scriptFileName);
     file.open(QFile::WriteOnly | QFile::Text);
     QTextStream script(&file);
-    WriteScript(script, dataFileName, graphFileName, minY, maxY, QoS_MainParam);
+    //WriteScript(script, dataFileName, graphFileName, minY, maxY, QoS_MainParam);
     file.close();
 }
 
@@ -524,7 +524,7 @@ QTextStream &operator<<(QTextStream &st, GnuplotScript &results)
     return st;
 }
 
-GnuplotScript::GnuplotScript(Results::RSystem *systemResults): systemResults(systemResults)
+GnuplotScript::GnuplotScript(): systemResults(nullptr)
 {
     plotCi = true;
     plotWithColors = true;
