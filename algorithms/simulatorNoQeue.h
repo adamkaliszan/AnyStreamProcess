@@ -17,7 +17,7 @@ class ProcNoQeue;
 class simulatorNoQeue: public simulator
 {
 public:
-    simulatorNoQeue(BufferResourcessScheduler disc = BufferResourcessScheduler::Disabled);
+    simulatorNoQeue();
 
     QString shortName() const;
     int complexity()    const;
@@ -61,8 +61,6 @@ public:
         long int   **outNewSC;
         long int   **outEndSC;
 
-        const BufferResourcessScheduler disc;
-
     public:
         int       totalNumberOfServicedCalls;
         int       totalNumberOfLostCalls;
@@ -74,7 +72,7 @@ public:
         double     **qeueAStime_ofOccupiedAS_byClassI_inStateN;
         double     **serverAStime_ofOccupiedAS_byClassI_inStateN;
 
-        System(const ModelSyst *system, int noOfSeries, BufferResourcessScheduler disc);
+        System(const ModelSyst *system, int noOfSeries);
         ~System();
 
         void initialize(double a, int sumPropAt, int V);
@@ -414,9 +412,9 @@ public:
     simulatorNoQeue::Call *callData;
 
     inline void setUseless()                                       { state = USELESS; }
-    inline void removeCallData()                                   { callData = NULL; }
+    inline void removeCallData()                                   { callData = nullptr; }
     inline void setCallData(simulatorNoQeue::Call *newCallData)    { callData = newCallData; }
-    inline bool hasCallData()                                      { return (bool)(callData != NULL); }
+    inline bool hasCallData()                                      { return (bool)(callData != nullptr); }
 
     static void initialize(
               simulatorNoQeue::System *system

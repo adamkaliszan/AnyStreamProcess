@@ -150,6 +150,10 @@ private slots:
 
     void on_comboBoxResultsQtX_axis_currentIndexChanged(int index);
 
+    void on_comboBoxServerScheduler_currentIndexChanged(const QString &arg1);
+
+    void on_comboBoxBufferScheduler_currentIndexChanged(int index);
+
 private:
     QVector<ModelSyst*>  vectPredefinedSystems;
 

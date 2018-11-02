@@ -15,7 +15,7 @@ class ProcQeueFifo;
 
 class SimulatorQeueFifo: public simulator
 {
-public:    SimulatorQeueFifo(BufferResourcessScheduler disc = BufferResourcessScheduler::Continuos);
+public:    SimulatorQeueFifo();
 
     QString shortName()   const;
     int complexity()      const;
@@ -77,7 +77,7 @@ public:
         double     **qeueAStime_ofOccupiedAS_byClassI_inStateN;
         double     **serverAStime_ofOccupiedAS_byClassI_inStateN;
 
-        System(const ModelSyst *system, int noOfSeries, BufferResourcessScheduler disc);
+        System(const ModelSyst *system, int noOfSeries);
         ~System();
 
         void initialize(double a, int sumPropAt, int V);

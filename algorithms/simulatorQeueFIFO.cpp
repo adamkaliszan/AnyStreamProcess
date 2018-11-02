@@ -5,7 +5,7 @@
 namespace Algorithms
 {
 
-SimulatorQeueFifo::SimulatorQeueFifo(BufferResourcessScheduler qDisc): simulator(qDisc)
+SimulatorQeueFifo::SimulatorQeueFifo(): simulator()
 {
     myQoS_Set
        <<Results::Type::BlockingProbability
@@ -14,18 +14,7 @@ SimulatorQeueFifo::SimulatorQeueFifo(BufferResourcessScheduler qDisc): simulator
 
 QString SimulatorQeueFifo::shortName() const
 {
-    switch (disc)
-    {
-    case BufferResourcessScheduler::Continuos:
-        return "Sim. cFIFO";
-    case BufferResourcessScheduler::dFIFO_Seq:
-        return "Sim. dFIFO";
-    case BufferResourcessScheduler::qFIFO_Seq:
-        return "Sim. qFIFO";
-    default:
-        qFatal("Not supported FIFO discipline");
-        return "Unknown type";
-    }
+    return "Sim. buffer";
 }
 
 int SimulatorQeueFifo::complexity() const {return 100;}
@@ -43,7 +32,7 @@ void SimulatorQeueFifo::calculateSystem(const ModelSyst *system
         , SimulationParameters *simParameters)
 {
     this->system = system;
-    System *simData = new System(system, simParameters->noOfSeries, disc);
+    System *simData = new System(system, simParameters->noOfSeries);
     simData->initialize(a, system->totalAt(), system->vk_s());
 
     int seed = 1024;
@@ -78,7 +67,6 @@ void SimulatorQeueFifo::calculateSystem(const ModelSyst *system
 SimulatorQeueFifo::System::System(
           const ModelSyst *system
         , int noOfSeries
-        , BufferResourcessScheduler disc
         ):
     m(system->m())
   , n(0)
@@ -1405,7 +1393,7 @@ void SimulatorQeueFifo::Qeue::collectTheStats(double time)
     foreach (Call *tmp, calls)
         tmp->IncrTimeOfWaitingInBuffer(time);
 
-    if (firstCall != NULL)
+    if (firstCall != nullptr)
         firstCall->IncrTimeOfWaitingInBuffer(time);
 }
 

@@ -18,10 +18,10 @@ simulationResults::simulationResults(int m, int Vs, int Vb, int noOfSer): m(m), 
     __act_Qlen                    = new double;
     __act_E                       = new double[m];
     __act_Y                       = new double[m];
-    __act_noOfLostCallsBeforeQeue = new int[m];
-    __act_noOfLostCallsInQeue     = new int[m];
-    __act_noOfCalls               = new int[m];
-    __act_noOfServicedCalls       = new int[m];
+    __act_noOfLostCallsBeforeQeue = new unsigned int[m];
+    __act_noOfLostCallsInQeue     = new unsigned int[m];
+    __act_noOfCalls               = new unsigned int[m];
+    __act_noOfServicedCalls       = new unsigned int[m];
 
     __act_LOC_qeue_yt             = new double*[m];
     __act_LOC_server_yt           = new double*[m];
@@ -56,10 +56,10 @@ simulationResults::simulationResults(int m, int Vs, int Vb, int noOfSer): m(m), 
     E                             = new double*[noOfSer];
     Y                             = new double*[noOfSer];
 
-    noOfLostCallsBeforeQeue       = new int*[noOfSer];
-    noOfLostCallsInQeue           = new int*[noOfSer];
-    noOfCalls                     = new int*[noOfSer];
-    noOfServicedCalls             = new int*[noOfSer];
+    noOfLostCallsBeforeQeue       = new unsigned int*[noOfSer];
+    noOfLostCallsInQeue           = new unsigned int*[noOfSer];
+    noOfCalls                     = new unsigned int*[noOfSer];
+    noOfServicedCalls             = new unsigned int*[noOfSer];
 
     LOC_qeue_yt                   = new double**[noOfSer];
     LOC_server_yt                 = new double**[noOfSer];
@@ -77,20 +77,20 @@ simulationResults::simulationResults(int m, int Vs, int Vb, int noOfSer): m(m), 
     intOutNew                     = new double*[noOfSer];
     intOutEnd                     = new double*[noOfSer];
 
-    noInNew                       = new long int*[noOfSer];
-    noInEnd                       = new long int*[noOfSer];
-    noOutNew                      = new long int*[noOfSer];
-    noOutEnd                      = new long int*[noOfSer];
+    noInNew                       = new unsigned long int*[noOfSer];
+    noInEnd                       = new unsigned long int*[noOfSer];
+    noOutNew                      = new unsigned long int*[noOfSer];
+    noOutEnd                      = new unsigned long int*[noOfSer];
 
     intInNewSC                    = new double**[noOfSer];
     intInEndSC                    = new double**[noOfSer];
     intOutNewSC                   = new double**[noOfSer];
     intOutEndSC                   = new double**[noOfSer];
 
-    noInNewSC                     = new long int**[noOfSer];
-    noInEndSC                     = new long int**[noOfSer];
-    noOutNewSC                    = new long int**[noOfSer];
-    noOutEndSC                    = new long int**[noOfSer];
+    noInNewSC                     = new unsigned long int**[noOfSer];
+    noInEndSC                     = new unsigned long int**[noOfSer];
+    noOutNewSC                    = new unsigned long int**[noOfSer];
+    noOutEndSC                    = new unsigned long int**[noOfSer];
 
 
     for (int serNo=0; serNo<noOfSer; serNo++)
@@ -106,10 +106,10 @@ simulationResults::simulationResults(int m, int Vs, int Vb, int noOfSer): m(m), 
         E            [serNo] = new double[m];
         Y            [serNo] = new double[m];
 
-        noOfLostCallsBeforeQeue[serNo] = new int[m];
-        noOfLostCallsInQeue[serNo]     = new int[m];
-        noOfCalls[serNo]               = new int[m];
-        noOfServicedCalls[serNo]       = new int[m];
+        noOfLostCallsBeforeQeue[serNo] = new unsigned int[m];
+        noOfLostCallsInQeue[serNo]     = new unsigned int[m];
+        noOfCalls[serNo]               = new unsigned int[m];
+        noOfServicedCalls[serNo]       = new unsigned int[m];
 
         LOC_qeue_yt    [serNo] = new double*[m];
         LOC_server_yt  [serNo] = new double*[m];
@@ -122,10 +122,10 @@ simulationResults::simulationResults(int m, int Vs, int Vb, int noOfSer): m(m), 
         intOutNewSC    [serNo] = new double*[m];
         intOutEndSC    [serNo] = new double*[m];
 
-        noInNewSC     [serNo] = new long int*[m];
-        noInEndSC     [serNo] = new long int*[m];
-        noOutNewSC    [serNo] = new long int*[m];
-        noOutEndSC    [serNo] = new long int*[m];
+        noInNewSC     [serNo] = new unsigned long int*[m];
+        noInEndSC     [serNo] = new unsigned long int*[m];
+        noOutNewSC    [serNo] = new unsigned long int*[m];
+        noOutEndSC    [serNo] = new unsigned long int*[m];
 
         for (int i=0; i<m; i++)
         {
@@ -140,10 +140,10 @@ simulationResults::simulationResults(int m, int Vs, int Vb, int noOfSer): m(m), 
             intOutNewSC  [serNo][i] = new double[Vs+Vb+1];
             intOutEndSC  [serNo][i] = new double[Vs+Vb+1];
 
-            noInNewSC    [serNo][i] = new long int[Vs+Vb+1];
-            noInEndSC    [serNo][i] = new long int[Vs+Vb+1];
-            noOutNewSC   [serNo][i] = new long int[Vs+Vb+1];
-            noOutEndSC   [serNo][i] = new long int[Vs+Vb+1];
+            noInNewSC    [serNo][i] = new unsigned long int[Vs+Vb+1];
+            noInEndSC    [serNo][i] = new unsigned long int[Vs+Vb+1];
+            noOutNewSC   [serNo][i] = new unsigned long int[Vs+Vb+1];
+            noOutEndSC   [serNo][i] = new unsigned long int[Vs+Vb+1];
         }
 
         trDistrib[serNo]            = new double*[Vs+1];
@@ -158,10 +158,10 @@ simulationResults::simulationResults(int m, int Vs, int Vb, int noOfSer): m(m), 
         intOutNew[serNo]            = new double[Vs+Vb+1];
         intOutEnd[serNo]            = new double[Vs+Vb+1];
 
-        noInNew[serNo]             = new long int[Vs+Vb+1];
-        noInEnd[serNo]             = new long int[Vs+Vb+1];
-        noOutNew[serNo]            = new long int[Vs+Vb+1];
-        noOutEnd[serNo]            = new long int[Vs+Vb+1];
+        noInNew[serNo]             = new unsigned long int[Vs+Vb+1];
+        noInEnd[serNo]             = new unsigned long int[Vs+Vb+1];
+        noOutNew[serNo]            = new unsigned long int[Vs+Vb+1];
+        noOutEnd[serNo]            = new unsigned long int[Vs+Vb+1];
 
     }
 }

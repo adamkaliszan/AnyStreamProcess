@@ -5,9 +5,9 @@
 namespace Algorithms
 {
 
-simulatorNoQeue::simulatorNoQeue(BufferResourcessScheduler disc) : simulator(disc)
+simulatorNoQeue::simulatorNoQeue() : simulator()
 {
-    system = NULL;
+    system = nullptr;
 }
 
 QString simulatorNoQeue::shortName() const
@@ -34,7 +34,7 @@ void simulatorNoQeue::calculateSystem(const ModelSyst *system
         , SimulationParameters *simParameters)
 {
     this->system = system;
-    System *simData = new System(system, simParameters->noOfSeries, disc);
+    System *simData = new System(system, simParameters->noOfSeries);
     simData->initialize(a, system->totalAt(), system->vk_s());
 
     int seed = 1024;
@@ -66,7 +66,7 @@ void simulatorNoQeue::calculateSystem(const ModelSyst *system
     //emit this->sigCalculationDone();
 }
 
-simulatorNoQeue::System::System(const ModelSyst *system, int noOfSeries, BufferResourcessScheduler disc): m(system->m()), n(0), old_n(0), results(system->m(), system->vk_s(), system->vk_b(), noOfSeries), disc(disc)
+simulatorNoQeue::System::System(const ModelSyst *system, int noOfSeries): m(system->m()), n(0), old_n(0), results(system->m(), system->vk_s(), system->vk_b(), noOfSeries)
 {
     systemData = system;
 

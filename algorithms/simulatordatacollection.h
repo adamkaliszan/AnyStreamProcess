@@ -310,10 +310,10 @@ public:
     double _simulationTime;
 
 private:
-    int *__act_noOfLostCallsBeforeQeue;          // Liczba zgłoszeń utraconych przed kolejką (bufor był zapełniony)
-    int *__act_noOfLostCallsInQeue;              // Liczba zgłoszeń utraconych w kolejce
-    int *__act_noOfCalls;                        // Liczba zgłoszeń (wszystkich - utraconych i obsłużonych)
-    int *__act_noOfServicedCalls;                // Średnia liczba obsłużonych zgłoszeń
+    unsigned int *__act_noOfLostCallsBeforeQeue;          // Liczba zgłoszeń utraconych przed kolejką (bufor był zapełniony)
+    unsigned int *__act_noOfLostCallsInQeue;              // Liczba zgłoszeń utraconych w kolejce
+    unsigned int *__act_noOfCalls;                        // Liczba zgłoszeń (wszystkich - utraconych i obsłużonych)
+    unsigned int *__act_noOfServicedCalls;                // Średnia liczba obsłużonych zgłoszeń
 
     double *__act_yQ;                             // Średnia liczba zgłoszeń w kolejce - ignorowane statystyki
     double *__act_y;                              // Średnia liczba zgłoszeń w całym systemie
@@ -362,10 +362,10 @@ public:
     double **intInNew,       *act_intInNew;       // Intensywność przejścia do stanu po przyjęciu nowego zgłoszenia
     double **intInEnd,       *act_intInEnd;       // Intensywność przejścia do stanu po zakończeniu obsługi zgłoszenia
 
-    long int **noOutNew,     *act_noOutNew;       // Intensywność wyjścia ze stanu po przyjęciu nowego zgłoszenia
-    long int **noOutEnd,     *act_noOutEnd;       // Intensywność wyjścia ze stanu po zakończeniu obsługi zgłoszenia
-    long int **noInNew,      *act_noInNew;        // Intensywność przejścia do stanu po przyjęciu nowego zgłoszenia
-    long int **noInEnd,      *act_noInEnd;        // Intensywność przejścia do stanu po zakończeniu obsługi zgłoszenia
+    unsigned long int **noOutNew,     *act_noOutNew;       // Intensywność wyjścia ze stanu po przyjęciu nowego zgłoszenia
+    unsigned long int **noOutEnd,     *act_noOutEnd;       // Intensywność wyjścia ze stanu po zakończeniu obsługi zgłoszenia
+    unsigned long int **noInNew,      *act_noInNew;        // Intensywność przejścia do stanu po przyjęciu nowego zgłoszenia
+    unsigned long int **noInEnd,      *act_noInEnd;        // Intensywność przejścia do stanu po zakończeniu obsługi zgłoszenia
 
     double  ***intInNewSC,   **act_intInNewSC;    // Intensywność wyjścia ze stanu po przyjęciu nowego zgłoszenia określonej klasy
     double  ***intInEndSC,   **act_intInEndSC;    // Intensywność wyjścia ze stanu po zakończeniu obsługi zgłoszenia określonej klasy
@@ -373,11 +373,11 @@ public:
     double  ***intOutNewSC,  **act_intOutNewSC;   // Intensywność wyjścia ze stanu po przyjęciu nowego zgłoszenia określonej klasy
     double  ***intOutEndSC,  **act_intOutEndSC;   // Intensywność wyjścia ze stanu po zakończeniu obsługi zgłoszenia określonej klasy
 
-    long int ***noInNewSC,   **act_noInNewSC;     // Liczba wejść do stanu po przyjęciu nowego zgłoszenia określonej klasy
-    long int ***noInEndSC,   **act_noInEndSC;     // Liczba wejść do stanu po zakończeniu obsługi zgłoszenia określonej klasy
+    unsigned long int ***noInNewSC,   **act_noInNewSC;     // Liczba wejść do stanu po przyjęciu nowego zgłoszenia określonej klasy
+    unsigned long int ***noInEndSC,   **act_noInEndSC;     // Liczba wejść do stanu po zakończeniu obsługi zgłoszenia określonej klasy
 
-    long int ***noOutNewSC,  **act_noOutNewSC;    // Liczba wyjść ze stanu po przyjęciu nowego zgłoszenia określonej klasy
-    long int ***noOutEndSC,  **act_noOutEndSC;    // Liczba wyjść ze stanu po zakończeniu obsługi zgłoszenia określonej klasy
+    unsigned long int ***noOutNewSC,  **act_noOutNewSC;    // Liczba wyjść ze stanu po przyjęciu nowego zgłoszenia określonej klasy
+    unsigned long int ***noOutEndSC,  **act_noOutEndSC;    // Liczba wyjść ze stanu po zakończeniu obsługi zgłoszenia określonej klasy
 
     double ***LOC_qeue_yt,   **act_LOC_qeue_yt;   // Średnia liczba zgłoszeń w kolejce w zależności od stanu zajętości kolejki
     double ***LOC_server_yt, **act_LOC_server_yt; // Średnia liczba zgłoszeń w serwerze w zależności od jętości serwera
@@ -385,10 +385,10 @@ public:
     double ***SYS_server_yt, **act_SYS_server_yt; // Średnia liczba zgłoszeń w serwerze w zależności od stanu zajętości systemu
     double ***SYS_qeue_yt,   **act_SYS_qeue_yt;   // Średnia liczba zgłoszeń w serwerze w zależności od stanu zajętości systemu
 
-    int **noOfLostCallsBeforeQeue, *act_noOfLostCallsBeforeQeue;  // Liczba zgłoszeń utraconych przed kolejką (bufor był zapełniony)
-    int **noOfLostCallsInQeue, *act_noOfLostCallsInQeue;          // Liczba zgłoszeń utraconych w kolejce
-    int **noOfCalls, *act_noOfCalls;                              // Liczba zgłoszeń (wszystkich - utraconych i obsłużonych)
-    int **noOfServicedCalls, *act_noOfServicedCalls;              // Średnia liczba obsłużonych zgłoszeń
+    unsigned int **noOfLostCallsBeforeQeue, *act_noOfLostCallsBeforeQeue;  // Liczba zgłoszeń utraconych przed kolejką (bufor był zapełniony)
+    unsigned int **noOfLostCallsInQeue, *act_noOfLostCallsInQeue;          // Liczba zgłoszeń utraconych w kolejce
+    unsigned int **noOfCalls, *act_noOfCalls;                              // Liczba zgłoszeń (wszystkich - utraconych i obsłużonych)
+    unsigned int **noOfServicedCalls, *act_noOfServicedCalls;              // Średnia liczba obsłużonych zgłoszeń
 
     simulationResults(int m, int Vs, int Vb, int noOfSer);
     ~simulationResults();

@@ -3,12 +3,14 @@
 namespace Algorithms
 {
 
-simulator::simulator(BufferResourcessScheduler qDisc): Investigator(qDisc)
+simulator::simulator(): Investigator()
 {
     _hasConfIntervall = true;
     myQoS_Set
        <<Results::Type::BlockingProbability
+       <<Results::Type::LossProbability
        <<Results::Type::OccupancyDistribution;
+
 }
 
 std::random_device simulator::rd;

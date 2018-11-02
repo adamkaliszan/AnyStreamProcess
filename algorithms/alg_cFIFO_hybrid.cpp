@@ -14,7 +14,7 @@ namespace Algorithms
  *
  *
  */
-AlgorithmHybrid::AlgorithmHybrid() : Investigator(BufferResourcessScheduler::Continuos), variant(AlgVariant::yFAG)
+AlgorithmHybrid::AlgorithmHybrid() : Investigator(), variant(AlgVariant::yFAG)
 {
     myQoS_Set
      << Results::Type::BlockingProbability
@@ -32,7 +32,7 @@ AlgorithmHybrid::AlgorithmHybrid() : Investigator(BufferResourcessScheduler::Con
          ;
 }
 
-AlgorithmHybrid::AlgorithmHybrid(AlgorithmHybrid::AlgVariant var) : Investigator(BufferResourcessScheduler::Continuos), variant(var)
+AlgorithmHybrid::AlgorithmHybrid(AlgorithmHybrid::AlgVariant var) : Investigator(), variant(var)
 {
     myQoS_Set
      << Results::Type::BlockingProbability
@@ -71,10 +71,6 @@ QString AlgorithmHybrid::shortName() const
         result = "hybr cFIFO lin aprox ";
 
         result += "At alg";
-        break;
-
-    default:
-        result = "hybr cont XXX";
         break;
     }
     return result;
@@ -139,7 +135,7 @@ void AlgorithmHybrid::calculateSystem(const ModelSyst *system
                     continue;
                 double pP = p_single[i][l] * P_without_i[i][n-l];
 
-                numerator += ((double)(l)/(double)(classes[i].t) * pP);
+                numerator += (static_cast<double>(l)/static_cast<double>(classes[i].t) * pP);
                 denumerator += pP;
             }
             ySystemFAG[i][n]=numerator/denumerator;
@@ -197,7 +193,7 @@ void AlgorithmHybrid::calculateSystem(const ModelSyst *system
         double B_d = 0;
         for (int n=0; n<=VsVb; n++)
         {
-            double x = system->getClass(i)->intensityNewCallForState(1, (int)(ySYSTEM_V[i][n]));
+            double x = system->getClass(i)->intensityNewCallForState(1, static_cast<int>(ySYSTEM_V[i][n]));
             if (n > VsVb-classes[i].t)
                 B_n+=(x*Q[n]);
             B_d +=(x*Q[n]);

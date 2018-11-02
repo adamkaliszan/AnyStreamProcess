@@ -26,17 +26,15 @@ namespace Results
 
 }
 
-class Investigator//: public QObject
+class Investigator
 {
-//    Q_OBJECT
-
 protected:
     class ClassParameters;
 
     QSet<Results::Type> myQoS_Set;
 
 public:
-    Investigator(BufferResourcessScheduler queueDisc);
+    Investigator();
     virtual ~Investigator() {}
 
 
@@ -53,7 +51,6 @@ public:
 
     QSet<Results::Type> getQoS_Set() const {return myQoS_Set; }
 
-    QString shortQueueDiscipline() const;
     bool hasConfIntervall() const { return _hasConfIntervall; }
 
     bool correctSystemParameters(ModelSyst *system, double a);
@@ -78,8 +75,6 @@ protected:
     double **yQEUE_Vb;      ///Avarage number of calls of class i in qeue   vs number of occupied AS in qeue
     double **yQEUE_VsVb;    ///Avarage number of calls of class i in qeue   vs number of occupied AS in system
     double **ySYSTEM_V;     ///Avarage number of calls of class i in system vs number of occupied AS in system
-
-    const BufferResourcessScheduler disc;
 
     class ClassParameters
     {

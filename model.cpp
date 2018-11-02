@@ -7,6 +7,51 @@
 #include "model.h"
 #include "utils/probDistributions.h"
 
+QString serverResourcessSchedulerToString(ServerResourcessScheduler value)
+{
+    QString result;
+    switch (value)
+    {
+    case ServerResourcessScheduler::Random:
+        result = "Random";
+        break;
+    case ServerResourcessScheduler::Sequencial:
+        result = "Sequencial";
+        break;
+    }
+    return result;
+}
+
+QString bufferResourcessSchedulerToString(BufferResourcessScheduler value)
+{
+    QString result;
+    switch (value)
+    {
+    case BufferResourcessScheduler::Continuos:
+        result = "Continuos";
+        break;
+
+    case BufferResourcessScheduler::dFIFO_Seq:
+        result = "Discrette";
+        break;
+
+    case BufferResourcessScheduler::qFIFO_Seq:
+        result = "Discrette qFIFO";
+        break;
+
+    case BufferResourcessScheduler::SD_FIFO:
+        result = "State dependent";
+        break;
+
+    case BufferResourcessScheduler::Disabled:
+        result = "No buffer";
+        break;
+
+    }
+    return result;
+}
+
+
 QString ModelTrClass::streamTypeToString(ModelTrClass::StreamType str)
 {
     switch(str)
@@ -797,13 +842,14 @@ double ModelTrClass::intensityNewCallForY(double lambdaZero, double y) const
     case ModelTrClass::SourceType::DependentPlus:
         return lambdaZero * (_noOfSourcess + y) / _noOfSourcess;
     }
-        return -1;
+    return -1;
 }
 
 ModelSyst::ModelSyst():
     _noOfTrClasses(0)
-  , _groupsSchedulerAlgorithm(ServerResourcessScheduler::Sequencial)
+  , _serverSchedulerAlgorithm(ServerResourcessScheduler::Sequencial)
   , _noOfTypesOfGroups(0)
+  , _bufferSchedulerAlgorithm(BufferResourcessScheduler::Disabled)
   , _noOfTypesOfBuffers(0)
   , _totalBufferCapacity(0)
   , _totalNumberOfBuffers(0)
@@ -849,7 +895,7 @@ void ModelSyst::getLinkParameters(int32_t **k
     }
 }
 
-void ModelSyst::getQeuesParameters(
+void ModelSyst::getBufferParameters(
           int32_t **k
         , int32_t **v
         , int32_t *numberOfTypes
@@ -942,9 +988,14 @@ void ModelSyst::addQeues(ModelResourcess qeue, bool optimize)
     _noOfTypesOfBuffers++;
 }
 
-void ModelSyst::setSubgroupSchedulerAlgorithm(ServerResourcessScheduler algorithm)
+void ModelSyst::setServerSchedulerAlgorithm(ServerResourcessScheduler algorithm)
 {
-    this->_groupsSchedulerAlgorithm = algorithm;
+    this->_serverSchedulerAlgorithm = algorithm;
+}
+
+void ModelSyst::setBufferSchedulerAlgorithm(BufferResourcessScheduler algorithm)
+{
+    this->_bufferSchedulerAlgorithm = algorithm;
 }
 
 void ModelSyst::clearAll()
@@ -972,7 +1023,7 @@ const ModelTrClass *ModelSyst::getClass(int idx) const
 
 ServerResourcessScheduler ModelSyst::getGroupsSchedulerAlgorithm() const
 {
-    return _groupsSchedulerAlgorithm;
+    return _serverSchedulerAlgorithm;
 }
 
 bool ModelSyst::operator==(const ModelSyst &rho) const
@@ -1011,6 +1062,31 @@ bool ModelSyst::operator==(const ModelSyst &rho) const
                 break;
             }
         }
+
+    if (this->_serverSchedulerAlgorithm != rho._serverSchedulerAlgorithm)
+        return false;
+
+    delete []vA;
+    delete []vB;
+    delete []kA;
+    delete []kB;
+
+    getBufferParameters(&kA, &vA, &cA);
+    rho.getBufferParameters(&kB, &vB, &cB);
+
+    if (cA != cB)
+        result = false;
+    else
+        for (int32_t idx=0; idx<cA; idx++)
+        {
+            if ((vA[idx] != vB[idx])||(kA[idx] != kB[idx]))
+            {
+                result = false;
+                break;
+            }
+        }
+    if ((cA > 0) && (_bufferSchedulerAlgorithm != rho._bufferSchedulerAlgorithm))
+        return false;
 
     delete []vA;
     delete []vB;
@@ -1183,7 +1259,7 @@ QTextStream& operator<<(QTextStream &stream, const ModelSyst &model)
     if (model.k_s() > 1)
     {
         stream<<"(";
-        switch (model._groupsSchedulerAlgorithm)
+        switch (model._serverSchedulerAlgorithm)
         {
         case ServerResourcessScheduler::Random:
             stream<<"R";
@@ -1263,7 +1339,7 @@ QDebug &operator<<(QDebug &stream, const ModelSyst &model)
     if (model.k_s() > 1)
     {
         stream<<"(";
-        switch (model._groupsSchedulerAlgorithm)
+        switch (model._serverSchedulerAlgorithm)
         {
         case ServerResourcessScheduler::Random:
             stream<<"R";
@@ -1854,6 +1930,7 @@ bool ModelTrClass::SimulatorProcess_DepPlus##X##Y::endOfCallService(SimulatorSin
 {\
     return SimulatorProcess_DepPlus::endOfCallService<SimulatorProcess_DepPlus##X##Y>(system, proc);\
 }
+
 
 CLASS_SIMULATOR_INDEP_CPP(M, M, NewCallExp, ServEndExp)
 CLASS_SIMULATOR_INDEP_CPP(M, U, NewCallExp, ServEndUni)

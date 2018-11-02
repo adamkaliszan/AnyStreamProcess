@@ -1,29 +1,11 @@
 #include "algorithms/investigator.h"
 
-Investigator::Investigator(BufferResourcessScheduler queueDisc): classes(0), ySERVER_Vs(NULL), ySERVER_V(NULL), yQEUE_Vb(NULL), yQEUE_VsVb(NULL), ySYSTEM_V(NULL), disc(queueDisc)
+Investigator::Investigator():
+    classes(0), ySERVER_Vs(nullptr), ySERVER_V(nullptr), yQEUE_Vb(nullptr), yQEUE_VsVb(nullptr), ySYSTEM_V(nullptr)
 {
     calculationDone = false;
     _hasConfIntervall = false;
     isSelected = false;
-}
-
-QString Investigator::shortQueueDiscipline() const
-{
-    switch(disc)
-    {
-    case BufferResourcessScheduler::Continuos:
-        return QString("cFIFO");
-    case BufferResourcessScheduler::dFIFO_Seq:
-        return QString("dFIFO");
-    case BufferResourcessScheduler::SD_FIFO:
-        return QString("SD-FIFO");
-    case BufferResourcessScheduler::qFIFO_Seq:
-        return QString("qFIFO");
-    case BufferResourcessScheduler::Disabled:
-        return QString("no Queue");
-    default:
-        qFatal("Unknown queueing discipline");
-    }
 }
 
 bool Investigator::possible(const ModelSyst *system) const
@@ -48,7 +30,7 @@ bool Investigator::correctSystemParameters(ModelSyst *system, double a)
     qDebug("a = %lf", a);
     for (int i=0; i<system->m(); i++)
     {
-        double A = system->getClass(i)->intensityNewCallTotal(a, system->vk_s(), system->totalAt()) /system->getClass(i)->getMu();
+        double A = system->getClass(i)->intensityNewCallTotal(a, static_cast<size_t>(system->vk_s()), system->totalAt()) /system->getClass(i)->getMu();
         if (system->getClass(i)->srcType()==ModelTrClass::SourceType::DependentMinus)
             if (A>=system->getClass(i)->s())
             {
@@ -65,7 +47,6 @@ bool Investigator::correctSystemParameters(ModelSyst *system, double a)
             A_cor = A*system->getClass(i)->s()/(system->getClass(i)->s() + A);
             break;
         case ModelTrClass::SourceType::Independent:
-        default:
             A_cor = A;
             break;
         }
@@ -88,42 +69,42 @@ void Investigator::prepareTemporaryData(const ModelSyst *system, double a)
         classes[i].t = system->getClass(i)->t();
     }
 
-    if (yQEUE_Vb != NULL)
+    if (yQEUE_Vb != nullptr)
     {
         for (int i=0; i<system->m(); i++)
-            if (yQEUE_Vb[i]!=NULL)
+            if (yQEUE_Vb[i]!=nullptr)
                 delete []yQEUE_Vb[i];
         delete []yQEUE_Vb;
     }
 
-    if (yQEUE_VsVb != NULL)
+    if (yQEUE_VsVb != nullptr)
     {
         for (int i=0; i<system->m(); i++)
-            if (yQEUE_VsVb[i]!=NULL)
+            if (yQEUE_VsVb[i]!=nullptr)
                 delete []yQEUE_VsVb[i];
         delete []yQEUE_VsVb;
     }
 
-    if (ySERVER_Vs != NULL)
+    if (ySERVER_Vs != nullptr)
     {
         for (int i=0; i<system->m(); i++)
-            if (ySERVER_Vs[i]!=NULL)
+            if (ySERVER_Vs[i]!=nullptr)
                 delete []ySERVER_Vs[i];
         delete []ySERVER_Vs;
     }
 
-    if (ySERVER_V != NULL)
+    if (ySERVER_V != nullptr)
     {
         for (int i=0; i<system->m(); i++)
-            if (ySERVER_V[i]!=NULL)
+            if (ySERVER_V[i]!=nullptr)
                 delete []ySERVER_V[i];
         delete []ySERVER_V;
     }
 
-    if (ySYSTEM_V != NULL)
+    if (ySYSTEM_V != nullptr)
     {
         for (int i=0; i<system->m(); i++)
-            if (ySYSTEM_V[i]!=NULL)
+            if (ySYSTEM_V[i]!=nullptr)
                 delete []ySYSTEM_V[i];
         delete []ySYSTEM_V;
     }
@@ -136,11 +117,11 @@ void Investigator::prepareTemporaryData(const ModelSyst *system, double a)
 
     for (int i=0; i<system->m(); i++)
     {
-        yQEUE_Vb[i]   = new double[system->vk_b()+1];   bzero(yQEUE_Vb[i],   (system->vk_b() + 1) * sizeof(double));
-        yQEUE_VsVb[i] = new double[system->V()  + 1];  bzero(yQEUE_VsVb[i], (system->V() + 1)   * sizeof(double));
-        ySERVER_Vs[i] = new double[system->vk_s() + 1]; bzero(ySERVER_Vs[i], (system->vk_s() + 1) * sizeof(double));
-        ySERVER_V[i]  = new double[system->V() + 1];   bzero(ySERVER_V[i],  (system->V() + 1)   * sizeof(double));
-        ySYSTEM_V[i]  = new double[system->V() + 1];   bzero(ySYSTEM_V[i],  (system->V() + 1)   * sizeof(double));
+        yQEUE_Vb[i]   = new double[system->vk_b()+1];   bzero(yQEUE_Vb[i],   static_cast<size_t>(system->vk_b() + 1) * sizeof(double));
+        yQEUE_VsVb[i] = new double[system->V()  + 1];  bzero(yQEUE_VsVb[i],  static_cast<size_t>(system->V() + 1)    * sizeof(double));
+        ySERVER_Vs[i] = new double[system->vk_s() + 1]; bzero(ySERVER_Vs[i], static_cast<size_t>(system->vk_s() + 1) * sizeof(double));
+        ySERVER_V[i]  = new double[system->V() + 1];   bzero(ySERVER_V[i],   static_cast<size_t>(system->V() + 1)    * sizeof(double));
+        ySYSTEM_V[i]  = new double[system->V() + 1];   bzero(ySYSTEM_V[i],   static_cast<size_t>(system->V() + 1)    * sizeof(double));
     }
 }
 
@@ -153,11 +134,11 @@ void Investigator::deleteTemporaryData()
         delete []ySERVER_Vs[i];
         delete []ySERVER_V[i];
         delete []ySYSTEM_V[i];
-        yQEUE_Vb[i]     = NULL;
-        yQEUE_VsVb[i]   = NULL;
-        ySERVER_Vs[i]   = NULL;
-        ySERVER_V[i] = NULL;
-        ySYSTEM_V[i] = NULL;
+        yQEUE_Vb[i]     = nullptr;
+        yQEUE_VsVb[i]   = nullptr;
+        ySERVER_Vs[i]   = nullptr;
+        ySERVER_V[i]    = nullptr;
+        ySYSTEM_V[i]    = nullptr;
     }
 
     delete []yQEUE_Vb;
@@ -165,5 +146,5 @@ void Investigator::deleteTemporaryData()
     delete []ySERVER_Vs;
     delete []ySERVER_V;
     delete []ySYSTEM_V;
-    yQEUE_Vb = yQEUE_VsVb = ySERVER_Vs = ySERVER_V = ySYSTEM_V = NULL;
+    yQEUE_Vb = yQEUE_VsVb = ySERVER_Vs = ySERVER_V = ySYSTEM_V = nullptr;
 }

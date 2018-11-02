@@ -20,6 +20,8 @@ enum class ServerResourcessScheduler
     Sequencial
 };
 
+QString serverResourcessSchedulerToString(ServerResourcessScheduler value);
+
 enum class BufferResourcessScheduler
 {
     Continuos,     //Call can be splited between server and buffers resourcess
@@ -29,6 +31,7 @@ enum class BufferResourcessScheduler
     Disabled   //Brak kolejki
 };
 
+QString bufferResourcessSchedulerToString(BufferResourcessScheduler value);
 
 
 class ModelResourcess
@@ -423,11 +426,12 @@ private:
     ModelTrClass **_trClasses;
     int _capacityTrClasses;
 
-    ServerResourcessScheduler _groupsSchedulerAlgorithm;
+    ServerResourcessScheduler _serverSchedulerAlgorithm;
     ModelResourcess *_servers;
     int _noOfTypesOfGroups;
     int _capacityTypeOfGroups;
 
+    BufferResourcessScheduler _bufferSchedulerAlgorithm;
     ModelResourcess *_bufers;
     int _noOfTypesOfBuffers;
     int _capacityTypeOfQeues;
@@ -450,7 +454,7 @@ public:
             , int32_t **v
             , int32_t *numberOfTypes
             ) const;
-    void getQeuesParameters(int32_t **k
+    void getBufferParameters(int32_t **k
             , int32_t **v
             , int32_t *numberOfTypes
             ) const;
@@ -492,7 +496,8 @@ public:
     void addGroups(ModelResourcess newGroup, bool optimize = true);   //Add groups to the system. Previous types of group are checked before
     void addQeues(ModelResourcess qeue, bool optimize = true);        //Add qeues to the system
 
-    void setSubgroupSchedulerAlgorithm(ServerResourcessScheduler algorithm);
+    void setServerSchedulerAlgorithm(ServerResourcessScheduler algorithm);
+    void setBufferSchedulerAlgorithm(BufferResourcessScheduler algorithm);
 
     void clearAll();
 };

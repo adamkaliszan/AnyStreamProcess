@@ -9,7 +9,7 @@
 namespace Algorithms
 {
 
-simulatorNoQeueLag::simulatorNoQeueLag(BufferResourcessScheduler disc) : simulator(disc)
+simulatorNoQeueLag::simulatorNoQeueLag() : simulator()
 {
     myQoS_Set << Results::Type::BlockingProbability;
     myQoS_Set << Results::Type::OccupancyDistribution;
@@ -35,7 +35,7 @@ void simulatorNoQeueLag::calculateSystem(const ModelSyst *system
     prepareTemporaryData(system, a);
 
 
-    System *simData = new System(system, simParameters->noOfSeries, disc);
+    System *simData = new System(system, simParameters->noOfSeries);
     simData->initialize(a, system->totalAt(), system->vk_s());
 
     int seed = 1024;
@@ -67,10 +67,9 @@ void simulatorNoQeueLag::calculateSystem(const ModelSyst *system
     //emit this->sigCalculationDone();
 }
 
-simulatorNoQeueLag::System::System(const ModelSyst *system, int noOfSeries, BufferResourcessScheduler disc)
+simulatorNoQeueLag::System::System(const ModelSyst *system, int noOfSeries)
     : m(system->m())
     , V(system->V())
-    , disc(disc)
     , n(0)
     , old_n(0)
     , results(system->m(), system->vk_s(), system->vk_b(), noOfSeries)

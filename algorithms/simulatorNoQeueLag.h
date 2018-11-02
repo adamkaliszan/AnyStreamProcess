@@ -18,7 +18,7 @@ class ProcNoQeueLag;
 class simulatorNoQeueLag: public simulator
 {
 public:
-    simulatorNoQeueLag(BufferResourcessScheduler disc = BufferResourcessScheduler::Disabled);
+    simulatorNoQeueLag();
 
     QString shortName()  const { return "Sim. noQueue LAG"; }
     int complexity()     const { return 100; }
@@ -78,7 +78,6 @@ public:
     private:
         int m;
         int V;
-        const BufferResourcessScheduler disc;
 
         int n;
         QVector<int> n_i;
@@ -111,7 +110,7 @@ public:
         int       totalNumberOfLostCalls;
         const ModelSyst * systemData;
 
-        System(const ModelSyst *system, int noOfSeries, BufferResourcessScheduler disc);
+        System(const ModelSyst *system, int noOfSeries);
         ~System();
 
         void initialize(double a, int sumPropAt, int V);

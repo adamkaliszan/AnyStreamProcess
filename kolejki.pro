@@ -66,7 +66,8 @@ SOURCES += main.cpp\
     results/resultsXlsx.cpp \
     utils/utilsMisc.cpp \
     results/resultsSingleGroup.cpp \
-    results/resultsApi.cpp
+    results/resultsApi.cpp \
+    algorithms/simulatorAllSystems.cpp
 
 HEADERS  += mainwindow.h \
     model.h \
@@ -110,7 +111,8 @@ HEADERS  += mainwindow.h \
     results/resultsSingleGroup.h \
     results/resultsXlsx.h \
     results/resultsApi.h \
-    results/resultsApiTypes.h
+    results/resultsApiTypes.h \
+    algorithms/simulatorAllSystems.h
 
 FORMS    += mainwindow.ui \
     dialogAbout.ui

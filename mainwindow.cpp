@@ -20,8 +20,10 @@
 #include "algorithms/simulatorBufferFIFO.h"
 #include "algorithms/simulatorQeueSdFIFO.h"
 #include "algorithms/simulatorNoQeue.h"
+#include "algorithms/simulatorAllSystems.h"
 #include "algorithms/simulatorNoQeueLag.h"
 #include "algorithms/simulationParameters.h"
+#include "algorithms/simulatorAllSystems.h"
 #include "algorithms/algRekLag.h"
 #include "algorithms/algRekLagGS.h"
 
@@ -179,7 +181,7 @@ void MainWindow::addAlgorithmForCurentSystem(Investigator *newAlg)
     variant.setValue(newAlg);
 
     QListWidgetItem *newListItem = new QListWidgetItem();
-    newListItem->setData(Qt::DisplayRole,  variant.value<Investigator *>()->shortQueueDiscipline() + ": " + variant.value<Investigator *>()->shortName());
+    newListItem->setData(Qt::DisplayRole, variant.value<Investigator *>()->shortName());
     newListItem->setData(Qt::UserRole, variant);
     ui->listWidgetAlgorithms->addItem(newListItem);
 }
@@ -191,7 +193,7 @@ void MainWindow::addAlternativeAlgorithmForCurentSystem(Investigator *newAlg)
 
     QListWidgetItem *newListItem = new QListWidgetItem();
 
-    newListItem->setData(Qt::DisplayRole, variant.value<Investigator *>()->shortQueueDiscipline() + ": " + variant.value<Investigator *>()->shortName());
+    newListItem->setData(Qt::DisplayRole, variant.value<Investigator *>()->shortName());
     newListItem->setData(Qt::UserRole, variant);
 
     ui->listWidgetAlgorithmsAlternative->addItem(newListItem);
@@ -243,12 +245,11 @@ void MainWindow::addAlgorithmsAndParams()
 //    algorithms.append(new AlgorithmHybrid(AlgorithmHybrid::algVariant::yAprox));
 //    algorithms.append(new AlgorithmHybridDiscrDesc());
 
-    addTestedAlgorithm(new Algorithms::SimulatorQeueFifo(BufferResourcessScheduler::Continuos));
-    addTestedAlgorithm(new Algorithms::SimulatorQeueFifo(BufferResourcessScheduler::dFIFO_Seq));
-    addTestedAlgorithm(new Algorithms::SimulatorQeueFifo(BufferResourcessScheduler::qFIFO_Seq));
-    addTestedAlgorithm(new Algorithms::SimulatorQeueSdFifo());
-    addTestedAlgorithm(new Algorithms::simulatorNoQeue());
-    addTestedAlgorithm(new Algorithms::simulatorNoQeueLag());
+//    addTestedAlgorithm(new Algorithms::SimulatorQeueFifo());
+//    addTestedAlgorithm(new Algorithms::SimulatorQeueSdFifo());
+//    addTestedAlgorithm(new Algorithms::simulatorNoQeue());
+//    addTestedAlgorithm(new Algorithms::simulatorNoQeueLag());
+    addTestedAlgorithm(new Algorithms::SimulatorAll());
     addTestedAlgorithm(new Algorithms::algRekLagGS());
     addTestedAlgorithm(new Algorithms::algRekLagGS2());
     addTestedAlgorithm(new Algorithms::algRekLAG());
@@ -1338,12 +1339,30 @@ void MainWindow::loadLanguage(const QString &rLanguage)
         ui->comboBox_CallServStrType->addItem("Pareto", variant);
 
         ui->comboBoxServerScheduler->clear();
-        variant.setValue(ServerResourcessScheduler::Random);
         ui->comboBoxServerScheduler->addItem("Random", variant);
         variant.setValue(ServerResourcessScheduler::Sequencial);
-        ui->comboBoxServerScheduler->addItem("Sequencial", variant);
-        variant.setValue(BufferResourcessScheduler::Continuos);
-        ui->comboBoxBufferScheduler->addItem("Continuos");
+
+        QVector<ServerResourcessScheduler> tmpOptions = {
+            ServerResourcessScheduler::Random,  ServerResourcessScheduler::Sequencial};
+
+        foreach (ServerResourcessScheduler tmp, tmpOptions)
+        {
+            variant.setValue(tmp);
+            ui->comboBoxServerScheduler->addItem(serverResourcessSchedulerToString(tmp), variant);
+        }
+
+        QVector<BufferResourcessScheduler> tmpOptionsBuffer = {
+            BufferResourcessScheduler::dFIFO_Seq,
+            BufferResourcessScheduler::Continuos,
+            BufferResourcessScheduler::qFIFO_Seq,
+            BufferResourcessScheduler::SD_FIFO
+        };
+
+        foreach (BufferResourcessScheduler tmp, tmpOptionsBuffer)
+        {
+            variant.setValue(tmp);
+            ui->comboBoxBufferScheduler->addItem(bufferResourcessSchedulerToString(tmp), variant);
+        }
     }
 }
 
@@ -1631,9 +1650,17 @@ void MainWindow::on_actionSaveXLSX_subroupAvailability_triggered()
 void MainWindow::on_comboBoxSubgoupSchedulerAlgorithm_currentIndexChanged(int index)
 {
     (void) index;
-    system->setSubgroupSchedulerAlgorithm(ui->comboBoxServerScheduler->currentData().value<ServerResourcessScheduler>());
+    system->setServerSchedulerAlgorithm(ui->comboBoxServerScheduler->currentData().value<ServerResourcessScheduler>());
     fillSystem();
 }
+
+void MainWindow::on_comboBoxBufferScheduler_currentIndexChanged(int index)
+{
+    (void) index;
+    system->setBufferSchedulerAlgorithm(ui->comboBoxBufferScheduler->currentData().value<BufferResourcessScheduler>());
+    fillSystem();
+}
+
 
 void MainWindow::fillListWidgetWithParams(QListWidget *outList, QLabel *outLabel, Results::ParameterType paramType)
 {
@@ -1907,8 +1934,6 @@ void MainWindow::on_ResultsQtChartRefresh()
             algColIdx = 0;
     }
 
-
-//    chart-
     if (ui->checkBoxResultsQtLogScaleOnAxisY->isChecked())
     {
         if (yMinAndMax.first <= 0)

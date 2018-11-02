@@ -1516,8 +1516,8 @@
    <slot>classUiParChanged()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>677</x>
-     <y>523</y>
+     <x>704</x>
+     <y>449</y>
     </hint>
     <hint type="destinationlabel">
      <x>193</x>
@@ -1532,8 +1532,8 @@
    <slot>classUiParChanged()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>677</x>
-     <y>597</y>
+     <x>704</x>
+     <y>513</y>
     </hint>
     <hint type="destinationlabel">
      <x>399</x>
@@ -1548,8 +1548,8 @@
    <slot>classUiParChanged()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>677</x>
-     <y>560</y>
+     <x>704</x>
+     <y>481</y>
     </hint>
     <hint type="destinationlabel">
      <x>399</x>
@@ -1564,8 +1564,8 @@
    <slot>classUiParChanged()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>262</x>
-     <y>449</y>
+     <x>295</x>
+     <y>385</y>
     </hint>
     <hint type="destinationlabel">
      <x>219</x>
@@ -1580,8 +1580,8 @@
    <slot>classUiParChanged()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>396</x>
-     <y>560</y>
+     <x>432</x>
+     <y>480</y>
     </hint>
     <hint type="destinationlabel">
      <x>294</x>
@@ -1596,8 +1596,8 @@
    <slot>queueUiParChanged()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>565</x>
-     <y>285</y>
+     <x>535</x>
+     <y>243</y>
     </hint>
     <hint type="destinationlabel">
      <x>199</x>
@@ -1612,8 +1612,8 @@
    <slot>classUiParChanged()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>396</x>
-     <y>523</y>
+     <x>432</x>
+     <y>448</y>
     </hint>
     <hint type="destinationlabel">
      <x>294</x>
@@ -1628,8 +1628,8 @@
    <slot>on_ResultsQtChartRefresh()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>530</x>
-     <y>748</y>
+     <x>120</x>
+     <y>818</y>
     </hint>
     <hint type="destinationlabel">
      <x>573</x>
@@ -1644,8 +1644,8 @@
    <slot>on_ResultsQtChartRefresh()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>498</x>
-     <y>719</y>
+     <x>120</x>
+     <y>847</y>
     </hint>
     <hint type="destinationlabel">
      <x>620</x>
@@ -1660,8 +1660,8 @@
    <slot>groupUiParChanged()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>225</x>
-     <y>237</y>
+     <x>176</x>
+     <y>205</y>
     </hint>
     <hint type="destinationlabel">
      <x>199</x>
@@ -1676,8 +1676,8 @@
    <slot>groupUiParChanged()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>225</x>
-     <y>285</y>
+     <x>143</x>
+     <y>243</y>
     </hint>
     <hint type="destinationlabel">
      <x>199</x>
@@ -1692,12 +1692,12 @@
    <slot>queueUiParChanged()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>565</x>
-     <y>237</y>
+     <x>535</x>
+     <y>205</y>
     </hint>
     <hint type="destinationlabel">
-     <x>389</x>
-     <y>25</y>
+     <x>575</x>
+     <y>129</y>
     </hint>
    </hints>
   </connection>
@@ -1708,8 +1708,8 @@
    <slot>classUiParChanged()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>396</x>
-     <y>597</y>
+     <x>432</x>
+     <y>512</y>
     </hint>
     <hint type="destinationlabel">
      <x>294</x>
@@ -1724,8 +1724,8 @@
    <slot>classUiParChanged()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>262</x>
-     <y>486</y>
+     <x>295</x>
+     <y>417</y>
     </hint>
     <hint type="destinationlabel">
      <x>229</x>
@@ -1740,8 +1740,8 @@
    <slot>classUiParChanged()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>262</x>
-     <y>412</y>
+     <x>295</x>
+     <y>353</y>
     </hint>
     <hint type="destinationlabel">
      <x>399</x>
@@ -1756,8 +1756,8 @@
    <slot>on_ResultsQtChartRefresh()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>498</x>
-     <y>493</y>
+     <x>557</x>
+     <y>794</y>
     </hint>
     <hint type="destinationlabel">
      <x>539</x>
@@ -1772,8 +1772,8 @@
    <slot>on_ResultsQtChartRefresh()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>498</x>
-     <y>349</y>
+     <x>295</x>
+     <y>794</y>
     </hint>
     <hint type="destinationlabel">
      <x>503</x>
@@ -1788,8 +1788,8 @@
    <slot>on_ResultsQtChartRefresh()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>244</x>
-     <y>850</y>
+     <x>120</x>
+     <y>235</y>
     </hint>
     <hint type="destinationlabel">
      <x>317</x>
@@ -1804,8 +1804,8 @@
    <slot>on_ResultsQtChartRefresh()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>619</x>
-     <y>878</y>
+     <x>318</x>
+     <y>235</y>
     </hint>
     <hint type="destinationlabel">
      <x>623</x>
@@ -1820,8 +1820,8 @@
    <slot>on_ResultsQtChartRefresh()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>192</x>
-     <y>1142</y>
+     <x>516</x>
+     <y>235</y>
     </hint>
     <hint type="destinationlabel">
      <x>260</x>

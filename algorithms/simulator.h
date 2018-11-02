@@ -13,7 +13,7 @@ public:
     static std::random_device rd;
     static std::mt19937 gen;
 
-    simulator(BufferResourcessScheduler qDisc);
+    simulator();
 
     bool isItTheSameSystem(ModelSyst *system);
 

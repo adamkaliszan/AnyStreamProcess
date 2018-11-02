@@ -4,7 +4,7 @@
 namespace Algorithms
 {
 
-AlgorithmHybridDiscr::AlgorithmHybridDiscr(): Investigator(BufferResourcessScheduler::dFIFO_Seq)
+AlgorithmHybridDiscr::AlgorithmHybridDiscr(): Investigator()
 {
     myQoS_Set
        <<Results::Type::BlockingProbability
