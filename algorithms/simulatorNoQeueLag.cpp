@@ -9,7 +9,7 @@
 namespace Algorithms
 {
 
-simulatorNoQeueLag::simulatorNoQeueLag() : simulator()
+SimulatorNoQeueLag::SimulatorNoQeueLag() : simulator()
 {
     myQoS_Set << Results::Type::BlockingProbability;
     myQoS_Set << Results::Type::OccupancyDistribution;
@@ -20,14 +20,14 @@ simulatorNoQeueLag::simulatorNoQeueLag() : simulator()
     system = nullptr;
 }
 
-bool simulatorNoQeueLag::possible(const ModelSyst *system) const
+bool SimulatorNoQeueLag::possible(const ModelSyst *system) const
 {
     if (system->vk_b() > 0)
         return false;
     return simulator::possible(system);
 }
 
-void simulatorNoQeueLag::calculateSystem(const ModelSyst *system
+void SimulatorNoQeueLag::calculateSystem(const ModelSyst *system
       , double a
       , RInvestigator *results
       , SimulationParameters *simParameters)
@@ -67,7 +67,7 @@ void simulatorNoQeueLag::calculateSystem(const ModelSyst *system
     //emit this->sigCalculationDone();
 }
 
-simulatorNoQeueLag::System::System(const ModelSyst *system, int noOfSeries)
+SimulatorNoQeueLag::System::System(const ModelSyst *system, int noOfSeries)
     : m(system->m())
     , V(system->V())
     , n(0)
@@ -78,7 +78,7 @@ simulatorNoQeueLag::System::System(const ModelSyst *system, int noOfSeries)
 
     systemData = system;
 
-    agenda = new simulatorDataCollection<ProcNoQeueLag>();
+    agenda = new SimulatorDataCollection<ProcNoQeueLag>();
     server = new Server(this);
 
     timesPerClassAndState.resize(system->m());
@@ -95,7 +95,7 @@ simulatorNoQeueLag::System::System(const ModelSyst *system, int noOfSeries)
     }
 }
 
-simulatorNoQeueLag::System::~System()
+SimulatorNoQeueLag::System::~System()
 {
     delete agenda;
     delete server;
@@ -110,7 +110,7 @@ simulatorNoQeueLag::System::~System()
     }
 }
 
-void simulatorNoQeueLag::System::initialize(double a, int sumPropAt, int V)
+void SimulatorNoQeueLag::System::initialize(double a, int sumPropAt, int V)
 {
     for(int i=0; i<systemData->m(); i++)
     {
@@ -119,7 +119,7 @@ void simulatorNoQeueLag::System::initialize(double a, int sumPropAt, int V)
     }
 }
 
-void simulatorNoQeueLag::System::doSimExperiment(int numberOfLostCall, int seed, int numberOfServicedCalls)
+void SimulatorNoQeueLag::System::doSimExperiment(int numberOfLostCall, int seed, int numberOfServicedCalls)
 {
     qsrand(seed);
     this->totalNumberOfLostCalls = 0;
@@ -159,7 +159,7 @@ void simulatorNoQeueLag::System::doSimExperiment(int numberOfLostCall, int seed,
     }
 }
 
-void simulatorNoQeueLag::System::writesResultsOfSingleExperiment(RSingle& singleResults)
+void SimulatorNoQeueLag::System::writesResultsOfSingleExperiment(RSingle& singleResults)
 {
     server->writesResultsOfSingleExperiment(singleResults, results._simulationTime);
 
@@ -269,12 +269,12 @@ void simulatorNoQeueLag::System::writesResultsOfSingleExperiment(RSingle& single
     }
 }
 
-int simulatorNoQeueLag::System::getServerNumberOfFreeAS()
+int SimulatorNoQeueLag::System::getServerNumberOfFreeAS()
 {
     return server->getNoOfFreeAS();
 }
 
-bool simulatorNoQeueLag::System::serveNewCall(simulatorNoQeueLag::Call *newCall)
+bool SimulatorNoQeueLag::System::serveNewCall(SimulatorNoQeueLag::Call *newCall)
 {
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
 
@@ -311,7 +311,7 @@ bool simulatorNoQeueLag::System::serveNewCall(simulatorNoQeueLag::Call *newCall)
     }
 }
 
-void simulatorNoQeueLag::System::endTransmission(simulatorNoQeueLag::Call *call)
+void SimulatorNoQeueLag::System::endTransmission(SimulatorNoQeueLag::Call *call)
 {
     classIdx = call->classIdx;
 
@@ -324,7 +324,7 @@ void simulatorNoQeueLag::System::endTransmission(simulatorNoQeueLag::Call *call)
     FinishCall(call, true);
 }
 
-void simulatorNoQeueLag::System::addProcess(ProcNoQeueLag *proc)
+void SimulatorNoQeueLag::System::addProcess(ProcNoQeueLag *proc)
 {
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
     if (proc->time < 0)
@@ -335,7 +335,7 @@ void simulatorNoQeueLag::System::addProcess(ProcNoQeueLag *proc)
     agenda->addProcess(proc);
 }
 
-void simulatorNoQeueLag::System::removeProcess(ProcNoQeueLag *proc)
+void SimulatorNoQeueLag::System::removeProcess(ProcNoQeueLag *proc)
 {
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
     if (proc->time < 0)
@@ -344,7 +344,7 @@ void simulatorNoQeueLag::System::removeProcess(ProcNoQeueLag *proc)
     agenda->removeProcess(&proc);
 }
 
-simulatorNoQeueLag::Call *simulatorNoQeueLag::System::getNewCall(simulatorNoQeueLag::Call *parent)
+SimulatorNoQeueLag::Call *SimulatorNoQeueLag::System::getNewCall(SimulatorNoQeueLag::Call *parent)
 {
     Call *result = _getNewCall();
 
@@ -359,7 +359,7 @@ simulatorNoQeueLag::Call *simulatorNoQeueLag::System::getNewCall(simulatorNoQeue
     return result;
 }
 
-simulatorNoQeueLag::Call *simulatorNoQeueLag::System::getNewCall(
+SimulatorNoQeueLag::Call *SimulatorNoQeueLag::System::getNewCall(
           const ModelTrClass *trClass
         , int classIdx
         , double IncE
@@ -426,7 +426,7 @@ simulatorNoQeueLag::Call *simulatorNoQeueLag::System::getNewCall(
     return result;
 }
 
-simulatorNoQeueLag::Call *simulatorNoQeueLag::System::_getNewCall()
+SimulatorNoQeueLag::Call *SimulatorNoQeueLag::System::_getNewCall()
 {
     static int noOfCreatedCalls = 0;
     if(uselessCalls.length())
@@ -435,12 +435,12 @@ simulatorNoQeueLag::Call *simulatorNoQeueLag::System::_getNewCall()
     return new Call;
 }
 
-void simulatorNoQeueLag::System::reuseCall(simulatorNoQeueLag::Call *callToReuse)
+void SimulatorNoQeueLag::System::reuseCall(SimulatorNoQeueLag::Call *callToReuse)
 {
     uselessCalls.push(callToReuse);
 }
 
-void simulatorNoQeueLag::System::reuseProcess(ProcNoQeueLag *proc)
+void SimulatorNoQeueLag::System::reuseProcess(ProcNoQeueLag *proc)
 {
     proc->idx = 0;
     proc->setUseless();
@@ -448,12 +448,12 @@ void simulatorNoQeueLag::System::reuseProcess(ProcNoQeueLag *proc)
     agenda->reuseProcess(proc);
 }
 
-void simulatorNoQeueLag::System::removeCallFromServer(simulatorNoQeueLag::Call *call)
+void SimulatorNoQeueLag::System::removeCallFromServer(SimulatorNoQeueLag::Call *call)
 {
     server->removeCall(call);
 }
 
-void simulatorNoQeueLag::System::FinishCall(simulatorNoQeueLag::Call *call, bool acceptedToService)
+void SimulatorNoQeueLag::System::FinishCall(SimulatorNoQeueLag::Call *call, bool acceptedToService)
 {
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
     if (call->classIdx > 100)
@@ -477,12 +477,12 @@ void simulatorNoQeueLag::System::FinishCall(simulatorNoQeueLag::Call *call, bool
     reuseCall(call);
 }
 
-void simulatorNoQeueLag::System::cancellScheduledCall(simulatorNoQeueLag::Call *call)
+void SimulatorNoQeueLag::System::cancellScheduledCall(SimulatorNoQeueLag::Call *call)
 {
     reuseCall(call);
 }
 
-int simulatorNoQeueLag::System::getMaxNumberOfAsInSingleGroup()
+int SimulatorNoQeueLag::System::getMaxNumberOfAsInSingleGroup()
 {
     return server->getMaxNumberOfAsInSingleGroup();
 }
@@ -490,7 +490,7 @@ int simulatorNoQeueLag::System::getMaxNumberOfAsInSingleGroup()
 
 #define FOLDINGSTART { //Statistics
 
-void simulatorNoQeueLag::System::statsCollectPre(double time)
+void SimulatorNoQeueLag::System::statsCollectPre(double time)
 {
     old_n = n;
     results._simulationTime +=time;
@@ -512,7 +512,7 @@ void simulatorNoQeueLag::System::statsCollectPre(double time)
     timesPerState[V-maxCallRequirement].availabilityTime += time;
 }
 
-void simulatorNoQeueLag::System::statsCollectPost(int classIdx)
+void SimulatorNoQeueLag::System::statsCollectPost(int classIdx)
 {
     if (n == old_n) //nowe zgłoszenie zostało odrzucone
     {
@@ -561,7 +561,7 @@ void simulatorNoQeueLag::System::statsCollectPost(int classIdx)
     server->statsCollectPost(classIdx);
 }
 
-void simulatorNoQeueLag::System::statsClear()
+void SimulatorNoQeueLag::System::statsClear()
 {
     for (int i=0; i<m; i++)
         for (int n=0; n<=V; n++)
@@ -575,7 +575,7 @@ void simulatorNoQeueLag::System::statsClear()
     server->statsClear();
 }
 
-void simulatorNoQeueLag::System::statsEnable(int serNo)
+void SimulatorNoQeueLag::System::statsEnable(int serNo)
 {
     statsClear();
 
@@ -597,12 +597,12 @@ void simulatorNoQeueLag::System::statsEnable(int serNo)
     results.enableStatisticscollection(serNo);
 }
 
-void simulatorNoQeueLag::System::statsDisable()
+void SimulatorNoQeueLag::System::statsDisable()
 {
     results.disableStatisticCollection();
 }
 
-void simulatorNoQeueLag::Server::statsClear()
+void SimulatorNoQeueLag::Server::statsClear()
 {
     for (int n=0; n<=V; n++)
         timePerState[n].statsClear();
@@ -628,7 +628,7 @@ void simulatorNoQeueLag::Server::statsClear()
     }
 }
 
-void simulatorNoQeueLag::Server::statsColectPre(double time)
+void SimulatorNoQeueLag::Server::statsColectPre(double time)
 {
     for (int i=0; i<m; i++)
     {
@@ -648,7 +648,7 @@ void simulatorNoQeueLag::Server::statsColectPre(double time)
     statsColectPreGroupsAvailability(time);
 }
 
-void simulatorNoQeueLag::Server::statsColectPreGroupsAvailability(double time)
+void SimulatorNoQeueLag::Server::statsColectPreGroupsAvailability(double time)
 {
     // Uaktualnianie informacji o liczbie dostępnych zasobów w danej grupie
     tmpAvailabilityInGroups.resize(k);
@@ -705,23 +705,23 @@ void simulatorNoQeueLag::Server::statsColectPreGroupsAvailability(double time)
     }
 }
 
-void simulatorNoQeueLag::Server::statsCollectPost(int classIdx)
+void SimulatorNoQeueLag::Server::statsCollectPost(int classIdx)
 {
     for (int groupNo=0; groupNo < k; groupNo++)
         groups[groupNo]->statsCollectPost(classIdx);
 }
 
-double simulatorNoQeueLag::Server::statsGetWorkoutPerClassAndState(int i, int n) const
+double SimulatorNoQeueLag::Server::statsGetWorkoutPerClassAndState(int i, int n) const
 {
     return resourceUtilizationByClassInState[i][n];
 }
 
-double simulatorNoQeueLag::Server::statsGetOccupancyTimeOfState(int state) const
+double SimulatorNoQeueLag::Server::statsGetOccupancyTimeOfState(int state) const
 {
     return (state <= V) ? timePerState[state].occupancyTime : 0;
 }
 
-double simulatorNoQeueLag::Server::statsGetFAGequivalentAvailabilityTimeOfState(int state) const
+double SimulatorNoQeueLag::Server::statsGetFAGequivalentAvailabilityTimeOfState(int state) const
 {
     return (state <= V) ? timePerState[state].availabilityTime : 0;
 }
@@ -729,7 +729,7 @@ double simulatorNoQeueLag::Server::statsGetFAGequivalentAvailabilityTimeOfState(
 #define FOLDINGEND }
 
 
-bool simulatorNoQeueLag::Server::findAS(int noOfAUs, int& groupNo, QList<int>& asIndexes
+bool SimulatorNoQeueLag::Server::findAS(int noOfAUs, int& groupNo, QList<int>& asIndexes
         , GroupResourcessAllocationlgorithm groupResourcessAllocationlgorithm
                 ) const
 {
@@ -772,7 +772,7 @@ bool simulatorNoQeueLag::Server::findAS(int noOfAUs, int& groupNo, QList<int>& a
 }
 
 
-void simulatorNoQeueLag::Server::addCall(Call *call, int noOfAS, int groupNo, const QList<int>& asIndexes, bool newCall)
+void SimulatorNoQeueLag::Server::addCall(Call *call, int noOfAS, int groupNo, const QList<int>& asIndexes, bool newCall)
 {
     call->groupIndex = groupNo;
     n += noOfAS;
@@ -797,7 +797,7 @@ void simulatorNoQeueLag::Server::addCall(Call *call, int noOfAS, int groupNo, co
     }
 }
 
-void simulatorNoQeueLag::Server::removeCall(simulatorNoQeueLag::Call *call)
+void SimulatorNoQeueLag::Server::removeCall(SimulatorNoQeueLag::Call *call)
 {
     groups[call->groupIndex]->removeCall(call);
     calls.removeAll(call);
@@ -805,17 +805,17 @@ void simulatorNoQeueLag::Server::removeCall(simulatorNoQeueLag::Call *call)
     n -=call->allocatedAS;
 }
 
-double simulatorNoQeueLag::Server::resourceUtilization(int classNumber, int stateNo) const
+double SimulatorNoQeueLag::Server::resourceUtilization(int classNumber, int stateNo) const
 {
     return resourceUtilizationByClassInState[classNumber][stateNo];
 }
 
-double simulatorNoQeueLag::Server::getTimeOfState(int stateNo) const
+double SimulatorNoQeueLag::Server::getTimeOfState(int stateNo) const
 {
     return timePerState[stateNo].occupancyTime;
 }
 
-simulatorNoQeueLag::Server::Server(System *system)
+SimulatorNoQeueLag::Server::Server(System *system)
     : system(system)
     , subgroupScheduler(system->systemData->getGroupsSchedulerAlgorithm())
     , V(system->systemData->vk_s())
@@ -883,12 +883,12 @@ simulatorNoQeueLag::Server::Server(const simulatorNoQeueLag::Server& rho)
 
 }
 */
-simulatorNoQeueLag::Server::~Server()
+SimulatorNoQeueLag::Server::~Server()
 {
     n = 0;
 }
 
-void simulatorNoQeueLag::Server::writesResultsOfSingleExperiment(RSingle &singleResults, double simulationTime)
+void SimulatorNoQeueLag::Server::writesResultsOfSingleExperiment(RSingle &singleResults, double simulationTime)
 {
     for (int noOfgroups=0; noOfgroups<=k; noOfgroups++)
     {
@@ -954,7 +954,7 @@ void simulatorNoQeueLag::Server::writesResultsOfSingleExperiment(RSingle &single
     }
 }
 
-int simulatorNoQeueLag::Server::getMaxNumberOfAsInSingleGroup()
+int SimulatorNoQeueLag::Server::getMaxNumberOfAsInSingleGroup()
 {
     int result = 0;
 
@@ -968,7 +968,7 @@ int simulatorNoQeueLag::Server::getMaxNumberOfAsInSingleGroup()
 
 
 void ProcNoQeueLag::initialize(
-        simulatorNoQeueLag::System *system
+        SimulatorNoQeueLag::System *system
         , const ModelTrClass *trClass
         , int classIdx
         , double a
@@ -1322,13 +1322,13 @@ void ProcNoQeueLag::initialize(
     }
 }
 
-void ProcNoQeueLag::initializeIndependent(simulatorNoQeueLag::System *system
+void ProcNoQeueLag::initializeIndependent(SimulatorNoQeueLag::System *system
         , const ModelTrClass *trClass
         , int classIdx, double a
         , int sumPropAt
         , int V
         , double (*funTimeNewCall)(double, double)
-        , void (*funNewCall)(ProcNoQeueLag *, simulatorNoQeueLag::System *))
+        , void (*funNewCall)(ProcNoQeueLag *, SimulatorNoQeueLag::System *))
 {
     double IncE = 1.0 / trClass->intensityNewCallTotal(a, V, sumPropAt);
     callData = system->getNewCall(trClass, classIdx, IncE);
@@ -1340,14 +1340,14 @@ void ProcNoQeueLag::initializeIndependent(simulatorNoQeueLag::System *system
     system->addProcess(this);
 }
 
-void ProcNoQeueLag::ProcNoQeueLag::initializeDependent(simulatorNoQeueLag::System *system
+void ProcNoQeueLag::ProcNoQeueLag::initializeDependent(SimulatorNoQeueLag::System *system
         , const ModelTrClass *trClass, int classIdx
         , double a
         , int sumPropAt
         , int V
         , double (*funTimeNewCall)(double, double)
-        , void (*funNewCall)(ProcNoQeueLag *, simulatorNoQeueLag::System *)
-        , void (*funEndCall)(ProcNoQeueLag *, simulatorNoQeueLag::System *))
+        , void (*funNewCall)(ProcNoQeueLag *, SimulatorNoQeueLag::System *)
+        , void (*funEndCall)(ProcNoQeueLag *, SimulatorNoQeueLag::System *))
 {
     double A = a*V*trClass->propAt()/sumPropAt / trClass->t();
 
@@ -1377,16 +1377,16 @@ void ProcNoQeueLag::ProcNoQeueLag::initializeDependent(simulatorNoQeueLag::Syste
 
 void ProcNoQeueLag::newCallIndep(
           ProcNoQeueLag *proc
-        , simulatorNoQeueLag::System *system
+        , SimulatorNoQeueLag::System *system
         , double (*funTimeNewCall)(double, double)
         , double (*funTimeOfService)(double, double)
-        , void (*funNewCall)(ProcNoQeueLag *proc, simulatorNoQeueLag::System *system))
+        , void (*funNewCall)(ProcNoQeueLag *proc, SimulatorNoQeueLag::System *system))
 {
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
     if (proc->callData->classIdx > system->systemData->m())
         qFatal("Wrong class idx");
 #endif
-    simulatorNoQeueLag::Call *callData = proc->callData;
+    SimulatorNoQeueLag::Call *callData = proc->callData;
     callData->plannedServiceTime       = funTimeOfService(callData->serviceE, callData->serviceD);
     callData->reqAS                    = proc->callData->reqAS;
     callData->DUmessageSize            = callData->reqAS * callData->plannedServiceTime;
@@ -1406,16 +1406,16 @@ void ProcNoQeueLag::newCallIndep(
 
 void ProcNoQeueLag::newCallDepMinus(
           ProcNoQeueLag *proc
-        , simulatorNoQeueLag::System *system
+        , SimulatorNoQeueLag::System *system
         , double (*funTimeNewCall)(double, double)
         , double (*funTimeOfService)(double, double)
-        , void (*funNewCall)(ProcNoQeueLag *, simulatorNoQeueLag::System *))
+        , void (*funNewCall)(ProcNoQeueLag *, SimulatorNoQeueLag::System *))
 {
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
     if (proc->callData->classIdx > system->systemData->m())
         qFatal("Wrong class idx");
 #endif
-    simulatorNoQeueLag::Call *callData = proc->callData;
+    SimulatorNoQeueLag::Call *callData = proc->callData;
     callData->plannedServiceTime       = funTimeOfService(callData->serviceE, callData->serviceD);
     callData->reqAS                    = proc->callData->reqAS;
     callData->DUmessageSize            = callData->reqAS * callData->plannedServiceTime;
@@ -1442,17 +1442,17 @@ void ProcNoQeueLag::newCallDepMinus(
 
 void ProcNoQeueLag::newCallDepPlus(
           ProcNoQeueLag *proc
-        , simulatorNoQeueLag::System *system
+        , SimulatorNoQeueLag::System *system
         , double (*funTimeNewCall)(double, double)
         , double (*funTimeOfService)(double, double)
-        , void (*funNewCall)(ProcNoQeueLag *, simulatorNoQeueLag::System *))
+        , void (*funNewCall)(ProcNoQeueLag *, SimulatorNoQeueLag::System *))
 {
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
     if (proc->callData->classIdx > system->systemData->m())
         qFatal("Wrong class idx");
 #endif
-    simulatorNoQeueLag::Call *callData           = proc->callData;
-    simulatorNoQeueLag::Call *parentServicedCall = callData->complementaryCall;
+    SimulatorNoQeueLag::Call *callData           = proc->callData;
+    SimulatorNoQeueLag::Call *parentServicedCall = callData->complementaryCall;
 
     callData->plannedServiceTime = funTimeOfService(callData->serviceE, callData->serviceD);
     callData->reqAS              = proc->callData->reqAS;
@@ -1491,7 +1491,7 @@ void ProcNoQeueLag::newCallDepPlus(
     system->reuseProcess(proc);
 }
 
-void ProcNoQeueLag::transmisionEndedIndependent(ProcNoQeueLag *proc, simulatorNoQeueLag::System *system)
+void ProcNoQeueLag::transmisionEndedIndependent(ProcNoQeueLag *proc, SimulatorNoQeueLag::System *system)
 {
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
     if (proc->callData->classIdx > system->systemData->m())
@@ -1505,9 +1505,9 @@ void ProcNoQeueLag::transmisionEndedIndependent(ProcNoQeueLag *proc, simulatorNo
 
 void ProcNoQeueLag::transmisionEndedDependentMinus(
           ProcNoQeueLag *proc
-        , simulatorNoQeueLag::System *system
+        , SimulatorNoQeueLag::System *system
         , double (*funTimeNewCall)(double, double)
-        , void (*funNewCall)(ProcNoQeueLag *, simulatorNoQeueLag::System *))
+        , void (*funNewCall)(ProcNoQeueLag *, SimulatorNoQeueLag::System *))
 {
     ProcNoQeueLag *newProc = system->getNewProcess();
     newProc->callData = system->getNewCall(proc->callData);
@@ -1528,9 +1528,9 @@ void ProcNoQeueLag::transmisionEndedDependentMinus(
     system->addProcess(newProc);
 }
 
-void ProcNoQeueLag::transmisionEndedDependentPlus(ProcNoQeueLag *proc, simulatorNoQeueLag::System *system)
+void ProcNoQeueLag::transmisionEndedDependentPlus(ProcNoQeueLag *proc, SimulatorNoQeueLag::System *system)
 {
-    simulatorNoQeueLag::Call *scheduledCall = proc->callData->complementaryCall;
+    SimulatorNoQeueLag::Call *scheduledCall = proc->callData->complementaryCall;
 
     if (scheduledCall->complementaryCall != proc->callData)
         qFatal("Wrong relations between Pascal sourcess");
@@ -1547,7 +1547,7 @@ void ProcNoQeueLag::transmisionEndedDependentPlus(ProcNoQeueLag *proc, simulator
 }
 
 
-void simulatorNoQeueLag::Call::fillData(simulatorNoQeueLag::Call *src)
+void SimulatorNoQeueLag::Call::fillData(SimulatorNoQeueLag::Call *src)
 {
     reqAS = src->reqAS;
     trClass = src->trClass;
@@ -1563,37 +1563,37 @@ void simulatorNoQeueLag::Call::fillData(simulatorNoQeueLag::Call *src)
     trEndedFun = src->trEndedFun;
 }
 
-void simulatorNoQeueLag::Call::IncrTimeInServer(double time)
+void SimulatorNoQeueLag::Call::IncrTimeInServer(double time)
 {
     timeOnServer +=time;
 }
 
-void simulatorNoQeueLag::Call::collectTheStats(double time)
+void SimulatorNoQeueLag::Call::collectTheStats(double time)
 {
     timeOnSystem +=time;
     DUtransfered += (time * allocatedAS);
 }
 
 #define FOLDINGSTART { // Allocation Unit
-simulatorNoQeueLag::AU::AU(int m)
+SimulatorNoQeueLag::AU::AU(int m)
     : m(m)
     , servicedCall(nullptr)
 {
     occupancyTimesPerClass.resize(m);
 }
 
-bool simulatorNoQeueLag::AU::isFree() const
+bool SimulatorNoQeueLag::AU::isFree() const
 {
     return (servicedCall == nullptr);
 }
 
-void simulatorNoQeueLag::AU::increaseOccupancyTime(double time)
+void SimulatorNoQeueLag::AU::increaseOccupancyTime(double time)
 {
     if (servicedCall != nullptr)
         occupancyTimesPerClass[servicedCall->classIdx] += time;
 }
 
-void simulatorNoQeueLag::AU::addCall(Call *newCall)
+void SimulatorNoQeueLag::AU::addCall(Call *newCall)
 {
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
     if (servicedCall != nullptr)
@@ -1602,18 +1602,18 @@ void simulatorNoQeueLag::AU::addCall(Call *newCall)
     servicedCall = newCall;
 }
 
-bool simulatorNoQeueLag::AU::isThisCallHere(Call *comparedCall)
+bool SimulatorNoQeueLag::AU::isThisCallHere(Call *comparedCall)
 {
     return (servicedCall == comparedCall);
 }
 
-void simulatorNoQeueLag::AU::removeCall()
+void SimulatorNoQeueLag::AU::removeCall()
 {
     servicedCall = nullptr;
 }
 
 #define FOLDINGSTART { //Statistics
-void simulatorNoQeueLag::AU::statsClear()
+void SimulatorNoQeueLag::AU::statsClear()
 {
     occupancyTime = 0;
 
@@ -1621,7 +1621,7 @@ void simulatorNoQeueLag::AU::statsClear()
         occupancyTimesPerClass[i] = 0;
 }
 
-void simulatorNoQeueLag::AU::statsColectPre(double time)
+void SimulatorNoQeueLag::AU::statsColectPre(double time)
 {
     if (this->servicedCall)
     {
@@ -1630,7 +1630,7 @@ void simulatorNoQeueLag::AU::statsColectPre(double time)
     }
 }
 
-void simulatorNoQeueLag::AU::statsCollectPost(int classIdx)
+void SimulatorNoQeueLag::AU::statsCollectPost(int classIdx)
 {
     (void) classIdx;
 }
@@ -1640,7 +1640,7 @@ void simulatorNoQeueLag::AU::statsCollectPost(int classIdx)
 #define FOLDINEND }
 
 #define FOLDINGSTART { // Group
-simulatorNoQeueLag::Group::Group(int v, int m): m(m), v(v), n(0)
+SimulatorNoQeueLag::Group::Group(int v, int m): m(m), v(v), n(0)
 {
     allocationUnits.resize(v);
     for (int n=0; n<v; n++)
@@ -1656,7 +1656,7 @@ simulatorNoQeueLag::Group::Group(int v, int m): m(m), v(v), n(0)
     }
 }
 
-simulatorNoQeueLag::Group::Group(const simulatorNoQeueLag::Group &rho)
+SimulatorNoQeueLag::Group::Group(const SimulatorNoQeueLag::Group &rho)
     : QSharedData(rho)
     , m(rho.m)
     , v(rho.v)
@@ -1670,7 +1670,7 @@ simulatorNoQeueLag::Group::Group(const simulatorNoQeueLag::Group &rho)
     workoutPerClassAndState = rho.workoutPerClassAndState;
 }
 
-int simulatorNoQeueLag::Group::findAS(int noOfAUs
+int SimulatorNoQeueLag::Group::findAS(int noOfAUs
                                        , QList<int> &ausToOccupy
                                        , GroupResourcessAllocationlgorithm groupResourcessAllocationlgorithm
                                        ) const
@@ -1700,7 +1700,7 @@ int simulatorNoQeueLag::Group::findAS(int noOfAUs
     return result;
 }
 
-int simulatorNoQeueLag::Group::findMaxAS(simulatorNoQeueLag::GroupResourcessAllocationlgorithm groupResourcessAllocationlgorithm) const
+int SimulatorNoQeueLag::Group::findMaxAS(SimulatorNoQeueLag::GroupResourcessAllocationlgorithm groupResourcessAllocationlgorithm) const
 {
     int result = 0;
 
@@ -1717,7 +1717,7 @@ int simulatorNoQeueLag::Group::findMaxAS(simulatorNoQeueLag::GroupResourcessAllo
     return result;
 }
 
-void simulatorNoQeueLag::Group::removeCall(simulatorNoQeueLag::Call *endedCall)
+void SimulatorNoQeueLag::Group::removeCall(SimulatorNoQeueLag::Call *endedCall)
 {
     n-=endedCall->reqAS;
 
@@ -1726,7 +1726,7 @@ void simulatorNoQeueLag::Group::removeCall(simulatorNoQeueLag::Call *endedCall)
             allocationUnits[idx]->removeCall();
 }
 
-void simulatorNoQeueLag::Group::addCall(simulatorNoQeueLag::Call *newCall, const QList<int>& asIndexes)
+void SimulatorNoQeueLag::Group::addCall(SimulatorNoQeueLag::Call *newCall, const QList<int>& asIndexes)
 {
     n+=newCall->reqAS;
     foreach (int index, asIndexes)
@@ -1735,7 +1735,7 @@ void simulatorNoQeueLag::Group::addCall(simulatorNoQeueLag::Call *newCall, const
     }
 }
 
-void simulatorNoQeueLag::Group::statsClear()
+void SimulatorNoQeueLag::Group::statsClear()
 {
     for (int resNo=0; resNo < v; resNo++)
     {
@@ -1750,7 +1750,7 @@ void simulatorNoQeueLag::Group::statsClear()
     }
 }
 
-void simulatorNoQeueLag::Group::statsColectPre(double time)
+void SimulatorNoQeueLag::Group::statsColectPre(double time)
 {
     for (int resNo=0; resNo < v; resNo++)
         allocationUnits[resNo]->statsColectPre(time);
@@ -1760,20 +1760,20 @@ void simulatorNoQeueLag::Group::statsColectPre(double time)
         workoutPerClassAndState[i][n] += (time *  n_i[i]);
 }
 
-void simulatorNoQeueLag::Group::statsCollectPost(int classIdx)
+void SimulatorNoQeueLag::Group::statsCollectPost(int classIdx)
 {
     for (int resNo=0; resNo < v; resNo++)
         allocationUnits[resNo]->statsCollectPost(classIdx);
 }
 
-int simulatorNoQeueLag::Group::getNoOfFreeAUs(bool considerAllocationAlgorithm)
+int SimulatorNoQeueLag::Group::getNoOfFreeAUs(bool considerAllocationAlgorithm)
 {
     return (!considerAllocationAlgorithm) ? v-n : findMaxAS();
 }
 
 #define FOLDINEND }
 
-simulatorNoQeueLag::EvenStatistics::EvenStatistics()
+SimulatorNoQeueLag::EvenStatistics::EvenStatistics()
     : inNew(0)
     , inEnd(0)
     , outNew(0)
@@ -1782,17 +1782,17 @@ simulatorNoQeueLag::EvenStatistics::EvenStatistics()
     , outEnd(0)
 { }
 
-void simulatorNoQeueLag::EvenStatistics::statsClear()
+void SimulatorNoQeueLag::EvenStatistics::statsClear()
 {
     memset(this, 0, sizeof(class EvenStatistics));
 }
 
-simulatorNoQeueLag::TimeStatisticsState::TimeStatisticsState()
+SimulatorNoQeueLag::TimeStatisticsState::TimeStatisticsState()
     : availabilityTime(0)
     , occupancyTime(0)
 { }
 
-void simulatorNoQeueLag::TimeStatisticsState::statsClear()
+void SimulatorNoQeueLag::TimeStatisticsState::statsClear()
 {
     availabilityTime = 0;
     occupancyTime = 0;

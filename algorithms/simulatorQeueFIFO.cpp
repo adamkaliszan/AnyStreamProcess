@@ -64,21 +64,19 @@ void SimulatorQeueFifo::calculateSystem(const ModelSyst *system
     //emit sigCalculationDone();
 }
 
-SimulatorQeueFifo::System::System(
-          const ModelSyst *system
+SimulatorQeueFifo::System::System(const ModelSyst *system
         , int noOfSeries
         ):
     m(system->m())
   , n(0)
   , old_n(0)
   , results(system->m(), system->vk_s(), system->vk_b(), noOfSeries)
-  , disc(disc)
 {
     systemData = system;
 
-    agenda = new simulatorDataCollection<ProcQeueFifo>();
+    agenda = new SimulatorDataCollection<ProcQeueFifo>();
     server = new Server(system->vk_s(), this);
-    qeue   = new Qeue(system->vk_b(), this);
+    buffer   = new Buffer(system->vk_b(), this, system->getBufferScheduler());
 
     yTime_ClassI                                = new double[system->m()];
     servTr_ClassI                               = new double[system->m()];
@@ -118,7 +116,7 @@ SimulatorQeueFifo::System::~System()
 
     delete agenda;
     delete server;
-    delete qeue;
+    delete buffer;
 
     for (int i=0; i<m; i++)
     {
@@ -167,7 +165,7 @@ void SimulatorQeueFifo::System::initialize(double a, int sumPropAt, int V)
     }
 }
 
-void SimulatorQeueFifo::System::doSimExperiment(int numberOfLostCall, int seed, int numberOfServicedCalls)
+void SimulatorQeueFifo::System::doSimExperiment(int numberOfLostCall, unsigned int seed, int numberOfServicedCalls)
 {
     qsrand(seed);
     this->totalNumberOfLostCalls = 0;
@@ -210,7 +208,7 @@ void SimulatorQeueFifo::System::doSimExperiment(int numberOfLostCall, int seed, 
 void SimulatorQeueFifo::System::writesResultsOfSingleExperiment(Results::RSingle &singleResults)
 {
     int Vs = server->getV();
-    int Vb = qeue->getV();
+    int Vb = buffer->getV();
     int m = systemData->m();
 
     int max_t = 0;
@@ -233,7 +231,7 @@ void SimulatorQeueFifo::System::writesResultsOfSingleExperiment(Results::RSingle
             {
                 tmp=getOccupancyTimeOfState(n_server, n_Buffer);
 
-                if (this->disc == BufferResourcessScheduler::dFIFO_Seq || (this->disc == BufferResourcessScheduler::qFIFO_Seq))
+                if (this->buffer->scheduler == BufferResourcessScheduler::dFIFO_Seq || (this->buffer->scheduler == BufferResourcessScheduler::qFIFO_Seq))
                     E += tmp;
                 else if (n_server + n_Buffer + t > Vs + Vb)
                     E += tmp;
@@ -244,9 +242,9 @@ void SimulatorQeueFifo::System::writesResultsOfSingleExperiment(Results::RSingle
         singleResults.write(TypeForClass::BlockingProbability, E, i);
 
         results.act_Y[i] =servTr_ClassI[i]/results._simulationTime;
-        results.act_yQ[i] = qeue->getAvarageNumberOfCalls(i)/results._simulationTime;
+        results.act_yQ[i] = buffer->getAvarageNumberOfCalls(i)/results._simulationTime;
         results.act_y[i] = yTime_ClassI[i]/results._simulationTime;
-        results.act_ytQ[i] = qeue->getAvarageNumberOfAS(i)/results._simulationTime;
+        results.act_ytQ[i] = buffer->getAvarageNumberOfAS(i)/results._simulationTime;
 
         results.act_t[i] /= results.act_noOfServicedCalls[i];
         results.act_tQeue[i] /= results.act_noOfServicedCalls[i];
@@ -257,7 +255,7 @@ void SimulatorQeueFifo::System::writesResultsOfSingleExperiment(Results::RSingle
 
         for (int n=0; n<=Vb; n++)
         {
-            double x = qeue->AStime_ofOccupiedAS_byClassI_inStateN[i][n]/qeue->occupancyTimes[n];
+            double x = buffer->AStime_ofOccupiedAS_byClassI_inStateN[i][n]/buffer->occupancyTimes[n];
             results.act_LOC_qeue_yt[i][n] = x;
         }
 
@@ -279,15 +277,15 @@ void SimulatorQeueFifo::System::writesResultsOfSingleExperiment(Results::RSingle
     }
 
     double ex = 0;
-    double probSum = qeue->getOccupancyTimeOfState(0);
-    for (int n=1; n<=qeue->getV(); n++)
+    double probSum = buffer->getOccupancyTimeOfState(0);
+    for (int n=1; n<=buffer->getV(); n++)
     {
-        ex += n*qeue->getOccupancyTimeOfState(n);
-        probSum +=qeue->getOccupancyTimeOfState(n);
+        ex += n*buffer->getOccupancyTimeOfState(n);
+        probSum +=buffer->getOccupancyTimeOfState(n);
     }
     *results.act_Qlen = ex/probSum;
 
-    for (int n=0; n<=server->getV()+qeue->getV(); n++)
+    for (int n=0; n<=server->getV()+buffer->getV(); n++)
     {
         double tmpstateDurationTime = getOccupancyTimeOfState(n);
 
@@ -307,7 +305,7 @@ void SimulatorQeueFifo::System::writesResultsOfSingleExperiment(Results::RSingle
         }
     }
 
-    for (int n=0; n<=server->getV()+qeue->getV(); n++)
+    for (int n=0; n<=server->getV()+buffer->getV(); n++)
     {
         results.act_intInNew[n]  = 0;
         results.act_intInEnd[n]  = 0;
@@ -318,7 +316,7 @@ void SimulatorQeueFifo::System::writesResultsOfSingleExperiment(Results::RSingle
             if (n>=(int)t)
                 results.act_intInNew[n]  += results.act_intInNewSC[i][n-t];
 
-            if (n+t  <= server->getV()+qeue->getV())
+            if (n+t  <= server->getV()+buffer->getV())
                 results.act_intInEnd[n]  += results.act_intInEndSC[i][n+t];
         }
     }
@@ -327,11 +325,11 @@ void SimulatorQeueFifo::System::writesResultsOfSingleExperiment(Results::RSingle
     {
         results.act_trDistribServ[n] = server->getOccupancyTimeOfState(n) / results._simulationTime;
 
-        for (int q=0; q<=qeue->getV(); q++)
+        for (int q=0; q<=buffer->getV(); q++)
             results.act_trDistrib[n][q] = getOccupancyTimeOfState(n, q) / results._simulationTime;
     }
-    for (int n=0; n<=qeue->getV(); n++)
-        results.act_trDistribQeue[n] = qeue->getOccupancyTimeOfState(n) / results._simulationTime;
+    for (int n=0; n<=buffer->getV(); n++)
+        results.act_trDistribQeue[n] = buffer->getOccupancyTimeOfState(n) / results._simulationTime;
 }
 
 int SimulatorQeueFifo::System::getServerNumberOfFreeAS()
@@ -347,9 +345,9 @@ bool SimulatorQeueFifo::System::serveNewCall(SimulatorQeueFifo::Call *newCall)
     classIdx = newCall->classIdx;
 
     int serverFreeAS = server->getNoOfFreeAS();
-    int bufferFreeAS = qeue->getNoOfFreeAS();
-    if (((disc==BufferResourcessScheduler::Continuos || disc==BufferResourcessScheduler::qFIFO_Seq) && serverFreeAS >= newCall->reqAS)
-            || (disc==BufferResourcessScheduler::dFIFO_Seq  && serverFreeAS >= newCall->reqAS && qeue->n == 0))
+    int bufferFreeAS = buffer->getNoOfFreeAS();
+    if (((this->buffer->scheduler==BufferResourcessScheduler::Continuos || this->buffer->scheduler==BufferResourcessScheduler::qFIFO_Seq) && serverFreeAS >= newCall->reqAS)
+            || (this->buffer->scheduler==BufferResourcessScheduler::dFIFO_Seq  && serverFreeAS >= newCall->reqAS && buffer->n == 0))
     {
         callsInSystem.append(newCall);
 
@@ -370,9 +368,9 @@ bool SimulatorQeueFifo::System::serveNewCall(SimulatorQeueFifo::Call *newCall)
     if (bufferFreeAS >= newCall->reqAS)
     {
         callsInSystem.append(newCall);
-        qeue->addCall(newCall);
+        buffer->addCall(newCall);
 
-        if (disc==BufferResourcessScheduler::Continuos && serverFreeAS > 0)
+        if (buffer->scheduler==BufferResourcessScheduler::Continuos && serverFreeAS > 0)
             serveCallsInEque();
         n += newCall->reqAS;
         return true;
@@ -382,7 +380,7 @@ bool SimulatorQeueFifo::System::serveNewCall(SimulatorQeueFifo::Call *newCall)
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
         if(getServerNumberOfFreeAS() >= newCall->reqAS)
             qFatal("Qeue statistics are incorrect, because qeue is full (%d free AS), and server is empty (%d freeAS)",
-                   qeue->getNoOfFreeAS(), server->getNoOfFreeAS());
+                   buffer->getNoOfFreeAS(), server->getNoOfFreeAS());
 #endif
 
         FinishCall(newCall, false);
@@ -541,7 +539,7 @@ void SimulatorQeueFifo::System::removeCallFromServer(SimulatorQeueFifo::Call *ca
     serveCallsInEque();
 }
 
-void SimulatorQeueFifo::System::removeCallFromQeue(SimulatorQeueFifo::Call *call) { qeue->removeFirstCall(call); }
+void SimulatorQeueFifo::System::removeCallFromQeue(SimulatorQeueFifo::Call *call) { buffer->removeFirstCall(call); }
 
 void SimulatorQeueFifo::System::FinishCall(SimulatorQeueFifo::Call *call, bool acceptedToService)
 {
@@ -583,18 +581,18 @@ void SimulatorQeueFifo::System::serveCallsInEque()
     while(numberOfAvailableAS > 0)
     {
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
-        qeue->consistencyCheck();
+        buffer->consistencyCheck();
 #endif
-        tmpCall = qeue->getNextCall();
+        tmpCall = buffer->getNextCall();
         if (tmpCall == NULL)
             break;
 
-        if (disc != BufferResourcessScheduler::Continuos && tmpCall->reqAS > numberOfAvailableAS)
+        if (buffer->scheduler != BufferResourcessScheduler::Continuos && tmpCall->reqAS > numberOfAvailableAS)
             break;
 
         int maxResToAll = tmpCall->reqAS - tmpCall->allocatedAS;
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
-        if (qeue->n < (int)maxResToAll)
+        if (buffer->n < (int)maxResToAll)
             qFatal("Wrong number of max ressourcess to allocate");
 #endif
         bool newCall = (tmpCall->allocatedAS == 0);
@@ -618,13 +616,13 @@ void SimulatorQeueFifo::System::serveCallsInEque()
         {
             agenda->changeProcessWakeUpTime(tmpCall->proc, newTime);
         }
-        qeue->takeCall(tmpCall, noOfAS_toAllocate);
+        buffer->takeCall(tmpCall, noOfAS_toAllocate);
 
 
         numberOfAvailableAS = server->getNoOfFreeAS();
 
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
-        qeue->consistencyCheck();
+        buffer->consistencyCheck();
 #endif
     }
 }
@@ -641,16 +639,16 @@ void SimulatorQeueFifo::System::collectTheStatPre(double time)
         servTr_ClassI[tmpCall->classIdx] += (time*tmpCall->allocatedAS);
     }
     server->collectTheStats(time);
-    qeue->collectTheStats(time);
+    buffer->collectTheStats(time);
 
     for (int i=0; i<m; i++)
     {
-        AStime_ofOccupiedAS_byClassI_inStateN[i][n] += time*(server->numberOfAS[i]+ qeue->numberOfAS[i]);
-        qeueAStime_ofOccupiedAS_byClassI_inStateN[i][n] += time*(qeue->numberOfAS[i]);
+        AStime_ofOccupiedAS_byClassI_inStateN[i][n] += time*(server->numberOfAS[i]+ buffer->numberOfAS[i]);
+        qeueAStime_ofOccupiedAS_byClassI_inStateN[i][n] += time*(buffer->numberOfAS[i]);
         serverAStime_ofOccupiedAS_byClassI_inStateN[i][n] += time*(server->numberOfAS[i]);
     }
     occupancyTimes[n] +=time;
-    occupancyTimesDtl[server->n][qeue->n] += time;
+    occupancyTimesDtl[server->n][buffer->n] += time;
 }
 
 void SimulatorQeueFifo::System::collectTheStatPost(double time)
@@ -703,7 +701,7 @@ void SimulatorQeueFifo::System::enableStatisticscollection(int serNo)
 
     results.enableStatisticscollection(serNo);
     server->clearTheStats();
-    qeue->clearTheStats();
+    buffer->clearTheStats();
 }
 
 void SimulatorQeueFifo::System::disableStatisticCollection()
@@ -1319,7 +1317,7 @@ void ProcQeueFifo::transmisionEndedIndependent(ProcQeueFifo *proc, SimulatorQeue
 #endif
     system->endTransmission(proc->callData);
 
-    proc->callData = NULL;
+    proc->callData = nullptr;
     system->reuseProcess(proc);
 }
 
@@ -1336,7 +1334,7 @@ void ProcQeueFifo::transmisionEndedDependentMinus(ProcQeueFifo *proc, SimulatorQ
 #endif
     system->endTransmission(proc->callData);
 
-    proc->callData = NULL;
+    proc->callData = nullptr;
     system->reuseProcess(proc);
 
     //Adding new process with state Waiting for new call
@@ -1364,7 +1362,7 @@ void ProcQeueFifo::transmisionEndedDependentPlus(ProcQeueFifo *proc, SimulatorQe
     system->reuseProcess(proc);
 }
 
-void SimulatorQeueFifo::Qeue::clearTheStats()
+void SimulatorQeueFifo::Buffer::clearTheStats()
 {
     for (int st=0; st<=this->V; st++)
         occupancyTimes[st] = 0;
@@ -1379,7 +1377,7 @@ void SimulatorQeueFifo::Qeue::clearTheStats()
     }
 }
 
-void SimulatorQeueFifo::Qeue::collectTheStats(double time)
+void SimulatorQeueFifo::Buffer::collectTheStats(double time)
 {
     occupancyTimes[n] += time;
 
@@ -1397,7 +1395,7 @@ void SimulatorQeueFifo::Qeue::collectTheStats(double time)
         firstCall->IncrTimeOfWaitingInBuffer(time);
 }
 
-void SimulatorQeueFifo::Qeue::addCall(SimulatorQeueFifo::Call *newCall)
+void SimulatorQeueFifo::Buffer::addCall(SimulatorQeueFifo::Call *newCall)
 {
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
     consistencyCheck();
@@ -1419,7 +1417,7 @@ void SimulatorQeueFifo::Qeue::addCall(SimulatorQeueFifo::Call *newCall)
 #endif
 }
 
-void SimulatorQeueFifo::Qeue::takeCall(SimulatorQeueFifo::Call *call, int noOfAS)
+void SimulatorQeueFifo::Buffer::takeCall(SimulatorQeueFifo::Call *call, int noOfAS)
 {
     n-=noOfAS;
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
@@ -1432,7 +1430,7 @@ void SimulatorQeueFifo::Qeue::takeCall(SimulatorQeueFifo::Call *call, int noOfAS
         if (call==firstCall)
         {
             numberOfCalls[call->classIdx]--;
-            firstCall = NULL;
+            firstCall = nullptr;
         }
         else
             qFatal("Something is wrong, it should be first call");
@@ -1445,13 +1443,13 @@ void SimulatorQeueFifo::Qeue::takeCall(SimulatorQeueFifo::Call *call, int noOfAS
     numberOfAS[call->classIdx] -= noOfAS;
 }
 
-void SimulatorQeueFifo::Qeue::removeFirstCall(SimulatorQeueFifo::Call *first)
+void SimulatorQeueFifo::Buffer::removeFirstCall(SimulatorQeueFifo::Call *first)
 {
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
     if (first != firstCall)
         qFatal("Cal Qeue error");
 #endif
-    firstCall = NULL;
+    firstCall = nullptr;
     n -= (first->reqAS - first->allocatedAS);
     numberOfCalls[first->classIdx]--;
     numberOfAS[first->classIdx] -= (first->reqAS - first->allocatedAS);
@@ -1460,12 +1458,12 @@ void SimulatorQeueFifo::Qeue::removeFirstCall(SimulatorQeueFifo::Call *first)
 #endif
 }
 
-SimulatorQeueFifo::Call *SimulatorQeueFifo::Qeue::getNextCall()
+SimulatorQeueFifo::Call *SimulatorQeueFifo::Buffer::getNextCall()
 {
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
     consistencyCheck();
 #endif
-    if (firstCall == NULL)
+    if (firstCall == nullptr)
     {
         if (!calls.isEmpty())
             firstCall = calls.pop();
@@ -1473,13 +1471,13 @@ SimulatorQeueFifo::Call *SimulatorQeueFifo::Qeue::getNextCall()
     return firstCall;
 }
 
-SimulatorQeueFifo::Qeue::Qeue(int V, SimulatorQeueFifo::System *system)
+SimulatorQeueFifo::Buffer::Buffer(int V, SimulatorQeueFifo::System *system, BufferResourcessScheduler bufferScheduler):
+    system(system), scheduler(bufferScheduler)
 {
-    firstCall = NULL;
+    firstCall = nullptr;
     this->V = V;
     this->n = 0;
     this->m = system->systemData->m();
-    this->system = system;
 
     this->occupancyTimes        = new double[V+1];
     this->avgNumberOfCalls      = new double[system->systemData->m()];
@@ -1490,7 +1488,7 @@ SimulatorQeueFifo::Qeue::Qeue(int V, SimulatorQeueFifo::System *system)
     for (int i=0; i<m; i++)
     {
         AStime_ofOccupiedAS_byClassI_inStateN[i] = new double[V+1];
-        bzero(AStime_ofOccupiedAS_byClassI_inStateN[i], (V+1)*sizeof(double));
+        bzero(AStime_ofOccupiedAS_byClassI_inStateN[i], static_cast<size_t>(V+1)*sizeof(double));
     }
     bzero(occupancyTimes,   sizeof(double)*(V+1));
     bzero(avgNumberOfCalls, sizeof(double)*system->systemData->m());
@@ -1499,7 +1497,7 @@ SimulatorQeueFifo::Qeue::Qeue(int V, SimulatorQeueFifo::System *system)
     bzero(numberOfAS,       sizeof(int)*system->systemData->m());
 }
 
-SimulatorQeueFifo::Qeue::~Qeue()
+SimulatorQeueFifo::Buffer::~Buffer()
 {
     for (int i=0; i<m; i++)
         delete []AStime_ofOccupiedAS_byClassI_inStateN[i];

@@ -70,7 +70,7 @@ simulatorNoQeue::System::System(const ModelSyst *system, int noOfSeries): m(syst
 {
     systemData = system;
 
-    agenda = new simulatorDataCollection<ProcNoQeue>();
+    agenda = new SimulatorDataCollection<ProcNoQeue>();
     server = new Server(system->vk_s(), this);
 
     yTime_ClassI                                = new double[system->m()];

@@ -82,7 +82,7 @@ public:
     QPushButton *pushButton_kolejkidodaj;
     QPushButton *pushButton_kolejkiZmien;
     QPushButton *pushButton_kolejkiUsun;
-    QComboBox *comboBoxBufferScheduler;
+    QComboBox *comboBoxBufferSchedulerAlgorithm;
     QLabel *label_subbufferScheduler;
     QLabel *labelModelQeue;
     QGridLayout *gridLayoutModelServer;
@@ -95,7 +95,7 @@ public:
     QPushButton *pushButton_wiazkiDodaj;
     QPushButton *pushButton_wiazkiZmien;
     QPushButton *pushButton_wiazkiUsun;
-    QComboBox *comboBoxServerScheduler;
+    QComboBox *comboBoxServerSchedulerAlgorithm;
     QLabel *label_subgroupSchedulerAlgorithm;
     QHBoxLayout *horizontalLayoutGroupChooseAlg;
     QFrame *line_ModelSeparator;
@@ -390,10 +390,10 @@ public:
 
         gridLayoutModelQeue->addLayout(horizontalLayoutModelQeueListButtons, 3, 0, 1, 3);
 
-        comboBoxBufferScheduler = new QComboBox(verticalLayoutModel);
-        comboBoxBufferScheduler->setObjectName(QStringLiteral("comboBoxBufferScheduler"));
+        comboBoxBufferSchedulerAlgorithm = new QComboBox(verticalLayoutModel);
+        comboBoxBufferSchedulerAlgorithm->setObjectName(QStringLiteral("comboBoxBufferSchedulerAlgorithm"));
 
-        gridLayoutModelQeue->addWidget(comboBoxBufferScheduler, 0, 2, 1, 1);
+        gridLayoutModelQeue->addWidget(comboBoxBufferSchedulerAlgorithm, 0, 2, 1, 1);
 
         label_subbufferScheduler = new QLabel(verticalLayoutModel);
         label_subbufferScheduler->setObjectName(QStringLiteral("label_subbufferScheduler"));
@@ -487,10 +487,10 @@ public:
 
         gridLayoutModelServer->addLayout(horizontalLayoutModelServerListButtons, 3, 0, 1, 3);
 
-        comboBoxServerScheduler = new QComboBox(verticalLayoutModel);
-        comboBoxServerScheduler->setObjectName(QStringLiteral("comboBoxServerScheduler"));
+        comboBoxServerSchedulerAlgorithm = new QComboBox(verticalLayoutModel);
+        comboBoxServerSchedulerAlgorithm->setObjectName(QStringLiteral("comboBoxServerSchedulerAlgorithm"));
 
-        gridLayoutModelServer->addWidget(comboBoxServerScheduler, 0, 2, 1, 1);
+        gridLayoutModelServer->addWidget(comboBoxServerSchedulerAlgorithm, 0, 2, 1, 1);
 
         label_subgroupSchedulerAlgorithm = new QLabel(verticalLayoutModel);
         label_subgroupSchedulerAlgorithm->setObjectName(QStringLiteral("label_subgroupSchedulerAlgorithm"));

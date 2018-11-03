@@ -15,10 +15,10 @@ namespace Algorithms
 
 class ProcNoQeueLag;
 
-class simulatorNoQeueLag: public simulator
+class SimulatorNoQeueLag: public simulator
 {
 public:
-    simulatorNoQeueLag();
+    SimulatorNoQeueLag();
 
     QString shortName()  const { return "Sim. noQueue LAG"; }
     int complexity()     const { return 100; }
@@ -88,7 +88,7 @@ public:
         Server *server;
         QStack<Call *> uselessCalls;
         QList<Call *> callsInSystem;
-        simulatorDataCollection<ProcNoQeueLag> *agenda;
+        SimulatorDataCollection<ProcNoQeueLag> *agenda;
         simulationResults results;
 
         Call *_getNewCall();
@@ -160,8 +160,8 @@ public:
     class Server
     {
 
-        friend void simulatorNoQeueLag::System::writesResultsOfSingleExperiment(RSingle&);
-        friend void simulatorNoQeueLag::System::statsCollectPre(double time);
+        friend void SimulatorNoQeueLag::System::writesResultsOfSingleExperiment(RSingle&);
+        friend void SimulatorNoQeueLag::System::statsCollectPre(double time);
     private:
         System const *system;
 
@@ -278,7 +278,7 @@ public:
         void fillData(struct Call *src);
         void IncrTimeInServer(double time);
         void collectTheStats(double time);
-        void (*trEndedFun)(ProcNoQeueLag *proc, simulatorNoQeueLag::System *system);
+        void (*trEndedFun)(ProcNoQeueLag *proc, SimulatorNoQeueLag::System *system);
     };
 
     class Group: public QSharedData
@@ -366,7 +366,7 @@ private:
 
 class ProcNoQeueLag
 {
-    friend bool simulatorNoQeueLag::System::serveNewCall(simulatorNoQeueLag::Call *newCallErlang);
+    friend bool SimulatorNoQeueLag::System::serveNewCall(SimulatorNoQeueLag::Call *newCallErlang);
 
 public:
     enum PROC_STATE
@@ -381,23 +381,23 @@ private:
 
 
     void initializeIndependent(
-              simulatorNoQeueLag::System *system
+              SimulatorNoQeueLag::System *system
             , const ModelTrClass *trClass
             , int classIdx
             , double a
             , int sumPropAt
             , int V
             , double (*funTimeNewCall)(double, double)
-            , void (*funNewCall)(ProcNoQeueLag *proc, simulatorNoQeueLag::System *system)
+            , void (*funNewCall)(ProcNoQeueLag *proc, SimulatorNoQeueLag::System *system)
             );
 
 #define INDEPENDENT_NO_QEUE(X,Y,NEW_CALL_DISTR,CALL_SERV_DISTRIB) \
-    void initializeIndep##X##Y(simulatorNoQeueLag::System *system, const ModelTrClass *trClass, int idx, double a, int sumPropAt, int V)\
+    void initializeIndep##X##Y(SimulatorNoQeueLag::System *system, const ModelTrClass *trClass, int idx, double a, int sumPropAt, int V)\
     { \
       initializeIndependent(system, trClass, idx, a, sumPropAt, V, simulator::distr##NEW_CALL_DISTR, newCallIndep##X##Y);\
     } \
       \
-    inline static void newCallIndep##X##Y(ProcNoQeueLag *proc, simulatorNoQeueLag::System *system)\
+    inline static void newCallIndep##X##Y(ProcNoQeueLag *proc, SimulatorNoQeueLag::System *system)\
     {\
       newCallIndep(proc, system, simulator::distr##NEW_CALL_DISTR, simulator::distr##CALL_SERV_DISTRIB,  newCallIndep##X##Y);\
     }\
@@ -435,28 +435,28 @@ private:
 #undef INDEPENDENT_NO_QEUE
 
     void initializeDependent(
-              simulatorNoQeueLag::System *system
+              SimulatorNoQeueLag::System *system
             , const ModelTrClass *trClass
             , int classIdx
             , double a
             , int sumPropAt
             , int V
             , double (*funTimeNewCall)(double, double)
-            , void (*funNewCall)(ProcNoQeueLag *proc, simulatorNoQeueLag::System *system)
-            , void (*funEndCall)(ProcNoQeueLag *proc, simulatorNoQeueLag::System *system)
+            , void (*funNewCall)(ProcNoQeueLag *proc, SimulatorNoQeueLag::System *system)
+            , void (*funEndCall)(ProcNoQeueLag *proc, SimulatorNoQeueLag::System *system)
             );
 #define DEP_MINUS_NO_QEUE(X,Y,NEW_CALL_DISTR,CALL_SERV_DISTRIB) \
-    void initializeDepMinus##X##Y(simulatorNoQeueLag::System *system, const ModelTrClass *trClass, int idx, double a, int sumPropAt, int V) \
+    void initializeDepMinus##X##Y(SimulatorNoQeueLag::System *system, const ModelTrClass *trClass, int idx, double a, int sumPropAt, int V) \
     {\
         initializeDependent(system, trClass, idx, a, sumPropAt, V, simulator::distr##NEW_CALL_DISTR, newCallDepMinus##X##Y, transmisionEndedDepMinus##X##Y);\
     }\
      \
-    inline static void newCallDepMinus##X##Y(ProcNoQeueLag *proc, simulatorNoQeueLag::System *system)\
+    inline static void newCallDepMinus##X##Y(ProcNoQeueLag *proc, SimulatorNoQeueLag::System *system)\
     {\
       newCallDepMinus(proc, system, simulator::distr##NEW_CALL_DISTR, simulator::distr##CALL_SERV_DISTRIB, newCallDepMinus##X##Y);\
     }\
      \
-    inline static void transmisionEndedDepMinus##X##Y(ProcNoQeueLag *proc, simulatorNoQeueLag::System *system)\
+    inline static void transmisionEndedDepMinus##X##Y(ProcNoQeueLag *proc, SimulatorNoQeueLag::System *system)\
     {\
       transmisionEndedDependentMinus(proc, system, simulator::distr##NEW_CALL_DISTR, newCallDepMinus##X##Y);\
     }\
@@ -495,12 +495,12 @@ private:
 
 
 #define DEP_Plus_NO_QEUE(X,Y,NEW_CALL_DISTR,CALL_SERV_DISTRIB) \
-    void initializeDepPlus##X##Y(simulatorNoQeueLag::System *system, const ModelTrClass *trClass, int idx, double a, int sumPropAt, int V)\
+    void initializeDepPlus##X##Y(SimulatorNoQeueLag::System *system, const ModelTrClass *trClass, int idx, double a, int sumPropAt, int V)\
     {\
         initializeDependent(system, trClass, idx, a, sumPropAt, V, simulator::distr##NEW_CALL_DISTR, newCallDepPlus##X##Y, transmisionEndedDependentPlus);\
     }\
      \
-    static void newCallDepPlus##X##Y(ProcNoQeueLag *proc, simulatorNoQeueLag::System *system)\
+    static void newCallDepPlus##X##Y(ProcNoQeueLag *proc, SimulatorNoQeueLag::System *system)\
     {\
       newCallDepPlus(proc, system, simulator::distr##NEW_CALL_DISTR, simulator::distr##CALL_SERV_DISTRIB, newCallDepPlus##X##Y);\
     }
@@ -539,64 +539,64 @@ private:
 
 
     static void newCallIndep(
-              ProcNoQeueLag *proc, simulatorNoQeueLag::System *system
+              ProcNoQeueLag *proc, SimulatorNoQeueLag::System *system
             , double (*funTimeNewCall)(double, double)
             , double (*funTimeOfService)(double, double)
-            , void (*funNewCall)(ProcNoQeueLag *proc, simulatorNoQeueLag::System *system)
+            , void (*funNewCall)(ProcNoQeueLag *proc, SimulatorNoQeueLag::System *system)
             );
 
     static void newCallDepMinus(
               ProcNoQeueLag *proc
-            , simulatorNoQeueLag::System *system
+            , SimulatorNoQeueLag::System *system
             , double (*funTimeNewCall)(double, double)
             , double (*funTimeOfService)(double, double)
-            , void (*funNewCall)(ProcNoQeueLag *proc, simulatorNoQeueLag::System *system)
+            , void (*funNewCall)(ProcNoQeueLag *proc, SimulatorNoQeueLag::System *system)
             );
 
     static void newCallDepPlus(
               ProcNoQeueLag *proc
-            , simulatorNoQeueLag::System *system
+            , SimulatorNoQeueLag::System *system
             , double (*funTimeNewCall)(double, double)
             , double (*funTimeOfService)(double, double)
-            , void (*funNewCall)(ProcNoQeueLag *, simulatorNoQeueLag::System *)
+            , void (*funNewCall)(ProcNoQeueLag *, SimulatorNoQeueLag::System *)
             );
 
     static void transmisionEndedIndependent(
               ProcNoQeueLag *proc
-            , simulatorNoQeueLag::System *system
+            , SimulatorNoQeueLag::System *system
             );
 
     static void transmisionEndedDependentMinus(
               ProcNoQeueLag *proc
-            , simulatorNoQeueLag::System *system
+            , SimulatorNoQeueLag::System *system
             , double (*funTimeNewCall)(double, double)
-            , void (*funNewCall)(ProcNoQeueLag *proc, simulatorNoQeueLag::System *system)
+            , void (*funNewCall)(ProcNoQeueLag *proc, SimulatorNoQeueLag::System *system)
             );
 
     static void transmisionEndedDependentPlus(
               ProcNoQeueLag *proc
-            , simulatorNoQeueLag::System *system
+            , SimulatorNoQeueLag::System *system
             );
 
 public:
     double time;             /// Those value can be out of date. Use them only on object taken from agenda
     uint   idx;              /// Index on the binary heap
-    simulatorNoQeueLag::Call *callData;
+    SimulatorNoQeueLag::Call *callData;
 
     inline void setUseless()                                       { state = USELESS; }
     inline void removeCallData()                                   { callData = nullptr; }
-    inline void setCallData(simulatorNoQeueLag::Call *newCallData) { callData = newCallData; }
+    inline void setCallData(SimulatorNoQeueLag::Call *newCallData) { callData = newCallData; }
     inline bool hasCallData()                                      { return (bool)(callData != nullptr); }
 
     static void initialize(
-              simulatorNoQeueLag::System *system
+              SimulatorNoQeueLag::System *system
             , const ModelTrClass *trClass
             , int classIdx
             , double a
             , int sumPropAt
             , int V
             );
-    void (*execute)(ProcNoQeueLag *simClass, simulatorNoQeueLag::System *system);
+    void (*execute)(ProcNoQeueLag *simClass, SimulatorNoQeueLag::System *system);
 };
 
 } // namespace Algorithms

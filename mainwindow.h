@@ -142,7 +142,9 @@ private slots:
 
     void on_actionSaveXLSX_subroupAvailability_triggered();
 
-    void on_comboBoxSubgoupSchedulerAlgorithm_currentIndexChanged(int index);
+    void on_comboBoxServerSchedulerAlgorithm_currentIndexChanged(int index);
+
+    void on_comboBoxBufferSchedulerAlgorithm_currentIndexChanged(int index);
 
     void on_ResultsQtChartRefresh();
 
@@ -150,9 +152,7 @@ private slots:
 
     void on_comboBoxResultsQtX_axis_currentIndexChanged(int index);
 
-    void on_comboBoxServerScheduler_currentIndexChanged(const QString &arg1);
 
-    void on_comboBoxBufferScheduler_currentIndexChanged(int index);
 
 private:
     QVector<ModelSyst*>  vectPredefinedSystems;

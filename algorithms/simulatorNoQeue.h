@@ -42,7 +42,7 @@ public:
         Server *server;
         QStack<Call *> uselessCalls;
         QList<Call *> callsInSystem;
-        simulatorDataCollection<ProcNoQeue> *agenda;
+        SimulatorDataCollection<ProcNoQeue> *agenda;
         simulationResults results;
 
         Call *_getNewCall();

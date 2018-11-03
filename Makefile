@@ -88,7 +88,8 @@ SOURCES       = main.cpp \
 		utils/utilsMisc.cpp \
 		results/resultsSingleGroup.cpp \
 		results/resultsApi.cpp \
-		algorithms/simulatorAllSystems.cpp qrc_resources.cpp \
+		algorithms/simulatorAllSystems.cpp \
+		algorithms/simulatorStatistics.cpp qrc_resources.cpp \
 		moc_mainwindow.cpp \
 		moc_dialogAbout.cpp
 OBJECTS       = main.o \
@@ -130,6 +131,7 @@ OBJECTS       = main.o \
 		resultsSingleGroup.o \
 		resultsApi.o \
 		simulatorAllSystems.o \
+		simulatorStatistics.o \
 		qrc_resources.o \
 		moc_mainwindow.o \
 		moc_dialogAbout.o
@@ -369,7 +371,8 @@ DIST          = languages/kolejki_pl.ts \
 		results/resultsXlsx.h \
 		results/resultsApi.h \
 		results/resultsApiTypes.h \
-		algorithms/simulatorAllSystems.h main.cpp \
+		algorithms/simulatorAllSystems.h \
+		algorithms/simulatorStatistics.h main.cpp \
 		mainwindow.cpp \
 		model.cpp \
 		dialogAbout.cpp \
@@ -407,7 +410,8 @@ DIST          = languages/kolejki_pl.ts \
 		utils/utilsMisc.cpp \
 		results/resultsSingleGroup.cpp \
 		results/resultsApi.cpp \
-		algorithms/simulatorAllSystems.cpp
+		algorithms/simulatorAllSystems.cpp \
+		algorithms/simulatorStatistics.cpp
 QMAKE_TARGET  = kolejki
 DESTDIR       = 
 TARGET        = kolejki
@@ -836,8 +840,8 @@ distdir: FORCE
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents resources.qrc $(DISTDIR)/
 	$(COPY_FILE) --parents /opt/Qt/5.11.2/gcc_64/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents mainwindow.h model.h dialogAbout.h algorithms/algorithmConvGamma2d.h algorithms/algorithmHybridDiscr.h algorithms/algorithmHybridDiscrDesc.h algorithms/simulatorQeueSdFIFO.h algorithms/alg_cFIFO_hybrid.h algorithms/alg_cFIFO_convGamma.h algorithms/alg_noFIFO.h algorithms/simulatorNoQeue.h algorithms/alg_FAG_AnyStream.h algorithms/simulatorNoQeueLag.h algorithms/investigator.h algorithms/trclvector2.h algorithms/algorithmConv.h algorithms/simulatordatacollection.h algorithms/simulatorBufferFIFO.h algorithms/simulator.h algorithms/algorithmConv3d.h algorithms/simulationParameters.h algorithms/simulatorQeueFIFO.h algorithms/algorithmConvGamma3.h gnuplot-iostream.h results/resultsGnuplot.h results/resultsSingle.h utils/lag.h utils/probDistributions.h utils/decimal.h utils/vectorUtils.h algorithms/algRekGeneral.h algorithms/algRekLag.h results/baseTypes.h results/resultsInvestigator.h results/resultsSystem.h algorithms/algRekLagGS.h results/resultsUtils.h utils/utilsMisc.h results/resultsSingleGroup.h results/resultsSingleGroup.h results/resultsXlsx.h results/resultsApi.h results/resultsApiTypes.h algorithms/simulatorAllSystems.h $(DISTDIR)/
-	$(COPY_FILE) --parents main.cpp mainwindow.cpp model.cpp dialogAbout.cpp algorithms/investigator.cpp algorithms/simulatorQeueFIFO.cpp algorithms/algorithmConvGamma3.cpp algorithms/algorithmConvGamma2d.cpp algorithms/algorithmHybridDiscr.cpp algorithms/algorithmHybridDiscrDesc.cpp algorithms/simulatorQeueSdFIFO.cpp algorithms/alg_cFIFO_hybrid.cpp algorithms/alg_cFIFO_convGamma.cpp algorithms/alg_noFIFO.cpp algorithms/simulatorNoQeue.cpp algorithms/alg_FAG_AnyStream.cpp algorithms/simulatorNoQeueLag.cpp algorithms/trclvector2.cpp algorithms/algorithmConv.cpp algorithms/simulatordatacollection.cpp algorithms/simulatorBufferFIFO.cpp algorithms/simulator.cpp algorithms/algorithmConv3d.cpp algorithms/simulationParameters.cpp results/resultsGnuplot.cpp utils/probDistributions.cpp utils/lag.cpp utils/vectorUtils.cpp algorithms/algRekGeneral.cpp algorithms/algRekLag.cpp results/resultsSingle.cpp results/resultsInvestigator.cpp results/resultsSystem.cpp algorithms/algRekLagGS.cpp results/resultsXlsx.cpp utils/utilsMisc.cpp results/resultsSingleGroup.cpp results/resultsApi.cpp algorithms/simulatorAllSystems.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents mainwindow.h model.h dialogAbout.h algorithms/algorithmConvGamma2d.h algorithms/algorithmHybridDiscr.h algorithms/algorithmHybridDiscrDesc.h algorithms/simulatorQeueSdFIFO.h algorithms/alg_cFIFO_hybrid.h algorithms/alg_cFIFO_convGamma.h algorithms/alg_noFIFO.h algorithms/simulatorNoQeue.h algorithms/alg_FAG_AnyStream.h algorithms/simulatorNoQeueLag.h algorithms/investigator.h algorithms/trclvector2.h algorithms/algorithmConv.h algorithms/simulatordatacollection.h algorithms/simulatorBufferFIFO.h algorithms/simulator.h algorithms/algorithmConv3d.h algorithms/simulationParameters.h algorithms/simulatorQeueFIFO.h algorithms/algorithmConvGamma3.h gnuplot-iostream.h results/resultsGnuplot.h results/resultsSingle.h utils/lag.h utils/probDistributions.h utils/decimal.h utils/vectorUtils.h algorithms/algRekGeneral.h algorithms/algRekLag.h results/baseTypes.h results/resultsInvestigator.h results/resultsSystem.h algorithms/algRekLagGS.h results/resultsUtils.h utils/utilsMisc.h results/resultsSingleGroup.h results/resultsSingleGroup.h results/resultsXlsx.h results/resultsApi.h results/resultsApiTypes.h algorithms/simulatorAllSystems.h algorithms/simulatorStatistics.h $(DISTDIR)/
+	$(COPY_FILE) --parents main.cpp mainwindow.cpp model.cpp dialogAbout.cpp algorithms/investigator.cpp algorithms/simulatorQeueFIFO.cpp algorithms/algorithmConvGamma3.cpp algorithms/algorithmConvGamma2d.cpp algorithms/algorithmHybridDiscr.cpp algorithms/algorithmHybridDiscrDesc.cpp algorithms/simulatorQeueSdFIFO.cpp algorithms/alg_cFIFO_hybrid.cpp algorithms/alg_cFIFO_convGamma.cpp algorithms/alg_noFIFO.cpp algorithms/simulatorNoQeue.cpp algorithms/alg_FAG_AnyStream.cpp algorithms/simulatorNoQeueLag.cpp algorithms/trclvector2.cpp algorithms/algorithmConv.cpp algorithms/simulatordatacollection.cpp algorithms/simulatorBufferFIFO.cpp algorithms/simulator.cpp algorithms/algorithmConv3d.cpp algorithms/simulationParameters.cpp results/resultsGnuplot.cpp utils/probDistributions.cpp utils/lag.cpp utils/vectorUtils.cpp algorithms/algRekGeneral.cpp algorithms/algRekLag.cpp results/resultsSingle.cpp results/resultsInvestigator.cpp results/resultsSystem.cpp algorithms/algRekLagGS.cpp results/resultsXlsx.cpp utils/utilsMisc.cpp results/resultsSingleGroup.cpp results/resultsApi.cpp algorithms/simulatorAllSystems.cpp algorithms/simulatorStatistics.cpp $(DISTDIR)/
 	$(COPY_FILE) --parents mainwindow.ui dialogAbout.ui $(DISTDIR)/
 	$(COPY_FILE) --parents languages/kolejki_en.ts languages/kolejki_pl.ts $(DISTDIR)/
 
@@ -3043,6 +3047,8 @@ mainwindow.o: mainwindow.cpp mainwindow.h \
 		algorithms/simulatorBufferFIFO.h \
 		algorithms/simulatorQeueSdFIFO.h \
 		algorithms/simulatorNoQeue.h \
+		algorithms/simulatorAllSystems.h \
+		algorithms/simulatorStatistics.h \
 		algorithms/simulatorNoQeueLag.h \
 		algorithms/algRekLag.h \
 		algorithms/algRekGeneral.h \
@@ -17991,9 +17997,101 @@ simulatorAllSystems.o: algorithms/simulatorAllSystems.cpp algorithms/simulatorAl
 		results/resultsSingleGroup.h \
 		algorithms/simulatordatacollection.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/QtDebug \
+		algorithms/simulatorStatistics.h \
 		utils/lag.h \
 		utils/utilsMisc.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o simulatorAllSystems.o algorithms/simulatorAllSystems.cpp
+
+simulatorStatistics.o: algorithms/simulatorStatistics.cpp algorithms/simulatorStatistics.h \
+		model.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/QMetaType \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qmetatype.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qglobal.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qconfig-bootstrapped.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qconfig.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qtcore-config.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qsystemdetection.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qprocessordetection.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qcompilerdetection.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qtypeinfo.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qsysinfo.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qlogging.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qflags.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qatomic.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qbasicatomic.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qatomic_bootstrap.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qgenericatomic.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qatomic_cxx11.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qatomic_msvc.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qglobalstatic.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qmutex.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qnumeric.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qversiontagging.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qbytearray.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qrefcount.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qnamespace.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qarraydata.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qvarlengtharray.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qcontainerfwd.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qalgorithms.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qobjectdefs.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qobjectdefs_impl.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/QTextStream \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qtextstream.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qiodevice.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qobject.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qstring.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qchar.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qstringliteral.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qstringalgorithms.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qstringview.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qstringbuilder.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qlist.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qiterator.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qhashfunctions.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qpair.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qbytearraylist.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qstringlist.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qregexp.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qstringmatcher.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qcoreevent.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qscopedpointer.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qobject_impl.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qlocale.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qvariant.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qmap.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qdebug.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qhash.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qvector.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qpoint.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qset.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qcontiguouscache.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qsharedpointer.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qshareddata.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qsharedpointer_impl.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/QDebug \
+		utils/probDistributions.h \
+		algorithms/trclvector2.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtGui/QList \
+		/opt/Qt/5.11.2/gcc_64/include/QtGui/qevent.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtGui/qtguiglobal.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtGui/qtgui-config.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtGui/qwindowdefs.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtGui/qwindowdefs_win.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtGui/qregion.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qrect.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qmargins.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qsize.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qdatastream.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtGui/qkeysequence.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qurl.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qurlquery.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qfile.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qfiledevice.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtGui/qvector2d.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtGui/qtouchdevice.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/QVector
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o simulatorStatistics.o algorithms/simulatorStatistics.cpp
 
 qrc_resources.o: qrc_resources.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o qrc_resources.o qrc_resources.cpp

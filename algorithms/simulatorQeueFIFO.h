@@ -27,12 +27,10 @@ public:    SimulatorQeueFifo();
     bool possible(const ModelSyst *system) const;
 
 public:
-    class System;
+
     class Server;
-    class Qeue;
+    class Buffer;
     struct Call;
-
-
 
     class System
     {
@@ -42,10 +40,10 @@ public:
         int old_n;
         int classIdx;
         Server *server;
-        Qeue *qeue;
+        Buffer *buffer;
         QStack<Call *> uselessCalls;
         QList<Call *> callsInSystem;
-        simulatorDataCollection<ProcQeueFifo> *agenda;
+        SimulatorDataCollection<ProcQeueFifo> *agenda;
         simulationResults results;
 
         Call *_getNewCall();
@@ -64,8 +62,6 @@ public:
         int        **outNewSCserv;
         int        **outEndSCserv;
 
-        const BufferResourcessScheduler disc;
-
     public:
         int       totalNumberOfServicedCalls;
         int       totalNumberOfLostCalls;
@@ -81,7 +77,7 @@ public:
         ~System();
 
         void initialize(double a, int sumPropAt, int V);
-        void doSimExperiment(int numberOfLostCall, int seed, int numberOfServicedCalls=0);
+        void doSimExperiment(int numberOfLostCall, unsigned int seed, int numberOfServicedCalls=0);
 
         void collectTheStatPre(double time);
         void collectTheStatPost(double time);
@@ -148,7 +144,7 @@ public:
         ~Server();
 
         inline int getNoOfFreeAS() { return V - n; }
-        inline int getAvgNoOfASinStateN(int i, int n) { return AStime_ofOccupiedAS_byClassI_inStateN[i][n]; }
+        inline double getAvgNoOfASinStateN(int i, int n) { return AStime_ofOccupiedAS_byClassI_inStateN[i][n]; }
         inline int getV() {return V;}
 
         void addCall(Call *call, int noOfAS, bool newCall);
@@ -158,12 +154,18 @@ public:
         void collectTheStats(double time);
         inline double getOccupancyTimeOfState(int state) { return (state <= V) ? occupancyTimes[state] : 0;}
     };
-    class Qeue
+    class Buffer
     {
         friend void SimulatorQeueFifo::System::writesResultsOfSingleExperiment(Results::RSingle&);
         friend void SimulatorQeueFifo::System::collectTheStatPre(double time);
+
+    public:
+        const System *system;
+        const BufferResourcessScheduler scheduler;
+
     private:
-        System *system;
+
+
         int V;                          /// Number of Allocated Slots, that the buffer is able to handle
         int m;
         double *occupancyTimes;
@@ -178,9 +180,10 @@ public:
         double **AStime_ofOccupiedAS_byClassI_inStateN;  /// Avarage number of resuorcess occupied by class i in state n
 
     public:
-        int n;                          /// Number of AS that is used by the calls
-        Qeue(int V, System *system);
-        ~Qeue();
+
+        int n;                          /// Number of AS that is used by the calls //TODO makeprivate
+        Buffer(int V, System *system, BufferResourcessScheduler bufferScheduler);
+        ~Buffer();
 
         inline int   getV()                                      { return V; }
         inline int   getNoOfFreeAS()                             { return V - n;}
@@ -200,7 +203,7 @@ public:
         void consistencyCheck()
         {
             int tmp = 0;
-            if (firstCall != NULL)
+            if (firstCall != nullptr)
                 tmp = firstCall->reqAS - firstCall->allocatedAS;
             foreach (Call *tmpCall, calls)
             {
@@ -469,9 +472,9 @@ public:
     SimulatorQeueFifo::Call *callData;
 
     inline void setUseless()                                       { state = USELESS; }
-    inline void removeCallData()                                   { callData = NULL; }
+    inline void removeCallData()                                   { callData = nullptr; }
     inline void setCallData(SimulatorQeueFifo::Call *newCallData)  { callData = newCallData; }
-    inline bool hasCallData()                                      { return (bool)(callData != NULL); }
+    inline bool hasCallData()                                      { return (bool)(callData != nullptr); }
 
     static void initialize(
               SimulatorQeueFifo::System *system

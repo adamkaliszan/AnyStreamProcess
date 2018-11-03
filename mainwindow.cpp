@@ -1338,17 +1338,11 @@ void MainWindow::loadLanguage(const QString &rLanguage)
         variant.setValue(ModelTrClass::StreamType::Pareto);
         ui->comboBox_CallServStrType->addItem("Pareto", variant);
 
-        ui->comboBoxServerScheduler->clear();
-        ui->comboBoxServerScheduler->addItem("Random", variant);
-        variant.setValue(ServerResourcessScheduler::Sequencial);
-
-        QVector<ServerResourcessScheduler> tmpOptions = {
-            ServerResourcessScheduler::Random,  ServerResourcessScheduler::Sequencial};
-
+        QVector<ServerResourcessScheduler> tmpOptions = { ServerResourcessScheduler::Random, ServerResourcessScheduler::Sequencial };
         foreach (ServerResourcessScheduler tmp, tmpOptions)
         {
             variant.setValue(tmp);
-            ui->comboBoxServerScheduler->addItem(serverResourcessSchedulerToString(tmp), variant);
+            ui->comboBoxServerSchedulerAlgorithm->addItem(serverResourcessSchedulerToString(tmp), variant);
         }
 
         QVector<BufferResourcessScheduler> tmpOptionsBuffer = {
@@ -1357,11 +1351,10 @@ void MainWindow::loadLanguage(const QString &rLanguage)
             BufferResourcessScheduler::qFIFO_Seq,
             BufferResourcessScheduler::SD_FIFO
         };
-
         foreach (BufferResourcessScheduler tmp, tmpOptionsBuffer)
         {
             variant.setValue(tmp);
-            ui->comboBoxBufferScheduler->addItem(bufferResourcessSchedulerToString(tmp), variant);
+            ui->comboBoxBufferSchedulerAlgorithm->addItem(bufferResourcessSchedulerToString(tmp), variant);
         }
     }
 }
@@ -1647,17 +1640,17 @@ void MainWindow::on_actionSaveXLSX_subroupAvailability_triggered()
     xlsxWriter->SaveGroupsAvailability(fileName);
 }
 
-void MainWindow::on_comboBoxSubgoupSchedulerAlgorithm_currentIndexChanged(int index)
+void MainWindow::on_comboBoxServerSchedulerAlgorithm_currentIndexChanged(int index)
 {
     (void) index;
-    system->setServerSchedulerAlgorithm(ui->comboBoxServerScheduler->currentData().value<ServerResourcessScheduler>());
+    system->setServerSchedulerAlgorithm(ui->comboBoxServerSchedulerAlgorithm->currentData().value<ServerResourcessScheduler>());
     fillSystem();
 }
 
-void MainWindow::on_comboBoxBufferScheduler_currentIndexChanged(int index)
+void MainWindow::on_comboBoxBufferSchedulerAlgorithm_currentIndexChanged(int index)
 {
     (void) index;
-    system->setBufferSchedulerAlgorithm(ui->comboBoxBufferScheduler->currentData().value<BufferResourcessScheduler>());
+    system->setBufferSchedulerAlgorithm(ui->comboBoxBufferSchedulerAlgorithm->currentData().value<BufferResourcessScheduler>());
     fillSystem();
 }
 
@@ -1963,16 +1956,4 @@ void MainWindow::on_ResultsQtChartRefresh()
         chart->legend()->show();
     else
         chart->legend()->hide();
-
-
-
-
-
-//    chart->axisX()->setLabelFormat("%i");
-//    chart->axisX()->setTickCount(series->count());
-
-
-//    chart->axisY()->setLabelFormat("%g");
-//    chart->axisY()->setBase(8.0);
-    //axisY->setMinorTickCount(-1);
 }

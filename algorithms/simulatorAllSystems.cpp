@@ -64,7 +64,9 @@ void SimulatorAll::calculateSystem(const ModelSyst *system
 
 SimulatorAll::System::System(const ModelSyst *system, int noOfSeries)
     : m(system->m())
-    , V(system->V())
+    , vk_sb(system->V())
+    , vk_s(system->vk_s())
+    , vk_b(system->vk_b())
     , n(0)
     , old_n(0)
     , results(system->m(), system->vk_s(), system->vk_b(), noOfSeries)
@@ -73,21 +75,10 @@ SimulatorAll::System::System(const ModelSyst *system, int noOfSeries)
 
     systemData = system;
 
-    agenda = new simulatorDataCollection<ProcAll>();
+    agenda = new SimulatorDataCollection<ProcAll>();
     server = new Server(this);
 
-    timesPerClassAndState.resize(system->m());
-    timesPerState.resize(V+1);
-
-    eventsPerClass.resize(system->m());
-    eventsPerState.resize(system->vk_s()+system->vk_b()+1);
-    eventsPerClassAndState.resize(system->m());
-
-    for (int i=0; i<m; i++)
-    {
-        timesPerClassAndState[i].resize(V+1);
-        eventsPerClassAndState[i].resize(V+1);
-    }
+    statistics = new SystemStatistics(system);
 }
 
 SimulatorAll::System::~System()
@@ -175,8 +166,8 @@ void SimulatorAll::System::writesResultsOfSingleExperiment(RSingle& singleResult
         int t = systemData->getClass(i)->t();
         double E = 0;
 
-        for (int n_server = qMax(0, (V-t+1)); n_server<=V; n_server++)
-            E+=timesPerState[n_server].availabilityTime;
+        for (int n = qMax(0, (V-t+1)); n<=V; n++)
+            E+=statistics->getTimeStatistics(n).availabilityTime;
         E /=results._simulationTime;
 
         if (E < 0)
@@ -200,49 +191,49 @@ void SimulatorAll::System::writesResultsOfSingleExperiment(RSingle& singleResult
             results.act_LOC_server_yt[i][n] = x;
             singleResults.write(TypeForClassAndServerState::Usage, x, i, n);
 
-            x = timesPerClassAndState[i][n].occupancyTime /getOccupancyTimeOfState(n);
+            x = statistics->getTimeStatisticsSC(i,n).occupancyTime /statistics->getTimeStatistics(n).occupancyTime;
             results.act_SYS_yt[i][n] = x;
         }
     }
 
     for (int n=0; n<=V; n++)
     {
-        double tmpstateDurationTime = getOccupancyTimeOfState(n);
+        double tmpstateDurationTime = statistics->getTimeStatistics(n).occupancyTime;
 
-        double occupancyTime =  getOccupancyTimeOfState(n) / results._simulationTime;
+        double occupancyTime =  statistics->getTimeStatistics(n).occupancyTime / results._simulationTime;
         results.act_trDistribSys[n] = occupancyTime;
         singleResults.write(TypeForSystemState::StateProbability, occupancyTime, n);
 
-        results.act_intOutNew[n] = static_cast<double>(getOutNew(n)) / tmpstateDurationTime;
-        results.act_intOutEnd[n] = static_cast<double>(getOutEnd(n)) / tmpstateDurationTime;
+        results.act_intOutNew[n] = static_cast<double>(statistics->getEventStatistics(n).outNewOffered) / tmpstateDurationTime;
+        results.act_intOutEnd[n] = static_cast<double>(statistics->getEventStatistics(n).outEnd) / tmpstateDurationTime;
 
-        results.act_noOutNew[n] = getOutNew(n);
-        results.act_noOutEnd[n] = getOutEnd(n);
+        results.act_noOutNew[n] = statistics->getEventStatistics(n).outNewAccepted;
+        results.act_noOutEnd[n] = statistics->getEventStatistics(n).outEnd;
 
 
         for (int i=0; i<m; i++)
         {
             int t = this->systemData->getClass(i)->t();
 
-            tmpstateDurationTime = (n-t >= 0) ? getOccupancyTimeOfState(n-t) : 0;
-            results.act_intInNewSC[i][n] = (tmpstateDurationTime > 0) ? (static_cast<double>(getInNewSC(n, i)) / tmpstateDurationTime) : 0;
+            tmpstateDurationTime = (n-t >= 0) ? statistics->getTimeStatistics(n-t).occupancyTime : 0;
+            results.act_intInNewSC[i][n] = (tmpstateDurationTime > 0) ? (static_cast<double>(statistics->getEventStatisticsSC(i, n).inNew) / tmpstateDurationTime) : 0;
 
-            tmpstateDurationTime = (n+t <= server->getV()) ? getOccupancyTimeOfState(n+t) : 0;
-            results.act_intInEndSC[i][n] = (tmpstateDurationTime > 0) ? (static_cast<double>(getInEndSC(n, i)) / tmpstateDurationTime) : 0;
+            tmpstateDurationTime = (n+t <= server->getV()) ? statistics->getTimeStatistics(n+t).occupancyTime : 0;
+            results.act_intInEndSC[i][n] = (tmpstateDurationTime > 0) ? (static_cast<double>(statistics->getEventStatisticsSC(i, n).inEnd) / tmpstateDurationTime) : 0;
 
-            tmpstateDurationTime = getOccupancyTimeOfState(n);
-            results.act_intOutNewSC[i][n] = static_cast<double> (getOutNewSC(n, i)) / tmpstateDurationTime;
-            results.act_intOutEndSC[i][n] = static_cast<double> (getOutEndSC(n, i)) / tmpstateDurationTime;
+            tmpstateDurationTime =  statistics->getTimeStatistics(n).occupancyTime;
+            results.act_intOutNewSC[i][n] = static_cast<double>(statistics->getEventStatisticsSC(i, n).outNewOffered) / tmpstateDurationTime;
+            results.act_intOutEndSC[i][n] = static_cast<double>(statistics->getEventStatisticsSC(i, n).outEnd) / tmpstateDurationTime;
 
-            results.act_noInNewSC[i][n]   = getInNewSC(n, i);
-            results.act_noInEndSC[i][n]   = getInEndSC(n, i);
-            results.act_noOutNewSC[i][n]  = getOutNewSC(n, i);
-            results.act_noOutEndSC[i][n]  = getOutEndSC(n, i);
+            results.act_noInNewSC[i][n]   = statistics->getEventStatisticsSC(i, n).inNew;
+            results.act_noInEndSC[i][n]   = statistics->getEventStatisticsSC(i, n).inEnd;
+            results.act_noOutNewSC[i][n]  = statistics->getEventStatisticsSC(i, n).outNewAccepted;
+            results.act_noOutEndSC[i][n]  = statistics->getEventStatisticsSC(i, n).outEnd;
         }
     }
 
     for (int n=0; n<=Vs; n++)
-    {
+    {//TODO use servers statistics
         double stateProbability = server->getTimeOfState(n) / results._simulationTime;
         results.act_trDistribSys[n] = stateProbability;
         singleResults.write(TypeForSystemState::StateProbability, stateProbability, n);
@@ -257,8 +248,8 @@ void SimulatorAll::System::writesResultsOfSingleExperiment(RSingle& singleResult
             results.act_intInNew[n]  += results.act_intInNewSC[i][n];
             results.act_intInEnd[n]  += results.act_intInEndSC[i][n];
 
-            results.act_noInNew[n]   += getInNewSC(n, i);
-            results.act_noInEnd[n]   += getInEndSC(n, i);
+         //   results.act_noInNew[n]   += getInNewSC(n, i);
+         //TODO use servers statistics   results.act_noInEnd[n]   += getInEndSC(n, i);
         }
         results.act_trDistribServ[n] = server->statsGetOccupancyTimeOfState(n) / results._simulationTime;
     }
@@ -498,57 +489,57 @@ void SimulatorAll::System::statsCollectPre(double time)
 
     for (int i=0; i<m; i++)
     {
-        timesPerClassAndState[i][n].occupancyTime += time*(server->n_i[i]);
+        //TODO timesPerClassAndState[i][n].occupancyTime += time*(server->n_i[i]);
         server->resourceUtilizationByClassInState[i][n] += time*(server->n_i[i]);
     }
-    timesPerState[n].occupancyTime += time;
+    //TODO timesPerState[n].occupancyTime += time;
 
     int maxCallRequirement = getMaxNumberOfAsInSingleGroup();
-    timesPerState[V-maxCallRequirement].availabilityTime += time;
+    //TODO timesPerState[vk_s-maxCallRequirement].availabilityTime += time;
 }
 
 void SimulatorAll::System::statsCollectPost(int classIdx)
 {
     if (n == old_n) //nowe zgłoszenie zostało odrzucone
     {
-        eventsPerClass[classIdx].outNewOffered++;
-        eventsPerClass[classIdx].outNewLost++;
+        //TODO eventsPerClass[classIdx].outNewOffered++;
+        //TODO eventsPerClass[classIdx].outNewLost++;
 
-        eventsPerState[old_n].outNewOffered++;
-        eventsPerState[old_n].outNewLost++;
-        eventsPerClassAndState[classIdx][old_n].outNewOffered++;
-        eventsPerClassAndState[classIdx][old_n].outNewLost++;
+        //TODO eventsPerState[old_n].outNewOffered++;
+        //TODO eventsPerState[old_n].outNewLost++;
+        //TODO eventsPerClassAndState[classIdx][old_n].outNewOffered++;
+        //TODO eventsPerClassAndState[classIdx][old_n].outNewLost++;
 
         return;
     }
     if (n < old_n) //zakończenie obsługi zgłoszenia
     {
-        eventsPerClass[classIdx].outEnd++;
-        eventsPerClass[classIdx].inEnd++;
+        //TODO eventsPerClass[classIdx].outEnd++;
+        //TODO eventsPerClass[classIdx].inEnd++;
 
-        eventsPerState[old_n].outEnd++;
-        eventsPerClassAndState[classIdx][old_n].outEnd++;
+        //TODO eventsPerState[old_n].outEnd++;
+        //TODO eventsPerClassAndState[classIdx][old_n].outEnd++;
 
-        eventsPerState[n].inEnd++;
-        eventsPerClassAndState[classIdx][n].inEnd++;
+        //TODO eventsPerState[n].inEnd++;
+        //TODO eventsPerClassAndState[classIdx][n].inEnd++;
 
         return;
     }
 
     if (n > old_n) //przyjęcie do obsługi zgłoszenia
     {
-        eventsPerClass[classIdx].outNewOffered++;
-        eventsPerClass[classIdx].outNew++;
-        eventsPerClass[classIdx].inNew++;
+        //TODO eventsPerClass[classIdx].outNewOffered++;
+        //TODO eventsPerClass[classIdx].outNew++;
+        //TODO eventsPerClass[classIdx].inNew++;
 
-        eventsPerState[old_n].outNewOffered++;
-        eventsPerState[old_n].outNew++;
+        //TODO eventsPerState[old_n].outNewOffered++;
+        //TODO eventsPerState[old_n].outNew++;
 
-        eventsPerClassAndState[classIdx][old_n].outNewOffered++;
-        eventsPerClassAndState[classIdx][old_n].outNew++;
+        //TODO eventsPerClassAndState[classIdx][old_n].outNewOffered++;
+        //TODO eventsPerClassAndState[classIdx][old_n].outNew++;
 
-        eventsPerState[n].inNew++;
-        eventsPerClassAndState[classIdx][n].inNew++;
+        //TODO eventsPerState[n].inNew++;
+        //TODO eventsPerClassAndState[classIdx][n].inNew++;
 
         return;
     }
@@ -558,15 +549,7 @@ void SimulatorAll::System::statsCollectPost(int classIdx)
 
 void SimulatorAll::System::statsClear()
 {
-    for (int i=0; i<m; i++)
-        for (int n=0; n<=V; n++)
-            eventsPerClassAndState[i][n].statsClear();
-
-    for (int n=0; n<=V; n++)
-    {
-        eventsPerState[n].statsClear();
-        timesPerState[n].statsClear();
-    }
+    statistics->clear();
     server->statsClear();
 }
 
@@ -576,17 +559,17 @@ void SimulatorAll::System::statsEnable(int serNo)
 
     for (int i=0; i<m; i++)
     {
-        eventsPerClass[i].statsClear();
-        for (int n=0; n<=V; n++)
+//TODO         eventsPerClass[i].statsClear();
+        for (int n=0; n<=vk_s; n++)
         {
-            timesPerClassAndState[i][n].statsClear();
-            eventsPerClassAndState[i][n].statsClear();
+//TODO             timesPerClassAndState[i][n].statsClear();
+//TODO             eventsPerClassAndState[i][n].statsClear();
         }
     }
-    for (int n=0; n<=V; n++)
+    for (int n=0; n<=vk_s; n++)
     {
-        timesPerState[n].statsClear();
-        eventsPerState[n].statsClear();
+//TODO         timesPerState[n].statsClear();
+//TODO         eventsPerState[n].statsClear();
     }
 
     results.enableStatisticscollection(serNo);
@@ -731,7 +714,7 @@ bool SimulatorAll::Server::findAS(int noOfAUs, int& groupNo, QList<int>& asIndex
     bool result = false;
     int groupNoTmp;
 
-    switch (subgroupScheduler)
+    switch (scheduler)
     {
     case ServerResourcessScheduler::Random:
         Utils::UtilsMisc::suffle(groupSequence);
@@ -812,7 +795,7 @@ double SimulatorAll::Server::getTimeOfState(int stateNo) const
 
 SimulatorAll::Server::Server(System *system)
     : system(system)
-    , subgroupScheduler(system->systemData->getGroupsSchedulerAlgorithm())
+    , scheduler(system->systemData->getGroupsSchedulerAlgorithm())
     , V(system->systemData->vk_s())
     , vMax(system->systemData->v_sMax())
     , k(system->systemData->k_s())
@@ -1768,29 +1751,12 @@ int SimulatorAll::Group::getNoOfFreeAUs(bool considerAllocationAlgorithm)
 
 #define FOLDINEND }
 
-SimulatorAll::EvenStatistics::EvenStatistics()
-    : inNew(0)
-    , inEnd(0)
-    , outNew(0)
-    , outNewOffered(0)
-    , outNewLost(0)
-    , outEnd(0)
-{ }
 
-void SimulatorAll::EvenStatistics::statsClear()
-{
-    memset(this, 0, sizeof(class EvenStatistics));
-}
 
-SimulatorAll::TimeStatisticsState::TimeStatisticsState()
-    : availabilityTime(0)
-    , occupancyTime(0)
-{ }
 
-void SimulatorAll::TimeStatisticsState::statsClear()
-{
-    availabilityTime = 0;
-    occupancyTime = 0;
-}
+
+
+
+
 
 } // namespace Algorithms

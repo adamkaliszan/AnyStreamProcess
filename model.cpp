@@ -849,12 +849,12 @@ ModelSyst::ModelSyst():
     _noOfTrClasses(0)
   , _serverSchedulerAlgorithm(ServerResourcessScheduler::Sequencial)
   , _noOfTypesOfGroups(0)
+  , _totalGroupsCapacity(0)
+  , _totalNumberOfGroups(0)
   , _bufferSchedulerAlgorithm(BufferResourcessScheduler::Disabled)
   , _noOfTypesOfBuffers(0)
   , _totalBufferCapacity(0)
   , _totalNumberOfBuffers(0)
-  , _totalGroupsCapacity(0)
-  , _totalNumberOfGroups(0)
   , _totalAt(0), id(0)
 {
     _capacityTrClasses = 4;
@@ -865,8 +865,6 @@ ModelSyst::ModelSyst():
 
     _capacityTypeOfQeues = 2;
     _bufers = new ModelResourcess[_capacityTypeOfQeues];
-
-    _totalTimeBuf = 10;
 }
 
 ModelSyst::~ModelSyst()
@@ -1457,7 +1455,7 @@ template <class P> bool ModelTrClass::SimulatorProcess_DepMinus::endOfCallServic
     return false;
 }
 
-template <class P> bool ModelTrClass::SimulatorProcess_DepPlus::newCall(ModelTrClass::SimulatorSingleServiceSystem *system, ModelTrClass::SimulatorProcess *proc, double EOS_TIME)
+template <class P> bool ModelTrClass::SimulatorProcess_DepPlus::newCall(ModelTrClass::SimulatorSingleServiceSystem *system, ModelTrClass::SimulatorProcess *proc, double endOfServiceTime)
 {
     P *procPascal = static_cast<P *>(proc);
 
@@ -1474,7 +1472,7 @@ template <class P> bool ModelTrClass::SimulatorProcess_DepPlus::newCall(ModelTrC
 
 
     procPascal->procFun = P::endOfCallService;
-    bool result = system->addCall(procPascal, EOS_TIME /*system->funGetServEndTime()*/);
+    bool result = system->addCall(procPascal, endOfServiceTime /*system->funGetServEndTime()*/);
     if(result)
     {
         procPascal->child = new P(system);

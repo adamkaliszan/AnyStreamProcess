@@ -72,7 +72,7 @@ SimulatorQeueSdFifo::System::System(const ModelSyst *system, int noOfSeries)
     : results(system->m(), system->vk_s(), system->vk_b(), noOfSeries)
     , systemData(system)
 {
-    this->agenda = new simulatorDataCollection<ProcQeueSdFifo>();
+    this->agenda = new SimulatorDataCollection<ProcQeueSdFifo>();
     server = new Server(system->vk_s(), system->vk_b(), this);
 }
 

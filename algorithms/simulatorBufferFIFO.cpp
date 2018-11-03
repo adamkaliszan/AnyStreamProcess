@@ -69,7 +69,7 @@ SimulatorBufferFifo::System::System(const ModelSyst *system, int numberOfSeries)
     __act_noOfServicedCalls       = new int[system->m()];
 
     this->systemData = system;
-    this->agenda = new simulatorDataCollection<ProcBufferFifo>();
+    this->agenda = new SimulatorDataCollection<ProcBufferFifo>();
 
 
     int32_t *v, *k, numberOfTypes;
@@ -78,7 +78,7 @@ SimulatorBufferFifo::System::System(const ModelSyst *system, int numberOfSeries)
     delete []v;
     delete []k;
 
-    buffer = new Buffer(system->vk_b(), system->vk_b() * system->T(), this);
+    buffer = new Buffer(system->vk_b(), system->vk_b(), this);
 
     yQ   = new double*[numberOfSeries];
     y    = new double*[numberOfSeries];

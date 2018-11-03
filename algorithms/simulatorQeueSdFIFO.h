@@ -38,7 +38,7 @@ public:
     {
     private:
         QStack<Call *> uselessCalls;
-        simulatorDataCollection<ProcQeueSdFifo> *agenda;
+        SimulatorDataCollection<ProcQeueSdFifo> *agenda;
         simulationResults results;
 
         Call *_getNewCall();

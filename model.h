@@ -274,7 +274,7 @@ public:
     class SimulatorProcess_DepPlus: public SimulatorProcess
     {
     protected:
-        template <class P> static bool newCall(SimulatorSingleServiceSystem *system, SimulatorProcess *proc, double EOS_TIME);
+        template <class P> static bool newCall(SimulatorSingleServiceSystem *system, SimulatorProcess *proc, double endOfServiceTime);
         template <class P> static bool endOfCallService(SimulatorSingleServiceSystem *system, SimulatorProcess *proc);
 
     public:
@@ -428,20 +428,17 @@ private:
 
     ServerResourcessScheduler _serverSchedulerAlgorithm;
     ModelResourcess *_servers;
-    int _noOfTypesOfGroups;
-    int _capacityTypeOfGroups;
+    int _noOfTypesOfGroups;    // 1 for LAG of FAG, >1 for GLAG
+    int _totalGroupsCapacity;  // Pojemność wszystkich wiązek
+    int _totalNumberOfGroups;  // Liczba wszystkich wiązek
+    int _capacityTypeOfGroups; // Array length TODO use QVector<>
 
     BufferResourcessScheduler _bufferSchedulerAlgorithm;
     ModelResourcess *_bufers;
     int _noOfTypesOfBuffers;
-    int _capacityTypeOfQeues;
-
-
-    int _totalBufferCapacity;   // Pojemność wszystkich kolejek
-    int _totalTimeBuf;         /// Number of time units, that the buffer is able to store data written to them with fully supported spead
-    int _totalNumberOfBuffers;   // Liczba wszystkich kolejek
-    int _totalGroupsCapacity;  // Pojemność wszystkich wiązek
-    int _totalNumberOfGroups;  // Liczba wszystkich wiązek
+    int _totalBufferCapacity;  // Pojemność wszystkich kolejek
+    int _totalNumberOfBuffers; // Liczba wszystkich kolejek
+    int _capacityTypeOfQeues;  // Array length TODO use QVector<>
 
     int _totalAt;              // suma wszystkich proporcji
 
@@ -488,8 +485,6 @@ public:
     int k_b(int bufferClNo)  const;                                        /// Number of buffers group of given class
     int k_bType(void)        const {return _noOfTypesOfBuffers; }          /// Total number of buffers group classes
 
-    int T(void)        const {return _totalTimeBuf; } //TODO remove it, time buffer simulator wasn't developed and difussion systems are not considered
-
     int id;
 
     void addClass(ModelTrClass *newClass);                            //Creates a copy. The copy is added to the system
@@ -498,6 +493,9 @@ public:
 
     void setServerSchedulerAlgorithm(ServerResourcessScheduler algorithm);
     void setBufferSchedulerAlgorithm(BufferResourcessScheduler algorithm);
+
+    inline BufferResourcessScheduler getBufferScheduler() const {return _bufferSchedulerAlgorithm; }
+    inline ServerResourcessScheduler getServerScheduler() const {return _serverSchedulerAlgorithm; }
 
     void clearAll();
 };

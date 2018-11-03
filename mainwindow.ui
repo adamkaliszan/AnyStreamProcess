@@ -297,7 +297,7 @@
                 </layout>
                </item>
                <item row="0" column="2">
-                <widget class="QComboBox" name="comboBoxBufferScheduler"/>
+                <widget class="QComboBox" name="comboBoxBufferSchedulerAlgorithm"/>
                </item>
                <item row="0" column="0" colspan="2">
                 <widget class="QLabel" name="label_subbufferScheduler">
@@ -462,7 +462,7 @@
                 </layout>
                </item>
                <item row="0" column="2">
-                <widget class="QComboBox" name="comboBoxServerScheduler"/>
+                <widget class="QComboBox" name="comboBoxServerSchedulerAlgorithm"/>
                </item>
                <item row="0" column="0" colspan="2">
                 <widget class="QLabel" name="label_subgroupSchedulerAlgorithm">

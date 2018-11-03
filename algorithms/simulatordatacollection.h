@@ -14,7 +14,7 @@ namespace Algorithms
 {
 
 template<class P>
-class simulatorDataCollection
+class SimulatorDataCollection
 {
 private:
     QStack<P*> outOfDateProcesses;
@@ -236,7 +236,7 @@ private:
     } processes;                                                     // Struct, that sorts the processes according to the "time" field
 
 public:
-    simulatorDataCollection()
+    SimulatorDataCollection()
     {
 #ifdef INC_AGENDA_PERFORMANCE
         processes.timeOffset = 0;
@@ -246,7 +246,7 @@ public:
         processes.array.resize(processes.capacity);
     }
 
-    ~simulatorDataCollection()
+    ~SimulatorDataCollection()
     {
         foreach(P *proc, processes.array)
         {
@@ -263,10 +263,10 @@ public:
     {
         P *result=processes.takeFirst();
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
-        if (result == NULL)
+        if (result == nullptr)
         {
             qFatal("Can't take next process. The list is empty");
-            return NULL;
+            return nullptr;
         }
 #endif
         double time = result->time;
@@ -281,7 +281,7 @@ public:
 
         processes.remove(*outOfDateProcess);
         reuseProcess(*outOfDateProcess);
-        outOfDateProcess = NULL;
+        outOfDateProcess = nullptr;
     }
     inline void changeProcessWakeUpTime(P *proc, double time) { processes.changeTime(proc, time); }
     P* getNewProcess()
@@ -302,10 +302,10 @@ public:
 class simulationResults
 {
 public:
-    int m;
-    int Vs;
-    int Vb;
-    int noOfSeries;
+    const int m;
+    const int Vs;
+    const int Vb;
+    const int noOfSeries;
 
     double _simulationTime;
 

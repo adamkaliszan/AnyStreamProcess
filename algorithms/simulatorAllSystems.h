@@ -10,6 +10,8 @@
 #include "simulator.h"
 #include "simulatordatacollection.h"
 
+#include "simulatorStatistics.h"
+
 namespace Algorithms
 {
 
@@ -46,50 +48,30 @@ public:
     };
 
 
-    class EvenStatistics
-    {
-    public:
-        long unsigned int inNew;
-        long unsigned int inEnd;
-
-        long unsigned int outNew;
-        long unsigned int outNewOffered;
-        long unsigned int outNewLost;
-        long unsigned int outEnd;
-
-        EvenStatistics();
-
-        void statsClear();
-    };
-
-    class TimeStatisticsState
-    {
-    public:
-        double availabilityTime;  /// Duration time of "state n equivalent", where V-n AUs are available for a single call. FAG state equivalent
-        double occupancyTime;     /// State duration time
-
-        TimeStatisticsState();
-
-        void statsClear();
-    };
-
     class System
     {
+    public:
+        const int m;      /// Number of offered traffic classes
+        const int vk_sb;  /// Total system capacity
+        const int vk_s;   /// Total server capacity
+        const int vk_b;   /// Total buffer capacity
+
     private:
-        int m;
-        int V;
+        // System state
+        int n;            /// Number of occupied resourcess by all the classes
+        QVector<int> n_i; /// Number of occupied resourcess by given class. Vector length is m
 
-        int n;
-        QVector<int> n_i;
-
-        int old_n;
+        int old_n;        /// Previous number of occupied resourcess by all the classes
         int classIdx;
 
-        Server *server;
-        QStack<Call *> uselessCalls;
+        Server *server;   /// Server details
+        Buffer *buffer;   /// Buffer details
+
+        QStack<Call *> uselessCalls; //TODO move to separate struct
+
         QList<Call *> callsInSystem;
-        simulatorDataCollection<ProcAll> *agenda;
-        simulationResults results;
+        SimulatorDataCollection<ProcAll> *agenda;
+        simulationResults results;   //TODO deprecated, use newresult
 
         Call *_getNewCall();
         inline void reuseCall(Call *callToReuse);
@@ -97,13 +79,7 @@ public:
         void removeCallFromServer(Call *call);
         inline void removeCallFromQeue(Call *call);
 
-        QVector<TimeStatisticsState>            timesPerState;
-        QVector<QVector<TimeStatisticsState> >  timesPerClassAndState;
-
-        QVector<EvenStatistics>                 eventsPerClass;
-        QVector<EvenStatistics>                 eventsPerState;
-        QVector<QVector <EvenStatistics> >      eventsPerClassAndState;
-
+        SystemStatistics *statistics;
 
     public:
         int       totalNumberOfServicedCalls;
@@ -113,7 +89,7 @@ public:
         System(const ModelSyst *system, int noOfSeries);
         ~System();
 
-        void initialize(double a, int sumPropAt, int V);
+        void initialize(double a, int sumPropAt, int vk_s);
         void doSimExperiment(int numberOfLostCall, unsigned int seed, int numberOfServicedCalls=0);
 
 #define FOLDINGSTART { //Statistics
@@ -133,14 +109,6 @@ public:
 
         Call *getNewCallUniformIncomServ(ModelTrClass *trClass, int classIdx, double incommingTMin, double incommingTMax, double serviceTMin, double serviceTMax);
 
-        inline double getOccupancyTimeOfState(int n) { return timesPerState[n].occupancyTime; }
-
-        inline long unsigned int getOutNew(int n)             { return eventsPerState[n].outNew; }
-        inline long unsigned int getOutEnd(int n)             { return eventsPerState[n].outEnd; }
-        inline long unsigned int getInNewSC(int n, int i)    { return eventsPerClassAndState[i][n].inNew; }
-        inline long unsigned int getInEndSC(int n, int i)    { return eventsPerClassAndState[i][n].inEnd; }
-        inline long unsigned int getOutNewSC(int n, int i)   { return eventsPerClassAndState[i][n].outNew; }
-        inline long unsigned int getOutEndSC(int n, int i)   { return eventsPerClassAndState[i][n].outEnd; }
 
         bool serveNewCall(Call *newCall);
         void endTransmission(Call *call);
@@ -162,20 +130,21 @@ public:
 
         friend void SimulatorAll::System::writesResultsOfSingleExperiment(RSingle&);
         friend void SimulatorAll::System::statsCollectPre(double time);
+    public:
+        const System  * const system;
+        const ServerResourcessScheduler scheduler;    /// Algorithm that is responsible for choosing the group if more then 1
+        const int V;                                  /// Server capacity
+        const int vMax;                               /// Max number of AU in a single group
+        const int k;                                  /// Number of groups
+        const int m;                                  /// Number of traffic classes
+
     private:
-        System const *system;
+        // Server state
+        int n;                                        /// Server state
+        QVector<int> n_i;                             /// Server microstate (numbers of occupied AS by all the offered classes
 
-        const ServerResourcessScheduler subgroupScheduler;
-
-        const int V;      ///Server capacity
-        const int vMax;   ///Max number of AU in a single group
-        const int k;      ///Number of groups
-        const int m;      ///Number of traffic classes
-        int n;            /// Server state
-        QVector<int> n_i;  /// Server microstate (numbers of occupied AS by all the offered classes
-
-        mutable QVector<int> groupSequence;
-        mutable QVector<int> tmpAvailabilityInGroups;
+        mutable QVector<int> groupSequence;           /// Sequence of checking group for new call service
+        mutable QVector<int> tmpAvailabilityInGroups; /// Number of AS that is now available in given group
 
 
 /// Statistics scope: groups
@@ -244,6 +213,61 @@ public:
                     , GroupResourcessAllocationlgorithm groupResourcessAllocationlgorithm = GroupResourcessAllocationlgorithm::NonContinuous
                 ) const;
     };
+
+    class Buffer
+    {
+        friend void SimulatorAll::System::writesResultsOfSingleExperiment(Results::RSingle&);
+    private:
+        System *system;
+        int V;                          /// Number of Allocated Slots, that the buffer is able to handle
+        int m;
+        double *occupancyTimes;
+
+        QStack<Call *> calls;            /// FiFo Qeue with calls
+        Call *firstCall;                 /// Call that is partialy serviced
+
+        int   *numberOfCalls;           /// Actual number of calls that are awainting in qeue
+        int   *numberOfAS;              /// Actual number of AS occupied by call in qeue
+        double *avgNumberOfCalls;        /// Number of calls multiplied by the time in qeue
+        double *AStime_ofOccupiedAS_byClassI;            /// Number of calls multiplied by the time in qeue
+        double **AStime_ofOccupiedAS_byClassI_inStateN;  /// Avarage number of resuorcess occupied by class i in state n
+
+    public:
+        int n;                          /// Number of AS that is used by the calls
+        Buffer(int V, System *system);
+        ~Buffer();
+
+        inline int   getV()                                      { return V; }
+        inline int   getNoOfFreeAS()                             { return V - n;}
+        inline double getOccupancyTimeOfState(int n)             { return occupancyTimes[n]; }
+        inline double getAvarageNumberOfCalls(int classIdx)      { return avgNumberOfCalls[classIdx]; }
+        inline double getAvarageNumberOfAS(int classIdx)         { return AStime_ofOccupiedAS_byClassI[classIdx]; }
+        inline double getAvgNoOfASinStateN(int classIdx, int n)  { return AStime_ofOccupiedAS_byClassI_inStateN[classIdx][n]; }
+
+        void   clearTheStats();
+        void   collectTheStats(double time);
+
+        void   addCall(SimulatorAll::Call *newCall);
+        void   takeCall(SimulatorAll::Call *call, int noOfAS);
+        inline void   removeFirstCall(Call *first);
+
+#ifndef DO_NOT_USE_SECUTIRY_CHECKS
+        void consistencyCheck()
+        {
+            int tmp = 0;
+            if (firstCall != nullptr)
+                tmp = firstCall->reqAS - firstCall->allocatedAS;
+            foreach (SimulatorAll::Call *tmpCall, calls)
+            {
+                tmp += (tmpCall->reqAS - tmpCall->allocatedAS);
+            }
+            if (tmp > n)
+                qFatal("Qeue error: n=%d, sum ad AS = %d", n, tmp);
+        }
+#endif
+        Call   *getNextCall();
+    };
+
     struct Call
     {
         double sourceE;
@@ -264,7 +288,7 @@ public:
         double DUmessageSize;
         double DUtransfered;
 
-        const ModelTrClass *trClass;   /// Traffic Class data (parameters like call service intensity, number of BBUs, ...)
+        const ModelTrClass *trClass;  /// Traffic Class data (parameters like call service intensity, number of BBUs, ...)
         int classIdx;                 /// Class number
         int reqAS;                    /// Required number of allocation slots.
         int allocatedAS;              /// Number of allocated AS
@@ -273,7 +297,7 @@ public:
         int groupIndex;               /// Index of the group, where the call was allocated
 
         ProcAll *proc;
-        Call *complementaryCall;       /// Only for Pascal tr classes
+        Call *complementaryCall;      /// Only for Pascal tr classes
 
         void fillData(struct Call *src);
         void IncrTimeInServer(double time);
@@ -287,7 +311,7 @@ public:
         const int m;            /// Number of traffic classes
         const int v;            /// Group capacity
         int n;                  /// Group state      (total number of occupied AS)
-        QVector<int> n_i;        /// Group microstate (numbers of occupied AS by all the offered classes)
+        QVector<int> n_i;       /// Group microstate (numbers of occupied AS by all the offered classes)
 
 /// Statistics scope: system resourcess
         QVector<QExplicitlySharedDataPointer<AU> > allocationUnits;                          /// Scope: system resourcess
@@ -586,7 +610,7 @@ public:
     inline void setUseless()                                       { state = USELESS; }
     inline void removeCallData()                                   { callData = nullptr; }
     inline void setCallData(SimulatorAll::Call *newCallData)       { callData = newCallData; }
-    inline bool hasCallData()                                      { return (bool)(callData != nullptr); }
+    inline bool hasCallData()                                      { return (callData != nullptr); }
 
     static void initialize(
               SimulatorAll::System *system

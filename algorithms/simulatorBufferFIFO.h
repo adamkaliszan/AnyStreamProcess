@@ -44,7 +44,7 @@ public:
         Buffer *buffer;
         QStack<Call *> uselessCalls;
         QList<Call *> callsInSystem;
-        simulatorDataCollection<ProcBufferFifo> *agenda;
+        SimulatorDataCollection<ProcBufferFifo> *agenda;
 
         double **yQ, *act_yQ, *__act_yQ;        //Średnia liczba zgłoszeń w kolejce
         double **y, *act_y, *__act_y;           //Średnia liczba zgłoszeń w systemie
