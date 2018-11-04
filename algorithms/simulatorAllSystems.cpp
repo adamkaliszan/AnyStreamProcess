@@ -9,319 +9,67 @@
 namespace Algorithms
 {
 
-SimulatorAll::SimulatorAll() : simulator()
+SimulatorAll::Engine::Engine(SimulatorAll::System *system): system(system)
 {
-    myQoS_Set << Results::Type::AllSugbrupsInGivenCombinationAndClassAvailable;
-    myQoS_Set << Results::Type::AvailableSubroupDistribution;
-
-    system = nullptr;
-}
-
-bool SimulatorAll::possible(const ModelSyst *system) const
-{
-    return simulator::possible(system);
-}
-
-void SimulatorAll::calculateSystem(const ModelSyst *system
-      , double a
-      , RInvestigator *results
-      , SimulationParameters *simParameters)
-{
-    prepareTemporaryData(system, a);
-
-
-    System *simData = new System(system, simParameters->noOfSeries);
-    simData->initialize(a, system->totalAt(), system->vk_s());
-
-    unsigned int seed = 1024;
-
-    int noOfSeries = simParameters->noOfSeries;
-
-    for (int serNo=0; serNo<noOfSeries; serNo++)
-    {
-        seed = static_cast<unsigned int>(qrand());
-        simData->statsDisable();
-        if (serNo == 0)
-        {
-            int noOfLostCalls = simParameters->noOfLostCalls/simParameters->spaceOnStart;
-            int noOfServCalls = simParameters->noOfServicedCalls/simParameters->spaceOnStart;
-            simData->doSimExperiment(noOfLostCalls, seed, noOfServCalls);
-        }
-        else
-        {
-            int noOfLostCalls = simParameters->noOfLostCalls/simParameters->spaceBetweenSeries;
-            int noOfServCalls = simParameters->noOfServicedCalls/simParameters->spaceBetweenSeries;
-            simData->doSimExperiment(noOfLostCalls, seed, noOfServCalls);
-        }
-        simData->statsEnable(serNo);
-        simData->doSimExperiment(simParameters->noOfLostCalls, seed, simParameters->noOfServicedCalls);
-        simData->writesResultsOfSingleExperiment((*results)[serNo]);
-        qDebug("universal simulation experiment no %d", serNo+1);
-    }
-    delete simData;
-    //emit this->sigCalculationDone();
-}
-
-SimulatorAll::System::System(const ModelSyst *system, int noOfSeries)
-    : m(system->m())
-    , vk_sb(system->V())
-    , vk_s(system->vk_s())
-    , vk_b(system->vk_b())
-    , n(0)
-    , old_n(0)
-    , results(system->m(), system->vk_s(), system->vk_b(), noOfSeries)
-{
-    n_i.resize(m);
-
-    systemData = system;
-
+    system->engine = this;
     agenda = new SimulatorDataCollection<ProcAll>();
-    server = new Server(this);
-
-    statistics = new SystemStatistics(system);
 }
 
-SimulatorAll::System::~System()
+SimulatorAll::Engine::~Engine()
 {
-    delete agenda;
-    delete server;
-
-    foreach(Call *tmp, callsInSystem)
-        delete tmp;
-
     while (uselessCalls.length())
     {
         Call *tmp = uselessCalls.pop();
         delete tmp;
     }
+    delete agenda;
 }
 
-void SimulatorAll::System::initialize(double a, int sumPropAt, int V)
+SimulatorAll::Call *SimulatorAll::Engine::_getNewCall()
 {
-    for(int i=0; i<systemData->m(); i++)
-    {
-        const ModelTrClass *tmpClass = systemData->getClass(i);
-        ProcAll::initialize(this, tmpClass, i, a, sumPropAt, V);
-    }
+    static int noOfCreatedCalls = 0;
+    if(uselessCalls.length())
+        return uselessCalls.pop();
+    noOfCreatedCalls++;
+    return new Call;
 }
 
-void SimulatorAll::System::doSimExperiment(int numberOfLostCall, unsigned int seed, int numberOfServicedCalls)
+void SimulatorAll::Engine::reuseCall(SimulatorAll::Call *callToReuse)
 {
-    qsrand(seed);
-    this->totalNumberOfLostCalls = 0;
-    this->totalNumberOfServicedCalls = 0;
-    if (numberOfServicedCalls == 0)
-    {
-        while(totalNumberOfLostCalls < numberOfLostCall)
-        {
-            ProcAll *proc = takeFirstProcess();
-            statsCollectPre(proc->time);
-            proc->execute(proc, this);
-            statsCollectPost(classIdx);
-        }
-    }
-    else
-    {
-        if(totalNumberOfLostCalls > 0)
-        {
-            while(totalNumberOfLostCalls < numberOfLostCall && totalNumberOfServicedCalls < numberOfServicedCalls)
-            {
-                ProcAll *proc = takeFirstProcess();
-                statsCollectPre(proc->time);
-                proc->execute(proc, this);
-                statsCollectPost(classIdx);
-            }
-        }
-        else
-        {
-            while(totalNumberOfServicedCalls < numberOfServicedCalls)
-            {
-                ProcAll *proc = takeFirstProcess();
-                statsCollectPre(proc->time);
-                proc->execute(proc, this);
-                statsCollectPost(classIdx);
-            }
-        }
-    }
+    uselessCalls.push(callToReuse);
 }
 
-void SimulatorAll::System::writesResultsOfSingleExperiment(RSingle& singleResults)
+void SimulatorAll::Engine::prepareCallToService(SimulatorAll::Call *callThatIsInService)
 {
-    server->writesResultsOfSingleExperiment(singleResults, results._simulationTime);
+    callThatIsInService->proc           = agenda->getNewProcess();
+    callThatIsInService->proc->state    = ProcAll::SENDING_DATA;
+    callThatIsInService->proc->execute  = callThatIsInService->trEndedFun;
+    callThatIsInService->proc->callData = callThatIsInService;
+    callThatIsInService->proc->time     = callThatIsInService->plannedServiceTime;
+    agenda->addProcess(callThatIsInService->proc);
 
-    int Vs = server->getV();
-    int V  = server->getV();
-    int m  = systemData->m();
-
-    int max_t = 0;
-
-    for (int i=0; i<m; i++)
-    {
-        int t = systemData->getClass(i)->t();
-        max_t = qMax(t, max_t);
-    }
-
-    for (int i=0; i<m; i++)
-    {
-        int t = systemData->getClass(i)->t();
-        double E = 0;
-
-        for (int n = qMax(0, (V-t+1)); n<=V; n++)
-            E+=statistics->getTimeStatistics(n).availabilityTime;
-        E /=results._simulationTime;
-
-        if (E < 0)
-            qFatal("Wrong E");
-        results.act_E[i] = E;
-        singleResults.write(TypeForClass::BlockingProbability, E, i);
-
-        results.act_t[i] /= results.act_noOfServicedCalls[i];
-
-        results.act_tS[i] /= results.act_noOfServicedCalls[i];
-
-        results.act_tServer[i] /=results.act_noOfServicedCalls[i];
-        results.act_tPlanedServer[i] /=results.act_noOfServicedCalls[i];
-
-
-        for (int n=0; n<=Vs; n++)
-        {
-            double x;
-
-            x = server->resourceUtilization(i, n)/server->getTimeOfState(n);
-            results.act_LOC_server_yt[i][n] = x;
-            singleResults.write(TypeForClassAndServerState::Usage, x, i, n);
-
-            x = statistics->getTimeStatisticsSC(i,n).occupancyTime /statistics->getTimeStatistics(n).occupancyTime;
-            results.act_SYS_yt[i][n] = x;
-        }
-    }
-
-    for (int n=0; n<=V; n++)
-    {
-        double tmpstateDurationTime = statistics->getTimeStatistics(n).occupancyTime;
-
-        double occupancyTime =  statistics->getTimeStatistics(n).occupancyTime / results._simulationTime;
-        results.act_trDistribSys[n] = occupancyTime;
-        singleResults.write(TypeForSystemState::StateProbability, occupancyTime, n);
-
-        results.act_intOutNew[n] = static_cast<double>(statistics->getEventStatistics(n).outNewOffered) / tmpstateDurationTime;
-        results.act_intOutEnd[n] = static_cast<double>(statistics->getEventStatistics(n).outEnd) / tmpstateDurationTime;
-
-        results.act_noOutNew[n] = statistics->getEventStatistics(n).outNewAccepted;
-        results.act_noOutEnd[n] = statistics->getEventStatistics(n).outEnd;
-
-
-        for (int i=0; i<m; i++)
-        {
-            int t = this->systemData->getClass(i)->t();
-
-            tmpstateDurationTime = (n-t >= 0) ? statistics->getTimeStatistics(n-t).occupancyTime : 0;
-            results.act_intInNewSC[i][n] = (tmpstateDurationTime > 0) ? (static_cast<double>(statistics->getEventStatisticsSC(i, n).inNew) / tmpstateDurationTime) : 0;
-
-            tmpstateDurationTime = (n+t <= server->getV()) ? statistics->getTimeStatistics(n+t).occupancyTime : 0;
-            results.act_intInEndSC[i][n] = (tmpstateDurationTime > 0) ? (static_cast<double>(statistics->getEventStatisticsSC(i, n).inEnd) / tmpstateDurationTime) : 0;
-
-            tmpstateDurationTime =  statistics->getTimeStatistics(n).occupancyTime;
-            results.act_intOutNewSC[i][n] = static_cast<double>(statistics->getEventStatisticsSC(i, n).outNewOffered) / tmpstateDurationTime;
-            results.act_intOutEndSC[i][n] = static_cast<double>(statistics->getEventStatisticsSC(i, n).outEnd) / tmpstateDurationTime;
-
-            results.act_noInNewSC[i][n]   = statistics->getEventStatisticsSC(i, n).inNew;
-            results.act_noInEndSC[i][n]   = statistics->getEventStatisticsSC(i, n).inEnd;
-            results.act_noOutNewSC[i][n]  = statistics->getEventStatisticsSC(i, n).outNewAccepted;
-            results.act_noOutEndSC[i][n]  = statistics->getEventStatisticsSC(i, n).outEnd;
-        }
-    }
-
-    for (int n=0; n<=Vs; n++)
-    {//TODO use servers statistics
-        double stateProbability = server->getTimeOfState(n) / results._simulationTime;
-        results.act_trDistribSys[n] = stateProbability;
-        singleResults.write(TypeForSystemState::StateProbability, stateProbability, n);
-
-        results.act_intInNew[n]  = 0;
-        results.act_intInEnd[n]  = 0;
-
-        results.act_noInNew[n]  = 0;
-        results.act_noInEnd[n]  = 0;
-        for (int i=0; i<m; i++)
-        {
-            results.act_intInNew[n]  += results.act_intInNewSC[i][n];
-            results.act_intInEnd[n]  += results.act_intInEndSC[i][n];
-
-         //   results.act_noInNew[n]   += getInNewSC(n, i);
-         //TODO use servers statistics   results.act_noInEnd[n]   += getInEndSC(n, i);
-        }
-        results.act_trDistribServ[n] = server->statsGetOccupancyTimeOfState(n) / results._simulationTime;
-    }
 }
 
-int SimulatorAll::System::getServerNumberOfFreeAS()
+void SimulatorAll::Engine::reuseProcess(ProcAll *proc)
 {
-    return server->getNoOfFreeAS();
+    proc->idx = 0;
+    proc->setUseless();
+
+    agenda->reuseProcess(proc);
 }
 
-bool SimulatorAll::System::serveNewCall(SimulatorAll::Call *newCall)
-{
-#ifndef DO_NOT_USE_SECUTIRY_CHECKS
-
-#endif
-    classIdx = newCall->classIdx;
-
-
-    int groupNumber;
-    QList<int> indexesToOccupy;
-    bool isPlace = server->findAS(newCall->reqAS, groupNumber, indexesToOccupy);
-
-    if (isPlace)
-    {
-        callsInSystem.append(newCall);
-
-        newCall->allocatedAS    = newCall->reqAS;
-        server->addCall(newCall, newCall->reqAS, groupNumber, indexesToOccupy, true);
-        newCall->proc           = agenda->getNewProcess();
-        newCall->proc->state    = ProcAll::SENDING_DATA;
-        newCall->proc->execute  = newCall->trEndedFun;
-        newCall->proc->callData = newCall;
-        newCall->proc->time     = newCall->plannedServiceTime;
-        agenda->addProcess(newCall->proc);
-
-        n += newCall->reqAS;
-        n_i[static_cast<int>(newCall->classIdx)] += newCall->reqAS;
-
-        return true;
-    }
-    else
-    {
-        FinishCall(newCall, false);
-        return false;
-    }
-}
-
-void SimulatorAll::System::endTransmission(SimulatorAll::Call *call)
-{
-    classIdx = call->classIdx;
-
-
-    removeCallFromServer(call);
-    callsInSystem.removeAll(call);
-
-
-    n-=call->reqAS;
-    FinishCall(call, true);
-}
-
-void SimulatorAll::System::addProcess(ProcAll *proc)
+void SimulatorAll::Engine::addProcess(ProcAll *proc)
 {
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
     if (proc->time < 0)
         qFatal("Negative time value");
-    if (proc->callData->classIdx > this->systemData->m())
+    if (proc->callData->classIdx > system->systemData->m())
         qFatal("Wrong class idx");
 #endif
     agenda->addProcess(proc);
 }
 
-void SimulatorAll::System::removeProcess(ProcAll *proc)
+void SimulatorAll::Engine::removeProcess(ProcAll *proc)
 {
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
     if (proc->time < 0)
@@ -330,7 +78,7 @@ void SimulatorAll::System::removeProcess(ProcAll *proc)
     agenda->removeProcess(&proc);
 }
 
-SimulatorAll::Call *SimulatorAll::System::getNewCall(SimulatorAll::Call *parent)
+SimulatorAll::Call *SimulatorAll::Engine::getNewCall(SimulatorAll::Call *parent)
 {
     Call *result = _getNewCall();
 
@@ -345,7 +93,7 @@ SimulatorAll::Call *SimulatorAll::System::getNewCall(SimulatorAll::Call *parent)
     return result;
 }
 
-SimulatorAll::Call *SimulatorAll::System::getNewCall(
+SimulatorAll::Call *SimulatorAll::Engine::getNewCall(
           const ModelTrClass *trClass
         , int classIdx
         , double IncE
@@ -412,31 +160,306 @@ SimulatorAll::Call *SimulatorAll::System::getNewCall(
     return result;
 }
 
-SimulatorAll::Call *SimulatorAll::System::_getNewCall()
+SimulatorAll::SimulatorAll() : simulator()
 {
-    static int noOfCreatedCalls = 0;
-    if(uselessCalls.length())
-        return uselessCalls.pop();
-    noOfCreatedCalls++;
-    return new Call;
+    myQoS_Set << Results::Type::AllSugbrupsInGivenCombinationAndClassAvailable;
+    myQoS_Set << Results::Type::AvailableSubroupDistribution;
+
+    system = nullptr;
 }
 
-void SimulatorAll::System::reuseCall(SimulatorAll::Call *callToReuse)
+bool SimulatorAll::possible(const ModelSyst *system) const
 {
-    uselessCalls.push(callToReuse);
+    return simulator::possible(system);
 }
 
-void SimulatorAll::System::reuseProcess(ProcAll *proc)
+void SimulatorAll::calculateSystem(const ModelSyst *system
+      , double a
+      , RInvestigator *results
+      , SimulationParameters *simParameters)
 {
-    proc->idx = 0;
-    proc->setUseless();
+    prepareTemporaryData(system, a);
 
-    agenda->reuseProcess(proc);
+
+    System *simData = new System(system, simParameters->noOfSeries);
+
+    Engine *engine = new Engine(simData);
+
+    engine->initialize(a, system->totalAt(), system->vk_s());
+
+    unsigned int seed = 1024;
+
+    int noOfSeries = simParameters->noOfSeries;
+
+    for (int serNo=0; serNo<noOfSeries; serNo++)
+    {
+        seed = static_cast<unsigned int>(qrand());
+        simData->statsDisable();
+        if (serNo == 0)
+        {
+            int noOfLostCalls = simParameters->noOfLostCalls/simParameters->spaceOnStart;
+            int noOfServCalls = simParameters->noOfServicedCalls/simParameters->spaceOnStart;
+            engine->doSimExperiment(noOfLostCalls, seed, noOfServCalls);
+        }
+        else
+        {
+            int noOfLostCalls = simParameters->noOfLostCalls/simParameters->spaceBetweenSeries;
+            int noOfServCalls = simParameters->noOfServicedCalls/simParameters->spaceBetweenSeries;
+            engine->doSimExperiment(noOfLostCalls, seed, noOfServCalls);
+        }
+        simData->statsEnable(serNo);
+        engine->doSimExperiment(simParameters->noOfLostCalls, seed, simParameters->noOfServicedCalls);
+        simData->writesResultsOfSingleExperiment((*results)[serNo]);
+        qDebug("universal simulation experiment no %d", serNo+1);
+    }
+    delete simData;
+    delete engine;
+    //emit this->sigCalculationDone();
+}
+
+SimulatorAll::System::System(const ModelSyst *system, int noOfSeries)
+    : m(system->m())
+    , vk_sb(system->V())
+    , vk_s(system->vk_s())
+    , vk_b(system->vk_b())
+    , results(system->m(), system->vk_s(), system->vk_b(), noOfSeries)
+    , n(0)
+    , old_n(0)
+{
+    n_i.resize(m);
+
+    systemData = system;
+
+
+    server = new Server(this);
+
+    statistics = new SystemStatistics(system);
+}
+
+SimulatorAll::System::~System()
+{
+    foreach(Call *tmp, calls)
+        delete tmp;
+
+    delete server;
+}
+
+void SimulatorAll::Engine::initialize(double a, int sumPropAt, int V)
+{
+    for(int i=0; i<system->systemData->m(); i++)
+    {
+        const ModelTrClass *tmpClass = system->systemData->getClass(i);
+        ProcAll::initialize(this, tmpClass, i, a, sumPropAt, V);
+    }
+}
+
+void SimulatorAll::Engine::doSimExperiment(int numberOfLostCall, unsigned int seed, int numberOfServicedCalls)
+{
+    int classIdx;
+
+    qsrand(seed);
+    totalNumberOfLostCalls = 0;
+    totalNumberOfServicedCalls = 0;
+
+    if (numberOfServicedCalls == 0)
+    {
+        while(totalNumberOfLostCalls < numberOfLostCall)
+        {
+            ProcAll *proc = takeFirstProcess();
+            system->statsCollectPre(proc->time);
+            classIdx = proc->callData->classIdx;
+            proc->execute(proc, system);
+            system->statsCollectPost(classIdx);
+        }
+    }
+    else
+    {
+        if(totalNumberOfLostCalls > 0)
+        {
+            while(totalNumberOfLostCalls < numberOfLostCall && totalNumberOfServicedCalls < numberOfServicedCalls)
+            {
+                ProcAll *proc = takeFirstProcess();
+                system->statsCollectPre(proc->time);
+                classIdx = proc->callData->classIdx;
+                proc->execute(proc, system);
+                system->statsCollectPost(classIdx);
+            }
+        }
+        else
+        {
+            while(totalNumberOfServicedCalls < numberOfServicedCalls)
+            {
+                ProcAll *proc = takeFirstProcess();
+                system->statsCollectPre(proc->time);
+                classIdx = proc->callData->classIdx;
+                proc->execute(proc, system);
+                system->statsCollectPost(classIdx);
+            }
+        }
+    }
+}
+
+void SimulatorAll::System::writesResultsOfSingleExperiment(RSingle& singleResults)
+{
+    server->writesResultsOfSingleExperiment(singleResults, results._simulationTime);
+
+    int Vs = server->getV();
+    int V  = server->getV();
+    int m  = systemData->m();
+
+    int max_t = 0;
+
+    for (int i=0; i<m; i++)
+    {
+        int t = systemData->getClass(i)->t();
+        max_t = qMax(t, max_t);
+    }
+
+    for (int i=0; i<m; i++)
+    {
+        int t = systemData->getClass(i)->t();
+        double E = 0;
+
+        //TODO for (int n = qMax(0, (V-t+1)); n<=V; n++)
+        //TODO    E+=statistics->getTimeStatistics(n).availabilityTime;
+        E /=results._simulationTime;
+
+        if (E < 0)
+            qFatal("Wrong E");
+        results.act_E[i] = E;
+        singleResults.write(TypeForClass::BlockingProbability, E, i);
+
+        results.act_t[i] /= results.act_noOfServicedCalls[i];
+
+        results.act_tS[i] /= results.act_noOfServicedCalls[i];
+
+        results.act_tServer[i] /=results.act_noOfServicedCalls[i];
+        results.act_tPlanedServer[i] /=results.act_noOfServicedCalls[i];
+
+
+        for (int n=0; n<=Vs; n++)
+        {
+            double x;
+
+            x = server->resourceUtilization(i, n)/server->getTimeOfState(n);
+            results.act_LOC_server_yt[i][n] = x;
+            singleResults.write(TypeForClassAndServerState::Usage, x, i, n);
+
+            x = statistics->getTimeStatisticsSC(i,n).occupancyUtilization /statistics->getTimeStatistics(n).occupancyTime;
+            results.act_SYS_yt[i][n] = x;
+        }
+    }
+
+    for (int n=0; n<=V; n++)
+    {
+        double tmpstateDurationTime = statistics->getTimeStatistics(n).occupancyTime;
+
+        double occupancyTime =  statistics->getTimeStatistics(n).occupancyTime / results._simulationTime;
+        results.act_trDistribSys[n] = occupancyTime;
+        singleResults.write(TypeForSystemState::StateProbability, occupancyTime, n);
+
+        results.act_intOutNew[n] = static_cast<double>(statistics->getEventStatistics(n).outNewOffered) / tmpstateDurationTime;
+        results.act_intOutEnd[n] = static_cast<double>(statistics->getEventStatistics(n).outEnd) / tmpstateDurationTime;
+
+        results.act_noOutNew[n] = statistics->getEventStatistics(n).outNewAccepted;
+        results.act_noOutEnd[n] = statistics->getEventStatistics(n).outEnd;
+
+
+        for (int i=0; i<m; i++)
+        {
+            int t = this->systemData->getClass(i)->t();
+
+            tmpstateDurationTime = (n-t >= 0) ? statistics->getTimeStatistics(n-t).occupancyTime : 0;
+            results.act_intInNewSC[i][n] = (tmpstateDurationTime > 0) ? (static_cast<double>(statistics->getEventStatisticsSC(i, n).inNew) / tmpstateDurationTime) : 0;
+
+            tmpstateDurationTime = (n+t <= server->getV()) ? statistics->getTimeStatistics(n+t).occupancyTime : 0;
+            results.act_intInEndSC[i][n] = (tmpstateDurationTime > 0) ? (static_cast<double>(statistics->getEventStatisticsSC(i, n).inEnd) / tmpstateDurationTime) : 0;
+
+            tmpstateDurationTime =  statistics->getTimeStatistics(n).occupancyTime;
+            results.act_intOutNewSC[i][n] = static_cast<double>(statistics->getEventStatisticsSC(i, n).outNewOffered) / tmpstateDurationTime;
+            results.act_intOutEndSC[i][n] = static_cast<double>(statistics->getEventStatisticsSC(i, n).outEnd) / tmpstateDurationTime;
+
+            results.act_noInNewSC[i][n]   = statistics->getEventStatisticsSC(i, n).inNew;
+            results.act_noInEndSC[i][n]   = statistics->getEventStatisticsSC(i, n).inEnd;
+            results.act_noOutNewSC[i][n]  = statistics->getEventStatisticsSC(i, n).outNewAccepted;
+            results.act_noOutEndSC[i][n]  = statistics->getEventStatisticsSC(i, n).outEnd;
+        }
+    }
+
+    for (int n=0; n<=Vs; n++)
+    {//TODO use servers statistics
+        double stateProbability = server->getTimeOfState(n) / results._simulationTime;
+        results.act_trDistribSys[n] = stateProbability;
+        singleResults.write(TypeForSystemState::StateProbability, stateProbability, n);
+
+        results.act_intInNew[n] = 0;
+        results.act_intInEnd[n] = 0;
+
+        results.act_noInNew[n]  = 0;
+        results.act_noInEnd[n]  = 0;
+        for (int i=0; i<m; i++)
+        {
+            results.act_intInNew[n]  += results.act_intInNewSC[i][n];
+            results.act_intInEnd[n]  += results.act_intInEndSC[i][n];
+        //    results.act_noInNew[n]   += getInNewSC(n, i);
+        //TODO use servers statistics   results.act_noInEnd[n]   += getInEndSC(n, i);
+        }
+        results.act_trDistribServ[n] = server->statsGetOccupancyTimeOfState(n) / results._simulationTime;
+    }
+}
+
+int SimulatorAll::System::getServerNumberOfFreeAS() const
+{
+    return server->getNoOfFreeAS();
+}
+
+bool SimulatorAll::System::serveNewCall(SimulatorAll::Call *newCall)
+{
+#ifndef DO_NOT_USE_SECUTIRY_CHECKS
+
+#endif
+    int groupNumber;
+    QList<int> indexesToOccupy;
+    bool isPlace = server->findAS(newCall->reqAS, groupNumber, indexesToOccupy);
+
+    if (isPlace)
+    {
+        engine->prepareCallToService(newCall);
+
+        calls.append(newCall);
+
+        newCall->allocatedAS    = newCall->reqAS;
+        server->addCall(newCall, newCall->reqAS, groupNumber, indexesToOccupy, true);
+
+        n += newCall->reqAS;
+        n_i[static_cast<int>(newCall->classIdx)] += newCall->reqAS;
+
+        return true;
+    }
+    else
+    {
+        FinishCall(newCall, false);
+        return false;
+    }
+}
+
+void SimulatorAll::System::endCallService(SimulatorAll::Call *call)
+{
+    removeCallFromServer(call);
+    calls.removeAll(call);
+
+    n-=call->reqAS;
+    FinishCall(call, true);
 }
 
 void SimulatorAll::System::removeCallFromServer(SimulatorAll::Call *call)
 {
     server->removeCall(call);
+}
+
+void SimulatorAll::System::removeCallFromBuffer(SimulatorAll::Call *call)
+{
+    buffer->removeCall(call);
 }
 
 void SimulatorAll::System::FinishCall(SimulatorAll::Call *call, bool acceptedToService)
@@ -449,23 +472,23 @@ void SimulatorAll::System::FinishCall(SimulatorAll::Call *call, bool acceptedToS
 
     if (!acceptedToService)
     {
+        engine->notifyLostCall();
         results.act_noOfLostCallsBeforeQeue[call->classIdx]++;
-        totalNumberOfLostCalls++;
     }
     else
     {
-        totalNumberOfServicedCalls++;
+        engine->notifyServicedCall();
         results.act_tS[call->classIdx] += call->timeOnSystem;
         results.act_tServer[call->classIdx] += call->timeOnServer;
         results.act_tPlanedServer[call->classIdx] += call->plannedServiceTime;
         results.act_noOfServicedCalls[call->classIdx] ++;
     }
-    reuseCall(call);
+    engine->reuseCall(call);
 }
 
 void SimulatorAll::System::cancellScheduledCall(SimulatorAll::Call *call)
 {
-    reuseCall(call);
+    engine->reuseCall(call);
 }
 
 int SimulatorAll::System::getMaxNumberOfAsInSingleGroup()
@@ -481,70 +504,29 @@ void SimulatorAll::System::statsCollectPre(double time)
     old_n = n;
     results._simulationTime +=time;
 
-    foreach(Call *tmpCall, callsInSystem)
+    foreach(Call *tmpCall, calls)
     {
         tmpCall->collectTheStats(time);
     }
-    server->statsColectPre(time);
+
+    statistics->collectPre(time, server->get_n(), buffer->get_n(), server->getMicroStates(), buffer->getMicroStates());
 
     for (int i=0; i<m; i++)
     {
-        //TODO timesPerClassAndState[i][n].occupancyTime += time*(server->n_i[i]);
         server->resourceUtilizationByClassInState[i][n] += time*(server->n_i[i]);
     }
     //TODO timesPerState[n].occupancyTime += time;
 
     int maxCallRequirement = getMaxNumberOfAsInSingleGroup();
     //TODO timesPerState[vk_s-maxCallRequirement].availabilityTime += time;
+
+    server->statsColectPre(time);
 }
 
 void SimulatorAll::System::statsCollectPost(int classIdx)
 {
-    if (n == old_n) //nowe zgłoszenie zostało odrzucone
-    {
-        //TODO eventsPerClass[classIdx].outNewOffered++;
-        //TODO eventsPerClass[classIdx].outNewLost++;
-
-        //TODO eventsPerState[old_n].outNewOffered++;
-        //TODO eventsPerState[old_n].outNewLost++;
-        //TODO eventsPerClassAndState[classIdx][old_n].outNewOffered++;
-        //TODO eventsPerClassAndState[classIdx][old_n].outNewLost++;
-
-        return;
-    }
-    if (n < old_n) //zakończenie obsługi zgłoszenia
-    {
-        //TODO eventsPerClass[classIdx].outEnd++;
-        //TODO eventsPerClass[classIdx].inEnd++;
-
-        //TODO eventsPerState[old_n].outEnd++;
-        //TODO eventsPerClassAndState[classIdx][old_n].outEnd++;
-
-        //TODO eventsPerState[n].inEnd++;
-        //TODO eventsPerClassAndState[classIdx][n].inEnd++;
-
-        return;
-    }
-
-    if (n > old_n) //przyjęcie do obsługi zgłoszenia
-    {
-        //TODO eventsPerClass[classIdx].outNewOffered++;
-        //TODO eventsPerClass[classIdx].outNew++;
-        //TODO eventsPerClass[classIdx].inNew++;
-
-        //TODO eventsPerState[old_n].outNewOffered++;
-        //TODO eventsPerState[old_n].outNew++;
-
-        //TODO eventsPerClassAndState[classIdx][old_n].outNewOffered++;
-        //TODO eventsPerClassAndState[classIdx][old_n].outNew++;
-
-        //TODO eventsPerState[n].inNew++;
-        //TODO eventsPerClassAndState[classIdx][n].inNew++;
-
-        return;
-    }
-
-    server->statsCollectPost(classIdx);
+    statistics->collectPost(classIdx, old_n, n);
+    server->statsCollectPost(classIdx, old_n, n);
 }
 
 void SimulatorAll::System::statsClear()
@@ -556,22 +538,6 @@ void SimulatorAll::System::statsClear()
 void SimulatorAll::System::statsEnable(int serNo)
 {
     statsClear();
-
-    for (int i=0; i<m; i++)
-    {
-//TODO         eventsPerClass[i].statsClear();
-        for (int n=0; n<=vk_s; n++)
-        {
-//TODO             timesPerClassAndState[i][n].statsClear();
-//TODO             eventsPerClassAndState[i][n].statsClear();
-        }
-    }
-    for (int n=0; n<=vk_s; n++)
-    {
-//TODO         timesPerState[n].statsClear();
-//TODO         eventsPerState[n].statsClear();
-    }
-
     results.enableStatisticscollection(serNo);
 }
 
@@ -616,7 +582,7 @@ void SimulatorAll::Server::statsColectPre(double time)
     timePerState[n].occupancyTime += time;
 
     int maxCallRequirement = getMaxNumberOfAsInSingleGroup();
-    timePerState[V-maxCallRequirement].availabilityTime += time;
+    //timePerState[V-maxCallRequirement].availabilityTime += time;
 
     foreach(Call *tmpCall, this->calls)
         tmpCall->IncrTimeInServer(time);
@@ -683,7 +649,7 @@ void SimulatorAll::Server::statsColectPreGroupsAvailability(double time)
     }
 }
 
-void SimulatorAll::Server::statsCollectPost(int classIdx)
+void SimulatorAll::Server::statsCollectPost(int classIdx, int old_n, int n)
 {
     for (int groupNo=0; groupNo < k; groupNo++)
         groups[groupNo]->statsCollectPost(classIdx);
@@ -697,11 +663,6 @@ double SimulatorAll::Server::statsGetWorkoutPerClassAndState(int i, int n) const
 double SimulatorAll::Server::statsGetOccupancyTimeOfState(int state) const
 {
     return (state <= V) ? timePerState[state].occupancyTime : 0;
-}
-
-double SimulatorAll::Server::statsGetFAGequivalentAvailabilityTimeOfState(int state) const
-{
-    return (state <= V) ? timePerState[state].availabilityTime : 0;
 }
 
 #define FOLDINGEND }
@@ -794,13 +755,13 @@ double SimulatorAll::Server::getTimeOfState(int stateNo) const
 }
 
 SimulatorAll::Server::Server(System *system)
-    : system(system)
-    , scheduler(system->systemData->getGroupsSchedulerAlgorithm())
-    , V(system->systemData->vk_s())
-    , vMax(system->systemData->v_sMax())
-    , k(system->systemData->k_s())
-    , m(system->systemData->m())
-    , n(0)
+  : system(system)
+  , scheduler(system->systemData->getGroupsSchedulerAlgorithm())
+  , V(system->systemData->vk_s())
+  , vMax(system->systemData->v_sMax())
+  , k(system->systemData->k_s())
+  , m(system->systemData->m())
+  , n(0)
 {
     combinationList = Utils::UtilsLAG::getPossibleCombinations(k);
     freeAUsInWorstGroupInCombination.resize(combinationList.length());
@@ -851,16 +812,6 @@ SimulatorAll::Server::Server(System *system)
         groupSequence[j] = j;
 }
 
-/*
-SimulatorAll::Server::Server(const simulatorNoQeueLag::Server& rho)
-    : V(rho.V)
-    , k(rho.k)
-    , m(rho.m)
-    , n(rho.n)
-{
-
-}
-*/
 SimulatorAll::Server::~Server()
 {
     n = 0;
@@ -946,13 +897,13 @@ int SimulatorAll::Server::getMaxNumberOfAsInSingleGroup()
 
 
 void ProcAll::initialize(
-        SimulatorAll::System *system
-        , const ModelTrClass *trClass
-        , int classIdx
-        , double a
-        , int sumPropAt
-        , int V
-        )
+    SimulatorAll::Engine *engine
+  , const ModelTrClass *trClass
+  , int classIdx
+  , double a
+  , int sumPropAt
+  , int V
+)
 {
     ProcAll *newEvent;
     int callNo = 0;
@@ -960,26 +911,26 @@ void ProcAll::initialize(
     switch(trClass->srcType())
     {
     case ModelTrClass::SourceType::Independent:
-        newEvent = system->getNewProcess();
+        newEvent = engine->getNewProcess();
         switch (trClass->newCallStr())
         {
         case ModelTrClass::StreamType::Poisson:
             switch (trClass->callServStr())
             {
             case ModelTrClass::StreamType::Poisson:
-                newEvent->initializeIndepMM(system, trClass, classIdx, a, sumPropAt, V);
+                newEvent->initializeIndepMM(engine, trClass, classIdx, a, sumPropAt, V);
                 break;
             case ModelTrClass::StreamType::Uniform:
-                newEvent->initializeIndepMU(system, trClass, classIdx, a, sumPropAt, V);
+                newEvent->initializeIndepMU(engine, trClass, classIdx, a, sumPropAt, V);
                 break;
             case ModelTrClass::StreamType::Normal:
-                newEvent->initializeIndepMN(system, trClass, classIdx, a, sumPropAt, V);
+                newEvent->initializeIndepMN(engine, trClass, classIdx, a, sumPropAt, V);
                 break;
             case ModelTrClass::StreamType::Gamma:
-                newEvent->initializeIndepMG(system, trClass, classIdx, a, sumPropAt, V);
+                newEvent->initializeIndepMG(engine, trClass, classIdx, a, sumPropAt, V);
                 break;
             case ModelTrClass::StreamType::Pareto:
-                newEvent->initializeIndepMP(system, trClass, classIdx, a, sumPropAt, V);
+                newEvent->initializeIndepMP(engine, trClass, classIdx, a, sumPropAt, V);
                 break;
             }
             break;
@@ -987,19 +938,19 @@ void ProcAll::initialize(
             switch (trClass->callServStr())
             {
             case ModelTrClass::StreamType::Poisson:
-                newEvent->initializeIndepUM(system, trClass, classIdx, a, sumPropAt, V);
+                newEvent->initializeIndepUM(engine, trClass, classIdx, a, sumPropAt, V);
                 break;
             case ModelTrClass::StreamType::Uniform:
-                newEvent->initializeIndepUU(system, trClass, classIdx, a, sumPropAt, V);
+                newEvent->initializeIndepUU(engine, trClass, classIdx, a, sumPropAt, V);
                 break;
             case ModelTrClass::StreamType::Normal:
-                newEvent->initializeIndepUN(system, trClass, classIdx, a, sumPropAt, V);
+                newEvent->initializeIndepUN(engine, trClass, classIdx, a, sumPropAt, V);
                 break;
             case ModelTrClass::StreamType::Gamma:
-                newEvent->initializeIndepUG(system, trClass, classIdx, a, sumPropAt, V);
+                newEvent->initializeIndepUG(engine, trClass, classIdx, a, sumPropAt, V);
                 break;
             case ModelTrClass::StreamType::Pareto:
-                newEvent->initializeIndepUP(system, trClass, classIdx, a, sumPropAt, V);
+                newEvent->initializeIndepUP(engine, trClass, classIdx, a, sumPropAt, V);
                 break;
             }
             break;
@@ -1008,19 +959,19 @@ void ProcAll::initialize(
             switch (trClass->callServStr())
             {
             case ModelTrClass::StreamType::Poisson:
-                newEvent->initializeIndepNM(system, trClass, classIdx, a, sumPropAt, V);
+                newEvent->initializeIndepNM(engine, trClass, classIdx, a, sumPropAt, V);
                 break;
             case ModelTrClass::StreamType::Uniform:
-                newEvent->initializeIndepNU(system, trClass, classIdx, a, sumPropAt, V);
+                newEvent->initializeIndepNU(engine, trClass, classIdx, a, sumPropAt, V);
                 break;
             case ModelTrClass::StreamType::Normal:
-                newEvent->initializeIndepNN(system, trClass, classIdx, a, sumPropAt, V);
+                newEvent->initializeIndepNN(engine, trClass, classIdx, a, sumPropAt, V);
                 break;
             case ModelTrClass::StreamType::Gamma:
-                newEvent->initializeIndepNG(system, trClass, classIdx, a, sumPropAt, V);
+                newEvent->initializeIndepNG(engine, trClass, classIdx, a, sumPropAt, V);
                 break;
             case ModelTrClass::StreamType::Pareto:
-                newEvent->initializeIndepNP(system, trClass, classIdx, a, sumPropAt, V);
+                newEvent->initializeIndepNP(engine, trClass, classIdx, a, sumPropAt, V);
                 break;
             }
             break;
@@ -1029,19 +980,19 @@ void ProcAll::initialize(
             switch (trClass->callServStr())
             {
             case ModelTrClass::StreamType::Poisson:
-                newEvent->initializeIndepGM(system, trClass, classIdx, a, sumPropAt, V);
+                newEvent->initializeIndepGM(engine, trClass, classIdx, a, sumPropAt, V);
                 break;
             case ModelTrClass::StreamType::Uniform:
-                newEvent->initializeIndepGU(system, trClass, classIdx, a, sumPropAt, V);
+                newEvent->initializeIndepGU(engine, trClass, classIdx, a, sumPropAt, V);
                 break;
             case ModelTrClass::StreamType::Normal:
-                newEvent->initializeIndepGN(system, trClass, classIdx, a, sumPropAt, V);
+                newEvent->initializeIndepGN(engine, trClass, classIdx, a, sumPropAt, V);
                 break;
             case ModelTrClass::StreamType::Gamma:
-                newEvent->initializeIndepGG(system, trClass, classIdx, a, sumPropAt, V);
+                newEvent->initializeIndepGG(engine, trClass, classIdx, a, sumPropAt, V);
                 break;
             case ModelTrClass::StreamType::Pareto:
-                newEvent->initializeIndepGP(system, trClass, classIdx, a, sumPropAt, V);
+                newEvent->initializeIndepGP(engine, trClass, classIdx, a, sumPropAt, V);
                 break;
             }
             break;
@@ -1050,19 +1001,19 @@ void ProcAll::initialize(
             switch (trClass->callServStr())
             {
             case ModelTrClass::StreamType::Poisson:
-                newEvent->initializeIndepPM(system, trClass, classIdx, a, sumPropAt, V);
+                newEvent->initializeIndepPM(engine, trClass, classIdx, a, sumPropAt, V);
                 break;
             case ModelTrClass::StreamType::Uniform:
-                newEvent->initializeIndepPU(system, trClass, classIdx, a, sumPropAt, V);
+                newEvent->initializeIndepPU(engine, trClass, classIdx, a, sumPropAt, V);
                 break;
             case ModelTrClass::StreamType::Normal:
-                newEvent->initializeIndepPN(system, trClass, classIdx, a, sumPropAt, V);
+                newEvent->initializeIndepPN(engine, trClass, classIdx, a, sumPropAt, V);
                 break;
             case ModelTrClass::StreamType::Gamma:
-                newEvent->initializeIndepPG(system, trClass, classIdx, a, sumPropAt, V);
+                newEvent->initializeIndepPG(engine, trClass, classIdx, a, sumPropAt, V);
                 break;
             case ModelTrClass::StreamType::Pareto:
-                newEvent->initializeIndepPP(system, trClass, classIdx, a, sumPropAt, V);
+                newEvent->initializeIndepPP(engine, trClass, classIdx, a, sumPropAt, V);
                 break;
             }
             break;
@@ -1073,26 +1024,26 @@ void ProcAll::initialize(
     case ModelTrClass::SourceType::DependentMinus:
         for (callNo = 0; callNo<trClass->s(); callNo++)
         {
-            newEvent = system->getNewProcess();
+            newEvent = engine->getNewProcess();
             switch(trClass->newCallStr())
             {
             case ModelTrClass::StreamType::Poisson:
                 switch(trClass->callServStr())
                 {
                 case ModelTrClass::StreamType::Poisson:
-                    newEvent->initializeDepMinusMM(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepMinusMM(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 case ModelTrClass::StreamType::Uniform:
-                    newEvent->initializeDepMinusMU(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepMinusMU(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 case ModelTrClass::StreamType::Normal:
-                    newEvent->initializeDepMinusMN(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepMinusMN(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 case ModelTrClass::StreamType::Gamma:
-                    newEvent->initializeDepMinusMG(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepMinusMG(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 case ModelTrClass::StreamType::Pareto:
-                    newEvent->initializeDepMinusMP(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepMinusMP(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 }
                 break;
@@ -1101,19 +1052,19 @@ void ProcAll::initialize(
                 switch(trClass->callServStr())
                 {
                 case ModelTrClass::StreamType::Poisson:
-                    newEvent->initializeDepMinusUM(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepMinusUM(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 case ModelTrClass::StreamType::Uniform:
-                    newEvent->initializeDepMinusUU(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepMinusUU(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 case ModelTrClass::StreamType::Normal:
-                    newEvent->initializeDepMinusUN(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepMinusUN(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 case ModelTrClass::StreamType::Gamma:
-                    newEvent->initializeDepMinusUG(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepMinusUG(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 case ModelTrClass::StreamType::Pareto:
-                    newEvent->initializeDepMinusUP(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepMinusUP(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 }
                 break;
@@ -1122,19 +1073,19 @@ void ProcAll::initialize(
                 switch(trClass->callServStr())
                 {
                 case ModelTrClass::StreamType::Poisson:
-                    newEvent->initializeDepMinusNM(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepMinusNM(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 case ModelTrClass::StreamType::Uniform:
-                    newEvent->initializeDepMinusNU(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepMinusNU(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 case ModelTrClass::StreamType::Normal:
-                    newEvent->initializeDepMinusNN(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepMinusNN(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 case ModelTrClass::StreamType::Gamma:
-                    newEvent->initializeDepMinusNG(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepMinusNG(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 case ModelTrClass::StreamType::Pareto:
-                    newEvent->initializeDepMinusNP(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepMinusNP(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 }
                 break;
@@ -1143,19 +1094,19 @@ void ProcAll::initialize(
                 switch(trClass->callServStr())
                 {
                 case ModelTrClass::StreamType::Poisson:
-                    newEvent->initializeDepMinusGM(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepMinusGM(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 case ModelTrClass::StreamType::Uniform:
-                    newEvent->initializeDepMinusGU(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepMinusGU(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 case ModelTrClass::StreamType::Normal:
-                    newEvent->initializeDepMinusGN(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepMinusGN(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 case ModelTrClass::StreamType::Gamma:
-                    newEvent->initializeDepMinusGG(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepMinusGG(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 case ModelTrClass::StreamType::Pareto:
-                    newEvent->initializeDepMinusGP(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepMinusGP(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 }
                 break;
@@ -1164,19 +1115,19 @@ void ProcAll::initialize(
                 switch(trClass->callServStr())
                 {
                 case ModelTrClass::StreamType::Poisson:
-                    newEvent->initializeDepMinusPM(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepMinusPM(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 case ModelTrClass::StreamType::Uniform:
-                    newEvent->initializeDepMinusPU(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepMinusPU(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 case ModelTrClass::StreamType::Normal:
-                    newEvent->initializeDepMinusPN(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepMinusPN(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 case ModelTrClass::StreamType::Gamma:
-                    newEvent->initializeDepMinusPG(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepMinusPG(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 case ModelTrClass::StreamType::Pareto:
-                    newEvent->initializeDepMinusPP(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepMinusPP(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 }
                 break;
@@ -1187,26 +1138,26 @@ void ProcAll::initialize(
     case ModelTrClass::SourceType::DependentPlus:
         for (callNo = 0; callNo<trClass->s(); callNo++)
         {
-            newEvent = system->getNewProcess();
+            newEvent = engine->getNewProcess();
             switch(trClass->newCallStr())
             {
             case ModelTrClass::StreamType::Poisson:
                 switch(trClass->callServStr())
                 {
                 case ModelTrClass::StreamType::Poisson:
-                    newEvent->initializeDepPlusMM(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepPlusMM(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 case ModelTrClass::StreamType::Uniform:
-                    newEvent->initializeDepPlusMU(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepPlusMU(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 case ModelTrClass::StreamType::Normal:
-                    newEvent->initializeDepPlusMN(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepPlusMN(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 case ModelTrClass::StreamType::Gamma:
-                    newEvent->initializeDepPlusMG(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepPlusMG(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 case ModelTrClass::StreamType::Pareto:
-                    newEvent->initializeDepPlusMP(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepPlusMP(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 }
                 break;
@@ -1215,19 +1166,19 @@ void ProcAll::initialize(
                 switch(trClass->callServStr())
                 {
                 case ModelTrClass::StreamType::Poisson:
-                    newEvent->initializeDepPlusUM(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepPlusUM(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 case ModelTrClass::StreamType::Uniform:
-                    newEvent->initializeDepPlusUU(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepPlusUU(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 case ModelTrClass::StreamType::Normal:
-                    newEvent->initializeDepPlusUN(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepPlusUN(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 case ModelTrClass::StreamType::Gamma:
-                    newEvent->initializeDepPlusUG(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepPlusUG(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 case ModelTrClass::StreamType::Pareto:
-                    newEvent->initializeDepPlusUP(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepPlusUP(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 }
                 break;
@@ -1236,19 +1187,19 @@ void ProcAll::initialize(
                 switch(trClass->callServStr())
                 {
                 case ModelTrClass::StreamType::Poisson:
-                    newEvent->initializeDepPlusNM(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepPlusNM(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 case ModelTrClass::StreamType::Uniform:
-                    newEvent->initializeDepPlusNU(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepPlusNU(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 case ModelTrClass::StreamType::Normal:
-                    newEvent->initializeDepPlusNN(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepPlusNN(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 case ModelTrClass::StreamType::Gamma:
-                    newEvent->initializeDepPlusNG(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepPlusNG(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 case ModelTrClass::StreamType::Pareto:
-                    newEvent->initializeDepPlusNP(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepPlusNP(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 }
                 break;
@@ -1257,19 +1208,19 @@ void ProcAll::initialize(
                 switch(trClass->callServStr())
                 {
                 case ModelTrClass::StreamType::Poisson:
-                    newEvent->initializeDepPlusGM(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepPlusGM(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 case ModelTrClass::StreamType::Uniform:
-                    newEvent->initializeDepPlusGU(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepPlusGU(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 case ModelTrClass::StreamType::Normal:
-                    newEvent->initializeDepPlusGN(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepPlusGN(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 case ModelTrClass::StreamType::Gamma:
-                    newEvent->initializeDepPlusGG(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepPlusGG(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 case ModelTrClass::StreamType::Pareto:
-                    newEvent->initializeDepPlusGP(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepPlusGP(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 }
                 break;
@@ -1278,19 +1229,19 @@ void ProcAll::initialize(
                 switch(trClass->callServStr())
                 {
                 case ModelTrClass::StreamType::Poisson:
-                    newEvent->initializeDepPlusPM(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepPlusPM(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 case ModelTrClass::StreamType::Uniform:
-                    newEvent->initializeDepPlusPU(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepPlusPU(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 case ModelTrClass::StreamType::Normal:
-                    newEvent->initializeDepPlusPN(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepPlusPN(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 case ModelTrClass::StreamType::Gamma:
-                    newEvent->initializeDepPlusPG(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepPlusPG(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 case ModelTrClass::StreamType::Pareto:
-                    newEvent->initializeDepPlusPP(system, trClass, classIdx, a, sumPropAt, V);
+                    newEvent->initializeDepPlusPP(engine, trClass, classIdx, a, sumPropAt, V);
                     break;
                 }
                 break;
@@ -1300,17 +1251,19 @@ void ProcAll::initialize(
     }
 }
 
-void ProcAll::initializeIndependent(SimulatorAll::System *system
-        , const ModelTrClass *trClass
-        , int classIdx, double a
-        , int sumPropAt
-        , int V
-        , double (*funTimeNewCall)(double, double)
-        , void (*funNewCall)(ProcAll *, SimulatorAll::System *))
+void ProcAll::initializeIndependent(
+    SimulatorAll::Engine *system
+  , const ModelTrClass *trClass
+  , int classIdx, double a
+  , int sumPropAt
+  , int V
+  , double (*funTimeNewCall)(double, double)
+  , void (*funNewCall)(ProcAll *, SimulatorAll::System *)
+)
 {
     double IncE = 1.0 / trClass->intensityNewCallTotal(a, static_cast<size_t>(V), sumPropAt);
     callData = system->getNewCall(trClass, classIdx, IncE);
-    callData->trEndedFun = ProcAll::transmisionEndedIndependent;
+    callData->trEndedFun = ProcAll::callServiceEndedIndependent;
 
     this->state = ProcAll::WAITING_FOR_NEW_CALL;
     this->execute = funNewCall;
@@ -1318,14 +1271,16 @@ void ProcAll::initializeIndependent(SimulatorAll::System *system
     system->addProcess(this);
 }
 
-void ProcAll::ProcAll::initializeDependent(SimulatorAll::System *system
-        , const ModelTrClass *trClass, int classIdx
-        , double a
-        , int sumPropAt
-        , int V
-        , double (*funTimeNewCall)(double, double)
-        , void (*funNewCall)(ProcAll *, SimulatorAll::System *)
-        , void (*funEndCall)(ProcAll *, SimulatorAll::System *))
+void ProcAll::ProcAll::initializeDependent(
+    SimulatorAll::Engine *engine
+  , const ModelTrClass *trClass, int classIdx
+  , double a
+  , int sumPropAt
+  , int V
+  , double (*funTimeNewCall)(double, double)
+  , void (*funNewCall)(ProcAll *, SimulatorAll::System *)
+  , void (*funEndCall)(ProcAll *, SimulatorAll::System *)
+)
 {
     double A = a*V*trClass->propAt()/sumPropAt / trClass->t();
 
@@ -1344,21 +1299,22 @@ void ProcAll::ProcAll::initializeDependent(SimulatorAll::System *system
     }
 
     double IncE = (trClass->s() + sign * A) / trClass->intensityNewCallTotal(a, static_cast<size_t>(V), sumPropAt);
-    callData = system->getNewCall(trClass, classIdx, IncE);
+    callData = engine->getNewCall(trClass, classIdx, IncE);
     callData->trEndedFun = funEndCall;
 
     this->state = ProcAll::WAITING_FOR_NEW_CALL;
     this->execute = funNewCall;
     this->time = funTimeNewCall(this->callData->sourceE, this->callData->sourceD);
-    system->addProcess(this);
+    engine->addProcess(this);
 }
 
 void ProcAll::newCallIndep(
-          ProcAll *proc
-        , SimulatorAll::System *system
-        , double (*funTimeNewCall)(double, double)
-        , double (*funTimeOfService)(double, double)
-        , void (*funNewCall)(ProcAll *proc, SimulatorAll::System *system))
+    ProcAll *proc
+  , SimulatorAll::System *system
+  , double (*funTimeNewCall)(double, double)
+  , double (*funTimeOfService)(double, double)
+  , void (*funNewCall)(ProcAll *proc, SimulatorAll::System *system)
+)
 {
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
     if (proc->callData->classIdx > system->systemData->m())
@@ -1374,20 +1330,21 @@ void ProcAll::newCallIndep(
 
     //Adding new process with state Waiting for new call
     ProcAll *newProc = proc;
-    newProc->callData = system->getNewCall(proc->callData);
+    newProc->callData = system->engine->getNewCall(proc->callData);
 
     newProc->state = ProcAll::WAITING_FOR_NEW_CALL;
     newProc->execute = funNewCall;
     newProc->time = funTimeNewCall(newProc->callData->sourceE, newProc->callData->sourceD);
-    system->addProcess(newProc);
+    system->engine->addProcess(newProc);
 }
 
 void ProcAll::newCallDepMinus(
-          ProcAll *proc
-        , SimulatorAll::System *system
-        , double (*funTimeNewCall)(double, double)
-        , double (*funTimeOfService)(double, double)
-        , void (*funNewCall)(ProcAll *, SimulatorAll::System *))
+    ProcAll *proc
+  , SimulatorAll::System *system
+  , double (*funTimeNewCall)(double, double)
+  , double (*funTimeOfService)(double, double)
+  , void (*funNewCall)(ProcAll *, SimulatorAll::System *)
+)
 {
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
     if (proc->callData->classIdx > system->systemData->m())
@@ -1402,8 +1359,8 @@ void ProcAll::newCallDepMinus(
 
     if (system->serveNewCall(callData) == false)
     {
-        ProcAll *newProc = system->getNewProcess();
-        newProc->callData = system->getNewCall(callData);
+        ProcAll *newProc = system->engine->getNewProcess();
+        newProc->callData = system->engine->getNewCall(callData);
 
     #ifndef DO_NOT_USE_SECUTIRY_CHECKS
         if (newProc->callData->classIdx > system->systemData->m())
@@ -1412,18 +1369,19 @@ void ProcAll::newCallDepMinus(
         newProc->state = ProcAll::WAITING_FOR_NEW_CALL;
         newProc->execute = funNewCall;
         newProc->time = funTimeNewCall(newProc->callData->sourceE, newProc->callData->sourceD);
-        system->addProcess(newProc);
+        system->engine->addProcess(newProc);
     }
 
-    system->reuseProcess(proc);
+    system->engine->reuseProcess(proc);
 }
 
 void ProcAll::newCallDepPlus(
-          ProcAll *proc
-        , SimulatorAll::System *system
-        , double (*funTimeNewCall)(double, double)
-        , double (*funTimeOfService)(double, double)
-        , void (*funNewCall)(ProcAll *, SimulatorAll::System *))
+    ProcAll *proc
+  , SimulatorAll::System *system
+  , double (*funTimeNewCall)(double, double)
+  , double (*funTimeOfService)(double, double)
+  , void (*funNewCall)(ProcAll *, SimulatorAll::System *)
+)
 {
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
     if (proc->callData->classIdx > system->systemData->m())
@@ -1437,8 +1395,8 @@ void ProcAll::newCallDepPlus(
     callData->DUmessageSize      = callData->reqAS * callData->plannedServiceTime;
     callData->proc               = nullptr;
 
-    ProcAll *procNewCall = system->getNewProcess();
-    procNewCall->callData = system->getNewCall(callData);
+    ProcAll *procNewCall = system->engine->getNewProcess();
+    procNewCall->callData = system->engine->getNewCall(callData);
     procNewCall->callData->proc = procNewCall;
 
     if (parentServicedCall)
@@ -1451,12 +1409,12 @@ void ProcAll::newCallDepPlus(
     procNewCall->state = ProcAll::WAITING_FOR_NEW_CALL;
     procNewCall->execute = funNewCall;
     procNewCall->time = funTimeNewCall(procNewCall->callData->sourceE, procNewCall->callData->sourceD);
-    system->addProcess(procNewCall);
+    system->engine->addProcess(procNewCall);
 
     if (system->serveNewCall(callData) == true)
     {
-        ProcAll *newProc = system->getNewProcess();
-        newProc->callData = system->getNewCall(callData);
+        ProcAll *newProc = system->engine->getNewProcess();
+        newProc->callData = system->engine->getNewCall(callData);
         newProc->callData->proc = newProc;
         callData->complementaryCall = newProc->callData;
         newProc->callData->complementaryCall = callData;
@@ -1464,49 +1422,50 @@ void ProcAll::newCallDepPlus(
         newProc->state = ProcAll::WAITING_FOR_NEW_CALL;
         newProc->execute = funNewCall;
         newProc->time = funTimeNewCall(newProc->callData->sourceE, newProc->callData->sourceD);
-        system->addProcess(newProc);
+        system->engine->addProcess(newProc);
     }
-    system->reuseProcess(proc);
+    system->engine->reuseProcess(proc);
 }
 
-void ProcAll::transmisionEndedIndependent(ProcAll *proc, SimulatorAll::System *system)
+void ProcAll::callServiceEndedIndependent(ProcAll *proc, SimulatorAll::System *system)
 {
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
     if (proc->callData->classIdx > system->systemData->m())
         qFatal("Wrong class idx");
 #endif
-    system->endTransmission(proc->callData);
+    system->endCallService(proc->callData);
 
     proc->callData = nullptr;
-    system->reuseProcess(proc);
+    system->engine->reuseProcess(proc);
 }
 
-void ProcAll::transmisionEndedDependentMinus(
-          ProcAll *proc
-        , SimulatorAll::System *system
-        , double (*funTimeNewCall)(double, double)
-        , void (*funNewCall)(ProcAll *, SimulatorAll::System *))
+void ProcAll::callServiceEndedDependentMinus(
+    ProcAll *proc
+  , SimulatorAll::System *system
+  , double (*funTimeNewCall)(double, double)
+  , void (*funNewCall)(ProcAll *, SimulatorAll::System *)
+)
 {
-    ProcAll *newProc = system->getNewProcess();
-    newProc->callData = system->getNewCall(proc->callData);
+    ProcAll *newProc = system->engine->getNewProcess();
+    newProc->callData = system->engine->getNewCall(proc->callData);
 
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
     if (proc->callData->classIdx > system->systemData->m())
         qFatal("Wrong class idx");
 #endif
-    system->endTransmission(proc->callData);
+    system->endCallService(proc->callData);
 
     proc->callData = nullptr;
-    system->reuseProcess(proc);
+    system->engine->reuseProcess(proc);
 
     //Adding new process with state Waiting for new call
     newProc->state = ProcAll::WAITING_FOR_NEW_CALL;
     newProc->execute = funNewCall;
     newProc->time = funTimeNewCall(newProc->callData->sourceE, newProc->callData->sourceD);
-    system->addProcess(newProc);
+    system->engine->addProcess(newProc);
 }
 
-void ProcAll::transmisionEndedDependentPlus(ProcAll *proc, SimulatorAll::System *system)
+void ProcAll::callServiceEndedDependentPlus(ProcAll *proc, SimulatorAll::System *system)
 {
     SimulatorAll::Call *scheduledCall = proc->callData->complementaryCall;
 
@@ -1515,13 +1474,13 @@ void ProcAll::transmisionEndedDependentPlus(ProcAll *proc, SimulatorAll::System 
 
     if (proc->state == PROC_STATE::USELESS)\
         qFatal("Wrong Process state");
-    system->endTransmission(proc->callData);
+    system->endCallService(proc->callData);
 
-    system->removeProcess(scheduledCall->proc);
+    system->engine->removeProcess(scheduledCall->proc);
     system->cancellScheduledCall(scheduledCall);
 
     proc->callData = nullptr;
-    system->reuseProcess(proc);
+    system->engine->reuseProcess(proc);
 }
 
 
@@ -1747,6 +1706,11 @@ void SimulatorAll::Group::statsCollectPost(int classIdx)
 int SimulatorAll::Group::getNoOfFreeAUs(bool considerAllocationAlgorithm)
 {
     return (!considerAllocationAlgorithm) ? v-n : findMaxAS();
+}
+
+void SimulatorAll::Buffer::removeCall(SimulatorAll::Call *first)
+{
+
 }
 
 #define FOLDINEND }

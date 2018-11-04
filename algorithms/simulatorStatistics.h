@@ -8,14 +8,32 @@
 namespace Algorithms
 {
 
-class TimeStatisticsState
+class TimeStatisticsMacroState
 {
 public:
-    double availabilityTime;  /// Duration time of "state n equivalent", where V-n AUs are available for a single call. FAG state equivalent
     double occupancyTime;     /// State duration time
 
-    TimeStatisticsState() : availabilityTime(0), occupancyTime(0) { }
-    inline void statsClear() { availabilityTime = 0; occupancyTime = 0; }
+    TimeStatisticsMacroState() : occupancyTime(0) { }
+    inline void statsClear() { occupancyTime = 0; }
+};
+
+class TimeStatisticsMicroState
+{
+public:
+    double occupancyUtilization;     /// State duration time of state n * number of AUs occupied by class i
+
+    TimeStatisticsMicroState() : occupancyUtilization(0) { }
+    inline void statsClear() { occupancyUtilization = 0; }
+};
+
+class TimeStatisticsMicroStateDetail
+{
+public:
+    double occupancyUtilizationServer;     /// State duration time of state n * number of AUs occupied by class i in server
+    double occupancyUtilizationBuffer;     /// State duration time of state n * number of AUs occupied by class i in buffer
+
+    TimeStatisticsMicroStateDetail() : occupancyUtilizationServer(0), occupancyUtilizationBuffer(0) { }
+    inline void statsClear() { occupancyUtilizationServer = 0; occupancyUtilizationBuffer = 0; }
 };
 
 class EvenStatistics
@@ -37,29 +55,35 @@ public:
 class SystemStatistics
 {
 private:
-    QVector<TimeStatisticsState>                      timesPerSystemState;
-    QVector<QVector<TimeStatisticsState> >            timesPerServerAndBufferState;
-    QVector<QVector<TimeStatisticsState> >            timesPerClassAndSystemState;
-    QVector<QVector<QVector<TimeStatisticsState> > >  timesPerClassAndServerStateAndBuffer;
-
+    QVector<EvenStatistics>                           eventsPerClass;
     QVector<EvenStatistics>                           eventsPerSystemState;
     QVector<QVector<EvenStatistics> >                 eventsPerServerAndBufferState;
     QVector<QVector <EvenStatistics> >                eventsPerClassAndSystemState;
     QVector<QVector <QVector <EvenStatistics> > >     eventsPerClassAndServerStateAndSystem;
 
+    QVector<TimeStatisticsMacroState>                            timesPerSystemState;
+    QVector<QVector<TimeStatisticsMacroState> >                  timesPerServerAndBufferState;
+    QVector<QVector<TimeStatisticsMicroState> >                  timesPerClassAndSystemState;
+    QVector<QVector<QVector<TimeStatisticsMicroStateDetail> > >  timesPerClassAndServerAndBufferState;
+
 public:
     SystemStatistics(const ModelSyst * const system);
     void clear();
 
-    inline const TimeStatisticsState& getTimeStatistics(int systemState)                                   const { return timesPerSystemState[systemState]; }
-    inline const TimeStatisticsState& getTimeStatistics(int serverState, int bufferState)                  const { return timesPerServerAndBufferState[serverState][bufferState]; }
-    inline const TimeStatisticsState& getTimeStatisticsSC(int classNo, int systemState)                    const { return timesPerClassAndSystemState[classNo][systemState]; }
-    inline const TimeStatisticsState& getTimeStatisticsSC(int classNo, int serverState, int bufferState)   const { return timesPerClassAndServerStateAndBuffer[classNo][serverState][bufferState]; }
+    inline const TimeStatisticsMacroState& getTimeStatistics(int systemState)                                         const { return timesPerSystemState[systemState]; }
+    inline const TimeStatisticsMacroState& getTimeStatistics(int serverState, int bufferState)                        const { return timesPerServerAndBufferState[serverState][bufferState]; }
+    inline const TimeStatisticsMicroState& getTimeStatisticsSC(int classNo, int systemState)                          const { return timesPerClassAndSystemState[classNo][systemState]; }
+    inline const TimeStatisticsMicroStateDetail& getTimeStatisticsSC(int classNo, int serverState, int bufferState)   const { return timesPerClassAndServerAndBufferState[classNo][serverState][bufferState]; }
 
     inline const EvenStatistics& getEventStatistics(int systemState)                                       const {return eventsPerSystemState[systemState] ;}
     inline const EvenStatistics& getEventStatistics(int serverState, int bufferState)                      const {return eventsPerServerAndBufferState[serverState][bufferState] ;}
+    inline const EvenStatistics& getEventStatisticsSC(int classNo)                                         const {return eventsPerClass[classNo] ;}
     inline const EvenStatistics& getEventStatisticsSC(int classNo, int systemState)                        const {return eventsPerClassAndSystemState[classNo][systemState] ;}
     inline const EvenStatistics& getEventStatisticsSC(int classNo, int serverState, int bufferState)       const {return eventsPerClassAndServerStateAndSystem[classNo][serverState][bufferState] ;}
+
+
+    void collectPre(double time, int n_s, int n_b, const QVector<int> &n_si, const QVector<int> &n_bi);
+    void collectPost(int classIdx, int old_n, int n);
 };
 
 class ServerStatistics
