@@ -13,7 +13,6 @@ SystemStatistics::SystemStatistics(const ModelSyst * const system)
     timesPerSystemState.resize(vk_sb + 1);
     eventsPerSystemState.resize(vk_sb + 1);
 
-
     timesPerServerAndBufferState.resize(vk_s+1);
     eventsPerServerAndBufferState.resize(vk_s+1);
     for (int ns=0; ns <= vk_s; ns++)
@@ -106,10 +105,16 @@ void SystemStatistics::collectPost(int classIdx, int old_n, int n)
 
 ServerStatistics::ServerStatistics(const ModelSyst * const system)
 {
-    combinationList = Utils::UtilsLAG::getPossibleCombinations(system->k_s());
+    combinationList = Utils::UtilsLAG::getPossibleCombinationsFinal(system->k_s());
     freeAUsInWorstGroupInCombination.resize(combinationList.length());
     freeAUsInBestGroupInCombination.resize(combinationList.length());
-    availabilityOnlyInAllGroupsInCombination.resize(combinationList.length());
+
+    //timesPerGroupSets.resize(combinationList.length);
+    //timesPerGroupSetsSC.resize(combinationList.length);
+    timesPerBestGroupSets.resize(system->k_s()+1);
+    timesPerBestGroupSetsSC.resize(system->k_s()+1);
+
+    //availabilityOnlyInAllGroupsInCombination.resize(combinationList.length());
     availabilityInAllGroupsInCombination.resize(combinationList.length());
     inavailabilityInAllGroupsInCombination.resize(combinationList.length());
 
@@ -117,7 +122,7 @@ ServerStatistics::ServerStatistics(const ModelSyst * const system)
     {
         freeAUsInWorstGroupInCombination[combinationNo].fill(0, system->v_sMax()+1);
         freeAUsInBestGroupInCombination[combinationNo].fill(0, system->v_sMax()+1);
-        availabilityOnlyInAllGroupsInCombination[combinationNo].fill(0, system->v_sMax()+1);
+      //  availabilityOnlyInAllGroupsInCombination[combinationNo].fill(0, system->v_sMax()+1);
         availabilityInAllGroupsInCombination[combinationNo].fill(0, system->v_sMax()+1);
         inavailabilityInAllGroupsInCombination[combinationNo].fill(0, system->v_sMax()+1);
     }
@@ -139,6 +144,10 @@ ServerStatistics::ServerStatistics(const ModelSyst * const system)
 
 void ServerStatistics::collectPre(double time, int n, const QVector<int> &n_i)
 {
+    timesPerState[n].occupancyTime+= time;
+    for (int i=0; i< n_i.length(); i++)
+        timesPerClassAndState[i][n].occupancyUtilization = time * n_i[i];
+
     /*
     // Uaktualnianie informacji o liczbie dostępnych zasobów w danej grupie
     tmpAvailabilityInGroups.resize(k);

@@ -25,6 +25,7 @@ public:
 
 
     static QVector<QPair<QVector<int>, QVector<int> > > getPossibleCombinations(int numberOfTheGroups);
+    static QVector<QVector<int> > getPossibleCombinationsFinal(int numberOfTheGroups);
     static QString getCombinationString(const QVector<int> &combination, QString start="{", QString stop="}", QString separator=", ");
 private:
     void pascalTriangleAddRows(unsigned maxIndex);

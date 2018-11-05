@@ -134,7 +134,7 @@ public:
         bool serveNewCall(Call *newCall);
         void endCallService(Call *call);
         void FinishCall(Call *call, bool acceptedToService);
-        void cancellScheduledCall(Call *call) {  engine->removeProcess(scheduledCall->proc); engine->reuseCall(call); }
+        void cancellScheduledCall(Call *call) {  engine->removeProcess(call->proc); engine->reuseCall(call); }
 
         void serveCallsInEque();
     };

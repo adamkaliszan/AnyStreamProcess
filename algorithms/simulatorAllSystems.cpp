@@ -710,12 +710,12 @@ void SimulatorAll::Server::writesResultsOfSingleExperiment(RSingle &singleResult
         }
     }
 
-    for (int combinationNo=0; combinationNo < statistics->combinationList.length(); combinationNo++)
+    for (int combinationNo=0; combinationNo < statistics->getNoOfSets(); combinationNo++)
     {
         for (int n=0; n<=vMax; n++)
         {
             singleResults.write(TypeStateForServerGroupsCombination::FreeAUsInBestGroup
-                                , statistics->freeAUsInBestGroupInCombination[combinationNo][n]/simulationTime
+                                , statistics->getTimeGroupSet(combinationNo, n).atLeastOneInetAvailable /simulationTime
                                 , n, combinationNo);
 
             singleResults.write(TypeStateForServerGroupsCombination::FreeAUsInEveryGroup
@@ -725,7 +725,7 @@ void SimulatorAll::Server::writesResultsOfSingleExperiment(RSingle &singleResult
 
 
             singleResults.write(TypeStateForServerGroupsCombination::AvailabilityOnlyInAllTheGroups
-                                , statistics->availabilityOnlyInAllGroupsInCombination[combinationNo][n]/simulationTime
+                                , statistics->getTimeGroupSet(combinationNo, n).allInSetAvailableAllOutsideSetUnavailable /simulationTime
                                 , n, combinationNo);
 
             singleResults.write(TypeStateForServerGroupsCombination::AvailabilityInAllTheGroups
@@ -742,7 +742,7 @@ void SimulatorAll::Server::writesResultsOfSingleExperiment(RSingle &singleResult
         for (int classNo=0; classNo<m; classNo++)
         {
             int t = this->system->systemData->getClass(classNo)->t();
-            singleResults.write(TypeClassForServerGroupsCombination::SerPossibilityOnlyInAllTheSubgroups, statistics->availabilityOnlyInAllGroupsInCombination[combinationNo][t]/simulationTime, classNo, combinationNo);
+            singleResults.write(TypeClassForServerGroupsCombination::SerPossibilityOnlyInAllTheSubgroups, statistics->getTimeBestGroupSetSC(combinationNo, classNo).allInSetAvailableAllOutsideSetUnavailable/simulationTime, classNo, combinationNo);
             singleResults.write(TypeClassForServerGroupsCombination::SerPossibilityInAllTheSubgroups,     statistics->availabilityInAllGroupsInCombination[combinationNo][t]/simulationTime, classNo, combinationNo);
             singleResults.write(TypeClassForServerGroupsCombination::SerImpossibilityInAllTheSubgroups,   statistics->inavailabilityInAllGroupsInCombination[combinationNo][t]/simulationTime, classNo, combinationNo);
         }

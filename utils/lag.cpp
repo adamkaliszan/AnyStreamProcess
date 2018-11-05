@@ -214,6 +214,19 @@ QVector<QPair<QVector<int>, QVector<int> > > UtilsLAG::getPossibleCombinations(i
     return result;
 }
 
+QVector<QVector<int> > UtilsLAG::getPossibleCombinationsFinal(int numberOfTheGroups)
+{
+    QVector<QPair<QVector<int>, QVector<int> > > tmp = getPossibleCombinations(numberOfTheGroups);
+    QVector<QVector<int> > result;
+
+    foreach (auto set, tmp)
+    {
+        result.append(set.first);
+    }
+
+    return result;
+}
+
 QString UtilsLAG::getCombinationString(const QVector<int> &combination, QString start, QString stop, QString separator)
 {
     QString combinationDescr;

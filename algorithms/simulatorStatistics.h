@@ -11,7 +11,7 @@ namespace Algorithms
 class TimeStatisticsMacroState
 {
 public:
-    double occupancyTime;     /// State duration time
+    double occupancyTime;                  /// State duration time
 
     TimeStatisticsMacroState() : occupancyTime(0) { }
     inline void statsClear() { occupancyTime = 0; }
@@ -20,7 +20,7 @@ public:
 class TimeStatisticsMicroState
 {
 public:
-    double occupancyUtilization;     /// State duration time of state n * number of AUs occupied by class i
+    double occupancyUtilization;           /// State duration time of state n * number of AUs occupied by class i
 
     TimeStatisticsMicroState() : occupancyUtilization(0) { }
     inline void statsClear() { occupancyUtilization = 0; }
@@ -39,13 +39,13 @@ public:
 class EvenStatistics
 {
 public:
-    long unsigned int inNew;         /// Number of events when this state was reached because of new call acceptance
-    long unsigned int inEnd;         /// Number of events when this state was reached because of call service ending
+    long unsigned int inNew;               /// Number of events when this state was reached because of new call acceptance
+    long unsigned int inEnd;               /// Number of events when this state was reached because of call service ending
 
-    long unsigned int outNewOffered; /// Number of events when new call was offered in this state (don't care if was accepted or not). New state is possible, but astatistisc are enconted to old one
-    long unsigned int outNewAccepted;/// Number of events when new call was offered and accepted. There is new state, but statistics are encounted to old one
-    long unsigned int outNewLost;    /// Number of events when new call sas offered and wasn't accepted
-    long unsigned int outEnd;        /// Number of events when the state was leaved because of call service ending
+    long unsigned int outNewOffered;       /// Number of events when new call was offered in this state (don't care if was accepted or not). New state is possible, but astatistisc are enconted to old one
+    long unsigned int outNewAccepted;      /// Number of events when new call was offered and accepted. There is new state, but statistics are encounted to old one
+    long unsigned int outNewLost;          /// Number of events when new call sas offered and wasn't accepted
+    long unsigned int outEnd;              /// Number of events when the state was leaved because of call service ending
 
     EvenStatistics(): inNew(0), inEnd(0), outNewOffered(0), outNewAccepted(0), outNewLost(0), outEnd(0) { }
     inline void statsClear() { memset(this, 0, sizeof(class EvenStatistics)); }
@@ -86,6 +86,14 @@ public:
     void collectPost(int classIdx, int old_n, int n);
 };
 
+class GroupSetStatistics
+{
+public:
+    double allInSetAvailableAllOutsideSetUnavailable;
+    double allInSetAvailable;
+    double atLeastOneInetAvailable;
+};
+
 class ServerStatistics
 {
 private:
@@ -98,10 +106,17 @@ private:
 
 
 public:
-    QVector<QVector<double> >                    availabilityOnlyInAllGroupsInCombination;  /// Outside combination, the groups are not available
+    QVector<QVector <GroupSetStatistics> >       timesPerGroupSets;                         /// Each set is different combination, sec. dimension: State
+    QVector<QVector <GroupSetStatistics> >       timesPerGroupSetsSC;                       /// Each set is different combination, sec. dimension: Traffic class
+    QVector<QVector <GroupSetStatistics> >       timesPerBestGroupSets;                     /// Each element determines the set that consist of 0, 1, ... k elements
+    QVector<QVector <GroupSetStatistics> >       timesPerBestGroupSetsSC;                   /// Each element determines the set that consist of 0, 1, ... k elements
+
+//    QVector<QVector<double> >                    availabilityOnlyInAllGroupsInCombination;  /// Outside combination, the groups are not available
     QVector<QVector<double> >                    availabilityInAllGroupsInCombination;      /// Don't care about the groups outside the combination
     QVector<QVector<double> >                    inavailabilityInAllGroupsInCombination;    /// Don't care about the groups outside the combination
-    QVector<QPair<QVector<int>, QVector<int> > > combinationList;
+
+    QVector< QVector<int> > combinationList;
+
     QVector<QVector<double> >                    freeAUsInWorstGroupInCombination;
     QVector<QVector<double> >                    freeAUsInBestGroupInCombination;
 
@@ -111,14 +126,22 @@ public:
 
     ServerStatistics(const ModelSyst * const system);
 
-    inline const EvenStatistics& getEventStatistics(int state)                            const { return eventsPerState[state] ;}
-    inline const EvenStatistics& getEventStatisticsSC(int classNo)                        const { return eventsPerClass[classNo] ;}
-    inline const EvenStatistics& getEventStatisticsSC(int classNo, int state)             const { return eventsPerClassAndState[classNo][state] ;}
+    inline const EvenStatistics& getEventStatistics(int state)                            const { return eventsPerState[state]; }
+    inline const EvenStatistics& getEventStatisticsSC(int classNo)                        const { return eventsPerClass[classNo]; }
+    inline const EvenStatistics& getEventStatisticsSC(int classNo, int state)             const { return eventsPerClassAndState[classNo][state]; }
     inline const TimeStatisticsMacroState& getTimeStatistics(int state)                   const { return timesPerState[state]; }
     inline const TimeStatisticsMicroState& getTimeStatisticsSC(int classNo, int state)    const { return timesPerClassAndState[classNo][state]; }
 
+    inline const GroupSetStatistics& getTimeGroupSet(int combinationNo, int state)        const { return timesPerGroupSets[combinationNo][state]; }
+    inline const GroupSetStatistics& getTimeBestGroupSet(int setPower, int state)         const { return timesPerBestGroupSets[setPower][state]; }
+    inline const GroupSetStatistics& getTimeGroupSetSC(int combinationNo, int classIdx)   const { return timesPerGroupSets[combinationNo][classIdx]; }
+    inline const GroupSetStatistics& getTimeBestGroupSetSC(int setPower, int classIdx)    const { return timesPerBestGroupSets[setPower][classIdx]; }
+
     void collectPre(double time, int n, const QVector<int> &n_i);
     void collectPost(int classIdx, int old_n, int n);
+
+    inline const QVector<int>& getSet(int combinationNo)                                  const { return combinationList[combinationNo]; }
+    inline int getNoOfSets()                                                              const { return combinationList.length(); }
 
     void clear();
 };
