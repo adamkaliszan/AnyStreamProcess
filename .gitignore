@@ -1,3 +1,4 @@
+kolejki
 *.o
 zlib/adler32.c zlib/as400 zlib/ChangeLog zlib/CMakeFiles zlib/cmake_install.cmake zlib/CMakeLists.txt zlib/compress.c zlib/configure zlib/contrib zlib/crc32.c zlib/crc32.h zlib/CTestTestfile.cmake zlib/deflate.c zlib/deflate.h zlib/examples zlib/FAQ zlib/gzclose.c zlib/gzguts.h zlib/gzlib.c zlib/gzread.c zlib/gzwrite.c zlib/INDEX zlib/infback.c zlib/inffast.c zlib/inffast.h zlib/inffixed.h zlib/inflate.c zlib/inflate.h zlib/inftrees.c zlib/inftrees.h zlib/Makefile zlib/Makefile.in zlib/make_vms.com zlib/README zlib/test zlib/treebuild.xml zlib/trees.c zlib/trees.h zlib/uncompr.c zlib/win32 zlib/zconf.h zlib/zconf.h.cmakein zlib/zconf.h.in zlib/zlib2ansi zlib/zlib.3 zlib/zlib.3.pdf zlib/zlib.h zlib/zlib.map zlib/zlib.pc zlib/zlib.pc.cmakein zlib/zlib.pc.in zlib/zutil.c zlib/zutil.h
 3party/QtXlsxWriter/*
