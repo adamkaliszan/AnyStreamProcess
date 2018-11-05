@@ -155,6 +155,9 @@ public:
         const int k;                                  /// Number of groups
         const int m;                                  /// Number of traffic classes
 
+
+        QVector<QExplicitlySharedDataPointer<Group> > groups;
+
     private:
         // Server state
         int n;                                        /// Server state
@@ -163,16 +166,7 @@ public:
         mutable QVector<int> groupSequence;           /// Sequence of checking group for new call service
         mutable QVector<int> tmpAvailabilityInGroups; /// Number of AS that is now available in given group
 
-
-/// Statistics scope: groups
-        QVector<QExplicitlySharedDataPointer<Group> > groups;
-
-/// Statistics scope: server state TODO move to separated class
-        QVector<TimeStatisticsMacroState> timePerState;              /// State time statistics (duration and FAG availability equivalent)
-        //QVector<double> timePerAsAvailability;                /// Time of availability specified number of AS for single call
-
-        QVector<QVector<double> >resourceUtilizationByClassInState;     /// State duration time*number os AS
-        QVector<double>resourceUtilizationByClass;                      /// time*total number of AS ooccupied by calls of class i
+        ServerStatistics *statistics;
 
         QList<Call *> calls;
         QVector<QExplicitlySharedDataPointer<AU> >serverResourcess;
@@ -180,15 +174,6 @@ public:
         double resourceUtilization(int ClassNumber, int stateNo) const;
         double getTimeOfState(int stateNo) const;
 
-        QVector<QPair<QVector<int>, QVector<int> > > combinationList;
-        QVector<QVector<double> >freeAUsInWorstGroupInCombination;
-        QVector<QVector<double> >freeAUsInBestGroupInCombination;
-        QVector<QVector<double> >availabilityOnlyInAllGroupsInCombination;  /// Outside combination, the groups are not available
-        QVector<QVector<double> >availabilityInAllGroupsInCombination;      /// Don't care about the groups outside the combination
-        QVector<QVector<double> >inavailabilityInAllGroupsInCombination;    /// Don't care about the groups outside the combination
-
-        QVector<QVector<double> >availabilityTimeInGroupSet;                /// Availability in given number of groups, other groups are not considered
-        QVector<QVector<double> >availabilityTimeOnlyInExactNoOfGroups;     /// Availability in EXACT number of groups, other groups are not available
 
         void statsColectPreGroupsAvailability(double time);
 
@@ -265,7 +250,7 @@ public:
         inline double getAvgNoOfASinStateN(int classIdx, int n)  { return AStime_ofOccupiedAS_byClassI_inStateN[classIdx][n]; }
 
         void   clearTheStats();
-        void   collectTheStats(double time);
+        void   statsColectPre(double time);
 
         void   addCall(SimulatorAll::Call *newCall);
         void   takeCall(SimulatorAll::Call *call, int noOfAS);

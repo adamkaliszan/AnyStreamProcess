@@ -37,7 +37,7 @@ bool Investigator::correctSystemParameters(ModelSyst *system, double a)
                 qDebug("Dep-: A >= s");
                 return false;
             }
-        double A_cor;
+        double A_cor = A;
         switch (system->getClass(i)->srcType())
         {
         case ModelTrClass::SourceType::DependentMinus:
@@ -63,7 +63,7 @@ void Investigator::prepareTemporaryData(const ModelSyst *system, double a)
 
     for (int i=0; i<system->m(); i++)
     {
-        classes[i].A = system->getClass(i)->intensityNewCallTotal(a, system->vk_s(), system->totalAt()) /system->getClass(i)->getMu();
+        classes[i].A = system->getClass(i)->intensityNewCallTotal(a, static_cast<size_t>(system->vk_s()), system->totalAt()) /system->getClass(i)->getMu();
         classes[i].mu = system->getClass(i)->getMu();
         classes[i].lambda = classes[i].A*classes[i].mu;
         classes[i].t = system->getClass(i)->t();

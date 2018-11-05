@@ -320,8 +320,8 @@ void SimulatorAll::System::writesResultsOfSingleExperiment(RSingle& singleResult
         int t = systemData->getClass(i)->t();
         double E = 0;
 
-        //TODO for (int n = qMax(0, (V-t+1)); n<=V; n++)
-        //TODO    E+=statistics->getTimeStatistics(n).availabilityTime;
+        for (int n = qMax(0, (V-t+1)); n<=V; n++)
+            E+=statistics->getTimeStatistics(n).occupancyTime;
         E /=results._simulationTime;
 
         if (E < 0)
@@ -510,17 +510,8 @@ void SimulatorAll::System::statsCollectPre(double time)
     }
 
     statistics->collectPre(time, server->get_n(), buffer->get_n(), server->getMicroStates(), buffer->getMicroStates());
-
-    for (int i=0; i<m; i++)
-    {
-        server->resourceUtilizationByClassInState[i][n] += time*(server->n_i[i]);
-    }
-    //TODO timesPerState[n].occupancyTime += time;
-
-    int maxCallRequirement = getMaxNumberOfAsInSingleGroup();
-    //TODO timesPerState[vk_s-maxCallRequirement].availabilityTime += time;
-
     server->statsColectPre(time);
+    buffer->statsColectPre(time);
 }
 
 void SimulatorAll::System::statsCollectPost(int classIdx)
@@ -548,121 +539,34 @@ void SimulatorAll::System::statsDisable()
 
 void SimulatorAll::Server::statsClear()
 {
-    for (int n=0; n<=V; n++)
-        timePerState[n].statsClear();
-
-    for (int groupNo=0; groupNo < k; groupNo++)
-    {
-        groups[groupNo]->statsClear();    
-    }
-
-    for (int combinatinNo=0; combinatinNo < combinationList.length(); combinatinNo++)
-    {
-        freeAUsInWorstGroupInCombination[combinatinNo].fill(0, vMax+1);
-        freeAUsInBestGroupInCombination[combinatinNo].fill(0, vMax+1);
-        availabilityOnlyInAllGroupsInCombination[combinatinNo].fill(0, vMax+1);
-        availabilityInAllGroupsInCombination[combinatinNo].fill(0, vMax+1);
-        inavailabilityInAllGroupsInCombination[combinatinNo].fill(0, vMax+1);
-    }
-
-    for (int noOfGroups=0; noOfGroups <= k; noOfGroups++)
-    {
-        availabilityTimeInGroupSet[noOfGroups].fill(0, vMax+1);
-        availabilityTimeOnlyInExactNoOfGroups[noOfGroups].fill(0, vMax+1);
-    }
+    statistics->clear();
 }
 
 void SimulatorAll::Server::statsColectPre(double time)
 {
-    for (int i=0; i<m; i++)
-    {
-        resourceUtilizationByClass[i]          += (time*n_i[i]);
-        resourceUtilizationByClassInState[i][n]+= (time*n_i[i]);
-    }
-    timePerState[n].occupancyTime += time;
+    statistics->collectPre(time, n, n_i);
 
-    int maxCallRequirement = getMaxNumberOfAsInSingleGroup();
-    //timePerState[V-maxCallRequirement].availabilityTime += time;
-
-    foreach(Call *tmpCall, this->calls)
-        tmpCall->IncrTimeInServer(time);
-
-    for (int groupNo=0; groupNo < k; groupNo++)
-        groups[groupNo]->statsColectPre(time);
     statsColectPreGroupsAvailability(time);
 }
 
 void SimulatorAll::Server::statsColectPreGroupsAvailability(double time)
 {
-    // Uaktualnianie informacji o liczbie dostępnych zasobów w danej grupie
-    tmpAvailabilityInGroups.resize(k);
-    for (int tmpK=0; tmpK<k; tmpK++)
-        tmpAvailabilityInGroups[tmpK] = groups[tmpK]->getNoOfFreeAUs(true);
 
-    // Zapis statystyk dla kombinacji podgrup
-    for (int combinatinNo=0; combinatinNo < combinationList.length(); combinatinNo++)
-    {
-        int minAvailability = V;
-        int maxAvailability = 0;
-        int complementaryMaxAvailability = -1;
-        foreach (int groupNo, combinationList[combinatinNo].first)
-        {
-            minAvailability = qMin<int>(minAvailability, tmpAvailabilityInGroups[groupNo]);
-            maxAvailability = qMax<int>(maxAvailability, tmpAvailabilityInGroups[groupNo]);
-        }
-        foreach (int complGroupNo, combinationList[combinatinNo].second)
-        {
-            complementaryMaxAvailability
-                    = qMax<int>(complementaryMaxAvailability, tmpAvailabilityInGroups[complGroupNo]);
-        }
-
-        freeAUsInWorstGroupInCombination[combinatinNo][minAvailability]+= time;
-        freeAUsInBestGroupInCombination[combinatinNo][maxAvailability]+= time;
-
-        for (int n=minAvailability; n>complementaryMaxAvailability; n--)
-            availabilityOnlyInAllGroupsInCombination[combinatinNo][n]+= time;
-
-        for (int n=minAvailability; n>=0; n--)
-            availabilityInAllGroupsInCombination[combinatinNo][n]+= time;
-
-        for (int n=maxAvailability+1; n<=vMax; n++)
-            inavailabilityInAllGroupsInCombination[combinatinNo][n]+= time;
-    }
-
-    // Zapis statystyk dla określonej liczby dowolnych podgrup
-
-
-    availabilityTimeInGroupSet[0][0] += time;
-
-    for (int availableResourcess=0; availableResourcess <= vMax; availableResourcess++)
-    {
-        int noOfGroups = 0;
-
-        for (int i=0; i<k; i++)
-        {
-            if (tmpAvailabilityInGroups[i] >= availableResourcess)
-                noOfGroups++;
-        }
-        for (int i=0; i<=noOfGroups; i++)
-            availabilityTimeInGroupSet[i][availableResourcess]+= time;
-        availabilityTimeOnlyInExactNoOfGroups[noOfGroups][availableResourcess] += time;
-    }
 }
 
 void SimulatorAll::Server::statsCollectPost(int classIdx, int old_n, int n)
 {
-    for (int groupNo=0; groupNo < k; groupNo++)
-        groups[groupNo]->statsCollectPost(classIdx);
+    statistics->collectPost(classIdx, old_n, n);
 }
 
 double SimulatorAll::Server::statsGetWorkoutPerClassAndState(int i, int n) const
 {
-    return resourceUtilizationByClassInState[i][n];
+    return statistics->getTimeStatisticsSC(i, n).occupancyUtilization;
 }
 
 double SimulatorAll::Server::statsGetOccupancyTimeOfState(int state) const
 {
-    return (state <= V) ? timePerState[state].occupancyTime : 0;
+    return (state <= V) ? statistics->getTimeStatistics(state).occupancyTime : 0;
 }
 
 #define FOLDINGEND }
@@ -746,12 +650,12 @@ void SimulatorAll::Server::removeCall(SimulatorAll::Call *call)
 
 double SimulatorAll::Server::resourceUtilization(int classNumber, int stateNo) const
 {
-    return resourceUtilizationByClassInState[classNumber][stateNo];
+    return statistics->getTimeStatisticsSC(classNumber, stateNo).occupancyUtilization;
 }
 
 double SimulatorAll::Server::getTimeOfState(int stateNo) const
 {
-    return timePerState[stateNo].occupancyTime;
+    return statistics->getTimeStatistics(stateNo).occupancyTime;
 }
 
 SimulatorAll::Server::Server(System *system)
@@ -762,30 +666,8 @@ SimulatorAll::Server::Server(System *system)
   , k(system->systemData->k_s())
   , m(system->systemData->m())
   , n(0)
-{
-    combinationList = Utils::UtilsLAG::getPossibleCombinations(k);
-    freeAUsInWorstGroupInCombination.resize(combinationList.length());
-    freeAUsInBestGroupInCombination.resize(combinationList.length());
-    availabilityOnlyInAllGroupsInCombination.resize(combinationList.length());
-    availabilityInAllGroupsInCombination.resize(combinationList.length());
-    inavailabilityInAllGroupsInCombination.resize(combinationList.length());
+{   
 
-    for (int combinationNo=0; combinationNo<combinationList.length(); combinationNo++)
-    {
-        freeAUsInWorstGroupInCombination[combinationNo].fill(0, vMax+1);
-        freeAUsInBestGroupInCombination[combinationNo].fill(0, vMax+1);
-        availabilityOnlyInAllGroupsInCombination[combinationNo].fill(0, vMax+1);
-        availabilityInAllGroupsInCombination[combinationNo].fill(0, vMax+1);
-        inavailabilityInAllGroupsInCombination[combinationNo].fill(0, vMax+1);
-    }
-
-    availabilityTimeInGroupSet.resize(k+1);
-    availabilityTimeOnlyInExactNoOfGroups.resize(k+1);
-    for (int noOfNotConsideredGroups=0; noOfNotConsideredGroups <= k; noOfNotConsideredGroups++)
-    {
-        availabilityTimeInGroupSet[noOfNotConsideredGroups].fill(0, vMax+1);
-        availabilityTimeOnlyInExactNoOfGroups[noOfNotConsideredGroups].fill(0, vMax+1);
-    }
 
     groups.resize(k);
     int groupNo = 0;
@@ -800,16 +682,11 @@ SimulatorAll::Server::Server(System *system)
 
     n_i.resize(m);
 
-    timePerState.resize(V+1);
-
-    resourceUtilizationByClassInState.resize(m);
-    resourceUtilizationByClass.resize(m);
-    for (int classIdx=0; classIdx<m; classIdx++)
-        resourceUtilizationByClassInState[classIdx].resize(V+1);
-
     groupSequence.resize(k);
     for (int j=0; j<k; j++)
         groupSequence[j] = j;
+
+    statistics = new ServerStatistics(system->systemData);
 }
 
 SimulatorAll::Server::~Server()
@@ -824,10 +701,10 @@ void SimulatorAll::Server::writesResultsOfSingleExperiment(RSingle &singleResult
         for (int n=0; n<=vMax; n++)
         {
             double result;
-            result = availabilityTimeInGroupSet[noOfgroups][n]/simulationTime;
+            result = statistics->availabilityTimeInGroupSet[noOfgroups][n]/simulationTime;
             singleResults.write(TypeStateForServerGroupsSet::AvailabilityOnlyInAllTheGroups, result, n, noOfgroups);
 
-            result = availabilityTimeOnlyInExactNoOfGroups[noOfgroups][n]/simulationTime;
+            result = statistics->availabilityTimeOnlyInExactNoOfGroups[noOfgroups][n]/simulationTime;
             singleResults.write(TypeStateForServerGroupsSet::AvailabilityOnlyInAllTheGroups, result, n, noOfgroups);
         }
         for (int i=0; i < m; i++)
@@ -836,38 +713,38 @@ void SimulatorAll::Server::writesResultsOfSingleExperiment(RSingle &singleResult
 
             int n = system->systemData->getClass(i)->t();
 
-            result = availabilityTimeInGroupSet[noOfgroups][n]/simulationTime;
+            result = statistics->availabilityTimeInGroupSet[noOfgroups][n]/simulationTime;
             singleResults.write(TypeClassForServerBestGroupsSet::ServPossibilityOnlyInAllTheSubgroups, result, i, noOfgroups);
 
-            result = availabilityTimeOnlyInExactNoOfGroups[noOfgroups][n]/simulationTime;
+            result = statistics->availabilityTimeOnlyInExactNoOfGroups[noOfgroups][n]/simulationTime;
             singleResults.write(TypeClassForServerExactGroupsSet::ServPossibilityOnlyInAllTheSubgroups, result, i, noOfgroups);
         }
     }
 
-    for (int combinationNo=0; combinationNo < combinationList.length(); combinationNo++)
+    for (int combinationNo=0; combinationNo < statistics->combinationList.length(); combinationNo++)
     {
         for (int n=0; n<=vMax; n++)
         {
             singleResults.write(TypeStateForServerGroupsCombination::FreeAUsInBestGroup
-                                , freeAUsInBestGroupInCombination[combinationNo][n]/simulationTime
+                                , statistics->freeAUsInBestGroupInCombination[combinationNo][n]/simulationTime
                                 , n, combinationNo);
 
             singleResults.write(TypeStateForServerGroupsCombination::FreeAUsInEveryGroup
-                                , freeAUsInWorstGroupInCombination[combinationNo][n]/simulationTime
+                                , statistics->freeAUsInWorstGroupInCombination[combinationNo][n]/simulationTime
                                 , n, combinationNo);
 
 
 
             singleResults.write(TypeStateForServerGroupsCombination::AvailabilityOnlyInAllTheGroups
-                                , availabilityOnlyInAllGroupsInCombination[combinationNo][n]/simulationTime
+                                , statistics->availabilityOnlyInAllGroupsInCombination[combinationNo][n]/simulationTime
                                 , n, combinationNo);
 
             singleResults.write(TypeStateForServerGroupsCombination::AvailabilityInAllTheGroups
-                                , availabilityInAllGroupsInCombination[combinationNo][n]/simulationTime
+                                , statistics->availabilityInAllGroupsInCombination[combinationNo][n]/simulationTime
                                 , n, combinationNo);
 
             singleResults.write(TypeStateForServerGroupsCombination::InavailabilityInAllTheGroups
-                                , inavailabilityInAllGroupsInCombination[combinationNo][n]/simulationTime
+                                , statistics->inavailabilityInAllGroupsInCombination[combinationNo][n]/simulationTime
                                 , n, combinationNo);
 
 
@@ -876,9 +753,9 @@ void SimulatorAll::Server::writesResultsOfSingleExperiment(RSingle &singleResult
         for (int classNo=0; classNo<m; classNo++)
         {
             int t = this->system->systemData->getClass(classNo)->t();
-            singleResults.write(TypeClassForServerGroupsCombination::SerPossibilityOnlyInAllTheSubgroups, availabilityOnlyInAllGroupsInCombination[combinationNo][t]/simulationTime, classNo, combinationNo);
-            singleResults.write(TypeClassForServerGroupsCombination::SerPossibilityInAllTheSubgroups,     availabilityInAllGroupsInCombination[combinationNo][t]/simulationTime, classNo, combinationNo);
-            singleResults.write(TypeClassForServerGroupsCombination::SerImpossibilityInAllTheSubgroups,   inavailabilityInAllGroupsInCombination[combinationNo][t]/simulationTime, classNo, combinationNo);
+            singleResults.write(TypeClassForServerGroupsCombination::SerPossibilityOnlyInAllTheSubgroups, statistics->availabilityOnlyInAllGroupsInCombination[combinationNo][t]/simulationTime, classNo, combinationNo);
+            singleResults.write(TypeClassForServerGroupsCombination::SerPossibilityInAllTheSubgroups,     statistics->availabilityInAllGroupsInCombination[combinationNo][t]/simulationTime, classNo, combinationNo);
+            singleResults.write(TypeClassForServerGroupsCombination::SerImpossibilityInAllTheSubgroups,   statistics->inavailabilityInAllGroupsInCombination[combinationNo][t]/simulationTime, classNo, combinationNo);
         }
     }
 }
@@ -1706,6 +1583,11 @@ void SimulatorAll::Group::statsCollectPost(int classIdx)
 int SimulatorAll::Group::getNoOfFreeAUs(bool considerAllocationAlgorithm)
 {
     return (!considerAllocationAlgorithm) ? v-n : findMaxAS();
+}
+
+void SimulatorAll::Buffer::statsColectPre(double time)
+{
+
 }
 
 void SimulatorAll::Buffer::removeCall(SimulatorAll::Call *first)
