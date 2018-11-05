@@ -24,10 +24,11 @@ public:
 
     QString shortName()  const { return "Simulation"; }
     int complexity()     const { return 100; }
-    void calculateSystem(const ModelSyst *system
-            , double a
-            , Results::RInvestigator *results, SimulationParameters *simParameters
-            );
+    void calculateSystem(
+        const ModelSyst *system
+      , double a
+      , Results::RInvestigator *results, SimulationParameters *simParameters
+    );
     bool possible(const ModelSyst *system) const;
 
 
@@ -51,8 +52,8 @@ public:
     {
 
     private:
-        int       totalNumberOfServicedCalls;
-        int       totalNumberOfLostCalls;
+        int       totalNumberOfServicedCalls;  /// Simulation experiment ending rules
+        int       totalNumberOfLostCalls;      /// Simulation experiment ending rules
 
         QStack<Call *> uselessCalls;
         SimulatorDataCollection<ProcAll> *agenda;
@@ -97,19 +98,19 @@ public:
 
     private:
         // System components
-        Server *server;   /// Server details
-        Buffer *buffer;   /// Buffer details
+        Server *server;               /// Server details
+        Buffer *buffer;               /// Buffer details
 
         QList<Call *> calls;
 
         // Statistics and results
-        SystemStatistics *statistics;
-        simulationResults results;                //TODO deprecated, use newresult
+        SystemStatistics *statistics; /// Statistics that are colected during simulation experiment
+        simulationResults results;    //TODO deprecated, use newresult
 
         // System state
-        int n;            /// Number of occupied resourcess by all the classes
-        int old_n;        /// Previous number of occupied resourcess by all the classes
-        QVector<int> n_i; /// Number of occupied resourcess by given class. Vector length is m
+        int n;                        /// Number of occupied resourcess by all the classes
+        int old_n;                    /// Previous number of occupied resourcess by all the classes
+        QVector<int> n_i;             /// Number of occupied resourcess by given class. Vector length is m
 
 
         void removeCallFromServer(Call *call);
@@ -120,27 +121,22 @@ public:
         ~System();
 
 #define FOLDINGSTART { //Statistics
+        void writesResultsOfSingleExperiment(RSingle &singleResults);
+
         void statsCollectPre(double time);
         void statsCollectPost(int classIdx);
         void statsClear();
         void statsDisable();
         void statsEnable(int serNo);
-
-        void writesResultsOfSingleExperiment(RSingle &singleResults);
-
 #define FOLDINGEND }
 
-
-        int getServerNumberOfFreeAS() const;
 
         bool serveNewCall(Call *newCall);
         void endCallService(Call *call);
         void FinishCall(Call *call, bool acceptedToService);
-        void cancellScheduledCall(Call *call);
-
+        void cancellScheduledCall(Call *call) {  engine->removeProcess(scheduledCall->proc); engine->reuseCall(call); }
 
         void serveCallsInEque();
-        int getMaxNumberOfAsInSingleGroup();
     };
     class Server
     {
@@ -249,8 +245,15 @@ public:
         inline double getAvarageNumberOfAS(int classIdx)         { return AStime_ofOccupiedAS_byClassI[classIdx]; }
         inline double getAvgNoOfASinStateN(int classIdx, int n)  { return AStime_ofOccupiedAS_byClassI_inStateN[classIdx][n]; }
 
-        void   clearTheStats();
-        void   statsColectPre(double time);
+#define FOLDINGSTART { //Statistics
+        void statsEnable(int serNo);
+        void statsDisable();
+        void statsClear();
+        void statsColectPre(double time);
+        void statsCollectPost(int classIdx, int old_n, int n);
+        inline double statsGetWorkoutPerClassAndState(int i, int n) const;
+        inline double statsGetOccupancyTimeOfState(int state) const;
+#define FOLDINGEND }
 
         void   addCall(SimulatorAll::Call *newCall);
         void   takeCall(SimulatorAll::Call *call, int noOfAS);

@@ -305,6 +305,11 @@ BufferStatistics::BufferStatistics(const ModelSyst * const system)
 
 }
 
+void BufferStatistics::clear()
+{
+
+}
+
 void BufferStatistics::collectPre(double time, int n, const QVector<int> &n_i)
 {
 

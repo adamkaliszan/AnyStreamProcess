@@ -408,10 +408,7 @@ void SimulatorAll::System::writesResultsOfSingleExperiment(RSingle& singleResult
     }
 }
 
-int SimulatorAll::System::getServerNumberOfFreeAS() const
-{
-    return server->getNoOfFreeAS();
-}
+
 
 bool SimulatorAll::System::serveNewCall(SimulatorAll::Call *newCall)
 {
@@ -486,15 +483,6 @@ void SimulatorAll::System::FinishCall(SimulatorAll::Call *call, bool acceptedToS
     engine->reuseCall(call);
 }
 
-void SimulatorAll::System::cancellScheduledCall(SimulatorAll::Call *call)
-{
-    engine->reuseCall(call);
-}
-
-int SimulatorAll::System::getMaxNumberOfAsInSingleGroup()
-{
-    return server->getMaxNumberOfAsInSingleGroup();
-}
 
 
 #define FOLDINGSTART { //Statistics
@@ -524,6 +512,7 @@ void SimulatorAll::System::statsClear()
 {
     statistics->clear();
     server->statsClear();
+    buffer->statsClear();
 }
 
 void SimulatorAll::System::statsEnable(int serNo)
@@ -1353,7 +1342,6 @@ void ProcAll::callServiceEndedDependentPlus(ProcAll *proc, SimulatorAll::System 
         qFatal("Wrong Process state");
     system->endCallService(proc->callData);
 
-    system->engine->removeProcess(scheduledCall->proc);
     system->cancellScheduledCall(scheduledCall);
 
     proc->callData = nullptr;
@@ -1583,6 +1571,11 @@ void SimulatorAll::Group::statsCollectPost(int classIdx)
 int SimulatorAll::Group::getNoOfFreeAUs(bool considerAllocationAlgorithm)
 {
     return (!considerAllocationAlgorithm) ? v-n : findMaxAS();
+}
+
+void SimulatorAll::Buffer::statsClear()
+{
+
 }
 
 void SimulatorAll::Buffer::statsColectPre(double time)

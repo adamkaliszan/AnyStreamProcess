@@ -142,6 +142,8 @@ public:
     inline const TimeStatisticsMacroState& getTimeStatistics(int state)                   const { return timesPerState[state]; }
     inline const TimeStatisticsMicroState& getTimeStatisticsSC(int classNo, int state)    const { return timesPerClassAndState[classNo][state]; }
 
+    void clear();
+
     void collectPre(double time, int n, const QVector<int> &n_i);
     void collectPost(int classIdx, int old_n, int n);
 };
