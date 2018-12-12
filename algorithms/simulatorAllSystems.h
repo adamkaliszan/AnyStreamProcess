@@ -66,7 +66,7 @@ public:
         Engine(System *system);
         ~Engine();
 
-        inline void reuseCall(Call *callToReuse);
+        void reuseCall(Call *callToReuse);
         inline void notifyLostCall() { totalNumberOfLostCalls++;}
         inline void notifyServicedCall() { totalNumberOfServicedCalls++;}
 
@@ -77,8 +77,8 @@ public:
 
         inline ProcAll* getNewProcess()           { return agenda->getNewProcess(); }
         inline ProcAll *takeFirstProcess()        { return agenda->takeFirstProcess(); }
-        inline void addProcess(ProcAll *proc);
-        inline void removeProcess(ProcAll *proc);
+        void addProcess(ProcAll *proc);
+        void removeProcess(ProcAll *proc);
         void reuseProcess(ProcAll *proc);
 
         Call *getNewCall(Call *parent);
@@ -89,17 +89,24 @@ public:
     {
     public:
         Engine *engine;
+    /// Description of investigated system
+        const ModelSyst *systemData;
+    /// Number of offered traffic classes
+        const int m;
 
-        const ModelSyst *systemData;  /// Description of investigated system
-        const int m;                  /// Number of offered traffic classes
-        const int vk_sb;              /// Total system capacity
-        const int vk_s;               /// Total server capacity
-        const int vk_b;               /// Total buffer capacity
+    /// Total system capacity
+        const int vk_sb;
+    /// Total server capacity
+        const int vk_s;
+    /// Total buffer capacity
+        const int vk_b;
 
     private:
         // System components
-        Server *server;               /// Server details
-        Buffer *buffer;               /// Buffer details
+    /// Server details
+        Server *server;
+    /// Buffer details
+        Buffer *buffer;
 
         QList<Call *> calls;
 
@@ -223,19 +230,26 @@ public:
         int m;
         double *occupancyTimes;
 
-        QStack<Call *> calls;            /// FiFo Qeue with calls
-        Call *firstCall;                 /// Call that is partialy serviced
+    /// FiFo Qeue with calls
+        QStack<Call *> calls;
+    /// Call that is partialy serviced
+        Call *firstCall;
 
-        int   *numberOfCalls;           /// Actual number of calls that are awainting in qeue
-        int   *numberOfAS;              /// Actual number of AS occupied by call in qeue
-        double *avgNumberOfCalls;        /// Number of calls multiplied by the time in qeue
-        double *AStime_ofOccupiedAS_byClassI;            /// Number of calls multiplied by the time in qeue
-        double **AStime_ofOccupiedAS_byClassI_inStateN;  /// Avarage number of resuorcess occupied by class i in state n
+    /// Actual number of calls that are awainting in qeue
+        QVector<int> numberOfCalls;
+    /// Actual number of AS occupied by call in qeue
+        QVector<int> numberOfAS;
+    /// Number of calls multiplied by the time in qeue
+        QVector<double> avgNumberOfCalls;
+    /// Number of calls multiplied by the time in qeue
+        QVector<double> AStime_ofOccupiedAS_byClassI;
+    /// Avarage number of resuorcess occupied by class i in state n
+        QVector<QVector<double> > AStime_ofOccupiedAS_byClassI_inStateN;
 
     public:
         int n;                          /// Number of AS that is used by the calls
         QVector<int> n_i;
-        Buffer(int V, System *system);
+        Buffer(System *system);
         ~Buffer();
 
         inline int   getV()                                      { return V; }

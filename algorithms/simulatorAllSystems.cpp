@@ -232,6 +232,7 @@ SimulatorAll::System::System(const ModelSyst *system, int noOfSeries)
 
 
     server = new Server(this);
+    buffer = new Buffer(this);
 
     statistics = new SystemStatistics(system);
 }
@@ -496,7 +497,6 @@ void SimulatorAll::System::statsCollectPre(double time)
     {
         tmpCall->collectTheStats(time);
     }
-
     statistics->collectPre(time, server->get_n(), buffer->get_n(), server->getMicroStates(), buffer->getMicroStates());
     server->statsColectPre(time);
     buffer->statsColectPre(time);
@@ -1571,6 +1571,11 @@ void SimulatorAll::Group::statsCollectPost(int classIdx)
 int SimulatorAll::Group::getNoOfFreeAUs(bool considerAllocationAlgorithm)
 {
     return (!considerAllocationAlgorithm) ? v-n : findMaxAS();
+}
+
+SimulatorAll::Buffer::Buffer(SimulatorAll::System *system): V(system->vk_b), m(system->m), n(0)
+{
+    n_i.resize(m);
 }
 
 void SimulatorAll::Buffer::statsClear()
