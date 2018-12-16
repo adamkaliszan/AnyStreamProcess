@@ -134,8 +134,8 @@ public:
 
     inline const GroupSetStatistics& getTimeGroupSet(int combinationNo, int state)        const { return timesPerGroupSets[combinationNo][state]; }
     inline const GroupSetStatistics& getTimeBestGroupSet(int setPower, int state)         const { return timesPerBestGroupSets[setPower][state]; }
-    inline const GroupSetStatistics& getTimeGroupSetSC(int combinationNo, int classIdx)   const { return timesPerGroupSets[combinationNo][classIdx]; }
-    inline const GroupSetStatistics& getTimeBestGroupSetSC(int setPower, int classIdx)    const { return timesPerBestGroupSets[setPower][classIdx]; }
+    inline const GroupSetStatistics& getTimeGroupSetSC(int combinationNo, int classIdx)   const { return timesPerGroupSetsSC[combinationNo][classIdx]; }
+    inline const GroupSetStatistics& getTimeBestGroupSetSC(int setPower, int classIdx)    const { return timesPerBestGroupSetsSC[setPower][classIdx]; }
 
     void collectPre(double time, int n, const QVector<int> &n_i);
     void collectPost(int classIdx, int old_n, int n);

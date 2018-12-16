@@ -109,12 +109,12 @@ ServerStatistics::ServerStatistics(const ModelSyst * const system)
     freeAUsInWorstGroupInCombination.resize(combinationList.length());
     freeAUsInBestGroupInCombination.resize(combinationList.length());
 
-    //timesPerGroupSets.resize(combinationList.length);
-    //timesPerGroupSetsSC.resize(combinationList.length);
+    timesPerGroupSets.resize(combinationList.length());
+    timesPerGroupSetsSC.resize(combinationList.length());
+
     timesPerBestGroupSets.resize(system->k_s()+1);
     timesPerBestGroupSetsSC.resize(system->k_s()+1);
 
-    //availabilityOnlyInAllGroupsInCombination.resize(combinationList.length());
     availabilityInAllGroupsInCombination.resize(combinationList.length());
     inavailabilityInAllGroupsInCombination.resize(combinationList.length());
 
@@ -125,6 +125,10 @@ ServerStatistics::ServerStatistics(const ModelSyst * const system)
       //  availabilityOnlyInAllGroupsInCombination[combinationNo].fill(0, system->v_sMax()+1);
         availabilityInAllGroupsInCombination[combinationNo].fill(0, system->v_sMax()+1);
         inavailabilityInAllGroupsInCombination[combinationNo].fill(0, system->v_sMax()+1);
+
+        timesPerGroupSets[combinationNo].fill(GroupSetStatistics(), system->v_sMax()+1);
+        timesPerGroupSetsSC[combinationNo].fill(GroupSetStatistics(), system->v_sMax()+1);
+
     }
 
     availabilityTimeInGroupSet.resize(system->k_s()+1);
@@ -133,6 +137,7 @@ ServerStatistics::ServerStatistics(const ModelSyst * const system)
     {
         availabilityTimeInGroupSet[noOfNotConsideredGroups].fill(0, system->v_sMax()+1);
         availabilityTimeOnlyInExactNoOfGroups[noOfNotConsideredGroups].fill(0, system->v_sMax()+1);
+        timesPerBestGroupSetsSC[noOfNotConsideredGroups].fill(GroupSetStatistics(), system->v_sMax()+1);
     }
 
     timesPerState.resize(system->vk_s()+1);
