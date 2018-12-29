@@ -120,14 +120,20 @@ void AlgorithmHybridNoFifo::calculateSystem(const ModelSyst *system
     //emit this->sigCalculationDone();
 }
 
-void AlgorithmHybridNoFifo::calculateYSystem(double **ySystem, const TrClVector &P)
+void AlgorithmHybridNoFifo::calculateYSystem(
+    QVector<QVector<double> > ySystem
+  , const TrClVector &P
+)
 {
     for (int i=0; i < system->m(); i++)
         for (int n=0; n<=system->V(); n++)
             ySystem[i][n] = P.getY(n, i);
 }
 
-void AlgorithmHybridNoFifo::calculateYServer(double **yServerVsVb, const TrClVector &P)
+void AlgorithmHybridNoFifo::calculateYServer(
+    QVector<QVector<double> > yServerVsVb
+  , const TrClVector &P
+)
 {
     for (int i=0; i < system->m(); i++)
         for (int n=0; n <= system->V(); n++)

@@ -70,11 +70,11 @@ protected:
 
     QVector<ClassParameters> classes;
 
-    double **ySERVER_Vs;    ///Avarage number of calls of class i in server vs number of occupied AS in server
-    double **ySERVER_V;     ///Avarage number of calls of class i in server vs number of occupied AS in system
-    double **yQEUE_Vb;      ///Avarage number of calls of class i in qeue   vs number of occupied AS in qeue
-    double **yQEUE_VsVb;    ///Avarage number of calls of class i in qeue   vs number of occupied AS in system
-    double **ySYSTEM_V;     ///Avarage number of calls of class i in system vs number of occupied AS in system
+    QVector<QVector<double> > ySERVER_Vs;    ///< Avarage number of calls of class i in server vs number of occupied AS in server
+    QVector<QVector<double> > ySERVER_V;     ///< Avarage number of calls of class i in server vs number of occupied AS in system
+    QVector<QVector<double> > yQEUE_Vb;      ///< Avarage number of calls of class i in qeue   vs number of occupied AS in qeue
+    QVector<QVector<double> > yQEUE_VsVb;    ///< Avarage number of calls of class i in qeue   vs number of occupied AS in system
+    QVector<QVector<double> > ySYSTEM_V;     ///< Avarage number of calls of class i in system vs number of occupied AS in system
 
     class ClassParameters
     {

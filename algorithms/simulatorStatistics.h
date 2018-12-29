@@ -11,7 +11,7 @@ namespace Algorithms
 class TimeStatisticsMacroState
 {
 public:
-    double occupancyTime;                  /// State duration time
+    double occupancyTime;                  ///< State duration time
 
     TimeStatisticsMacroState() : occupancyTime(0) { }
     inline void statsClear() { occupancyTime = 0; }
@@ -20,7 +20,7 @@ public:
 class TimeStatisticsMicroState
 {
 public:
-    double occupancyUtilization;           /// State duration time of state n * number of AUs occupied by class i
+    double occupancyUtilization;           ///< State duration time of state n * number of AUs occupied by class i
 
     TimeStatisticsMicroState() : occupancyUtilization(0) { }
     inline void statsClear() { occupancyUtilization = 0; }
@@ -29,8 +29,8 @@ public:
 class TimeStatisticsMicroStateDetail
 {
 public:
-    double occupancyUtilizationServer;     /// State duration time of state n * number of AUs occupied by class i in server
-    double occupancyUtilizationBuffer;     /// State duration time of state n * number of AUs occupied by class i in buffer
+    double occupancyUtilizationServer;     ///< State duration time of state n * number of AUs occupied by class i in server
+    double occupancyUtilizationBuffer;     ///< State duration time of state n * number of AUs occupied by class i in buffer
 
     TimeStatisticsMicroStateDetail() : occupancyUtilizationServer(0), occupancyUtilizationBuffer(0) { }
     inline void statsClear() { occupancyUtilizationServer = 0; occupancyUtilizationBuffer = 0; }
@@ -39,13 +39,13 @@ public:
 class EvenStatistics
 {
 public:
-    long unsigned int inNew;               /// Number of events when this state was reached because of new call acceptance
-    long unsigned int inEnd;               /// Number of events when this state was reached because of call service ending
+    long unsigned int inNew;               ///< Number of events when this state was reached because of new call acceptance
+    long unsigned int inEnd;               ///< Number of events when this state was reached because of call service ending
 
-    long unsigned int outNewOffered;       /// Number of events when new call was offered in this state (don't care if was accepted or not). New state is possible, but astatistisc are enconted to old one
-    long unsigned int outNewAccepted;      /// Number of events when new call was offered and accepted. There is new state, but statistics are encounted to old one
-    long unsigned int outNewLost;          /// Number of events when new call sas offered and wasn't accepted
-    long unsigned int outEnd;              /// Number of events when the state was leaved because of call service ending
+    long unsigned int outNewOffered;       ///< Number of events when new call was offered in this state (don't care if was accepted or not). New state is possible, but astatistisc are enconted to old one
+    long unsigned int outNewAccepted;      ///< Number of events when new call was offered and accepted. There is new state, but statistics are encounted to old one
+    long unsigned int outNewLost;          ///< Number of events when new call sas offered and wasn't accepted
+    long unsigned int outEnd;              ///< Number of events when the state was leaved because of call service ending
 
     EvenStatistics(): inNew(0), inEnd(0), outNewOffered(0), outNewAccepted(0), outNewLost(0), outEnd(0) { }
     inline void statsClear() { memset(this, 0, sizeof(class EvenStatistics)); }
@@ -63,6 +63,7 @@ private:
 
     QVector<TimeStatisticsMacroState>                            timesPerSystemState;
     QVector<QVector<TimeStatisticsMacroState> >                  timesPerServerAndBufferState;
+
     QVector<QVector<TimeStatisticsMicroState> >                  timesPerClassAndSystemState;
     QVector<QVector<QVector<TimeStatisticsMicroStateDetail> > >  timesPerClassAndServerAndBufferState;
 
@@ -75,11 +76,11 @@ public:
     inline const TimeStatisticsMicroState& getTimeStatisticsSC(int classNo, int systemState)                          const { return timesPerClassAndSystemState[classNo][systemState]; }
     inline const TimeStatisticsMicroStateDetail& getTimeStatisticsSC(int classNo, int serverState, int bufferState)   const { return timesPerClassAndServerAndBufferState[classNo][serverState][bufferState]; }
 
-    inline const EvenStatistics& getEventStatistics(int systemState)                                       const { return eventsPerSystemState[systemState] ;}
-    inline const EvenStatistics& getEventStatistics(int serverState, int bufferState)                      const { return eventsPerServerAndBufferState[serverState][bufferState] ;}
-    inline const EvenStatistics& getEventStatisticsSC(int classNo)                                         const { return eventsPerClass[classNo] ;}
-    inline const EvenStatistics& getEventStatisticsSC(int classNo, int systemState)                        const { return eventsPerClassAndSystemState[classNo][systemState] ;}
-    inline const EvenStatistics& getEventStatisticsSC(int classNo, int serverState, int bufferState)       const { return eventsPerClassAndServerStateAndSystem[classNo][serverState][bufferState] ;}
+    inline const EvenStatistics& getEventStatistics(int systemState)                                                  const { return eventsPerSystemState[systemState] ;}
+    inline const EvenStatistics& getEventStatistics(int serverState, int bufferState)                                 const { return eventsPerServerAndBufferState[serverState][bufferState] ;}
+    inline const EvenStatistics& getEventStatisticsSC(int classNo)                                                    const { return eventsPerClass[classNo] ;}
+    inline const EvenStatistics& getEventStatisticsSC(int classNo, int systemState)                                   const { return eventsPerClassAndSystemState[classNo][systemState] ;}
+    inline const EvenStatistics& getEventStatisticsSC(int classNo, int serverState, int bufferState)                  const { return eventsPerClassAndServerStateAndSystem[classNo][serverState][bufferState] ;}
 
 
     void collectPre(double time, int n_s, int n_b, const QVector<int> &n_si, const QVector<int> &n_bi);
@@ -134,8 +135,8 @@ public:
 
     inline const GroupSetStatistics& getTimeGroupSet(int combinationNo, int state)        const { return timesPerGroupSets[combinationNo][state]; }
     inline const GroupSetStatistics& getTimeBestGroupSet(int setPower, int state)         const { return timesPerBestGroupSets[setPower][state]; }
-    inline const GroupSetStatistics& getTimeGroupSetSC(int combinationNo, int classIdx)   const { return timesPerGroupSets[combinationNo][classIdx]; }
-    inline const GroupSetStatistics& getTimeBestGroupSetSC(int setPower, int classIdx)    const { return timesPerBestGroupSets[setPower][classIdx]; }
+    inline const GroupSetStatistics& getTimeGroupSetSC(int combinationNo, int classIdx)   const { return timesPerGroupSetsSC[combinationNo][classIdx]; }
+    inline const GroupSetStatistics& getTimeBestGroupSetSC(int setPower, int classIdx)    const { return timesPerBestGroupSetsSC[setPower][classIdx]; }
 
     void collectPre(double time, int n, const QVector<int> &n_i);
     void collectPost(int classIdx, int old_n, int n);
@@ -159,9 +160,9 @@ private:
 public:
     BufferStatistics(const ModelSyst * const system);
 
-    inline const EvenStatistics& getEventStatistics(int state)                            const { return eventsPerState[state] ;}
-    inline const EvenStatistics& getEventStatisticsSC(int classNo)                        const { return eventsPerClass[classNo] ;}
-    inline const EvenStatistics& getEventStatisticsSC(int classNo, int state)             const { return eventsPerClassAndState[classNo][state] ;}
+    inline const EvenStatistics& getEventStatistics(int state)                            const { return eventsPerState[state]; }
+    inline const EvenStatistics& getEventStatisticsSC(int classNo)                        const { return eventsPerClass[classNo]; }
+    inline const EvenStatistics& getEventStatisticsSC(int classNo, int state)             const { return eventsPerClassAndState[classNo][state]; }
     inline const TimeStatisticsMacroState& getTimeStatistics(int state)                   const { return timesPerState[state]; }
     inline const TimeStatisticsMicroState& getTimeStatisticsSC(int classNo, int state)    const { return timesPerClassAndState[classNo][state]; }
 

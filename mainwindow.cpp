@@ -1039,7 +1039,8 @@ void MainWindow::on_pushButtonStart_clicked()
                 }
 
                 tmpAlg->calculateSystem(system, a, &investigatorResults, currentSimulationParameter);
-                ui->progressBar->setValue(static_cast<int>((100.0*progress/(total * noOfpoints))));
+                int valProgBar = static_cast<int>((100.0*progress/(total * noOfpoints)));
+                ui->progressBar->setValue(valProgBar);
             }
         }
     }

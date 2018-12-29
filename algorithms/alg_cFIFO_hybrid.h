@@ -26,7 +26,7 @@ public:
                );
     bool possible(const ModelSyst *system) const;
 
-    double **ySystemFAG;
+    QVector<QVector<double> > ySystemFAG;
 
 
 public:
@@ -48,22 +48,22 @@ protected:
 
 public:
 
-    void calculateYSystem(double **ySYSTEM_V, double **yFAG, const ModelSyst *system, TrClVector *PwithoutI, TrClVector *pI);
-    void calculateYQeue(double **yQeueVsVb, double **ySystemFAG, double *Q);
-    void calculateYServer(double **ySeverVsVb, double **ySystemFAG, double *Q);
+    void calculateYSystem(QVector<QVector<double> > &ySYSTEM_V, QVector<QVector<double> > yFAG, const ModelSyst *system, TrClVector *PwithoutI, TrClVector *pI);
+    void calculateYQeue(QVector<QVector<double> >   &yQeueVsVb, QVector<QVector<double> > ySystemFAG, double *Q);
+    void calculateYServer(QVector<QVector<double> > &ySeverVsVb, QVector<QVector<double> > ySystemFAG, double *Q);
 
 
 
 private:
-    void calculateYSystemFAG(double **ySystem, double **yFAG);
-    void calculateYSystemLambdaT(double **ySystem, double **ySystemFAG);
-    void calculateYSystemApprox(double **ySystem, double **yFAG, int infinityFtr);
+    void calculateYSystemFAG(QVector<QVector<double> > &ySystem, QVector<QVector<double> > yFAG);
+    void calculateYSystemLambdaT(QVector<QVector<double> > &ySystem, QVector<QVector<double> > ySystemFAG);
+    void calculateYSystemApprox(QVector<QVector<double> > &ySystem, QVector<QVector<double> > yFAG, int infinityFtr);
 
-    void calculateYQeueFAG(double **yQeueVsVb, double **ySystemFAG);
-    void calculateYQeuePropLambdaT(double **yQeueVsVb, double **yFAG, double *Q, bool lambdaIsDependent = false);
+    void calculateYQeueFAG(QVector<QVector<double> > &yQeueVsVb, QVector<QVector<double> > ySystemFAG);
+    void calculateYQeuePropLambdaT(QVector<QVector<double> > &yQeueVsVb, QVector<QVector<double> > yFAG, double *Q, bool lambdaIsDependent = false);
 
-    void calculateYServerFAG(double **yServerVsVb, double **ySystemFAG);
-    void calculateYServerPropLambdaT(double **yServerVsVb, double **ySystemFAG, double *Q);
+    void calculateYServerFAG(QVector<QVector<double> > &yServerVsVb, QVector<QVector<double> > ySystemFAG);
+    void calculateYServerPropLambdaT(QVector<QVector<double> > &yServerVsVb, QVector<QVector<double> > ySystemFAG, double *Q);
 };
 /*
 class Algorithm2Pass : public algorithm

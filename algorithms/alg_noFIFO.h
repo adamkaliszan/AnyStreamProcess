@@ -27,8 +27,8 @@ public:
     bool possible(const ModelSyst *system) const;
 
 private:
-    void calculateYSystem(double **ySystem,  const TrClVector &P);
-    void calculateYServer(double **yServerVsVb, const TrClVector &P);
+    void calculateYSystem(QVector<QVector<double> > ySystem,  const TrClVector &P);
+    void calculateYServer(QVector<QVector<double> > yServerVsVb, const TrClVector &P);
 };
 
 } // namespace Algorithms

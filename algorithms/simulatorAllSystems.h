@@ -35,18 +35,7 @@ public:
     class System;   ///Whole system (Serwer, bufffer(optional) and Calls)
     class Server;   ///Consists of one or more groups
     class Buffer;   ///Consists of one or more groups
-    class Group;    ///Cinsists of V AUs
-    class AU;       ///Single allocation unit. Calls can ocupy more then one AU
     struct Call;
-
-    enum class GroupResourcessAllocationlgorithm
-    {
-        NonContinuous,
-        FirstFit,
-        BestFit,
-        WorstFit,
-        Random
-    };
 
     class Engine
     {
@@ -66,9 +55,9 @@ public:
         Engine(System *system);
         ~Engine();
 
-        inline void reuseCall(Call *callToReuse);
-        inline void notifyLostCall() { totalNumberOfLostCalls++;}
-        inline void notifyServicedCall() { totalNumberOfServicedCalls++;}
+        inline void reuseCall(Call *callToReuse)  { uselessCalls.push(callToReuse); }
+        inline void notifyLostCall()              { totalNumberOfLostCalls++; }
+        inline void notifyServicedCall()          { totalNumberOfServicedCalls++; }
 
         void initialize(double a, int sumPropAt, int vk_s);
         void doSimExperiment(int numberOfLostCall, unsigned int seed, int numberOfServicedCalls=0);
@@ -78,7 +67,7 @@ public:
         inline ProcAll* getNewProcess()           { return agenda->getNewProcess(); }
         inline ProcAll *takeFirstProcess()        { return agenda->takeFirstProcess(); }
         inline void addProcess(ProcAll *proc);
-        inline void removeProcess(ProcAll *proc);
+        void removeProcess(ProcAll *proc);
         void reuseProcess(ProcAll *proc);
 
         Call *getNewCall(Call *parent);
@@ -98,8 +87,8 @@ public:
 
     private:
         // System components
-        Server *server;               /// Server details
-        Buffer *buffer;               /// Buffer details
+        Server *server;               ///< Server details
+        Buffer *buffer;               ///< Buffer details
 
         QList<Call *> calls;
 
@@ -146,26 +135,23 @@ public:
     public:
         const System  * const system;
         const ServerResourcessScheduler scheduler;    /// Algorithm that is responsible for choosing the group if more then 1
-        const int V;                                  /// Server capacity
+        const int vTotal;                             /// Server capacity
         const int vMax;                               /// Max number of AU in a single group
         const int k;                                  /// Number of groups
         const int m;                                  /// Number of traffic classes
-
-
-        QVector<QExplicitlySharedDataPointer<Group> > groups;
 
     private:
         // Server state
         int n;                                        /// Server state
         QVector<int> n_i;                             /// Server microstate (numbers of occupied AS by all the offered classes
+        QVector<int> n_k;                             /// Group state, occupancy state of each od the groups
 
-        mutable QVector<int> groupSequence;           /// Sequence of checking group for new call service
-        mutable QVector<int> tmpAvailabilityInGroups; /// Number of AS that is now available in given group
+        mutable QVector<int> subgroupSequence;           /// Sequence of checking group for new call service
+        mutable QVector<int> subgroupFreeAUs; /// Number of AS that is now available in given group
 
         ServerStatistics *statistics;
 
         QList<Call *> calls;
-        QVector<QExplicitlySharedDataPointer<AU> >serverResourcess;
 
         double resourceUtilization(int ClassNumber, int stateNo) const;
         double getTimeOfState(int stateNo) const;
@@ -182,12 +168,12 @@ public:
 
         void writesResultsOfSingleExperiment(RSingle& singleResults, double simulationTime);
 
-        inline int getNoOfFreeAS() const { return V - n; }
+        inline int getNoOfFreeAS() const { return vTotal - n; }
         int getMaxNumberOfAsInSingleGroup();
 
-        inline int getV() const {return V;}
+        inline int getV() const {return vTotal;}
 
-        void addCall(Call *call, int noOfAS, int groupNo, const QList<int> &asIndexes, bool newCall);
+        void addCall(Call *call, int noOfAS, int groupNo, bool newCall);
         void removeCall(Call *call);
 
 #define FOLDINGSTART { //Statistics
@@ -209,9 +195,7 @@ public:
          * @param allocationStrategy
          * @return True if there is a place for
          */
-        bool findAS(int noOfAUs, int &groupNo, QList<int> &auIndexes
-                    , GroupResourcessAllocationlgorithm groupResourcessAllocationlgorithm = GroupResourcessAllocationlgorithm::NonContinuous
-                ) const;
+        bool findAS(int noOfAUs, int &groupNo) const;
     };
 
     class Buffer
@@ -219,30 +203,27 @@ public:
         friend void SimulatorAll::System::writesResultsOfSingleExperiment(Results::RSingle&);
     private:
         System *system;
-        int V;                          /// Number of Allocated Slots, that the buffer is able to handle
+        int V;                                                            ///< Number of Allocated Slots, that the buffer is able to handle
         int m;
-        double *occupancyTimes;
 
-        QStack<Call *> calls;            /// FiFo Qeue with calls
-        Call *firstCall;                 /// Call that is partialy serviced
+        QStack<Call *> calls;                                             ///< FiFo Qeue with calls
+        Call *firstCall;                                                  ///< Call that is partialy serviced
 
-        int   *numberOfCalls;           /// Actual number of calls that are awainting in qeue
-        int   *numberOfAS;              /// Actual number of AS occupied by call in qeue
-        double *avgNumberOfCalls;        /// Number of calls multiplied by the time in qeue
-        double *AStime_ofOccupiedAS_byClassI;            /// Number of calls multiplied by the time in qeue
-        double **AStime_ofOccupiedAS_byClassI_inStateN;  /// Avarage number of resuorcess occupied by class i in state n
+        QVector<double> occupancyTimes;                                   ///< Wimes of occupancy of every state <0, V>
+        QVector<int> numberOfCalls;                                       ///< Actual number of calls that are awainting in qeue
+        QVector<int> numberOfAS;                                          ///< Actual number of AS occupied by call in qeue
+        QVector<double> avgNumberOfCalls;                                 ///< Number of calls multiplied by the time in qeue
+        QVector<QVector<double> > AStime_ofOccupiedAS_byClassI_inStateN;  ///< Avarage number of resuorcess occupied by class i in state n
 
     public:
-        int n;                          /// Number of AS that is used by the calls
-        QVector<int> n_i;
-        Buffer(int V, System *system);
+        int n;                                                            ///< Number of AS that is used by the calls
+        QVector<int> n_i;                                                 ///< Detailed number of AS that is used by given classes
+        Buffer(System *system);
         ~Buffer();
 
         inline int   getV()                                      { return V; }
         inline int   getNoOfFreeAS()                             { return V - n;}
-        inline double getOccupancyTimeOfState(int n)             { return occupancyTimes[n]; }
         inline double getAvarageNumberOfCalls(int classIdx)      { return avgNumberOfCalls[classIdx]; }
-        inline double getAvarageNumberOfAS(int classIdx)         { return AStime_ofOccupiedAS_byClassI[classIdx]; }
         inline double getAvgNoOfASinStateN(int classIdx, int n)  { return AStime_ofOccupiedAS_byClassI_inStateN[classIdx][n]; }
 
 #define FOLDINGSTART { //Statistics
@@ -317,83 +298,6 @@ public:
         void collectTheStats(double time);
         void (*trEndedFun)(ProcAll *proc, SimulatorAll::System *system);
     };
-
-    class Group: public QSharedData
-    {
-    private:
-        const int m;            /// Number of traffic classes
-        const int v;            /// Group capacity
-        int n;                  /// Group state      (total number of occupied AS)
-        QVector<int> n_i;       /// Group microstate (numbers of occupied AS by all the offered classes)
-
-/// Statistics scope: system resourcess
-        QVector<QExplicitlySharedDataPointer<AU> > allocationUnits;                          /// Scope: system resourcess
-
-/// Statistics scope: group state
-        QVector<double> timePerState;                       /// State duration time
-        QVector<QVector<double> >workoutPerClassAndState;   /// State duration time*number os AS
-
-    public:
-        Group(int v, int m);
-        Group(const Group& rho);
-
-/// Simulation
-        /**
-         * @brief findAS
-         * @param *firstAU
-         * @param *noOfFreeAuInARow
-         * @param noOfAUs
-         * @param allocationStrategy
-         * @return True if there is a place for
-         */
-        int findAS(
-                int noOfAUs
-              , QList<int>& ausToOccupy
-              , GroupResourcessAllocationlgorithm groupResourcessAllocationlgorithm = GroupResourcessAllocationlgorithm::NonContinuous
-             ) const;
-
-        int findMaxAS(GroupResourcessAllocationlgorithm groupResourcessAllocationlgorithm = GroupResourcessAllocationlgorithm::NonContinuous) const;
-
-        void removeCall(Call *endedCall);
-        void addCall(Call *newCall, const QList<int> &asIndexes);
-
-/// Statistics
-        void statsClear();
-        void statsColectPre(double time);
-        void statsCollectPost(int classIdx);
-
-        int getNoOfFreeAUs(bool considerAllocationAlgorithm=false);
-    };
-
-    /**
-     * @brief The Allocation Unit
-     *
-     */
-    class AU: public QSharedData
-    {
-    private:
-        int            m;                                 /// Number of offered traffic classes
-        Call            *servicedCall;                     /// Call of this class is curently in service
-///Statistics
-        QVector<double> occupancyTimesPerClass;            /// Times of the occupancy by specified class
-        double          occupancyTime;                     /// Time of the ocupancy by any class
-
-    public:
-        AU(int m = 0);
-
-        bool isFree() const;
-        void increaseOccupancyTime(double time);
-        void addCall(Call *newCall);
-        void removeCall();
-        bool isThisCallHere(Call *comparedCall);
-
-#define FOLDINGSTART { //Statistics
-        void statsClear();
-        void statsColectPre(double time);
-        void statsCollectPost(int classIdx);
-#define FOLDINGEND }
-    };
-
 
 
 private:

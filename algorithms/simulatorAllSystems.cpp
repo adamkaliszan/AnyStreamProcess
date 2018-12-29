@@ -34,11 +34,6 @@ SimulatorAll::Call *SimulatorAll::Engine::_getNewCall()
     return new Call;
 }
 
-void SimulatorAll::Engine::reuseCall(SimulatorAll::Call *callToReuse)
-{
-    uselessCalls.push(callToReuse);
-}
-
 void SimulatorAll::Engine::prepareCallToService(SimulatorAll::Call *callThatIsInService)
 {
     callThatIsInService->proc           = agenda->getNewProcess();
@@ -232,6 +227,8 @@ SimulatorAll::System::System(const ModelSyst *system, int noOfSeries)
 
 
     server = new Server(this);
+    buffer = new Buffer(this);
+
 
     statistics = new SystemStatistics(system);
 }
@@ -256,7 +253,13 @@ void SimulatorAll::Engine::initialize(double a, int sumPropAt, int V)
 void SimulatorAll::Engine::doSimExperiment(int numberOfLostCall, unsigned int seed, int numberOfServicedCalls)
 {
     int classIdx;
-
+#define DO_SIM_EXP \
+    ProcAll *proc = takeFirstProcess();\
+    system->statsCollectPre(proc->time);\
+    classIdx = proc->callData->classIdx;\
+    proc->execute(proc, system);\
+    system->statsCollectPost(classIdx);\
+#undef DO_SIM_EXP
     qsrand(seed);
     totalNumberOfLostCalls = 0;
     totalNumberOfServicedCalls = 0;
@@ -416,8 +419,7 @@ bool SimulatorAll::System::serveNewCall(SimulatorAll::Call *newCall)
 
 #endif
     int groupNumber;
-    QList<int> indexesToOccupy;
-    bool isPlace = server->findAS(newCall->reqAS, groupNumber, indexesToOccupy);
+     bool isPlace = server->findAS(newCall->reqAS, groupNumber);
 
     if (isPlace)
     {
@@ -426,7 +428,7 @@ bool SimulatorAll::System::serveNewCall(SimulatorAll::Call *newCall)
         calls.append(newCall);
 
         newCall->allocatedAS    = newCall->reqAS;
-        server->addCall(newCall, newCall->reqAS, groupNumber, indexesToOccupy, true);
+        server->addCall(newCall, newCall->reqAS, groupNumber, true);
 
         n += newCall->reqAS;
         n_i[static_cast<int>(newCall->classIdx)] += newCall->reqAS;
@@ -497,7 +499,12 @@ void SimulatorAll::System::statsCollectPre(double time)
         tmpCall->collectTheStats(time);
     }
 
-    statistics->collectPre(time, server->get_n(), buffer->get_n(), server->getMicroStates(), buffer->getMicroStates());
+    int n_s = server->get_n();
+    int n_b = buffer->get_n();
+    const QVector<int> &nMs_s = server->getMicroStates();
+    const QVector<int> &nMs_b = buffer->getMicroStates();
+
+    statistics->collectPre(time, n_s, n_b, nMs_s, nMs_b);
     server->statsColectPre(time);
     buffer->statsColectPre(time);
 }
@@ -555,15 +562,13 @@ double SimulatorAll::Server::statsGetWorkoutPerClassAndState(int i, int n) const
 
 double SimulatorAll::Server::statsGetOccupancyTimeOfState(int state) const
 {
-    return (state <= V) ? statistics->getTimeStatistics(state).occupancyTime : 0;
+    return (state <= vTotal) ? statistics->getTimeStatistics(state).occupancyTime : 0;
 }
 
 #define FOLDINGEND }
 
 
-bool SimulatorAll::Server::findAS(int noOfAUs, int& groupNo, QList<int>& asIndexes
-        ,  GroupResourcessAllocationlgorithm groupResourcessAllocationlgorithm
-                ) const
+bool SimulatorAll::Server::findAS(int noOfAUs, int& groupNo) const
 {
     bool result = false;
     int groupNoTmp;
@@ -571,11 +576,11 @@ bool SimulatorAll::Server::findAS(int noOfAUs, int& groupNo, QList<int>& asIndex
     switch (scheduler)
     {
     case ServerResourcessScheduler::Random:
-        Utils::UtilsMisc::suffle(groupSequence);
-        foreach (groupNoTmp, groupSequence)
+        Utils::UtilsMisc::suffle(subgroupSequence);
+        foreach (groupNoTmp, subgroupSequence)
         {
             groupNo = groupNoTmp;
-            if (groups[static_cast<int>(groupNo)]->findAS(noOfAUs, asIndexes, groupResourcessAllocationlgorithm) >= noOfAUs)
+            if (subgroupFreeAUs[groupNoTmp] >= noOfAUs)
             {
                 result = true;
                 break;
@@ -584,10 +589,10 @@ bool SimulatorAll::Server::findAS(int noOfAUs, int& groupNo, QList<int>& asIndex
         break;
 
     case ServerResourcessScheduler::Sequencial:
-        foreach (groupNoTmp, groupSequence)
+        foreach (groupNoTmp, subgroupSequence)
         {
             groupNo = groupNoTmp;
-            if (groups[static_cast<int>(groupNo)]->findAS(noOfAUs, asIndexes, groupResourcessAllocationlgorithm) >= noOfAUs)
+            if (subgroupFreeAUs[groupNoTmp] >= noOfAUs)
             {
                 result = true;
                 break;
@@ -595,23 +600,19 @@ bool SimulatorAll::Server::findAS(int noOfAUs, int& groupNo, QList<int>& asIndex
         }
         break;
     }
-    if (result)
-    {
-        int noOfFreeAus = groups[static_cast<int>(groupNo)]->getNoOfFreeAUs();
-        assert (noOfFreeAus >= noOfAUs);
-    }
     return result;
 }
 
 
-void SimulatorAll::Server::addCall(Call *call, int noOfAS, int groupNo, const QList<int>& asIndexes, bool newCall)
+void SimulatorAll::Server::addCall(Call *call, int noOfAS, int groupNo, bool newCall)
 {
     call->groupIndex = groupNo;
     n += noOfAS;
-    assert(V >= n);
+    assert(vTotal >= n);
     n_i[call->classIdx] += noOfAS;
+    n_k[groupNo] += noOfAS;
+    subgroupFreeAUs[groupNo] -=noOfAS;
 
-    groups[call->groupIndex]->addCall(call, asIndexes);
 
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
     if (call->reqAS < call->allocatedAS)
@@ -623,7 +624,7 @@ void SimulatorAll::Server::addCall(Call *call, int noOfAS, int groupNo, const QL
     {
         calls.append(call);
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
-        if (calls.length() > this->V)
+        if (calls.length() > this->vTotal)
             qFatal("To many calls on server's list");
 #endif
     }
@@ -631,7 +632,7 @@ void SimulatorAll::Server::addCall(Call *call, int noOfAS, int groupNo, const QL
 
 void SimulatorAll::Server::removeCall(SimulatorAll::Call *call)
 {
-    groups[call->groupIndex]->removeCall(call);
+    this->subgroupFreeAUs[call->groupIndex] +=call->allocatedAS;
     calls.removeAll(call);
     n_i[call->classIdx] -=call->allocatedAS;
     n -=call->allocatedAS;
@@ -650,30 +651,22 @@ double SimulatorAll::Server::getTimeOfState(int stateNo) const
 SimulatorAll::Server::Server(System *system)
   : system(system)
   , scheduler(system->systemData->getGroupsSchedulerAlgorithm())
-  , V(system->systemData->vk_s())
+  , vTotal(system->systemData->vk_s())
   , vMax(system->systemData->v_sMax())
   , k(system->systemData->k_s())
   , m(system->systemData->m())
   , n(0)
 {   
-
-
-    groups.resize(k);
-    int groupNo = 0;
-    for (int grType=0; grType<system->systemData->k_sType(); grType++)
-    {
-        for (int subGroupNo=0; subGroupNo< system->systemData->k_s(grType); subGroupNo++)
-        {
-            groups[groupNo] = QSharedDataPointer<Group>(new Group (system->systemData->v_s(grType), system->systemData->m()));
-            groupNo++;
-        }
-    }
-
+    n_k.resize(k);
     n_i.resize(m);
 
-    groupSequence.resize(k);
+    subgroupFreeAUs.resize(k);
+    subgroupSequence.resize(k);
     for (int j=0; j<k; j++)
-        groupSequence[j] = j;
+    {
+        subgroupFreeAUs[j] = system->systemData->v_s(j);
+        subgroupSequence[j] = j;
+    }
 
     statistics = new ServerStatistics(system->systemData);
 }
@@ -755,7 +748,7 @@ int SimulatorAll::Server::getMaxNumberOfAsInSingleGroup()
 
     for (int groupNo=0; groupNo<k; groupNo++)
     {
-        int tempAvailability = groups[groupNo]->getNoOfFreeAUs(true);
+        int tempAvailability = subgroupFreeAUs[groupNo];
         result = (tempAvailability > result) ? tempAvailability : result;
     }
     return result;
@@ -1376,201 +1369,29 @@ void SimulatorAll::Call::collectTheStats(double time)
     DUtransfered += (time * allocatedAS);
 }
 
-#define FOLDINGSTART { // Allocation Unit
-SimulatorAll::AU::AU(int m)
-    : m(m)
-    , servicedCall(nullptr)
-{
-    occupancyTimesPerClass.resize(m);
-}
-
-bool SimulatorAll::AU::isFree() const
-{
-    return (servicedCall == nullptr);
-}
-
-void SimulatorAll::AU::increaseOccupancyTime(double time)
-{
-    if (servicedCall != nullptr)
-        occupancyTimesPerClass[servicedCall->classIdx] += time;
-}
-
-void SimulatorAll::AU::addCall(Call *newCall)
-{
-#ifndef DO_NOT_USE_SECUTIRY_CHECKS
-    if (servicedCall != nullptr)
-        qFatal("Can't add a call of class with index %d if there is a call of class with index %d in service",newCall->classIdx, newCall->classIdx);
-#endif
-    servicedCall = newCall;
-}
-
-bool SimulatorAll::AU::isThisCallHere(Call *comparedCall)
-{
-    return (servicedCall == comparedCall);
-}
-
-void SimulatorAll::AU::removeCall()
-{
-    servicedCall = nullptr;
-}
-
-#define FOLDINGSTART { //Statistics
-void SimulatorAll::AU::statsClear()
-{
-    occupancyTime = 0;
-
-    for (int i=0; i<m; i++)
-        occupancyTimesPerClass[i] = 0;
-}
-
-void SimulatorAll::AU::statsColectPre(double time)
-{
-    if (this->servicedCall)
-    {
-        occupancyTimesPerClass[servicedCall->classIdx] += time;
-        this->occupancyTime += time;
-    }
-}
-
-void SimulatorAll::AU::statsCollectPost(int classIdx)
-{
-    (void) classIdx;
-}
 
 #define FOLDINEND }
 
-#define FOLDINEND }
+#define FOLDINGSTART { // buffer
 
-#define FOLDINGSTART { // Group
-SimulatorAll::Group::Group(int v, int m): m(m), v(v), n(0)
+SimulatorAll::Buffer::Buffer(SimulatorAll::System *system) : system(system), V(system->vk_b), m(system->m), firstCall(nullptr), n(0)
 {
-    allocationUnits.resize(v);
-    for (int n=0; n<v; n++)
-        allocationUnits[n] = new AU(m);
+    numberOfCalls.resize(m);
+    numberOfAS.resize(m);
 
-    timePerState.resize(v+1);
-
-    workoutPerClassAndState.resize(m);
+    avgNumberOfCalls.resize(m);
     n_i.resize(m);
-    for (int i=0; i<m; i++)
+
+
+    occupancyTimes.resize(V+1);
+    numberOfCalls.resize(m);
+    numberOfAS.resize(m);
+    avgNumberOfCalls.resize(m);
+    AStime_ofOccupiedAS_byClassI_inStateN.resize(m);
     {
-        workoutPerClassAndState[i].resize(v+1);
+        for (int nb=0; nb<=V; nb++)
+            AStime_ofOccupiedAS_byClassI_inStateN[nb].resize(m);
     }
-}
-
-SimulatorAll::Group::Group(const SimulatorAll::Group &rho)
-    : QSharedData(rho)
-    , m(rho.m)
-    , v(rho.v)
-    , n(rho.n)
-{
-    allocationUnits = rho.allocationUnits;
-    for (int n=0; n<v; n++)
-        allocationUnits[n] = new AU(m);
-
-    timePerState = rho.timePerState;
-    workoutPerClassAndState = rho.workoutPerClassAndState;
-}
-
-int SimulatorAll::Group::findAS(int noOfAUs
-                                       , QList<int> &ausToOccupy
-                                       , GroupResourcessAllocationlgorithm groupResourcessAllocationlgorithm
-                                       ) const
-{
-    ausToOccupy.clear();
-    int result = 0;
-    int nx = 0;
-
-    switch (groupResourcessAllocationlgorithm)
-    {
-    case GroupResourcessAllocationlgorithm::NonContinuous:
-        result = v-n;
-        if (result >= noOfAUs)
-        {
-            for (nx=0, result=0; nx<v && result < noOfAUs; nx++)
-                if (allocationUnits[nx]->isFree())
-                {
-                    ausToOccupy.append(nx);
-                    result++;
-                }
-        }
-        break;
-    default:
-        qFatal("Not implemented");
-        //break;
-    }
-    return result;
-}
-
-int SimulatorAll::Group::findMaxAS(SimulatorAll::GroupResourcessAllocationlgorithm groupResourcessAllocationlgorithm) const
-{
-    int result = 0;
-
-    switch (groupResourcessAllocationlgorithm)
-    {
-    case GroupResourcessAllocationlgorithm::NonContinuous:
-        result = v-n;
-        break;
-    default:
-        qFatal("Not implemented");
-        //break;
-    }
-
-    return result;
-}
-
-void SimulatorAll::Group::removeCall(SimulatorAll::Call *endedCall)
-{
-    n-=endedCall->reqAS;
-
-    for (int idx=0; idx<v; idx++)
-        if (allocationUnits[idx]->isThisCallHere(endedCall))
-            allocationUnits[idx]->removeCall();
-}
-
-void SimulatorAll::Group::addCall(SimulatorAll::Call *newCall, const QList<int>& asIndexes)
-{
-    n+=newCall->reqAS;
-    foreach (int index, asIndexes)
-    {
-       allocationUnits[index]->addCall(newCall);
-    }
-}
-
-void SimulatorAll::Group::statsClear()
-{
-    for (int resNo=0; resNo < v; resNo++)
-    {
-        allocationUnits[resNo]->statsClear();
-    }
-
-    for (int n=0; n<=v; n++)
-    {
-        timePerState[n] = 0;
-        for (int i=0; i<m; i++)
-            workoutPerClassAndState[i][n] = 0;
-    }
-}
-
-void SimulatorAll::Group::statsColectPre(double time)
-{
-    for (int resNo=0; resNo < v; resNo++)
-        allocationUnits[resNo]->statsColectPre(time);
-
-    timePerState[n] += time;
-    for (int i=0; i<m; i++)
-        workoutPerClassAndState[i][n] += (time *  n_i[i]);
-}
-
-void SimulatorAll::Group::statsCollectPost(int classIdx)
-{
-    for (int resNo=0; resNo < v; resNo++)
-        allocationUnits[resNo]->statsCollectPost(classIdx);
-}
-
-int SimulatorAll::Group::getNoOfFreeAUs(bool considerAllocationAlgorithm)
-{
-    return (!considerAllocationAlgorithm) ? v-n : findMaxAS();
 }
 
 void SimulatorAll::Buffer::statsClear()

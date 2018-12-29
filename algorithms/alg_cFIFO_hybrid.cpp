@@ -118,10 +118,10 @@ void AlgorithmHybrid::calculateSystem(const ModelSyst *system
         P = tmp;
     }
 
-    ySystemFAG = new double*[m];
+    ySystemFAG.resize(m);
     for (int i=0; i<m; i++)
     {
-        ySystemFAG[i] = new double[VsVb+1];
+        ySystemFAG[i].resize(VsVb+1);
         p_single[i].normalize();
         P_without_i[i].normalize();
 
@@ -171,10 +171,6 @@ void AlgorithmHybrid::calculateSystem(const ModelSyst *system
     calculateYServer(ySERVER_V, ySystemFAG, Q);
     calculateYQeue(yQEUE_VsVb, ySystemFAG, Q);
 
-
-    for (int i=0; i<m; i++)
-        delete []ySystemFAG[i];
-    delete []ySystemFAG;
 
     for (int i=0; i<system->m(); i++)
     {
@@ -356,9 +352,8 @@ void AlgorithmHybrid::calculateSystem(const ModelSyst *system
     //emit this->sigCalculationDone();
 }
 
-void AlgorithmHybrid::calculateYSystem(
-          double **ySYSTEM_VsVb
-        , double **yFAG
+void AlgorithmHybrid::calculateYSystem(QVector<QVector<double> > &ySYSTEM_VsVb
+        , QVector<QVector<double> > yFAG
         , const ModelSyst *system
         , TrClVector *PwithoutI
         , TrClVector *pI)
@@ -382,7 +377,8 @@ void AlgorithmHybrid::calculateYSystem(
     }
 }
 
-void AlgorithmHybrid::calculateYSystemFAG(double **ySystem, double **yFAG)
+void AlgorithmHybrid::calculateYSystemFAG(QVector<QVector<double> > &ySystem
+  , QVector<QVector<double> > yFAG)
 {
     for (int i=0; i<system->m(); i++)
     {
@@ -391,7 +387,10 @@ void AlgorithmHybrid::calculateYSystemFAG(double **ySystem, double **yFAG)
     }
 }
 
-void AlgorithmHybrid::calculateYSystemApprox(double **ySystem, double **yFAG, int infinityFtr)
+void AlgorithmHybrid::calculateYSystemApprox(QVector<QVector<double> > &ySystem
+  , QVector<QVector<double> > yFAG
+  , int infinityFtr
+)
 {
     double *yNfty = new double[system->m()];
     double sumAt = 0;
@@ -411,7 +410,9 @@ void AlgorithmHybrid::calculateYSystemApprox(double **ySystem, double **yFAG, in
     }
 }
 
-void AlgorithmHybrid::calculateYSystemLambdaT(double **ySystem, double **ySystemFAG)
+void AlgorithmHybrid::calculateYSystemLambdaT(QVector<QVector<double> > &ySystem
+  , QVector<QVector<double> > ySystemFAG
+)
 {
     for (int i=0; i<system->m(); i++)
     {
@@ -420,7 +421,10 @@ void AlgorithmHybrid::calculateYSystemLambdaT(double **ySystem, double **ySystem
     }
 }
 
-void AlgorithmHybrid::calculateYServer(double **ySeverVsVb, double **ySystemFAG, double *Q)
+void AlgorithmHybrid::calculateYServer(QVector<QVector<double> > &ySeverVsVb
+  , QVector<QVector<double> > ySystemFAG
+  , double *Q
+)
 {
     switch (variant)
     {
@@ -444,7 +448,9 @@ bool AlgorithmHybrid::possible(const ModelSyst *system) const
     return Investigator::possible(system);
 }
 
-void AlgorithmHybrid::calculateYServerFAG(double **yServerVsVb, double **ySystemFAG)
+void AlgorithmHybrid::calculateYServerFAG(QVector<QVector<double> > &yServerVsVb
+  , QVector<QVector<double> > ySystemFAG
+)
 {
     for (int i=0; i < system->m(); i++)
     {
@@ -462,11 +468,12 @@ void AlgorithmHybrid::calculateYServerFAG(double **yServerVsVb, double **ySystem
     }
 }
 
-void AlgorithmHybrid::calculateYServerPropLambdaT(double **yServerVsVb, double **ySystemFAG, double *Q)
+void AlgorithmHybrid::calculateYServerPropLambdaT(QVector<QVector<double> > &yServerVsVb
+  , QVector<QVector<double> > ySystemFAG
+  , double *Q
+)
 {
-    double **yQ = new double*[system->m()];
-    for (int i=0; i<system->m(); i++)
-        yQ[i] = new double [system->V() + 1];
+    QVector<QVector<double> > yQ;
 
     calculateYQeue(yQ, ySystemFAG, Q);
 
@@ -474,13 +481,14 @@ void AlgorithmHybrid::calculateYServerPropLambdaT(double **yServerVsVb, double *
     {
         for (int n=0; n < system->V(); n++)
             yServerVsVb[i][n] = ySystemFAG[i][n] - yQ[i][n];
-        delete []yQ[i];
     }
-    delete []yQ;
 }
 
 
-void AlgorithmHybrid::calculateYQeue(double **yQeueVsVb, double **ySystemFAG, double *Q)
+void AlgorithmHybrid::calculateYQeue(QVector<QVector<double> > &yQeueVsVb
+  , QVector<QVector<double> > ySystemFAG
+  , double *Q
+)
 {
     switch (variant)
     {
@@ -499,7 +507,9 @@ void AlgorithmHybrid::calculateYQeue(double **yQeueVsVb, double **ySystemFAG, do
     }
 }
 
-void AlgorithmHybrid::calculateYQeueFAG(double **yQeueVsVb, double **ySystemFAG)
+void AlgorithmHybrid::calculateYQeueFAG(QVector<QVector<double> > &yQeueVsVb
+  , QVector<QVector<double> > ySystemFAG
+)
 {
     for (int i=0; i<system->m(); i++)
     {
@@ -517,7 +527,11 @@ void AlgorithmHybrid::calculateYQeueFAG(double **yQeueVsVb, double **ySystemFAG)
     }
 }
 
-void AlgorithmHybrid::calculateYQeuePropLambdaT(double **yQeueVsVb, double **yFAG, double *Q, bool lambdaIsDependent)
+void AlgorithmHybrid::calculateYQeuePropLambdaT(QVector<QVector<double> > &yQeueVsVb
+  , QVector<QVector<double> > yFAG
+  , double *Q
+  , bool lambdaIsDependent
+)
 {
     for (int i=0; i < system->m(); i++)
         for (int n=0; n <= system->vk_s(); n++)
