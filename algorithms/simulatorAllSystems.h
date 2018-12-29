@@ -78,12 +78,17 @@ public:
     {
     public:
         Engine *engine;
+    /// Description of investigated system
+        const ModelSyst *systemData;
+    /// Number of offered traffic classes
+        const int m;
 
-        const ModelSyst *systemData;  /// Description of investigated system
-        const int m;                  /// Number of offered traffic classes
-        const int vk_sb;              /// Total system capacity
-        const int vk_s;               /// Total server capacity
-        const int vk_b;               /// Total buffer capacity
+    /// Total system capacity
+        const int vk_sb;
+    /// Total server capacity
+        const int vk_s;
+    /// Total buffer capacity
+        const int vk_b;
 
     private:
         // System components
@@ -93,13 +98,13 @@ public:
         QList<Call *> calls;
 
         // Statistics and results
-        SystemStatistics *statistics; /// Statistics that are colected during simulation experiment
+        SystemStatistics *statistics; ///< Statistics that are colected during simulation experiment
         simulationResults results;    //TODO deprecated, use newresult
 
         // System state
-        int n;                        /// Number of occupied resourcess by all the classes
-        int old_n;                    /// Previous number of occupied resourcess by all the classes
-        QVector<int> n_i;             /// Number of occupied resourcess by given class. Vector length is m
+        int n;                        ///< Number of occupied resourcess by all the classes
+        int old_n;                    ///< Previous number of occupied resourcess by all the classes
+        QVector<int> n_i;             ///< Number of occupied resourcess by given class. Vector length is m
 
 
         void removeCallFromServer(Call *call);
@@ -218,6 +223,7 @@ public:
     public:
         int n;                                                            ///< Number of AS that is used by the calls
         QVector<int> n_i;                                                 ///< Detailed number of AS that is used by given classes
+
         Buffer(System *system);
         ~Buffer();
 

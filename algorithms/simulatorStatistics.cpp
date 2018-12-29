@@ -114,7 +114,6 @@ ServerStatistics::ServerStatistics(const ModelSyst * const system)
     timesPerBestGroupSets.resize(system->k_s()+1);
     timesPerBestGroupSetsSC.resize(system->k_s()+1);
 
-    //availabilityOnlyInAllGroupsInCombination.resize(combinationList.length());
     availabilityInAllGroupsInCombination.resize(combinationList.length());
     inavailabilityInAllGroupsInCombination.resize(combinationList.length());
 
@@ -125,6 +124,10 @@ ServerStatistics::ServerStatistics(const ModelSyst * const system)
         freeAUsInBestGroupInCombination[combinationNo].fill(0, system->v_sMax()+1);
         availabilityInAllGroupsInCombination[combinationNo].fill(0, system->v_sMax()+1);
         inavailabilityInAllGroupsInCombination[combinationNo].fill(0, system->v_sMax()+1);
+
+        timesPerGroupSets[combinationNo].fill(GroupSetStatistics(), system->v_sMax()+1);
+        timesPerGroupSetsSC[combinationNo].fill(GroupSetStatistics(), system->v_sMax()+1);
+
     }
 
     availabilityTimeInGroupSet.resize(system->k_s()+1);

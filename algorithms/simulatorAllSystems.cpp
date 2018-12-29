@@ -229,7 +229,6 @@ SimulatorAll::System::System(const ModelSyst *system, int noOfSeries)
     server = new Server(this);
     buffer = new Buffer(this);
 
-
     statistics = new SystemStatistics(system);
 }
 
