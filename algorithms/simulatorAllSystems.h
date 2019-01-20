@@ -32,9 +32,9 @@ public:
     bool possible(const ModelSyst *system) const;
 
 
-    class System;   ///Whole system (Serwer, bufffer(optional) and Calls)
-    class Server;   ///Consists of one or more groups
-    class Buffer;   ///Consists of one or more groups
+    class System;                     ///< Whole system (Serwer, bufffer(optional) and Calls)
+    class Server;                     ///< Consists of one or more groups
+    class Buffer;                     ///< Consists of one or more groups
     struct Call;
 
     class Engine
@@ -60,7 +60,7 @@ public:
         inline void notifyServicedCall()          { totalNumberOfServicedCalls++; }
 
         void initialize(double a, int sumPropAt, int vk_s);
-        void doSimExperiment(int numberOfLostCall, unsigned int seed, int numberOfServicedCalls=0);
+        double doSimExperiment(int numberOfLostCall, unsigned int seed, int numberOfServicedCalls=0);
 
         inline void prepareCallToService(Call *callThatIsInService);
 
@@ -78,10 +78,8 @@ public:
     {
     public:
         Engine *engine;
-    /// Description of investigated system
-        const ModelSyst *systemData;
-    /// Number of offered traffic classes
-        const int m;
+        const ModelSyst *systemData;  ///< Description of investigated system
+        const int m;                  ///< Number of offered traffic classes
 
     /// Total system capacity
         const int vk_sb;
@@ -99,7 +97,9 @@ public:
 
         // Statistics and results
         SystemStatistics *statistics; ///< Statistics that are colected during simulation experiment
-        simulationResults results;    //TODO deprecated, use newresult
+        //simulationResults results;    //TODO deprecated, use newresult
+
+
 
         // System state
         int n;                        ///< Number of occupied resourcess by all the classes
@@ -111,11 +111,11 @@ public:
         void removeCallFromBuffer(Call *call);
 
     public:
-        System(const ModelSyst *system, int noOfSeries);
+        System(const ModelSyst *system);
         ~System();
 
 #define FOLDINGSTART { //Statistics
-        void writesResultsOfSingleExperiment(RSingle &singleResults);
+        void writesResultsOfSingleExperiment(RSingle &singleResults, double simulationTime);
 
         void statsCollectPre(double time);
         void statsCollectPost(int classIdx);
@@ -135,7 +135,7 @@ public:
     class Server
     {
 
-        friend void SimulatorAll::System::writesResultsOfSingleExperiment(RSingle&);
+        friend void SimulatorAll::System::writesResultsOfSingleExperiment(RSingle&, double simulationTime);
         friend void SimulatorAll::System::statsCollectPre(double time);
     public:
         const System  * const system;
@@ -205,7 +205,7 @@ public:
 
     class Buffer
     {
-        friend void SimulatorAll::System::writesResultsOfSingleExperiment(Results::RSingle&);
+        friend void SimulatorAll::System::writesResultsOfSingleExperiment(Results::RSingle&, double simulationTime);
     private:
         System *system;
         int V;                                                            ///< Number of Allocated Slots, that the buffer is able to handle

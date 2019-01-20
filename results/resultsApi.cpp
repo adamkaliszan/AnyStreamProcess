@@ -724,7 +724,7 @@ bool SettingsAvailableSubroupDistribution::getSinglePlot(QLineSeries *outPlot, Q
 
 
             double y=0;
-            if ((*singlePoint)->read(y, TypeResourcess_VsNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, t, parametersSet.numberOfGroups))
+            if ((*singlePoint)->read(y, TypeForResourcessAndNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, t, parametersSet.numberOfGroups))
             {
                 if ((y > 0) || linearScale)
                 {
@@ -748,7 +748,7 @@ bool SettingsAvailableSubroupDistribution::getSinglePlot(QLineSeries *outPlot, Q
         {
             double y=0;
 
-            if ((*singlePoint)->read(y, TypeResourcess_VsNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, t, k))
+            if ((*singlePoint)->read(y, TypeForResourcessAndNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, t, k))
             {
                 if ((y > 0) || linearScale)
                 {
@@ -767,7 +767,7 @@ bool SettingsAvailableSubroupDistribution::getSinglePlot(QLineSeries *outPlot, Q
             double y=0;
             int t = rSystem.getModel().getClass(i)->t();
 
-            if ((*singlePoint)->read(y, TypeResourcess_VsNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, t, parametersSet.numberOfGroups))
+            if ((*singlePoint)->read(y, TypeForResourcessAndNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, t, parametersSet.numberOfGroups))
             {
                 if ((y > 0) || linearScale)
                 {

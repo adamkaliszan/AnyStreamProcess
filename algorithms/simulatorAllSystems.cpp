@@ -176,8 +176,7 @@ void SimulatorAll::calculateSystem(const ModelSyst *system
     prepareTemporaryData(system, a);
 
 
-    System *simData = new System(system, simParameters->noOfSeries);
-
+    System *simData = new System(system);
     Engine *engine = new Engine(simData);
 
     engine->initialize(a, system->totalAt(), system->vk_s());
@@ -203,8 +202,8 @@ void SimulatorAll::calculateSystem(const ModelSyst *system
             engine->doSimExperiment(noOfLostCalls, seed, noOfServCalls);
         }
         simData->statsEnable(serNo);
-        engine->doSimExperiment(simParameters->noOfLostCalls, seed, simParameters->noOfServicedCalls);
-        simData->writesResultsOfSingleExperiment((*results)[serNo]);
+        double simulationTime = engine->doSimExperiment(simParameters->noOfLostCalls, seed, simParameters->noOfServicedCalls);
+        simData->writesResultsOfSingleExperiment((*results)[serNo], simulationTime);
         qDebug("universal simulation experiment no %d", serNo+1);
     }
     delete simData;
@@ -212,12 +211,12 @@ void SimulatorAll::calculateSystem(const ModelSyst *system
     //emit this->sigCalculationDone();
 }
 
-SimulatorAll::System::System(const ModelSyst *system, int noOfSeries)
+SimulatorAll::System::System(const ModelSyst *system)
     : m(system->m())
     , vk_sb(system->V())
     , vk_s(system->vk_s())
     , vk_b(system->vk_b())
-    , results(system->m(), system->vk_s(), system->vk_b(), noOfSeries)
+//  , results(system->m(), system->vk_s(), system->vk_b(), noOfSeries)
     , n(0)
     , old_n(0)
 {
@@ -249,8 +248,9 @@ void SimulatorAll::Engine::initialize(double a, int sumPropAt, int V)
     }
 }
 
-void SimulatorAll::Engine::doSimExperiment(int numberOfLostCall, unsigned int seed, int numberOfServicedCalls)
+double SimulatorAll::Engine::doSimExperiment(int numberOfLostCall, unsigned int seed, int numberOfServicedCalls)
 {
+    double simulationTime = 0;
     int classIdx;
 #define DO_SIM_EXP \
     ProcAll *proc = takeFirstProcess();\
@@ -269,6 +269,7 @@ void SimulatorAll::Engine::doSimExperiment(int numberOfLostCall, unsigned int se
         {
             ProcAll *proc = takeFirstProcess();
             system->statsCollectPre(proc->time);
+            simulationTime += proc->time;
             classIdx = proc->callData->classIdx;
             proc->execute(proc, system);
             system->statsCollectPost(classIdx);
@@ -282,6 +283,7 @@ void SimulatorAll::Engine::doSimExperiment(int numberOfLostCall, unsigned int se
             {
                 ProcAll *proc = takeFirstProcess();
                 system->statsCollectPre(proc->time);
+                simulationTime += proc->time;
                 classIdx = proc->callData->classIdx;
                 proc->execute(proc, system);
                 system->statsCollectPost(classIdx);
@@ -293,20 +295,22 @@ void SimulatorAll::Engine::doSimExperiment(int numberOfLostCall, unsigned int se
             {
                 ProcAll *proc = takeFirstProcess();
                 system->statsCollectPre(proc->time);
+                simulationTime += proc->time;
                 classIdx = proc->callData->classIdx;
                 proc->execute(proc, system);
                 system->statsCollectPost(classIdx);
             }
         }
     }
+    return simulationTime;
 }
 
-void SimulatorAll::System::writesResultsOfSingleExperiment(RSingle& singleResults)
+void SimulatorAll::System::writesResultsOfSingleExperiment(RSingle& singleResults, double simulationTime)
 {
-    server->writesResultsOfSingleExperiment(singleResults, results._simulationTime);
+    server->writesResultsOfSingleExperiment(singleResults, simulationTime);
 
     int Vs = server->getV();
-    int V  = server->getV();
+    int V  = server->getV() + buffer->getV();
     int m  = systemData->m();
 
     int max_t = 0;
@@ -324,47 +328,19 @@ void SimulatorAll::System::writesResultsOfSingleExperiment(RSingle& singleResult
 
         for (int n = qMax(0, (V-t+1)); n<=V; n++)
             E+=statistics->getTimeStatistics(n).occupancyTime;
-        E /=results._simulationTime;
+        E/= simulationTime;
 
         if (E < 0)
             qFatal("Wrong E");
-        results.act_E[i] = E;
         singleResults.write(TypeForClass::BlockingProbability, E, i);
-
-        results.act_t[i] /= results.act_noOfServicedCalls[i];
-
-        results.act_tS[i] /= results.act_noOfServicedCalls[i];
-
-        results.act_tServer[i] /=results.act_noOfServicedCalls[i];
-        results.act_tPlanedServer[i] /=results.act_noOfServicedCalls[i];
-
-
-        for (int n=0; n<=Vs; n++)
-        {
-            double x;
-
-            x = server->resourceUtilization(i, n)/server->getTimeOfState(n);
-            results.act_LOC_server_yt[i][n] = x;
-            singleResults.write(TypeForClassAndServerState::Usage, x, i, n);
-
-            x = statistics->getTimeStatisticsSC(i,n).occupancyUtilization /statistics->getTimeStatistics(n).occupancyTime;
-            results.act_SYS_yt[i][n] = x;
-        }
     }
 
     for (int n=0; n<=V; n++)
     {
         double tmpstateDurationTime = statistics->getTimeStatistics(n).occupancyTime;
 
-        double occupancyTime =  statistics->getTimeStatistics(n).occupancyTime / results._simulationTime;
-        results.act_trDistribSys[n] = occupancyTime;
+        double occupancyTime =  statistics->getTimeStatistics(n).occupancyTime / simulationTime;
         singleResults.write(TypeForSystemState::StateProbability, occupancyTime, n);
-
-        results.act_intOutNew[n] = static_cast<double>(statistics->getEventStatistics(n).outNewOffered) / tmpstateDurationTime;
-        results.act_intOutEnd[n] = static_cast<double>(statistics->getEventStatistics(n).outEnd) / tmpstateDurationTime;
-
-        results.act_noOutNew[n] = statistics->getEventStatistics(n).outNewAccepted;
-        results.act_noOutEnd[n] = statistics->getEventStatistics(n).outEnd;
 
 
         for (int i=0; i<m; i++)
@@ -372,41 +348,24 @@ void SimulatorAll::System::writesResultsOfSingleExperiment(RSingle& singleResult
             int t = this->systemData->getClass(i)->t();
 
             tmpstateDurationTime = (n-t >= 0) ? statistics->getTimeStatistics(n-t).occupancyTime : 0;
-            results.act_intInNewSC[i][n] = (tmpstateDurationTime > 0) ? (static_cast<double>(statistics->getEventStatisticsSC(i, n).inNew) / tmpstateDurationTime) : 0;
 
             tmpstateDurationTime = (n+t <= server->getV()) ? statistics->getTimeStatistics(n+t).occupancyTime : 0;
-            results.act_intInEndSC[i][n] = (tmpstateDurationTime > 0) ? (static_cast<double>(statistics->getEventStatisticsSC(i, n).inEnd) / tmpstateDurationTime) : 0;
 
             tmpstateDurationTime =  statistics->getTimeStatistics(n).occupancyTime;
-            results.act_intOutNewSC[i][n] = static_cast<double>(statistics->getEventStatisticsSC(i, n).outNewOffered) / tmpstateDurationTime;
-            results.act_intOutEndSC[i][n] = static_cast<double>(statistics->getEventStatisticsSC(i, n).outEnd) / tmpstateDurationTime;
 
-            results.act_noInNewSC[i][n]   = statistics->getEventStatisticsSC(i, n).inNew;
-            results.act_noInEndSC[i][n]   = statistics->getEventStatisticsSC(i, n).inEnd;
-            results.act_noOutNewSC[i][n]  = statistics->getEventStatisticsSC(i, n).outNewAccepted;
-            results.act_noOutEndSC[i][n]  = statistics->getEventStatisticsSC(i, n).outEnd;
         }
     }
 
     for (int n=0; n<=Vs; n++)
     {//TODO use servers statistics
-        double stateProbability = server->getTimeOfState(n) / results._simulationTime;
-        results.act_trDistribSys[n] = stateProbability;
+        double stateProbability = server->getTimeOfState(n) / simulationTime;
         singleResults.write(TypeForSystemState::StateProbability, stateProbability, n);
 
-        results.act_intInNew[n] = 0;
-        results.act_intInEnd[n] = 0;
-
-        results.act_noInNew[n]  = 0;
-        results.act_noInEnd[n]  = 0;
         for (int i=0; i<m; i++)
         {
-            results.act_intInNew[n]  += results.act_intInNewSC[i][n];
-            results.act_intInEnd[n]  += results.act_intInEndSC[i][n];
         //    results.act_noInNew[n]   += getInNewSC(n, i);
         //TODO use servers statistics   results.act_noInEnd[n]   += getInEndSC(n, i);
         }
-        results.act_trDistribServ[n] = server->statsGetOccupancyTimeOfState(n) / results._simulationTime;
     }
 }
 
@@ -466,20 +425,14 @@ void SimulatorAll::System::FinishCall(SimulatorAll::Call *call, bool acceptedToS
     if (call->classIdx > 100)
         qFatal("Wrong class idx");
 #endif
-    results.act_noOfCalls[call->classIdx]++;
 
     if (!acceptedToService)
     {
         engine->notifyLostCall();
-        results.act_noOfLostCallsBeforeQeue[call->classIdx]++;
     }
     else
     {
         engine->notifyServicedCall();
-        results.act_tS[call->classIdx] += call->timeOnSystem;
-        results.act_tServer[call->classIdx] += call->timeOnServer;
-        results.act_tPlanedServer[call->classIdx] += call->plannedServiceTime;
-        results.act_noOfServicedCalls[call->classIdx] ++;
     }
     engine->reuseCall(call);
 }
@@ -491,7 +444,6 @@ void SimulatorAll::System::FinishCall(SimulatorAll::Call *call, bool acceptedToS
 void SimulatorAll::System::statsCollectPre(double time)
 {
     old_n = n;
-    results._simulationTime +=time;
 
     foreach(Call *tmpCall, calls)
     {
@@ -524,12 +476,10 @@ void SimulatorAll::System::statsClear()
 void SimulatorAll::System::statsEnable(int serNo)
 {
     statsClear();
-    results.enableStatisticscollection(serNo);
 }
 
 void SimulatorAll::System::statsDisable()
 {
-    results.disableStatisticCollection();
 }
 
 void SimulatorAll::Server::statsClear()
@@ -677,16 +627,61 @@ SimulatorAll::Server::~Server()
 
 void SimulatorAll::Server::writesResultsOfSingleExperiment(RSingle &singleResults, double simulationTime)
 {
+    for (int n=0; n<=this->getV(); n++)
+    {
+        double result;
+        double stateTime = statistics->getTimeStatistics(n).occupancyTime;
+        result = stateTime/simulationTime;
+        singleResults.write(TypeForServerState::StateProbability, result, n);
+
+        result = statistics->getEventStatistics(n).outNewOffered/stateTime;
+        singleResults.write(TypeForServerState::IntensityNewCallOut, result, n);
+
+        result = statistics->getEventStatistics(n).inNew/stateTime;
+        singleResults.write(TypeForServerState::IntensityNewCallIn, result, n);
+
+        result = statistics->getEventStatistics(n).outEnd/stateTime;
+        singleResults.write(TypeForServerState::IntensityEndCallOut, result, n);
+
+        result = statistics->getEventStatistics(n).inEnd/stateTime;
+        singleResults.write(TypeForServerState::IntensityEndCallIn, result, n);
+
+        for (int classNo=0; classNo < m; classNo++)
+        {
+            result = statistics->getEventStatisticsSC(classNo, n).outNewOffered/stateTime;
+            singleResults.write(TypeForClassAndServerState::OfferedNewCallIntensityOut, result, n, classNo);
+
+            result = statistics->getEventStatisticsSC(classNo, n).outNewAccepted/stateTime;
+            singleResults.write(TypeForClassAndServerState::RealNewCallIntensityOut, result, n, classNo);
+
+            result = statistics->getEventStatisticsSC(classNo, n).outNewOffered/statistics->getEventStatisticsSC(classNo, n).outNewAccepted;
+            singleResults.write(TypeForClassAndServerState::CAC_Probability, result, n, classNo);
+
+            result = statistics->getEventStatisticsSC(classNo, n).inNew/statistics->getEventStatisticsSC(classNo, n).outNewAccepted;
+            singleResults.write(TypeForClassAndServerState::NewCallIntensityIn, result, n, classNo);
+
+            result = statistics->getEventStatisticsSC(classNo, n).outEnd/statistics->getEventStatisticsSC(classNo, n).outNewAccepted;
+            singleResults.write(TypeForClassAndServerState::EndCallIntensityOut, result, n, classNo);
+
+            result = statistics->getEventStatisticsSC(classNo, n).inEnd/statistics->getEventStatisticsSC(classNo, n).outNewAccepted;
+            singleResults.write(TypeForClassAndServerState::EndCallIntensityIn, result, n, classNo);
+
+            result = statistics->getTimeStatisticsSC(classNo, n).occupancyUtilization/stateTime;
+            singleResults.write(TypeForClassAndServerState::Usage, result, n, classNo);
+        }
+    }
+
+
     for (int noOfgroups=0; noOfgroups<=k; noOfgroups++)
     {
         for (int n=0; n<=vMax; n++)
         {
             double result;
             result = statistics->availabilityTimeInGroupSet[noOfgroups][n]/simulationTime;
-            singleResults.write(TypeResourcess_VsNumberOfServerGroups::AvailabilityInAllTheGroups, result, n, noOfgroups);
+            singleResults.write(TypeForResourcessAndNumberOfServerGroups::AvailabilityInAllTheGroups, result, n, noOfgroups);
 
             result = statistics->availabilityTimeOnlyInExactNoOfGroups[noOfgroups][n]/simulationTime;
-            singleResults.write(TypeResourcess_VsNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, result, n, noOfgroups);
+            singleResults.write(TypeForResourcessAndNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, result, n, noOfgroups);
         }
         for (int classNo=0; classNo < m; classNo++)
         {

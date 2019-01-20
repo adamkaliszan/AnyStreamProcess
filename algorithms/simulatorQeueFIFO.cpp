@@ -268,7 +268,7 @@ void SimulatorQeueFifo::System::writesResultsOfSingleExperiment(Results::RSingle
         for (int n=0; n<=Vs+Vb; n++)
         {
             double x = AStime_ofOccupiedAS_byClassI_inStateN[i][n]/getOccupancyTimeOfState(n);
-            results.act_SYS_yt[i][n] = x;
+            //results.act_SYS_yt[i][n] = x;
             x = qeueAStime_ofOccupiedAS_byClassI_inStateN[i][n]/getOccupancyTimeOfState(n);
             results.act_SYS_qeue_yt[i][n] = x;
             x = serverAStime_ofOccupiedAS_byClassI_inStateN[i][n]/getOccupancyTimeOfState(n);

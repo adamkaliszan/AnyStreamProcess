@@ -895,10 +895,10 @@ void SimulatorNoQeueLag::Server::writesResultsOfSingleExperiment(RSingle &single
         {
             double result;
             result = availabilityTimeInGroupSet[noOfgroups][n]/simulationTime;
-            singleResults.write(TypeResourcess_VsNumberOfServerGroups::AvailabilityInAllTheGroups, result, n, noOfgroups);
+            singleResults.write(TypeForResourcessAndNumberOfServerGroups::AvailabilityInAllTheGroups, result, n, noOfgroups);
 
             result = availabilityTimeOnlyInExactNoOfGroups[noOfgroups][n]/simulationTime;
-            singleResults.write(TypeResourcess_VsNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, result, n, noOfgroups);
+            singleResults.write(TypeForResourcessAndNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, result, n, noOfgroups);
         }
         for (int i=0; i < m; i++)
         {

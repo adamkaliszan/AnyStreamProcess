@@ -57,8 +57,8 @@ public:
     RSingle &write(TypeClassForServerBestGroupsSet, double value, int classNumber, int numberOfGroups);
     bool read(double &result, TypeClassForServerBestGroupsSet type, int classNumber, int numberOfGroups) const;
 
-    RSingle &write(TypeResourcess_VsNumberOfServerGroups type, double value, int numberOfResourcess, int numberOfGroups);
-    bool read(double &result, TypeResourcess_VsNumberOfServerGroups type, int numberOfResourcess, int numberOfGroups) const;
+    RSingle &write(TypeForResourcessAndNumberOfServerGroups type, double value, int numberOfResourcess, int numberOfGroups);
+    bool read(double &result, TypeForResourcessAndNumberOfServerGroups type, int numberOfResourcess, int numberOfGroups) const;
 
     RSingle &operator+=(const RSingle& rho);
     RSingle operator-(const RSingle& rho) const;

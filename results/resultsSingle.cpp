@@ -777,35 +777,35 @@ bool RSingle::read(double &result, TypeClassForServerBestGroupsSet type, int cla
     return true;
 }
 
-RSingle &RSingle::write(TypeResourcess_VsNumberOfServerGroups type, double value, int numberOfResourcess, int numberOfGroups)
+RSingle &RSingle::write(TypeForResourcessAndNumberOfServerGroups type, double value, int numberOfResourcess, int numberOfGroups)
 {
     switch(type)
     {
-    case TypeResourcess_VsNumberOfServerGroups::AvailabilityOnlyInAllTheGroups:
+    case TypeForResourcessAndNumberOfServerGroups::AvailabilityOnlyInAllTheGroups:
         dataPerExactGroupNumber[numberOfGroups].availabilityProbabilities[numberOfResourcess].availabilityOnlyInAllTheGroups = value;
         break;
-    case TypeResourcess_VsNumberOfServerGroups::AvailabilityInAllTheGroups:
+    case TypeForResourcessAndNumberOfServerGroups::AvailabilityInAllTheGroups:
         dataPerExactGroupNumber[numberOfGroups].availabilityProbabilities[numberOfResourcess].availabilityInAllTheGroups = value;
         break;
-    case TypeResourcess_VsNumberOfServerGroups::InavailabilityInAllTheGroups:
+    case TypeForResourcessAndNumberOfServerGroups::InavailabilityInAllTheGroups:
         dataPerExactGroupNumber[numberOfGroups].availabilityProbabilities[numberOfResourcess].inavailabilityInAllTheGroups = value;
         break;
     }
     return *this;
 }
 
-bool RSingle::read(double &result, TypeResourcess_VsNumberOfServerGroups type, int numberOfResourcess, int numberOfGroups) const
+bool RSingle::read(double &result, TypeForResourcessAndNumberOfServerGroups type, int numberOfResourcess, int numberOfGroups) const
 {
     switch(type)
     {
-    case TypeResourcess_VsNumberOfServerGroups::AvailabilityOnlyInAllTheGroups:
+    case TypeForResourcessAndNumberOfServerGroups::AvailabilityOnlyInAllTheGroups:
         result = dataPerExactGroupNumber[numberOfGroups].availabilityProbabilities[numberOfResourcess].availabilityOnlyInAllTheGroups;
         break;
-    case TypeResourcess_VsNumberOfServerGroups::AvailabilityInAllTheGroups:
+    case TypeForResourcessAndNumberOfServerGroups::AvailabilityInAllTheGroups:
         result = dataPerExactGroupNumber[numberOfGroups].availabilityProbabilities[numberOfResourcess].availabilityInAllTheGroups;
         break;
 
-    case TypeResourcess_VsNumberOfServerGroups::InavailabilityInAllTheGroups:
+    case TypeForResourcessAndNumberOfServerGroups::InavailabilityInAllTheGroups:
         result = dataPerExactGroupNumber[numberOfGroups].availabilityProbabilities[numberOfResourcess].inavailabilityInAllTheGroups;
         break;
     }

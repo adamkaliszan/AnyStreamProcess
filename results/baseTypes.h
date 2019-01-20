@@ -105,8 +105,8 @@ enum class TypeForClassAndSystemState: unsigned
  */
 enum class TypeForClassAndServerState: unsigned
 {
-    Usage,                      /// (y_i(n) t_i)/n
-    CAC_Probability,            /// \signa_i(n)
+    Usage,                      ///< (y_i(n) t_i)/n
+    CAC_Probability,            ///< \signa_i(n)
     OfferedNewCallIntensityOut,
     RealNewCallIntensityOut,
     NewCallIntensityIn,
@@ -137,7 +137,7 @@ enum class TypeResourcess_VsServerGroupsCombination: unsigned
 /**
  * @brief The QoS resultus vs: 1) minimum number resourcess in a single group 2) number of server groups
  */
-enum class TypeResourcess_VsNumberOfServerGroups: unsigned
+enum class TypeForResourcessAndNumberOfServerGroups: unsigned
 {
     AvailabilityOnlyInAllTheGroups,      /// All the subgroups in the set has this availability, groups outside the sat does not have such availability
     AvailabilityInAllTheGroups,          /// All the subgroups in the set has this availability, groups outside are not considered

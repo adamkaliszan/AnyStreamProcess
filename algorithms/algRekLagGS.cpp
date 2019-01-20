@@ -144,7 +144,7 @@ void algRekLagGS::calculateSystem(const ModelSyst *system, double a, RInvestigat
     {
         for (int ns=0; ns <= f; ns++)
         {
-            (*results)->write(TypeResourcess_VsNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, RDP[s][ns] , ns,  s);
+            (*results)->write(TypeForResourcessAndNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, RDP[s][ns] , ns,  s);
         }
     }
     for (int i=0; i<m; i++)
@@ -213,7 +213,7 @@ algRekLagGS2::algRekLagGS2()
      << Results::Type::LossProbability
      << Results::Type::OccupancyDistribution
      << Results::Type::AllSugbrupsInGivenCombinationNotAvailableForCallsOfGivenClass
-     << Results::Type::AvailableSubroupDistribution;
+    ;
 }
 
 void algRekLagGS2::calculateSystem(const ModelSyst *system, double a, RInvestigator *results, SimulationParameters *simParameters)

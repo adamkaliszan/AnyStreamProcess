@@ -194,7 +194,7 @@ void resultsXlsx::spreadshetWriteAUsAvailabilityOnlyForGroupSets(QXlsx::Workshee
                 {
                     double value;
                     int t = system.getClass(classNo)->t();
-                    (*pointResults)->read(value, TypeResourcess_VsNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, t, noOfGroups);
+                    (*pointResults)->read(value, TypeForResourcessAndNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, t, noOfGroups);
                     sheet->write(rowIdx, tmpColIdx, value, ((rowParity) % 2) ?  fmtRowValOdd : fmtRowValEven);
                     tmpColIdx++;
                 }
@@ -207,7 +207,7 @@ void resultsXlsx::spreadshetWriteAUsAvailabilityOnlyForGroupSets(QXlsx::Workshee
                         double value;
                         int t = system.getClass(classNo)->t();
 
-                        tmpRS.read(value, TypeResourcess_VsNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, t, noOfGroups);
+                        tmpRS.read(value, TypeForResourcessAndNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, t, noOfGroups);
                         sheet->write(rowIdx, tmpColIdx, value, ((rowParity) % 2) ?  fmtRowValOdd : fmtRowValEven);
                     }
                     else
@@ -221,7 +221,7 @@ void resultsXlsx::spreadshetWriteAUsAvailabilityOnlyForGroupSets(QXlsx::Workshee
                 for (int n=0; n <= vMax; n++)
                 {
                     double value;
-                    (*pointResults)->read(value, TypeResourcess_VsNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, n, noOfGroups);
+                    (*pointResults)->read(value, TypeForResourcessAndNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, n, noOfGroups);
                     sheet->write(rowIdx, tmpColIdx, value, ((rowParity) % 2) ? fmtRowValOdd : fmtRowValEven);
                     tmpColIdx++;
                 }
@@ -232,7 +232,7 @@ void resultsXlsx::spreadshetWriteAUsAvailabilityOnlyForGroupSets(QXlsx::Workshee
                     for (int n=0; n <= vMax; n++)
                     {
                         double value;
-                        pointResults->getConfidencyIntervall().read(value, TypeResourcess_VsNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, n, noOfGroups);
+                        pointResults->getConfidencyIntervall().read(value, TypeForResourcessAndNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, n, noOfGroups);
                         sheet->write(rowIdx, tmpColIdx, value, ((rowParity) % 2) ? fmtRowValOdd : fmtRowValEven);
                         tmpColIdx++;
                     }
@@ -420,7 +420,7 @@ void resultsXlsx::spreadshetWriteAUsAvailabilityForBestGroupSets(QXlsx::Workshee
                 for (int n=0; n <= vMax; n++)
                 {
                     double value;
-                    (*pointResults)->read(value, TypeResourcess_VsNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, n, noOfGroups);
+                    (*pointResults)->read(value, TypeForResourcessAndNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, n, noOfGroups);
                     sheet->write(rowIdx, tmpColIdx, value, ((rowParity) % 2) ? fmtRowValOdd : fmtRowValEven);
                     tmpColIdx++;
                 }
@@ -431,7 +431,7 @@ void resultsXlsx::spreadshetWriteAUsAvailabilityForBestGroupSets(QXlsx::Workshee
                     for (int n=0; n <= vMax; n++)
                     {
                         double value;
-                        pointResults->getConfidencyIntervall().read(value, TypeResourcess_VsNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, n, noOfGroups);
+                        pointResults->getConfidencyIntervall().read(value, TypeForResourcessAndNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, n, noOfGroups);
                         sheet->write(rowIdx, tmpColIdx, value, ((rowParity) % 2) ? fmtRowValOdd : fmtRowValEven);
                         tmpColIdx++;
                     }
