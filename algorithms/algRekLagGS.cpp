@@ -9,9 +9,9 @@ algRekLagGS::algRekLagGS()
 {
     myQoS_Set
      << Results::Type::BlockingProbability
-     << Results::Type::OccupancyDistribution
      << Results::Type::LossProbability
-     << Results::Type::AllSugbrupsInGivenCombinationAndClassAvailable
+     << Results::Type::OccupancyDistribution
+     << Results::Type::AllSugbrupsInGivenCombinationNotAvailableForCallsOfGivenClass
      << Results::Type::AvailableSubroupDistribution;
 }
 
@@ -24,7 +24,6 @@ void algRekLagGS::calculateSystem(const ModelSyst *system, double a, RInvestigat
     int k = system->k_s(0);
     int V = system->vk_s();
     int m = system->m();
-
 
     prepareTemporaryData(system, a);
 
@@ -54,6 +53,23 @@ void algRekLagGS::calculateSystem(const ModelSyst *system, double a, RInvestigat
     vectorUtils::normalize(statesFAG);
     vectorUtils::normalize(states);
 
+
+    //Results::Type::BlockingProbability
+    //Results::Type::LossProbability
+    for (int i=0; i<m; i++)
+    {
+        int t = classes[i].t;
+        double blProbability = 0;
+        for (int n=t; n<=V; n++)
+            blProbability+= (states[n] * 1-getSigma(i, n-t));
+
+        (*results)->write(TypeForClass::BlockingProbability, blProbability, i);
+        (*results)->write(TypeForClass::LossProbability, blProbability, i);
+    }
+
+    //Results::Type::OccupancyDistribution
+    for (int n=0; n<=V; n++)
+        (*results)->write(TypeForSystemState::StateProbability, states[n], n);
 
 
     QVector<QVector <double>> RDP;                                   // Rozkład dostępnych s podgrup - mających (jedna z nich ma ns wolnych zasobów) - kolumna
@@ -118,15 +134,17 @@ void algRekLagGS::calculateSystem(const ModelSyst *system, double a, RInvestigat
     }
     RDP[k][0]=1;
 
+//Results::Type::AvailableSubroupDistribution;
+    for (int i=0; i<m; i++)
+        for (int s=0; s<=k; s++)
+            ;//(*results)->write()
+
+
     for (int s=0; s <= k; s++)
     {
         for (int ns=0; ns <= f; ns++)
         {
-            (*results)->write(TypeStateForServerGroupsSet::AvailabilityOnlyInAllTheGroups, RDP[s][ns] , ns,  s);
-        }
-        for (int i=0; i<m; i++)
-        {
-            (*results)->write(TypeClassForServerExactGroupsSet::ServPossibilityOnlyInAllTheSubgroups, RDP[s][classes[i].t], i, s);
+            (*results)->write(TypeResourcess_VsNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, RDP[s][ns] , ns,  s);
         }
     }
     for (int i=0; i<m; i++)
@@ -145,26 +163,17 @@ void algRekLagGS::calculateSystem(const ModelSyst *system, double a, RInvestigat
     {
         uint xd = static_cast<uint>(combinations[combNo].first.length());
 
-        for (int i=0; i<m; i++)
-        {
-            double H;
-
-            H = lag.Hprime_Wariant1(xd, tRDP[classes[i].t], static_cast<uint>(k));
-            (*results)->write(TypeClassForServerGroupsCombination::SerPossibilityInAllTheSubgroups, H, i, combNo);
-
-            H = lag.H_Wariant1(xd, tRDP[classes[i].t], static_cast<uint>(k));
-            (*results)->write(TypeClassForServerGroupsCombination::SerImpossibilityInAllTheSubgroups, H, i, combNo);
-        }
-
         for (int ns=0; ns <= f; ns++)
         {
             double H;
 
+//Results::Type: Wszystkie podgrupy w kombinacji mogą obsłużyć zgłoszenie
             H = lag.Hprime_Wariant1(xd, tRDP[ns], static_cast<uint>(k));
-            (*results)->write(TypeStateForServerGroupsCombination::AvailabilityInAllTheGroups, H, ns, combNo);
+            (*results)->write(TypeResourcess_VsServerGroupsCombination::AvailabilityInAllTheGroups, H, ns, combNo);
 
+//Results::Type::AllSugbrupsInGivenCombinationNotAvailableForCallsOfGivenClass
             H = lag.H_Wariant1(xd, tRDP[ns], static_cast<uint>(k));
-            (*results)->write(TypeStateForServerGroupsCombination::InavailabilityInAllTheGroups, H, ns, combNo);
+            (*results)->write(TypeResourcess_VsServerGroupsCombination::InavailabilityInAllTheGroups, H, ns, combNo);
 
         }
     }
@@ -201,9 +210,9 @@ algRekLagGS2::algRekLagGS2()
 {
     myQoS_Set
      << Results::Type::BlockingProbability
-     << Results::Type::OccupancyDistribution
      << Results::Type::LossProbability
-     << Results::Type::AllSugbrupsInGivenCombinationAndClassAvailable
+     << Results::Type::OccupancyDistribution
+     << Results::Type::AllSugbrupsInGivenCombinationNotAvailableForCallsOfGivenClass
      << Results::Type::AvailableSubroupDistribution;
 }
 
@@ -215,7 +224,7 @@ void algRekLagGS2::calculateSystem(const ModelSyst *system, double a, RInvestiga
 
     int f = system->v_s(0);
     int k = system->k_s(0);
-    //int V = system->V_s();
+    int V = system->V();
     int m = system->m();
 
     prepareTemporaryData(system, a);
@@ -237,13 +246,22 @@ void algRekLagGS2::calculateSystem(const ModelSyst *system, double a, RInvestiga
     }
     vectorUtils::normalize(states);
 
-    for (int classNo=0; classNo<system->m(); classNo++)
+//Results::Type::BlockingProbability
+//Results::Type::LossProbability
+    for (int i=0; i<m; i++)
     {
-        double Hk; //prawdopodobieńśtwo zajętości k łączy
+        int t = classes[i].t;
+        double blProbability = 0;
+        for (int n=t; n<=V; n++)
+            blProbability+= (states[n] * 1-getSigma(i, n-t));
 
-        Hk = utilsLag.H_Wariant2(static_cast<uint>(system->k_s()), states, static_cast<uint>(system->getClass(classNo)->t()), static_cast<uint>(system->k_s()), static_cast<uint>(system->v_s(0)));
-        (*results)->write(TypeForClass::BlockingProbability, Hk, classNo);
+        (*results)->write(TypeForClass::BlockingProbability, blProbability, i);
+        (*results)->write(TypeForClass::LossProbability, blProbability, i);
     }
+
+//Results::Type::OccupancyDistribution
+    for (int n=0; n<=V; n++)
+        (*results)->write(TypeForSystemState::StateProbability, states[n], n);
 
     QVector<QPair <QVector<int>, QVector<int> > > combinations = Utils::UtilsLAG::getPossibleCombinations(k);
 
@@ -251,16 +269,11 @@ void algRekLagGS2::calculateSystem(const ModelSyst *system, double a, RInvestiga
     {
         uint xd = static_cast<uint>(combinations[combNo].first.length());
 
-        for (int i=0; i<m; i++)
-        {
-            double H = utilsLag.H_Wariant2(xd, states,  static_cast<uint>(classes[i].t), static_cast<uint>(k), static_cast<uint>(f));
-            (*results)->write(TypeClassForServerGroupsCombination::SerImpossibilityInAllTheSubgroups, H, i, combNo);
-        }
-
         for (int ns=0; ns <= f; ns++)
         {
+//Results::Type::AllSugbrupsInGivenCombinationNotAvailableForCallsOfGivenClass
             double H = utilsLag.H_Wariant2(xd, states,  static_cast<uint>(ns), static_cast<uint>(k), static_cast<uint>(f));
-            (*results)->write(TypeStateForServerGroupsCombination::InavailabilityInAllTheGroups, H, ns, combNo);
+            (*results)->write(TypeResourcess_VsServerGroupsCombination::InavailabilityInAllTheGroups, H, ns, combNo);
         }
     }
     //emit this->sigCalculationDone();

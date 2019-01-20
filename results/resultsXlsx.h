@@ -39,7 +39,8 @@ private:
 
     //Wyniki dla klas oraz zasobów
     void _spreadshetWriteForGroupCombinations(QXlsx::Worksheet *sheet, int &rowIdx, int &colIdx
-          , QString descriptionTableAUs, QString descriptionChartAUs, QString descriptionTableClasses, QString descriptionChartClasses, TypeStateForServerGroupsCombination typeForState, TypeClassForServerGroupsCombination typeForClass);
+          , QString descriptionTableAUs, QString descriptionChartAUs, QString descriptionTableClasses, QString descriptionChartClasses
+          , TypeResourcess_VsServerGroupsCombination typeForState);
     /**
      * @brief Rozkład dostęþnych podgrup
      * @param sheet arkusz

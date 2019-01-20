@@ -14,7 +14,6 @@ SimulatorNoQeueLag::SimulatorNoQeueLag() : simulator()
     myQoS_Set << Results::Type::BlockingProbability;
     myQoS_Set << Results::Type::OccupancyDistribution;
     myQoS_Set << Results::Type::LossProbability;
-    myQoS_Set << Results::Type::AllSugbrupsInGivenCombinationAndClassAvailable;
     myQoS_Set << Results::Type::AvailableSubroupDistribution;
 
     system = nullptr;
@@ -212,14 +211,14 @@ void SimulatorNoQeueLag::System::writesResultsOfSingleExperiment(RSingle& single
 
     for (int n=0; n<=V; n++)
     {
-        double tmpstateDurationTime = getOccupancyTimeOfState(n);
+        double tmpStateDurationTime = getOccupancyTimeOfState(n);
 
         double occupancyTime =  getOccupancyTimeOfState(n) / results._simulationTime;
         results.act_trDistribSys[n] = occupancyTime;
         singleResults.write(TypeForSystemState::StateProbability, occupancyTime, n);
 
-        results.act_intOutNew[n] = (double)(getOutNew(n)) / tmpstateDurationTime;
-        results.act_intOutEnd[n] = (double)(getOutEnd(n)) / tmpstateDurationTime;
+        results.act_intOutNew[n] = static_cast<double>(getOutNew(n)) / tmpStateDurationTime;
+        results.act_intOutEnd[n] = static_cast<double>(getOutEnd(n)) / tmpStateDurationTime;
 
         results.act_noOutNew[n] = getOutNew(n);
         results.act_noOutEnd[n] = getOutEnd(n);
@@ -229,15 +228,15 @@ void SimulatorNoQeueLag::System::writesResultsOfSingleExperiment(RSingle& single
         {
             int t = this->systemData->getClass(i)->t();
 
-            tmpstateDurationTime = ((int)n-t >= 0) ? getOccupancyTimeOfState(n-t) : 0;
-            results.act_intInNewSC[i][n] = (tmpstateDurationTime > 0) ? ((double) (getInNewSC(n, i)) / tmpstateDurationTime) : 0;
+            tmpStateDurationTime = (n-t >= 0) ? getOccupancyTimeOfState(n-t) : 0;
+            results.act_intInNewSC[i][n] = (tmpStateDurationTime > 0) ? (static_cast<double>(getInNewSC(n, i)) / tmpStateDurationTime) : 0;
 
-            tmpstateDurationTime = (n+t <= server->getV()) ? getOccupancyTimeOfState(n+t) : 0;
-            results.act_intInEndSC[i][n] = (tmpstateDurationTime > 0) ? ((double) (getInEndSC(n, i)) / tmpstateDurationTime) : 0;
+            tmpStateDurationTime = (n+t <= server->getV()) ? getOccupancyTimeOfState(n+t) : 0;
+            results.act_intInEndSC[i][n] = (tmpStateDurationTime > 0) ? (static_cast<double>(getInEndSC(n, i)) / tmpStateDurationTime) : 0;
 
-            tmpstateDurationTime = getOccupancyTimeOfState(n);
-            results.act_intOutNewSC[i][n] = (double) (getOutNewSC(n, i)) / tmpstateDurationTime;
-            results.act_intOutEndSC[i][n] = (double) (getOutEndSC(n, i)) / tmpstateDurationTime;
+            tmpStateDurationTime = getOccupancyTimeOfState(n);
+            results.act_intOutNewSC[i][n] = static_cast<double>(getOutNewSC(n, i)) / tmpStateDurationTime;
+            results.act_intOutEndSC[i][n] = static_cast<double>(getOutEndSC(n, i)) / tmpStateDurationTime;
 
             results.act_noInNewSC[i][n]   = getInNewSC(n, i);
             results.act_noInEndSC[i][n]   = getInEndSC(n, i);
@@ -896,10 +895,10 @@ void SimulatorNoQeueLag::Server::writesResultsOfSingleExperiment(RSingle &single
         {
             double result;
             result = availabilityTimeInGroupSet[noOfgroups][n]/simulationTime;
-            singleResults.write(TypeStateForServerGroupsSet::AvailabilityOnlyInAllTheGroups, result, n, noOfgroups);
+            singleResults.write(TypeResourcess_VsNumberOfServerGroups::AvailabilityInAllTheGroups, result, n, noOfgroups);
 
             result = availabilityTimeOnlyInExactNoOfGroups[noOfgroups][n]/simulationTime;
-            singleResults.write(TypeStateForServerGroupsSet::AvailabilityOnlyInAllTheGroups, result, n, noOfgroups);
+            singleResults.write(TypeResourcess_VsNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, result, n, noOfgroups);
         }
         for (int i=0; i < m; i++)
         {
@@ -909,9 +908,6 @@ void SimulatorNoQeueLag::Server::writesResultsOfSingleExperiment(RSingle &single
 
             result = availabilityTimeInGroupSet[noOfgroups][n]/simulationTime;
             singleResults.write(TypeClassForServerBestGroupsSet::ServPossibilityOnlyInAllTheSubgroups, result, i, noOfgroups);
-
-            result = availabilityTimeOnlyInExactNoOfGroups[noOfgroups][n]/simulationTime;
-            singleResults.write(TypeClassForServerExactGroupsSet::ServPossibilityOnlyInAllTheSubgroups, result, i, noOfgroups);
         }
     }
 
@@ -919,37 +915,25 @@ void SimulatorNoQeueLag::Server::writesResultsOfSingleExperiment(RSingle &single
     {
         for (int n=0; n<=vMax; n++)
         {
-            singleResults.write(TypeStateForServerGroupsCombination::FreeAUsInBestGroup
+            singleResults.write(TypeResourcess_VsServerGroupsCombination::FreeAUsInBestGroup
                                 , freeAUsInBestGroupInCombination[combinationNo][n]/simulationTime
                                 , n, combinationNo);
 
-            singleResults.write(TypeStateForServerGroupsCombination::FreeAUsInEveryGroup
+            singleResults.write(TypeResourcess_VsServerGroupsCombination::FreeAUsInEveryGroup
                                 , freeAUsInWorstGroupInCombination[combinationNo][n]/simulationTime
                                 , n, combinationNo);
 
-
-
-            singleResults.write(TypeStateForServerGroupsCombination::AvailabilityOnlyInAllTheGroups
+            singleResults.write(TypeResourcess_VsServerGroupsCombination::AvailabilityOnlyInAllTheGroups
                                 , availabilityOnlyInAllGroupsInCombination[combinationNo][n]/simulationTime
                                 , n, combinationNo);
 
-            singleResults.write(TypeStateForServerGroupsCombination::AvailabilityInAllTheGroups
+            singleResults.write(TypeResourcess_VsServerGroupsCombination::AvailabilityInAllTheGroups
                                 , availabilityInAllGroupsInCombination[combinationNo][n]/simulationTime
                                 , n, combinationNo);
 
-            singleResults.write(TypeStateForServerGroupsCombination::InavailabilityInAllTheGroups
+            singleResults.write(TypeResourcess_VsServerGroupsCombination::InavailabilityInAllTheGroups
                                 , inavailabilityInAllGroupsInCombination[combinationNo][n]/simulationTime
                                 , n, combinationNo);
-
-
-        }
-
-        for (int classNo=0; classNo<m; classNo++)
-        {
-            int t = this->system->systemData->getClass(classNo)->t();
-            singleResults.write(TypeClassForServerGroupsCombination::SerPossibilityOnlyInAllTheSubgroups, availabilityOnlyInAllGroupsInCombination[combinationNo][t]/simulationTime, classNo, combinationNo);
-            singleResults.write(TypeClassForServerGroupsCombination::SerPossibilityInAllTheSubgroups,     availabilityInAllGroupsInCombination[combinationNo][t]/simulationTime, classNo, combinationNo);
-            singleResults.write(TypeClassForServerGroupsCombination::SerImpossibilityInAllTheSubgroups,   inavailabilityInAllGroupsInCombination[combinationNo][t]/simulationTime, classNo, combinationNo);
         }
     }
 }

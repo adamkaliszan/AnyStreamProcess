@@ -137,7 +137,7 @@ void resultsXlsx::spreadshetWriteAUsAvailabilityOnlyForGroupSets(QXlsx::Workshee
         }
         firstIteration = false;
 
-        chartClassServicePossibility = sheet->insertChart(chartRowSart, chartClassAvailabilityColNo-1, QSize(500, noOfApoints*noOfAlgorithms*(sheet->rowHeight(rowIdx) + 5)));
+        chartClassServicePossibility = sheet->insertChart(chartRowSart, chartClassAvailabilityColNo-1, QSize(500, static_cast<int>(noOfApoints*noOfAlgorithms*(sheet->rowHeight(rowIdx) + 5))));
         chartClassServicePossibility->setChartType(QXlsx::Chart::CT_Line);
         sheet->setColumnWidth(chartClassAvailabilityColNo, chartClassAvailabilityColNo, 70);
         sheet->write(headerCombination, chartClassAvailabilityColNo, "AUs availability for classes", fmtTrClass);
@@ -148,7 +148,7 @@ void resultsXlsx::spreadshetWriteAUsAvailabilityOnlyForGroupSets(QXlsx::Workshee
             if (!algorithm->isSelected)
                 continue;
 
-            chartAUsAvailability[algNo] = sheet->insertChart(chartRowSart, chartAuAvailabilityFirstCol-1+algNo, QSize(500, noOfApoints*noOfAlgorithms*(sheet->rowHeight(rowIdx) + 5)));
+            chartAUsAvailability[algNo] = sheet->insertChart(chartRowSart, chartAuAvailabilityFirstCol-1+algNo, QSize(500, static_cast<int>(noOfApoints*noOfAlgorithms*(sheet->rowHeight(rowIdx) + 5))));
             chartAUsAvailability[algNo]->setChartType(QXlsx::Chart::CT_Line);
             sheet->setColumnWidth(chartAuAvailabilityFirstCol+algNo, chartAuAvailabilityFirstCol+algNo, 70);
             sheet->write(headerCombination, chartAuAvailabilityFirstCol+algNo, QString("AUs availability: %1").arg(algorithm->shortName()), fmtHdrQoSparEven);
@@ -193,7 +193,8 @@ void resultsXlsx::spreadshetWriteAUsAvailabilityOnlyForGroupSets(QXlsx::Workshee
                 for (int classNo=0; classNo < system.m(); classNo++)
                 {
                     double value;
-                    (*pointResults)->read(value, TypeClassForServerExactGroupsSet::ServPossibilityOnlyInAllTheSubgroups, classNo, noOfGroups);
+                    int t = system.getClass(classNo)->t();
+                    (*pointResults)->read(value, TypeResourcess_VsNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, t, noOfGroups);
                     sheet->write(rowIdx, tmpColIdx, value, ((rowParity) % 2) ?  fmtRowValOdd : fmtRowValEven);
                     tmpColIdx++;
                 }
@@ -204,7 +205,9 @@ void resultsXlsx::spreadshetWriteAUsAvailabilityOnlyForGroupSets(QXlsx::Workshee
                     {
                         const RSingle& tmpRS = pointResults->getConfidencyIntervall();
                         double value;
-                        tmpRS.read(value, TypeClassForServerExactGroupsSet::ServPossibilityOnlyInAllTheSubgroups, classNo, noOfGroups);
+                        int t = system.getClass(classNo)->t();
+
+                        tmpRS.read(value, TypeResourcess_VsNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, t, noOfGroups);
                         sheet->write(rowIdx, tmpColIdx, value, ((rowParity) % 2) ?  fmtRowValOdd : fmtRowValEven);
                     }
                     else
@@ -218,7 +221,7 @@ void resultsXlsx::spreadshetWriteAUsAvailabilityOnlyForGroupSets(QXlsx::Workshee
                 for (int n=0; n <= vMax; n++)
                 {
                     double value;
-                    (*pointResults)->read(value, TypeStateForServerGroupsSet::AvailabilityOnlyInAllTheGroups, n, noOfGroups);
+                    (*pointResults)->read(value, TypeResourcess_VsNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, n, noOfGroups);
                     sheet->write(rowIdx, tmpColIdx, value, ((rowParity) % 2) ? fmtRowValOdd : fmtRowValEven);
                     tmpColIdx++;
                 }
@@ -229,7 +232,7 @@ void resultsXlsx::spreadshetWriteAUsAvailabilityOnlyForGroupSets(QXlsx::Workshee
                     for (int n=0; n <= vMax; n++)
                     {
                         double value;
-                        pointResults->getConfidencyIntervall().read(value, TypeStateForServerGroupsSet::AvailabilityOnlyInAllTheGroups, n, noOfGroups);
+                        pointResults->getConfidencyIntervall().read(value, TypeResourcess_VsNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, n, noOfGroups);
                         sheet->write(rowIdx, tmpColIdx, value, ((rowParity) % 2) ? fmtRowValOdd : fmtRowValEven);
                         tmpColIdx++;
                     }
@@ -336,7 +339,7 @@ void resultsXlsx::spreadshetWriteAUsAvailabilityForBestGroupSets(QXlsx::Workshee
         }
         firstIteration = false;
 
-        chartClassServicePossibility = sheet->insertChart(chartRowSart, chartClassAvailabilityColNo-1, QSize(500, noOfApoints*noOfAlgorithms*(sheet->rowHeight(rowIdx) + 5)));
+        chartClassServicePossibility = sheet->insertChart(chartRowSart, chartClassAvailabilityColNo-1, QSize(500, static_cast<int>(noOfApoints*noOfAlgorithms*(sheet->rowHeight(rowIdx) + 5))));
         chartClassServicePossibility->setChartType(QXlsx::Chart::CT_Line);
         sheet->setColumnWidth(chartClassAvailabilityColNo, chartClassAvailabilityColNo, 70);
         sheet->write(headerCombination, chartClassAvailabilityColNo, "AUs availability for classes", fmtTrClass);
@@ -347,7 +350,7 @@ void resultsXlsx::spreadshetWriteAUsAvailabilityForBestGroupSets(QXlsx::Workshee
             if (!algorithm->isSelected)
                 continue;
 
-            chartAUsAvailability[algNo] = sheet->insertChart(chartRowSart, chartAuAvailabilityFirstCol-1+algNo, QSize(500, noOfApoints*noOfAlgorithms*(sheet->rowHeight(rowIdx) + 5)));
+            chartAUsAvailability[algNo] = sheet->insertChart(chartRowSart, chartAuAvailabilityFirstCol-1+algNo, QSize(500, static_cast<int>(noOfApoints*noOfAlgorithms*(sheet->rowHeight(rowIdx) + 5))));
             chartAUsAvailability[algNo]->setChartType(QXlsx::Chart::CT_Line);
             sheet->setColumnWidth(chartAuAvailabilityFirstCol+algNo, chartAuAvailabilityFirstCol+algNo, 70);
             sheet->write(headerCombination, chartAuAvailabilityFirstCol+algNo, QString("AUs availability: %1").arg(algorithm->shortName()), fmtHdrQoSparEven);
@@ -382,7 +385,7 @@ void resultsXlsx::spreadshetWriteAUsAvailabilityForBestGroupSets(QXlsx::Workshee
                 {
                     sheet->write(rowIdx, colIdx, "", ((rowParity)%2) ? fmtRowAofOdd : fmtRowAofEven);
                 }
-                sheet->write(rowIdx, colIdx+1, (double)a, ((rowParity)%2) ? fmtRowAofOdd : fmtRowAofEven);
+                sheet->write(rowIdx, colIdx+1, static_cast<double>(a), ((rowParity)%2) ? fmtRowAofOdd : fmtRowAofEven);
 
                 tmpColIdx = colIdx+2;
 
@@ -417,7 +420,7 @@ void resultsXlsx::spreadshetWriteAUsAvailabilityForBestGroupSets(QXlsx::Workshee
                 for (int n=0; n <= vMax; n++)
                 {
                     double value;
-                    (*pointResults)->read(value, TypeStateForServerGroupsSet::AvailabilityOnlyInAllTheGroups, n, noOfGroups);
+                    (*pointResults)->read(value, TypeResourcess_VsNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, n, noOfGroups);
                     sheet->write(rowIdx, tmpColIdx, value, ((rowParity) % 2) ? fmtRowValOdd : fmtRowValEven);
                     tmpColIdx++;
                 }
@@ -428,7 +431,7 @@ void resultsXlsx::spreadshetWriteAUsAvailabilityForBestGroupSets(QXlsx::Workshee
                     for (int n=0; n <= vMax; n++)
                     {
                         double value;
-                        pointResults->getConfidencyIntervall().read(value, TypeStateForServerGroupsSet::AvailabilityOnlyInAllTheGroups, n, noOfGroups);
+                        pointResults->getConfidencyIntervall().read(value, TypeResourcess_VsNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, n, noOfGroups);
                         sheet->write(rowIdx, tmpColIdx, value, ((rowParity) % 2) ? fmtRowValOdd : fmtRowValEven);
                         tmpColIdx++;
                     }
@@ -451,8 +454,7 @@ void resultsXlsx::spreadshetWriteAUsAvailabilityForBestGroupSets(QXlsx::Workshee
 void resultsXlsx::_spreadshetWriteForGroupCombinations(
         QXlsx::Worksheet *sheet, int &rowIdx, int &colIdx
       , QString descriptionTableAUs, QString descriptionChartAUs, QString descriptionTableClasses, QString descriptionChartClasses
-      , TypeStateForServerGroupsCombination typeForState, TypeClassForServerGroupsCombination typeForClass
-        )
+      , TypeResourcess_VsServerGroupsCombination typeForState)
 {
     const ModelSyst& system = results->getModel();
     int k = system.k_s();
@@ -555,7 +557,7 @@ void resultsXlsx::_spreadshetWriteForGroupCombinations(
 //Wyniki
         int rowSubIdx=0;
 
-        QXlsx::Chart *chartClasses = sheet->insertChart(chartRowIdx, chart2ColNo-1, QSize(500, noOfApoints*noOfAlgorithms*(sheet->rowHeight(rowIdx) + 5)));
+        QXlsx::Chart *chartClasses = sheet->insertChart(chartRowIdx, chart2ColNo-1, QSize(500, static_cast<int>(noOfApoints*noOfAlgorithms*(sheet->rowHeight(rowIdx) + 5))));
         chartClasses->setChartType(QXlsx::Chart::CT_Line);
 
         foreach (Investigator *algorithm, results->getAvailableAlgorithms())
@@ -563,7 +565,7 @@ void resultsXlsx::_spreadshetWriteForGroupCombinations(
             if (!algorithm->isSelected)
                 continue;
 
-            QXlsx::Chart *chartCombination = sheet->insertChart(chartRowIdx, chart1ColNo-1, QSize(500, noOfApoints*(sheet->rowHeight(rowIdx) + 5)));
+            QXlsx::Chart *chartCombination = sheet->insertChart(chartRowIdx, chart1ColNo-1, QSize(500, static_cast<int>(noOfApoints*(sheet->rowHeight(rowIdx) + 5))));
             chartCombination->setChartType(QXlsx::Chart::CT_Line);
             chartRowIdx += noOfApoints;
 
@@ -586,7 +588,7 @@ void resultsXlsx::_spreadshetWriteForGroupCombinations(
                 {
                     sheet->write(rowIdx, colIdx, "", (rowSubIdx%2) ? fmtRowAofOdd : fmtRowAofEven);
                 }
-                sheet->write(rowIdx, colIdx+1, (double)a, (rowSubIdx%2) ? fmtRowAofOdd : fmtRowAofEven);
+                sheet->write(rowIdx, colIdx+1, static_cast<double>(a), (rowSubIdx%2) ? fmtRowAofOdd : fmtRowAofEven);
 
                 tmpColIdx = colIdx+2;
 
@@ -595,7 +597,7 @@ void resultsXlsx::_spreadshetWriteForGroupCombinations(
                 for (int classNo=0; classNo < system.m(); classNo++)
                 {
                     double value;
-                    (*pointResults)->read(value, typeForClass, classNo, combIndex);
+                    (*pointResults)->read(value, typeForState, classNo, combIndex);
                     sheet->write(rowIdx, tmpColIdx, value, (rowSubIdx % 2) ?  fmtRowValOdd : fmtRowValEven);
                     tmpColIdx++;
                 }
@@ -606,7 +608,7 @@ void resultsXlsx::_spreadshetWriteForGroupCombinations(
                     {
                         const RSingle& tmpRS = pointResults->getConfidencyIntervall();
                         double value;
-                        tmpRS.read(value, typeForClass, classNo, combIndex);
+                        tmpRS.read(value, typeForState, classNo, combIndex);
                         sheet->write(rowIdx, tmpColIdx, value, (rowSubIdx % 2) ?  fmtRowValOdd : fmtRowValEven);
                     }
                     else
@@ -650,17 +652,17 @@ void resultsXlsx::_spreadshetWriteForGroupCombinations(
 void resultsXlsx::spreadshetWriteAUsAvailabilityForGroupCombinations(QXlsx::Worksheet *sheet, int &rowIdx, int &colIdx)
 {
     _spreadshetWriteForGroupCombinations(sheet, rowIdx, colIdx
-      , "Prawdopodobieństwo, że każda z podgrup ma dostępne n zasobów", "Dostępność n zasobów"
+      , "Prawdopodobieństwo, że każda z podgrup ma dostępne n zasobów (pozostałych podgrup nie rozpatrujemy)", "Dostępność n zasobów"
       , "Możliwość obsługi klasy w każdej z podgrup", "Dostępność dla klasy"
-      , TypeStateForServerGroupsCombination::AvailabilityInAllTheGroups, TypeClassForServerGroupsCombination::SerPossibilityInAllTheSubgroups);
+      , TypeResourcess_VsServerGroupsCombination::AvailabilityInAllTheGroups);
 }
 
 void resultsXlsx::spreadshetWriteAUsInavailabilityForGroupCombinations(QXlsx::Worksheet *sheet, int &rowIdx, int &colIdx)
 {
     _spreadshetWriteForGroupCombinations(sheet, rowIdx, colIdx
-      , "n niedostępnych zasobów w każdej z podgrup", "n zasobów niedostępnych"
+      , "n niedostępnych zasobów w każdej z podgrup (pozostałych podgrup nie rozpatrujemy)", "n zasobów niedostępnych"
       , "Brak możliwości obsługi zgłoszeń klasy", "Brak dostępności dla klasy"
-      , TypeStateForServerGroupsCombination::InavailabilityInAllTheGroups, TypeClassForServerGroupsCombination::SerImpossibilityInAllTheSubgroups);
+      , TypeResourcess_VsServerGroupsCombination::InavailabilityInAllTheGroups);
 }
 
 void resultsXlsx::spreadshetWriteAUsFreeForGroupCombinations(QXlsx::Worksheet *sheet, int &rowIdx, int &colIdx)
@@ -686,11 +688,11 @@ void resultsXlsx::spreadshetWriteAUsFreeForGroupCombinations(QXlsx::Worksheet *s
 
     foreach ( auto singleComb, combinations)
     {
-        QXlsx::Chart *chartMin = sheet->insertChart(rowIdx + 2, chart1ColNo-1, QSize(500, noOfApoints*(sheet->rowHeight(rowIdx) + 5)));
+        QXlsx::Chart *chartMin = sheet->insertChart(rowIdx + 2, chart1ColNo-1, QSize(500, static_cast<int>(noOfApoints*(sheet->rowHeight(rowIdx) + 5))));
         chartMin->setChartType(QXlsx::Chart::CT_Line);
         sheet->setColumnWidth(chart1ColNo, chart1ColNo, 70);
 
-        QXlsx::Chart *chartMax = sheet->insertChart(rowIdx + 2, chart2ColNo-1, QSize(500, noOfApoints*(sheet->rowHeight(rowIdx) + 5)));
+        QXlsx::Chart *chartMax = sheet->insertChart(rowIdx + 2, chart2ColNo-1, QSize(500, static_cast<int>(noOfApoints*(sheet->rowHeight(rowIdx) + 5))));
         chartMax->setChartType(QXlsx::Chart::CT_Line);
         sheet->setColumnWidth(chart2ColNo, chart2ColNo, 70);
 
@@ -773,7 +775,7 @@ void resultsXlsx::spreadshetWriteAUsFreeForGroupCombinations(QXlsx::Worksheet *s
                 const RInvestigator *pointResults = results->getInvestigationResults(algorithm, a);
                 if (firstRowForNewA)
                 {
-                    sheet->write(rowIdx, colIdx, (double)a, (rowSubIdx%2) ? fmtRowAofOdd : fmtRowAofEven);
+                    sheet->write(rowIdx, colIdx, static_cast<double>(a), (rowSubIdx%2) ? fmtRowAofOdd : fmtRowAofEven);
                     firstRowForNewA = false;
                 }
                 else
@@ -790,7 +792,7 @@ void resultsXlsx::spreadshetWriteAUsFreeForGroupCombinations(QXlsx::Worksheet *s
                 {
 
                     double value;
-                    (*pointResults)->read(value, TypeStateForServerGroupsCombination::FreeAUsInEveryGroup, n, combIndex);
+                    (*pointResults)->read(value, TypeResourcess_VsServerGroupsCombination::FreeAUsInEveryGroup, n, combIndex);
                     sheet->write(rowIdx, tmpColIdx, value, (rowSubIdx % 2) ? fmtRowValOdd : fmtRowValEven);
                     tmpColIdx++;
                 }
@@ -801,7 +803,7 @@ void resultsXlsx::spreadshetWriteAUsFreeForGroupCombinations(QXlsx::Worksheet *s
                 for (int n=0; n <= vMax; n++)
                 {
                     double value;
-                    (*pointResults)->read(value, TypeStateForServerGroupsCombination::FreeAUsInBestGroup, n, combIndex);
+                    (*pointResults)->read(value, TypeResourcess_VsServerGroupsCombination::FreeAUsInBestGroup, n, combIndex);
                     sheet->write(rowIdx, tmpColIdx, value, (rowSubIdx % 2) ? fmtRowValOdd : fmtRowValEven);
                     tmpColIdx++;
                 }
@@ -812,7 +814,7 @@ void resultsXlsx::spreadshetWriteAUsFreeForGroupCombinations(QXlsx::Worksheet *s
                     for (int n=0; n <= vMax; n++)
                     {
                         double value;
-                        pointResults->getConfidencyIntervall().read(value, TypeStateForServerGroupsCombination::FreeAUsInEveryGroup, n, combIndex);
+                        pointResults->getConfidencyIntervall().read(value, TypeResourcess_VsServerGroupsCombination::FreeAUsInEveryGroup, n, combIndex);
                         sheet->write(rowIdx, tmpColIdx, value, (rowSubIdx % 2) ? fmtRowValOdd : fmtRowValEven);
                         tmpColIdx++;
                     }
@@ -820,7 +822,7 @@ void resultsXlsx::spreadshetWriteAUsFreeForGroupCombinations(QXlsx::Worksheet *s
                     for (int n=0; n <= vMax; n++)
                     {
                         double value;
-                        pointResults->getConfidencyIntervall().read(value, TypeStateForServerGroupsCombination::FreeAUsInBestGroup, n, combIndex);
+                        pointResults->getConfidencyIntervall().read(value, TypeResourcess_VsServerGroupsCombination::FreeAUsInBestGroup, n, combIndex);
                         sheet->write(rowIdx, tmpColIdx, value, (rowSubIdx % 2) ? fmtRowValOdd : fmtRowValEven);
                         tmpColIdx++;
                     }
@@ -857,11 +859,11 @@ void resultsXlsx::spreadshetWriteQoS_ForClasses(QXlsx::Worksheet *sheet, int &ro
 
     foreach ( auto singleComb, combinations)
     {
-        QXlsx::Chart *chartMin = sheet->insertChart(rowIdx + 2, chart1ColNo-1, QSize(500, noOfApoints*(sheet->rowHeight(rowIdx) + 5)));
+        QXlsx::Chart *chartMin = sheet->insertChart(rowIdx + 2, chart1ColNo-1, QSize(500, static_cast<int>(noOfApoints*(sheet->rowHeight(rowIdx) + 5))));
         chartMin->setChartType(QXlsx::Chart::CT_Line);
         sheet->setColumnWidth(chart1ColNo, chart1ColNo, 70);
 
-        QXlsx::Chart *chartMax = sheet->insertChart(rowIdx + 2, chart2ColNo-1, QSize(500, noOfApoints*(sheet->rowHeight(rowIdx) + 5)));
+        QXlsx::Chart *chartMax = sheet->insertChart(rowIdx + 2, chart2ColNo-1, QSize(500, static_cast<int>(noOfApoints*(sheet->rowHeight(rowIdx) + 5))));
         chartMax->setChartType(QXlsx::Chart::CT_Line);
         sheet->setColumnWidth(chart2ColNo, chart2ColNo, 70);
 
@@ -944,7 +946,7 @@ void resultsXlsx::spreadshetWriteQoS_ForClasses(QXlsx::Worksheet *sheet, int &ro
                 const RInvestigator *pointResults = results->getInvestigationResults(algorithm, a);
                 if (firstRowForNewA)
                 {
-                    sheet->write(rowIdx, colIdx, (double)a, (rowSubIdx%2) ? fmtRowAofOdd : fmtRowAofEven);
+                    sheet->write(rowIdx, colIdx, static_cast<double>(a), (rowSubIdx%2) ? fmtRowAofOdd : fmtRowAofEven);
                     firstRowForNewA = false;
                 }
                 else
@@ -961,7 +963,7 @@ void resultsXlsx::spreadshetWriteQoS_ForClasses(QXlsx::Worksheet *sheet, int &ro
                 {
 
                     double value;
-                    (*pointResults)->read(value, TypeStateForServerGroupsCombination::FreeAUsInEveryGroup, n, combIndex);
+                    (*pointResults)->read(value, TypeResourcess_VsServerGroupsCombination::FreeAUsInEveryGroup, n, combIndex);
                     sheet->write(rowIdx, tmpColIdx, value, (rowSubIdx % 2) ? fmtRowValOdd : fmtRowValEven);
                     tmpColIdx++;
                 }
@@ -972,7 +974,7 @@ void resultsXlsx::spreadshetWriteQoS_ForClasses(QXlsx::Worksheet *sheet, int &ro
                 for (int n=0; n <= vMax; n++)
                 {
                     double value;
-                    (*pointResults)->read(value, TypeStateForServerGroupsCombination::FreeAUsInBestGroup, n, combIndex);
+                    (*pointResults)->read(value, TypeResourcess_VsServerGroupsCombination::FreeAUsInBestGroup, n, combIndex);
                     sheet->write(rowIdx, tmpColIdx, value, (rowSubIdx % 2) ? fmtRowValOdd : fmtRowValEven);
                     tmpColIdx++;
                 }
@@ -983,7 +985,7 @@ void resultsXlsx::spreadshetWriteQoS_ForClasses(QXlsx::Worksheet *sheet, int &ro
                     for (int n=0; n <= vMax; n++)
                     {
                         double value;
-                        pointResults->getConfidencyIntervall().read(value, TypeStateForServerGroupsCombination::FreeAUsInEveryGroup, n, combIndex);
+                        pointResults->getConfidencyIntervall().read(value, TypeResourcess_VsServerGroupsCombination::FreeAUsInEveryGroup, n, combIndex);
                         sheet->write(rowIdx, tmpColIdx, value, (rowSubIdx % 2) ? fmtRowValOdd : fmtRowValEven);
                         tmpColIdx++;
                     }
@@ -991,7 +993,7 @@ void resultsXlsx::spreadshetWriteQoS_ForClasses(QXlsx::Worksheet *sheet, int &ro
                     for (int n=0; n <= vMax; n++)
                     {
                         double value;
-                        pointResults->getConfidencyIntervall().read(value, TypeStateForServerGroupsCombination::FreeAUsInBestGroup, n, combIndex);
+                        pointResults->getConfidencyIntervall().read(value, TypeResourcess_VsServerGroupsCombination::FreeAUsInBestGroup, n, combIndex);
                         sheet->write(rowIdx, tmpColIdx, value, (rowSubIdx % 2) ? fmtRowValOdd : fmtRowValEven);
                         tmpColIdx++;
                     }

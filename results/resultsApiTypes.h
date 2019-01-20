@@ -8,36 +8,45 @@ namespace Results
 
 enum class Type
 {
+// Basic parameters
     BlockingProbability,
     LossProbability,
 
     OccupancyDistribution,
-    NumberOfCallsInStateN,
+    NumberOfCallsInSystemVsSystemState,
 
-    //Parameters for Queue systems
+  //Service and arrival intensity
+    NewCallOfSingleClassIntensityOut_inSystemVsSystemState,
+    NewCallOfSingleClassIntensityIn_inSystemVsSystemState,
+    EndCallOfSingleClassIntensityOut_inSystemVsSystemState,
+    EndCallOfSingleClassIntensityIn_inSystemVsSystemState,
+
+    NewCallOfAllClassesIntensityOut_inSystemVsSystemState,
+    NewCallOfAllClassesIntensityIn_inSystemVsSystemState,
+    EndCallOfAllClassesIntensityOut_inSystemVsSystemState,
+    EndCallOfAllClassesIntensityIn_inSystemVsSystemState,
+
+//Parameters for systems with buffer
     OccupancyDistributionServerOnly,
-    OccupancyDistributionServerBufferOnly,
-    NumberOfCallsInStateN_inServer,
-    NumberOfCallsInStateN_inBuffer,
+    OccupancyDistributionBufferOnly,
 
-    //Service and arrival intensity
-    NewCallOutIntensitySystem,
-    NewCallInIntensitySystem,
-    EndCallOutIntensitySystem,
-    EndCallInIntensitySystem,
+    NumberOfCallsInServerVsServerState,
+    NumberOfCallsInServerVsSystemState,
+    NumberOfCallsInBufferVsBufferState,
+    NumberOfCallsInBufferVsSystem,
 
-    NewCallOutIntensityServer,
-    NewCallInIntensityServer,
-    EndCallOutIntensityServer,
-    EndCallInIntensityServer,
+    NewCallOutIntensityServerVsSystemState,
+    NewCallInIntensityServerVsSystemState,
+    EndCallOutIntensityServerVsSystemState,
+    EndCallInIntensityServerVsSystemState,
 
-    NewCallOutIntensityBuffer,
-    NewCallInIntensityBuffer,
-    EndCallOutIntensityBuffer,
-    EndCallInIntensityBuffer,
+    NewCallOutIntensityBufferVsSystemState,
+    NewCallInIntensityBufferVsSystemState,
+    EndCallOutIntensityBufferVsSystemState,
+    EndCallInIntensityBufferVsSystemState,
 
-    //Parameters for LAG systems
-    AllSugbrupsInGivenCombinationAndClassAvailable,     // LAG, all subgroups in a given combination and class are available
+//Parameters for LAG systems
+    AllSugbrupsInGivenCombinationNotAvailableForCallsOfGivenClass,     // LAG, all subgroups in a given combination and class are available
     AvailableSubroupDistribution,
 };
 

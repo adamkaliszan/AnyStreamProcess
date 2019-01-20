@@ -125,7 +125,7 @@ enum class TypeForClassAndBufferState: unsigned
     EndCallIntensityIn
 };
 
-enum class TypeStateForServerGroupsCombination: unsigned
+enum class TypeResourcess_VsServerGroupsCombination: unsigned
 {
     FreeAUsInBestGroup,                  /// The best  subgroup has exactly n AUs available (not more)
     FreeAUsInEveryGroup,                 /// The worst subgroup has exactly n AUs available (not more)
@@ -134,19 +134,14 @@ enum class TypeStateForServerGroupsCombination: unsigned
     InavailabilityInAllTheGroups,        /// Each group in combination is not available, don't care about other groups
 };
 
-enum class TypeStateForServerGroupsSet: unsigned
+/**
+ * @brief The QoS resultus vs: 1) minimum number resourcess in a single group 2) number of server groups
+ */
+enum class TypeResourcess_VsNumberOfServerGroups: unsigned
 {
     AvailabilityOnlyInAllTheGroups,      /// All the subgroups in the set has this availability, groups outside the sat does not have such availability
     AvailabilityInAllTheGroups,          /// All the subgroups in the set has this availability, groups outside are not considered
     InavailabilityInAllTheGroups         /// All the subgroups in the set are not available, groups outside are not considered
-};
-
-enum class TypeClassForServerGroupsCombination: unsigned
-{
-    SerPossibilityInBestSubgroup,        /// There is at least ono group in the combination that is able to serve a call of given traffic class
-    SerPossibilityOnlyInAllTheSubgroups, /// Every group in given combination is able and groups outside the combination ARE NOT ABLE to serve the call of given traffic class
-    SerPossibilityInAllTheSubgroups,     /// Every group in given combination is able to serve the call of given traffic class, other groups are not considered
-    SerImpossibilityInAllTheSubgroups,   /// There os no group in this combination, that is able to serve the call of given traffic class
 };
 
 enum class TypeClassForServerBestGroupsSet: unsigned
@@ -156,15 +151,6 @@ enum class TypeClassForServerBestGroupsSet: unsigned
     ServPossibilityInAllTheSubgroups,
     ServImpossibilityInAllTheSubgroups,
 };
-
-enum class TypeClassForServerExactGroupsSet: unsigned
-{
-    ServPossibilityInBestSubgroup,
-    ServPossibilityOnlyInAllTheSubgroups,
-    ServPossibilityInAllTheSubgroups,
-    ServImpossibilityInAllTheSubgroups,
-};
-
 } // namespace Results
 
 #endif // RESULTS_BASE_TYPES_H

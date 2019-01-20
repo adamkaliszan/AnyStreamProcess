@@ -51,20 +51,14 @@ public:
     RSingle& write(TypeForClassAndBufferState type, double value, int classNo, int queueState);
     bool read(double &result, TypeForClassAndBufferState type, int classNo, int queueState) const;
 
-    RSingle &write(TypeStateForServerGroupsCombination, double value, int numberOfResourcess, int groupCombinationIndex);
-    bool read(double &result, TypeStateForServerGroupsCombination type, int numberOfResourcess, int groupCombinationIndex) const;
-
-    RSingle &write(TypeClassForServerGroupsCombination, double value, int classNumber, int groupCombinationIndex);
-    bool read(double &result, TypeClassForServerGroupsCombination type, int classNumber, int groupCombinationIndex) const;
+    RSingle &write(TypeResourcess_VsServerGroupsCombination, double value, int numberOfResourcess, int groupCombinationIndex);
+    bool read(double &result, TypeResourcess_VsServerGroupsCombination type, int numberOfResourcess, int groupCombinationIndex) const;
 
     RSingle &write(TypeClassForServerBestGroupsSet, double value, int classNumber, int numberOfGroups);
     bool read(double &result, TypeClassForServerBestGroupsSet type, int classNumber, int numberOfGroups) const;
 
-    RSingle &write(TypeStateForServerGroupsSet type, double value, int numberOfResourcess, int numberOfGroups);
-    bool read(double &result, TypeStateForServerGroupsSet type, int numberOfResourcess, int numberOfGroups) const;
-
-    RSingle &write(TypeClassForServerExactGroupsSet type, double value, int classNumber, int numberOfGroups);
-    bool read(double &result, TypeClassForServerExactGroupsSet type, int classNumber, int numberOfGroups) const;
+    RSingle &write(TypeResourcess_VsNumberOfServerGroups type, double value, int numberOfResourcess, int numberOfGroups);
+    bool read(double &result, TypeResourcess_VsNumberOfServerGroups type, int numberOfResourcess, int numberOfGroups) const;
 
     RSingle &operator+=(const RSingle& rho);
     RSingle operator-(const RSingle& rho) const;

@@ -89,7 +89,7 @@ double UtilsLAG::Hprime_Wariant1(unsigned x_d, QVector<double> groupAvailability
 /**
  * @brief Probability, that all the x_d groups are NOT available
  * @param x_d number of exactly choosen groups
- * @param groupAvailabilityProbabilities
+ * @param groupAvailabilityProbabilities - Distribution of Available Groups
  * @param k numbed of subgroups
  * @return
  */

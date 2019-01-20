@@ -21,14 +21,14 @@ AlgorithmHybrid::AlgorithmHybrid() : Investigator(), variant(AlgVariant::yFAG)
      << Results::Type::LossProbability
      << Results::Type::OccupancyDistribution
      << Results::Type::OccupancyDistributionServerOnly
-     << Results::Type::OccupancyDistributionServerBufferOnly
-     << Results::Type::NumberOfCallsInStateN
-     << Results::Type::NumberOfCallsInStateN_inServer
-     << Results::Type::NumberOfCallsInStateN_inBuffer
-     << Results::Type::NewCallOutIntensitySystem<<Results::Type::NewCallOutIntensityServer<<Results::Type::NewCallOutIntensityBuffer
-     << Results::Type::NewCallInIntensitySystem <<Results::Type::NewCallInIntensityServer <<Results::Type::NewCallInIntensityBuffer
-     << Results::Type::EndCallOutIntensitySystem<<Results::Type::EndCallOutIntensityServer<<Results::Type::EndCallOutIntensityBuffer
-     << Results::Type::EndCallInIntensitySystem <<Results::Type::EndCallInIntensityServer <<Results::Type::EndCallInIntensityBuffer
+     << Results::Type::OccupancyDistributionBufferOnly
+     << Results::Type::NumberOfCallsInSystemVsSystemState
+     << Results::Type::NumberOfCallsInServerVsServerState
+     << Results::Type::NumberOfCallsInBufferVsBufferState
+     << Results::Type::NewCallOfSingleClassIntensityOut_inSystemVsSystemState<<Results::Type::NewCallOutIntensityServerVsSystemState<<Results::Type::NewCallOutIntensityBufferVsSystemState
+     << Results::Type::NewCallOfSingleClassIntensityIn_inSystemVsSystemState <<Results::Type::NewCallInIntensityServerVsSystemState <<Results::Type::NewCallInIntensityBufferVsSystemState
+     << Results::Type::EndCallOfSingleClassIntensityOut_inSystemVsSystemState<<Results::Type::EndCallOutIntensityServerVsSystemState<<Results::Type::EndCallOutIntensityBufferVsSystemState
+     << Results::Type::EndCallOfSingleClassIntensityIn_inSystemVsSystemState <<Results::Type::EndCallInIntensityServerVsSystemState <<Results::Type::EndCallInIntensityBufferVsSystemState
          ;
 }
 
@@ -39,14 +39,14 @@ AlgorithmHybrid::AlgorithmHybrid(AlgorithmHybrid::AlgVariant var) : Investigator
      << Results::Type::LossProbability
      << Results::Type::OccupancyDistribution
      << Results::Type::OccupancyDistributionServerOnly
-     << Results::Type::OccupancyDistributionServerBufferOnly
-     << Results::Type::NumberOfCallsInStateN
-     << Results::Type::NumberOfCallsInStateN_inServer
-     << Results::Type::NumberOfCallsInStateN_inBuffer
-     << Results::Type::NewCallOutIntensitySystem<<Results::Type::NewCallOutIntensityServer<<Results::Type::NewCallOutIntensityBuffer
-     << Results::Type::NewCallInIntensitySystem <<Results::Type::NewCallInIntensityServer <<Results::Type::NewCallInIntensityBuffer
-     << Results::Type::EndCallOutIntensitySystem<<Results::Type::EndCallOutIntensityServer<<Results::Type::EndCallOutIntensityBuffer
-     << Results::Type::EndCallInIntensitySystem <<Results::Type::EndCallInIntensityServer <<Results::Type::EndCallInIntensityBuffer
+     << Results::Type::OccupancyDistributionBufferOnly
+     << Results::Type::NumberOfCallsInSystemVsSystemState
+     << Results::Type::NumberOfCallsInServerVsServerState
+     << Results::Type::NumberOfCallsInBufferVsBufferState
+     << Results::Type::NewCallOfSingleClassIntensityOut_inSystemVsSystemState<<Results::Type::NewCallOutIntensityServerVsSystemState<<Results::Type::NewCallOutIntensityBufferVsSystemState
+     << Results::Type::NewCallOfSingleClassIntensityIn_inSystemVsSystemState <<Results::Type::NewCallInIntensityServerVsSystemState <<Results::Type::NewCallInIntensityBufferVsSystemState
+     << Results::Type::EndCallOfSingleClassIntensityOut_inSystemVsSystemState<<Results::Type::EndCallOutIntensityServerVsSystemState<<Results::Type::EndCallOutIntensityBufferVsSystemState
+     << Results::Type::EndCallOfSingleClassIntensityIn_inSystemVsSystemState <<Results::Type::EndCallInIntensityServerVsSystemState <<Results::Type::EndCallInIntensityBufferVsSystemState
         ;
 }
 

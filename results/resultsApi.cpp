@@ -12,35 +12,40 @@ void TypesAndSettings::_initialize()
     if (_isInitialized)
         return;
 
-    _myMap.insert(Type::BlockingProbability                  , new SettingsTypeForClass(TypeForClass::BlockingProbability));
-    _myMap.insert(Type::LossProbability                      , new SettingsTypeForClass(TypeForClass::LossProbability));
+    _myMap.insert(Type::BlockingProbability                                    , new SettingsTypeForClass(TypeForClass::BlockingProbability                                            , "Blocking probability"                                              , "E"        ));
+    _myMap.insert(Type::LossProbability                                        , new SettingsTypeForClass(TypeForClass::LossProbability                                                , "Loss probability"                                                  , "B"        ));
 
-    _myMap.insert(Type::OccupancyDistribution                , new SettingsTypeForSystemState(TypeForSystemState::StateProbability));
+    _myMap.insert(Type::OccupancyDistribution                                  , new SettingsTypeForSystemState(TypeForSystemState::StateProbability                                   , "Occupancy Distribution in system"                                  , "P(n)"     ));
+    _myMap.insert(Type::NewCallOfAllClassesIntensityOut_inSystemVsSystemState  , new SettingsTypeForSystemState(TypeForSystemState::IntensityNewCallOut                                , "All Classes Calls arrival intensity vs current system state"       , "LOut(n)" ));
+    _myMap.insert(Type::NewCallOfAllClassesIntensityIn_inSystemVsSystemState   , new SettingsTypeForSystemState(TypeForSystemState::IntensityNewCallIn                                 , "All Classes Calls acceptance intensity vs new system state"        , "LIn(n)"  ));
+    _myMap.insert(Type::NewCallOfAllClassesIntensityOut_inSystemVsSystemState  , new SettingsTypeForSystemState(TypeForSystemState::IntensityEndCallOut                                , "All Classes Calls service ending intensity vs current system state", "UOut(n)" ));
+    _myMap.insert(Type::NewCallOfAllClassesIntensityIn_inSystemVsSystemState   , new SettingsTypeForSystemState(TypeForSystemState::IntensityEndCallIn                                 , "All Classes Calls service ending intensity vs new system state"    , "UIn(n)"  ));
 
-    _myMap.insert(Type::OccupancyDistributionServerOnly      , new SettingsTypeForServerState(TypeForServerState::StateProbability));
+    _myMap.insert(Type::OccupancyDistributionServerOnly                        , new SettingsTypeForServerState(TypeForServerState::StateProbability                                   , "Occupancy distribution in server"                     , "Ps(n)"    ));
+    _myMap.insert(Type::OccupancyDistributionBufferOnly                        , new SettingsTypeForBufferState(TypeForBufferState::StateProbability                                   , "Occupancy distribution in buffer"                     , "Pb(n)"    ));
 
-    _myMap.insert(Type::OccupancyDistributionServerBufferOnly, new SettingsTypeForBufferState(TypeForBufferState::StateProbability));
+    _myMap.insert(Type::NumberOfCallsInSystemVsSystemState                     , new SettingsTypeForClassAndSystemState(TypeForClassAndSystemState::UsageForSystem                     , "Number of calls in system"                            , "yi(n)"    ));
+    _myMap.insert(Type::NumberOfCallsInServerVsServerState                     , new SettingsTypeForClassAndSystemState(TypeForClassAndSystemState::UsageForServer                     , "Number of calls in server"                            , "yis(n)"   ));
+    _myMap.insert(Type::NumberOfCallsInBufferVsBufferState                     , new SettingsTypeForClassAndSystemState(TypeForClassAndSystemState::UsageForBuffer                     , "Number of calls in buffer"                            , "yib(n)"   ));
+    _myMap.insert(Type::NewCallOfSingleClassIntensityOut_inSystemVsSystemState , new SettingsTypeForClassAndSystemState(TypeForClassAndSystemState::OfferedNewCallIntensityOutForSystem, "Single Class Call arrival intensity vs current system state"       , "LiOut(n)" ));
+    _myMap.insert(Type::NewCallOfSingleClassIntensityIn_inSystemVsSystemState  , new SettingsTypeForClassAndSystemState(TypeForClassAndSystemState::NewCallIntensityInForSystem        , "Single Class Call acceptance intensity vs new system state"        , "LiIn(n)"  ));
+    _myMap.insert(Type::EndCallOfSingleClassIntensityOut_inSystemVsSystemState , new SettingsTypeForClassAndSystemState(TypeForClassAndSystemState::EndCallIntensityOutForSystem       , "Single Class Call service ending intensity vs current system state", "UiOut(n)" ));
+    _myMap.insert(Type::EndCallOfSingleClassIntensityIn_inSystemVsSystemState  , new SettingsTypeForClassAndSystemState(TypeForClassAndSystemState::EndCallIntensityInForSystem        , "Single Class Call service ending intensity vs new system state"    , "UiIn(n)"  ));
 
-    _myMap.insert(Type::NumberOfCallsInStateN                , new SettingsTypeForClassAndSystemState(TypeForClassAndSystemState::UsageForSystem));
-    _myMap.insert(Type::NumberOfCallsInStateN_inServer       , new SettingsTypeForClassAndSystemState(TypeForClassAndSystemState::UsageForServer));
-    _myMap.insert(Type::NumberOfCallsInStateN_inBuffer       , new SettingsTypeForClassAndSystemState(TypeForClassAndSystemState::UsageForBuffer));
-    _myMap.insert(Type::NewCallOutIntensitySystem            , new SettingsTypeForClassAndSystemState(TypeForClassAndSystemState::OfferedNewCallIntensityOutForSystem));
-    _myMap.insert(Type::NewCallInIntensitySystem             , new SettingsTypeForClassAndSystemState(TypeForClassAndSystemState::NewCallIntensityInForSystem));
-    _myMap.insert(Type::EndCallOutIntensitySystem            , new SettingsTypeForClassAndSystemState(TypeForClassAndSystemState::EndCallIntensityOutForSystem));
-    _myMap.insert(Type::EndCallInIntensitySystem             , new SettingsTypeForClassAndSystemState(TypeForClassAndSystemState::EndCallIntensityInForSystem));
+    _myMap.insert(Type::NewCallOutIntensityServerVsSystemState                 , new SettingsTypeForClassAndServerState(TypeForClassAndServerState::OfferedNewCallIntensityOut         , "Call arrival intensity vs current server state"       , "LiSOut(n)"));
+    _myMap.insert(Type::NewCallInIntensityServerVsSystemState                  , new SettingsTypeForClassAndServerState(TypeForClassAndServerState::NewCallIntensityIn                 , "Call acceptance intensity vs new server state"        , "LiSIn(n)" ));
+    _myMap.insert(Type::EndCallOutIntensityServerVsSystemState                 , new SettingsTypeForClassAndServerState(TypeForClassAndServerState::EndCallIntensityOut                , "Call service ending intensity vs current server state", "UiSOut(n)"));
+    _myMap.insert(Type::EndCallInIntensityServerVsSystemState                  , new SettingsTypeForClassAndServerState(TypeForClassAndServerState::EndCallIntensityIn                 , "Call service ending intensity vs new server state"    , "UiSIn(n)" ));
 
-    _myMap.insert(Type::NewCallOutIntensityServer            , new SettingsTypeForClassAndServerState(TypeForClassAndServerState::OfferedNewCallIntensityOut));
-    _myMap.insert(Type::NewCallInIntensityServer             , new SettingsTypeForClassAndServerState(TypeForClassAndServerState::NewCallIntensityIn));
-    _myMap.insert(Type::EndCallOutIntensityServer            , new SettingsTypeForClassAndServerState(TypeForClassAndServerState::EndCallIntensityOut));
-    _myMap.insert(Type::EndCallInIntensityServer             , new SettingsTypeForClassAndServerState(TypeForClassAndServerState::EndCallIntensityIn));
+    _myMap.insert(Type::NewCallOutIntensityBufferVsSystemState                 , new SettingsTypeForClassAndBufferState(TypeForClassAndBufferState::OfferedNewCallIntensityOut         , "Call arrival intensity vs current buffer state"       , "LiBOut(n)"));
+    _myMap.insert(Type::NewCallInIntensityBufferVsSystemState                  , new SettingsTypeForClassAndBufferState(TypeForClassAndBufferState::NewCallIntensityIn                 , "Call acceptance intensity vs new buffer state"        , "LiBIn(n)" ));
+    _myMap.insert(Type::EndCallOutIntensityBufferVsSystemState                 , new SettingsTypeForClassAndBufferState(TypeForClassAndBufferState::EndCallIntensityOut                , "Call service ending intensity vs current buffer state", "UiBOut(n)"));
+    _myMap.insert(Type::EndCallInIntensityBufferVsSystemState                  , new SettingsTypeForClassAndBufferState(TypeForClassAndBufferState::EndCallIntensityIn                 , "Call service ending intensity vs new buffer state"    , "UiBIn(n)" ));
 
-    _myMap.insert(Type::NewCallOutIntensityBuffer            , new SettingsTypeForClassAndBufferState(TypeForClassAndBufferState::OfferedNewCallIntensityOut));
-    _myMap.insert(Type::NewCallInIntensityBuffer             , new SettingsTypeForClassAndBufferState(TypeForClassAndBufferState::NewCallIntensityIn));
-    _myMap.insert(Type::EndCallOutIntensityBuffer            , new SettingsTypeForClassAndBufferState(TypeForClassAndBufferState::EndCallIntensityOut));
-    _myMap.insert(Type::EndCallInIntensityBuffer             , new SettingsTypeForClassAndBufferState(TypeForClassAndBufferState::EndCallIntensityIn));
-
-    _myMap.insert(Type::AllSugbrupsInGivenCombinationAndClassAvailable, new SettingsInavailabilityForClassInAllGroupsInCombination());
-    _myMap.insert(Type::AvailableSubroupDistribution, new SettingsAvailableSubroupDistribution());
+    _myMap.insert(Type::AllSugbrupsInGivenCombinationNotAvailableForCallsOfGivenClass
+      , new SettingsInavailabilityForClassInAllGroupsInCombination("All groups in combination are not available for class i"    , "combNA_i"));
+    _myMap.insert(Type::AvailableSubroupDistribution
+      , new SettingsAvailableSubroupDistribution(                  "Distribution of available groups"                           , "RDP"));
 
     _isInitialized = true;
 }
@@ -67,196 +72,8 @@ Settings* TypesAndSettings::getSetting(Type type)
 
 QString TypesAndSettings::typeToString(Type type)
 {
-    QString result;
-    switch (type)
-    {
-    case Type::BlockingProbability:
-        result = "Blocking probability";
-        break;
-
-    case Type::LossProbability:
-        result = "Loss probability";
-        break;
-
-    case Type::OccupancyDistribution:
-        result = "Traffic distribution in a system";
-        break;
-
-    case Type::OccupancyDistributionServerOnly:
-        result = "Traffic distribution in a server";
-        break;
-
-    case Type::OccupancyDistributionServerBufferOnly:
-        result = "Traffic distribution in a buffer";
-        break;
-
-    case Type::NumberOfCallsInStateN:
-        result = "Avarage number of calls in a state";
-        break;
-
-    case Type::NumberOfCallsInStateN_inServer:
-        result = "Avarage number of calls in a server";
-        break;
-
-    case Type::NumberOfCallsInStateN_inBuffer:
-        result = "Avarage number of calls in a buffer";
-        break;
-
-    case Type::NewCallOutIntensitySystem:
-        result = "New call intensity from state N in a system";
-        break;
-
-    case Type::NewCallInIntensitySystem:
-        result = "New call intensity to state N in a system";
-        break;
-
-    case Type::EndCallOutIntensitySystem:
-        result = "New call intensity from state N in a system";
-        break;
-
-    case Type::EndCallInIntensitySystem:
-        result = "End call intensity to state N in a system";
-        break;
-
-    case Type::NewCallOutIntensityServer:
-        result = "New call intensity from state N in a server";
-        break;
-
-    case Type::NewCallInIntensityServer:
-        result = "New call intensity to state N in a server";
-        break;
-
-    case Type::EndCallOutIntensityServer:
-        result = "New call intensity from state N in a server";
-        break;
-
-    case Type::EndCallInIntensityServer:
-        result = "End call intensity to state N in a server";
-        break;
-
-    case Type::NewCallOutIntensityBuffer:
-        result = "New call intensity from state N in a buffer";
-        break;
-
-    case Type::NewCallInIntensityBuffer:
-        result = "New call intensity to state N in a buffer";
-        break;
-
-    case Type::EndCallOutIntensityBuffer:
-        result = "New call intensity from state N in a buffer";
-        break;
-
-    case Type::EndCallInIntensityBuffer:
-        result = "End call intensity to state N in a buffer";
-        break;
-
-    case Type::AllSugbrupsInGivenCombinationAndClassAvailable:
-        result = "Availability of all subgroup in a combination";
-        break;
-
-    case Type::AvailableSubroupDistribution:
-        result = "Distribution of subgroup availability";
-        break;
-    }
-    return result;
+    return _myMap[type]->name;
 }
-
-QString TypesAndSettings::typeToGnuplotKeyPlacement(Type type)
-{
-    QString result;
-    switch (type)
-    {
-    case Type::BlockingProbability:
-        result = "Blocking probability";
-        break;
-
-    case Type::LossProbability:
-        result = "Loss probability";
-        break;
-
-    case Type::OccupancyDistribution:
-        result = "Traffic distribution in a system";
-        break;
-
-    case Type::OccupancyDistributionServerOnly:
-        result = "Traffic distribution in a server";
-        break;
-
-    case Type::OccupancyDistributionServerBufferOnly:
-        result = "Traffic distribution in a buffer";
-        break;
-
-    case Type::NumberOfCallsInStateN:
-        result = "Avarage number of calls in a state";
-        break;
-
-    case Type::NumberOfCallsInStateN_inServer:
-        result = "Avarage number of calls in a server";
-        break;
-
-    case Type::NumberOfCallsInStateN_inBuffer:
-        result = "Avarage number of calls in a buffer";
-        break;
-
-    case Type::NewCallOutIntensitySystem:
-        result = "New call intensity from state N in a system";
-        break;
-
-    case Type::NewCallInIntensitySystem:
-        result = "New call intensity to state N in a system";
-        break;
-
-    case Type::EndCallOutIntensitySystem:
-        result = "New call intensity from state N in a system";
-        break;
-
-    case Type::EndCallInIntensitySystem:
-        result = "End call intensity to state N in a system";
-        break;
-
-    case Type::NewCallOutIntensityServer:
-        result = "New call intensity from state N in a server";
-        break;
-
-    case Type::NewCallInIntensityServer:
-        result = "New call intensity to state N in a server";
-        break;
-
-    case Type::EndCallOutIntensityServer:
-        result = "New call intensity from state N in a server";
-        break;
-
-    case Type::EndCallInIntensityServer:
-        result = "End call intensity to state N in a server";
-        break;
-
-    case Type::NewCallOutIntensityBuffer:
-        result = "New call intensity from state N in a buffer";
-        break;
-
-    case Type::NewCallInIntensityBuffer:
-        result = "New call intensity to state N in a buffer";
-        break;
-
-    case Type::EndCallOutIntensityBuffer:
-        result = "New call intensity from state N in a buffer";
-        break;
-
-    case Type::EndCallInIntensityBuffer:
-        result = "End call intensity to state N in a buffer";
-        break;
-
-    case Type::AllSugbrupsInGivenCombinationAndClassAvailable:
-        result = "Availability of all subgroup in a combination";
-        break;
-
-    case Type::AvailableSubroupDistribution:
-        result = "Distribution of subgroup availability";
-        break;
-    }
-    return result;
-}
-
 
 QString TypesAndSettings::typeToX_AxisString(Type type)
 {
@@ -334,7 +151,7 @@ QString TypesAndSettings::parameterToString(ParameterType parameter)
 }
 
 
-SettingsTypeForClass::SettingsTypeForClass(TypeForClass qos): qos(qos)
+SettingsTypeForClass::SettingsTypeForClass(TypeForClass qos, QString name, QString shortName): Settings (name, shortName), qos(qos)
 {
     dependencyParameters.append(ParameterType::OfferedTrafficPerAS);
     dependencyParameters.append(ParameterType::TrafficClass);
@@ -395,7 +212,7 @@ bool SettingsTypeForClass::getSinglePlot(QLineSeries *outPlot, QPair<double, dou
 }
 
 
-SettingsTypeForSystemState::SettingsTypeForSystemState(TypeForSystemState qos) : qos(qos)
+SettingsTypeForSystemState::SettingsTypeForSystemState(TypeForSystemState qos, QString name, QString shortName): Settings (name, shortName), qos(qos)
 {
     dependencyParameters.append(ParameterType::OfferedTrafficPerAS);
     dependencyParameters.append(ParameterType::SystemState);
@@ -453,7 +270,7 @@ bool SettingsTypeForSystemState::getSinglePlot(QLineSeries *outPlot, QPair<doubl
     return result;
 }
 
-SettingsTypeForServerState::SettingsTypeForServerState(TypeForServerState qos): qos(qos)
+SettingsTypeForServerState::SettingsTypeForServerState(TypeForServerState qos, QString name, QString shortName): Settings (name, shortName), qos(qos)
 {
     dependencyParameters.append(ParameterType::OfferedTrafficPerAS);
     dependencyParameters.append(ParameterType::ServerState);
@@ -511,7 +328,7 @@ bool SettingsTypeForServerState::getSinglePlot(QLineSeries *outPlot, QPair<doubl
     return result;
 }
 
-SettingsTypeForBufferState::SettingsTypeForBufferState(TypeForBufferState qos): qos(qos)
+SettingsTypeForBufferState::SettingsTypeForBufferState(TypeForBufferState qos, QString name, QString shortName): Settings (name, shortName), qos(qos)
 {
     dependencyParameters.append(ParameterType::OfferedTrafficPerAS);
     dependencyParameters.append(ParameterType::BufferState);
@@ -569,7 +386,7 @@ bool SettingsTypeForBufferState::getSinglePlot(QLineSeries *outPlot, QPair<doubl
     return result;
 }
 
-SettingsTypeForClassAndSystemState::SettingsTypeForClassAndSystemState(TypeForClassAndSystemState qos): qos(qos)
+SettingsTypeForClassAndSystemState::SettingsTypeForClassAndSystemState(TypeForClassAndSystemState qos, QString name, QString shortName): Settings (name, shortName), qos(qos)
 {
     dependencyParameters.append(ParameterType::SystemState);
     dependencyParameters.append(ParameterType::TrafficClass);
@@ -643,7 +460,7 @@ bool SettingsTypeForClassAndSystemState::getSinglePlot(QLineSeries *outPlot, QPa
     return result;
 }
 
-SettingsTypeForClassAndServerState::SettingsTypeForClassAndServerState(TypeForClassAndServerState qos): qos(qos)
+SettingsTypeForClassAndServerState::SettingsTypeForClassAndServerState(TypeForClassAndServerState qos, QString name, QString shortName): Settings (name, shortName), qos(qos)
 {
     dependencyParameters.append(ParameterType::ServerState);
     dependencyParameters.append(ParameterType::TrafficClass);
@@ -720,7 +537,7 @@ bool SettingsTypeForClassAndServerState::getSinglePlot(QLineSeries *outPlot, QPa
     return result;
 }
 
-SettingsTypeForClassAndBufferState::SettingsTypeForClassAndBufferState(TypeForClassAndBufferState qos): qos(qos)
+SettingsTypeForClassAndBufferState::SettingsTypeForClassAndBufferState(TypeForClassAndBufferState qos, QString name, QString shortName): Settings (name, shortName), qos(qos)
 {
     dependencyParameters.append(ParameterType::BufferState);
     dependencyParameters.append(ParameterType::TrafficClass);
@@ -797,7 +614,7 @@ bool SettingsTypeForClassAndBufferState::getSinglePlot(QLineSeries *outPlot, QPa
     return result;
 }
 
-SettingsInavailabilityForClassInAllGroupsInCombination::SettingsInavailabilityForClassInAllGroupsInCombination()
+SettingsInavailabilityForClassInAllGroupsInCombination::SettingsInavailabilityForClassInAllGroupsInCombination(QString name, QString shortName): Settings (name, shortName)
 {
     dependencyParameters.append(ParameterType::OfferedTrafficPerAS);
     dependencyParameters.append(ParameterType::TrafficClass);
@@ -819,10 +636,10 @@ bool SettingsInavailabilityForClassInAllGroupsInCombination::getSinglePlot(QLine
         {
             const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
             double x = static_cast<double>(a);
-
-
             double y=0;
-            if ((*singlePoint)->read(y, TypeClassForServerGroupsCombination::SerImpossibilityInAllTheSubgroups, parametersSet.classIndex, parametersSet.combinationNumber))
+            int t = rSystem.getModel().getClass(parametersSet.classIndex)->t();
+
+            if ((*singlePoint)->read(y, TypeResourcess_VsServerGroupsCombination::InavailabilityInAllTheGroups, t, parametersSet.combinationNumber))
             {
                 if ((y > 0) || linearScale)
                 {
@@ -846,9 +663,9 @@ bool SettingsInavailabilityForClassInAllGroupsInCombination::getSinglePlot(QLine
         for (int n=0; n <= noOfCombinations; n++)
         {
             double y=0;
+            int t = rSystem.getModel().getClass(parametersSet.classIndex)->t();
 
-            if ((*singlePoint)
-                    ->read(y, TypeClassForServerGroupsCombination::SerPossibilityInAllTheSubgroups, parametersSet.classIndex, n))
+            if ((*singlePoint)->read(y, TypeResourcess_VsServerGroupsCombination::AvailabilityInAllTheGroups, t, n))
             {
                 if ((y > 0) || linearScale)
                 {
@@ -865,8 +682,9 @@ bool SettingsInavailabilityForClassInAllGroupsInCombination::getSinglePlot(QLine
         for (int i=0; i < rSystem.getModel().m(); i++)
         {
             double y=0;
+            int t = rSystem.getModel().getClass(i)->t();
 
-            if ((*singlePoint)->read(y, TypeClassForServerGroupsCombination::SerPossibilityInAllTheSubgroups, i, parametersSet.numberOfGroups))
+            if ((*singlePoint)->read(y, TypeResourcess_VsServerGroupsCombination::AvailabilityInAllTheGroups, t, parametersSet.combinationNumber))
             {
                 if ((y > 0) || linearScale)
                 {
@@ -880,7 +698,7 @@ bool SettingsInavailabilityForClassInAllGroupsInCombination::getSinglePlot(QLine
     return result;
 }
 
-SettingsAvailableSubroupDistribution::SettingsAvailableSubroupDistribution()
+SettingsAvailableSubroupDistribution::SettingsAvailableSubroupDistribution(QString name, QString shortName): Settings (name, shortName)
 {
     dependencyParameters.append(ParameterType::OfferedTrafficPerAS);
     dependencyParameters.append(ParameterType::TrafficClass);
@@ -898,6 +716,7 @@ bool SettingsAvailableSubroupDistribution::getSinglePlot(QLineSeries *outPlot, Q
     outPlot->clear();
     if (functionalParameter == ParameterType::OfferedTrafficPerAS)
     {
+        int t = rSystem.getModel().getClass(parametersSet.classIndex)->t();
         foreach(decimal a, rSystem.getAvailableAperAU())
         {
             const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
@@ -905,7 +724,7 @@ bool SettingsAvailableSubroupDistribution::getSinglePlot(QLineSeries *outPlot, Q
 
 
             double y=0;
-            if ((*singlePoint)->read(y, TypeClassForServerExactGroupsSet::ServPossibilityOnlyInAllTheSubgroups, parametersSet.classIndex, parametersSet.numberOfGroups))
+            if ((*singlePoint)->read(y, TypeResourcess_VsNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, t, parametersSet.numberOfGroups))
             {
                 if ((y > 0) || linearScale)
                 {
@@ -924,11 +743,12 @@ bool SettingsAvailableSubroupDistribution::getSinglePlot(QLineSeries *outPlot, Q
     if (functionalParameter == ParameterType::NumberOfGroups)
     {
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+        int t = rSystem.getModel().getClass(parametersSet.classIndex)->t();
         for (int k=0; k <= rSystem.getModel().k_s(); k++)
         {
             double y=0;
 
-            if ((*singlePoint)->read(y, TypeStateForServerGroupsSet::AvailabilityOnlyInAllTheGroups, parametersSet.classIndex, k))
+            if ((*singlePoint)->read(y, TypeResourcess_VsNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, t, k))
             {
                 if ((y > 0) || linearScale)
                 {
@@ -945,8 +765,9 @@ bool SettingsAvailableSubroupDistribution::getSinglePlot(QLineSeries *outPlot, Q
         for (int i=0; i < rSystem.getModel().m(); i++)
         {
             double y=0;
+            int t = rSystem.getModel().getClass(i)->t();
 
-            if ((*singlePoint)->read(y, TypeStateForServerGroupsSet::AvailabilityOnlyInAllTheGroups, i, parametersSet.numberOfGroups))
+            if ((*singlePoint)->read(y, TypeResourcess_VsNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, t, parametersSet.numberOfGroups))
             {
                 if ((y > 0) || linearScale)
                 {

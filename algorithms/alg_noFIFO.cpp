@@ -10,8 +10,8 @@ AlgorithmHybridNoFifo::AlgorithmHybridNoFifo() : Investigator()
      << Results::Type::BlockingProbability
      << Results::Type::LossProbability
      << Results::Type::OccupancyDistribution
-     << Results::Type::NumberOfCallsInStateN
-     << Results::Type::NewCallOutIntensitySystem<< Results::Type::NewCallInIntensitySystem<< Results::Type::EndCallOutIntensitySystem<< Results::Type::EndCallInIntensitySystem
+     << Results::Type::NumberOfCallsInSystemVsSystemState
+     << Results::Type::NewCallOfSingleClassIntensityOut_inSystemVsSystemState<< Results::Type::NewCallOfSingleClassIntensityIn_inSystemVsSystemState<< Results::Type::EndCallOfSingleClassIntensityOut_inSystemVsSystemState<< Results::Type::EndCallOfSingleClassIntensityIn_inSystemVsSystemState
         ;
 }
 

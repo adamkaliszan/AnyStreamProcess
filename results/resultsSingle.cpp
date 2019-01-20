@@ -679,102 +679,55 @@ bool RSingle::read(double &result, TypeForClassAndSystemState type, int classNo,
     return true;
 }
 
-RSingle &RSingle::write(TypeStateForServerGroupsCombination type, double value, int numberOfResourcess, int groupCombinationIndex)
+RSingle &RSingle::write(TypeResourcess_VsServerGroupsCombination type, double value, int numberOfResourcess, int groupCombinationIndex)
 {
     switch(type)
     {
-    case TypeStateForServerGroupsCombination::FreeAUsInBestGroup:
+    case TypeResourcess_VsServerGroupsCombination::FreeAUsInBestGroup:
         dataPerGroupCombination[groupCombinationIndex].availabilityProbabilities[numberOfResourcess].freeInBestGroup = value;
         break;
 
-    case TypeStateForServerGroupsCombination::FreeAUsInEveryGroup:
+    case TypeResourcess_VsServerGroupsCombination::FreeAUsInEveryGroup:
         dataPerGroupCombination[groupCombinationIndex].availabilityProbabilities[numberOfResourcess].freeInAllTheGroups = value;
         break;
 
-    case TypeStateForServerGroupsCombination::AvailabilityOnlyInAllTheGroups:
+    case TypeResourcess_VsServerGroupsCombination::AvailabilityOnlyInAllTheGroups:
         dataPerGroupCombination[groupCombinationIndex].availabilityProbabilities[numberOfResourcess].availabilityOnlyInAllTheGroups = value;
         break;
 
-    case TypeStateForServerGroupsCombination::AvailabilityInAllTheGroups:
+    case TypeResourcess_VsServerGroupsCombination::AvailabilityInAllTheGroups:
         dataPerGroupCombination[groupCombinationIndex].availabilityProbabilities[numberOfResourcess].availabilityInAllTheGroups = value;
         break;
 
-    case TypeStateForServerGroupsCombination::InavailabilityInAllTheGroups:
+    case TypeResourcess_VsServerGroupsCombination::InavailabilityInAllTheGroups:
         dataPerGroupCombination[groupCombinationIndex].availabilityProbabilities[numberOfResourcess].inavailabilityInAllTheGroups = value;
         break;
     }
     return *this;
 }
 
-bool RSingle::read(double &result, TypeStateForServerGroupsCombination type, int numberOfResourcess, int groupCombinationIndex) const
+bool RSingle::read(double &result, TypeResourcess_VsServerGroupsCombination type, int numberOfResourcess, int groupCombinationIndex) const
 {
     switch(type)
     {
-    case TypeStateForServerGroupsCombination::FreeAUsInBestGroup:
+    case TypeResourcess_VsServerGroupsCombination::FreeAUsInBestGroup:
         result = dataPerGroupCombination[groupCombinationIndex].availabilityProbabilities[numberOfResourcess].freeInBestGroup;
         break;
 
-    case TypeStateForServerGroupsCombination::FreeAUsInEveryGroup:
+    case TypeResourcess_VsServerGroupsCombination::FreeAUsInEveryGroup:
         result = dataPerGroupCombination[groupCombinationIndex].availabilityProbabilities[numberOfResourcess].freeInAllTheGroups;
         break;
 
-    case TypeStateForServerGroupsCombination::AvailabilityOnlyInAllTheGroups:
+    case TypeResourcess_VsServerGroupsCombination::AvailabilityOnlyInAllTheGroups:
         result = dataPerGroupCombination[groupCombinationIndex].availabilityProbabilities[numberOfResourcess].availabilityOnlyInAllTheGroups;
         break;
 
-    case TypeStateForServerGroupsCombination::AvailabilityInAllTheGroups:
+    case TypeResourcess_VsServerGroupsCombination::AvailabilityInAllTheGroups:
         result = dataPerGroupCombination[groupCombinationIndex].availabilityProbabilities[numberOfResourcess].availabilityInAllTheGroups;
         break;
 
-    case TypeStateForServerGroupsCombination::InavailabilityInAllTheGroups:
+    case TypeResourcess_VsServerGroupsCombination::InavailabilityInAllTheGroups:
         result = dataPerGroupCombination[groupCombinationIndex].availabilityProbabilities[numberOfResourcess].inavailabilityInAllTheGroups;
-        break;
-    }
-    return true;
-}
-
-RSingle &RSingle::write(TypeClassForServerGroupsCombination type, double value, int classNumber, int groupCombinationIndex)
-{
-    switch(type)
-    {
-    case TypeClassForServerGroupsCombination::SerPossibilityInBestSubgroup:
-        dataPerGroupCombination[groupCombinationIndex].availabilityClasses[classNumber].availabilityInBestSubgroup = value;
-        break;
-
-    case TypeClassForServerGroupsCombination::SerPossibilityOnlyInAllTheSubgroups:
-        dataPerGroupCombination[groupCombinationIndex].availabilityClasses[classNumber].availabilityOnlyInAllSubgroups = value;
-        break;
-
-    case TypeClassForServerGroupsCombination::SerPossibilityInAllTheSubgroups:
-        dataPerGroupCombination[groupCombinationIndex].availabilityClasses[classNumber].availabilityInAllSubgroups = value;
-        break;
-
-    case TypeClassForServerGroupsCombination::SerImpossibilityInAllTheSubgroups:
-        dataPerGroupCombination[groupCombinationIndex].availabilityClasses[classNumber].inavailabilityInAllSubgroups = value;
-        break;
-
-    }
-    return *this;
-}
-
-bool RSingle::read(double &result, TypeClassForServerGroupsCombination type, int classNumber, int groupCombinationIndex) const
-{
-    switch(type)
-    {
-    case TypeClassForServerGroupsCombination::SerPossibilityInBestSubgroup:
-        result = dataPerGroupCombination[groupCombinationIndex].availabilityClasses[classNumber].availabilityInBestSubgroup;
-        break;
-
-    case TypeClassForServerGroupsCombination::SerPossibilityOnlyInAllTheSubgroups:
-        result = dataPerGroupCombination[groupCombinationIndex].availabilityClasses[classNumber].availabilityOnlyInAllSubgroups;
-        break;
-
-    case TypeClassForServerGroupsCombination::SerPossibilityInAllTheSubgroups:
-        result = dataPerGroupCombination[groupCombinationIndex].availabilityClasses[classNumber].availabilityInAllSubgroups;
-        break;
-
-    case TypeClassForServerGroupsCombination::SerImpossibilityInAllTheSubgroups:
-        result = dataPerGroupCombination[groupCombinationIndex].availabilityClasses[classNumber].inavailabilityInAllSubgroups;
         break;
     }
     return true;
@@ -824,82 +777,37 @@ bool RSingle::read(double &result, TypeClassForServerBestGroupsSet type, int cla
     return true;
 }
 
-RSingle &RSingle::write(TypeStateForServerGroupsSet type, double value, int numberOfResourcess, int numberOfGroups)
+RSingle &RSingle::write(TypeResourcess_VsNumberOfServerGroups type, double value, int numberOfResourcess, int numberOfGroups)
 {
     switch(type)
     {
-    case TypeStateForServerGroupsSet::AvailabilityOnlyInAllTheGroups:
+    case TypeResourcess_VsNumberOfServerGroups::AvailabilityOnlyInAllTheGroups:
         dataPerExactGroupNumber[numberOfGroups].availabilityProbabilities[numberOfResourcess].availabilityOnlyInAllTheGroups = value;
         break;
-    case TypeStateForServerGroupsSet::AvailabilityInAllTheGroups:
+    case TypeResourcess_VsNumberOfServerGroups::AvailabilityInAllTheGroups:
         dataPerExactGroupNumber[numberOfGroups].availabilityProbabilities[numberOfResourcess].availabilityInAllTheGroups = value;
         break;
-    case TypeStateForServerGroupsSet::InavailabilityInAllTheGroups:
+    case TypeResourcess_VsNumberOfServerGroups::InavailabilityInAllTheGroups:
         dataPerExactGroupNumber[numberOfGroups].availabilityProbabilities[numberOfResourcess].inavailabilityInAllTheGroups = value;
         break;
     }
     return *this;
 }
 
-bool RSingle::read(double &result, TypeStateForServerGroupsSet type, int numberOfResourcess, int numberOfGroups) const
+bool RSingle::read(double &result, TypeResourcess_VsNumberOfServerGroups type, int numberOfResourcess, int numberOfGroups) const
 {
     switch(type)
     {
-    case TypeStateForServerGroupsSet::AvailabilityOnlyInAllTheGroups:
+    case TypeResourcess_VsNumberOfServerGroups::AvailabilityOnlyInAllTheGroups:
         result = dataPerExactGroupNumber[numberOfGroups].availabilityProbabilities[numberOfResourcess].availabilityOnlyInAllTheGroups;
         break;
-    case TypeStateForServerGroupsSet::AvailabilityInAllTheGroups:
+    case TypeResourcess_VsNumberOfServerGroups::AvailabilityInAllTheGroups:
         result = dataPerExactGroupNumber[numberOfGroups].availabilityProbabilities[numberOfResourcess].availabilityInAllTheGroups;
         break;
 
-    case TypeStateForServerGroupsSet::InavailabilityInAllTheGroups:
+    case TypeResourcess_VsNumberOfServerGroups::InavailabilityInAllTheGroups:
         result = dataPerExactGroupNumber[numberOfGroups].availabilityProbabilities[numberOfResourcess].inavailabilityInAllTheGroups;
         break;
-    }
-    return true;
-}
-
-RSingle &RSingle::write(TypeClassForServerExactGroupsSet type, double value, int classNumber, int numberOfGroups)
-{
-    switch(type)
-    {
-    case TypeClassForServerExactGroupsSet::ServPossibilityInBestSubgroup:
-        dataPerExactGroupNumber[numberOfGroups].availabilityClasses[classNumber].availabilityInBestSubgroup = value;
-        break;
-
-    case TypeClassForServerExactGroupsSet::ServPossibilityOnlyInAllTheSubgroups:
-        dataPerExactGroupNumber[numberOfGroups].availabilityClasses[classNumber].availabilityOnlyInAllSubgroups = value;
-        break;
-
-    case TypeClassForServerExactGroupsSet::ServPossibilityInAllTheSubgroups:
-        dataPerExactGroupNumber[numberOfGroups].availabilityClasses[classNumber].availabilityInAllSubgroups = value;
-        break;
-
-    case TypeClassForServerExactGroupsSet::ServImpossibilityInAllTheSubgroups:
-        dataPerExactGroupNumber[numberOfGroups].availabilityClasses[classNumber].inavailabilityInAllSubgroups = value;
-        break;
-    }
-    return *this;
-}
-
-bool RSingle::read(double &result, TypeClassForServerExactGroupsSet type, int classNumber, int numberOfGroups) const
-{
-    switch(type)
-    {
-    case TypeClassForServerExactGroupsSet::ServPossibilityInBestSubgroup:
-        result = dataPerExactGroupNumber[numberOfGroups].availabilityClasses[classNumber].availabilityInBestSubgroup;
-        break;
-    case TypeClassForServerExactGroupsSet::ServPossibilityOnlyInAllTheSubgroups:
-        result = dataPerExactGroupNumber[numberOfGroups].availabilityClasses[classNumber].availabilityOnlyInAllSubgroups;
-        break;
-    case TypeClassForServerExactGroupsSet::ServPossibilityInAllTheSubgroups:
-        result = dataPerExactGroupNumber[numberOfGroups].availabilityClasses[classNumber].availabilityInAllSubgroups;
-        break;
-
-    case TypeClassForServerExactGroupsSet::ServImpossibilityInAllTheSubgroups:
-        result = dataPerExactGroupNumber[numberOfGroups].availabilityClasses[classNumber].inavailabilityInAllSubgroups;
-        break;
-
     }
     return true;
 }
