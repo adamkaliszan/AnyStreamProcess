@@ -72,11 +72,7 @@ SimulatorBufferFifo::System::System(const ModelSyst *system, int numberOfSeries)
     this->agenda = new SimulatorDataCollection<ProcBufferFifo>();
 
 
-    int32_t *v, *k, numberOfTypes;
-    system->getLinkParameters(&k, &v, &numberOfTypes);
     server = new Server(system->vk_s(), this);
-    delete []v;
-    delete []k;
 
     buffer = new Buffer(system->vk_b(), system->vk_b(), this);
 

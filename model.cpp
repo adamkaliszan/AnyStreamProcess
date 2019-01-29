@@ -856,6 +856,7 @@ ModelSyst::ModelSyst():
   , _totalBufferCapacity(0)
   , _totalNumberOfBuffers(0)
   , _totalAt(0), id(0)
+  , _parWasChanged(true)
 {
     _capacityTrClasses = 4;
     _trClasses = new ModelTrClass*[_capacityTrClasses];
@@ -877,7 +878,7 @@ ModelSyst::~ModelSyst()
     delete []_bufers;
 }
 
-void ModelSyst::getLinkParameters(int32_t **k
+void ModelSyst::getServerGroupDescription(int32_t **k
   , int32_t **v
   , int32_t *numberOfTypes
 ) const
@@ -893,7 +894,7 @@ void ModelSyst::getLinkParameters(int32_t **k
     }
 }
 
-void ModelSyst::getBufferParameters(
+void ModelSyst::getBufferGroupDescription(
           int32_t **k
         , int32_t **v
         , int32_t *numberOfTypes
@@ -910,8 +911,58 @@ void ModelSyst::getBufferParameters(
     }
 }
 
+const QVector<int> &ModelSyst::getServerGroupCapacityVector() const
+{
+    if (_parWasChanged)
+        updateConstSyst();
+    return constSyst.vs;
+}
+
+const QVector<int> &ModelSyst::getBufferCapacityVector() const
+{
+    if (_parWasChanged)
+        updateConstSyst();
+    return constSyst.vb;
+}
+
+
+void ModelSyst::updateConstSyst() const
+{
+    int index = 0;
+
+    constSyst.m = m();
+    constSyst.Vs = vk_s();
+    constSyst.Vb = vk_b();
+
+    constSyst.ks = k_s();
+    constSyst.kb = k_b();
+
+    constSyst.vs.resize(k_s());
+    index = 0;
+    for (int j=0; j < _noOfTypesOfGroups; j++)
+        for (int j2=0; j2<this->k_s(j); j2++)
+            constSyst.vs[index++] = this->v_s(j);
+
+    constSyst.vb.resize(k_b());
+    index = 0;
+    for (int j=0; j < _noOfTypesOfBuffers; j++)
+        for (int j2=0; j2<this->k_b(j); j2++)
+            constSyst.vb[index++] = this->v_b(j);
+
+    constSyst.t.resize(m());
+    index = 0;
+    for (int i=0; i < m(); i++)
+    {
+        constSyst.t[i] = getClass(i)->t();
+    }
+
+    _parWasChanged = false;
+}
+
+
 void ModelSyst::addClass(ModelTrClass *newClass)
 {
+    _parWasChanged = true;
     if (_noOfTrClasses == _capacityTrClasses)
     {
         ModelTrClass **newTrClasses = new ModelTrClass*[2*_capacityTrClasses];
@@ -929,6 +980,7 @@ void ModelSyst::addClass(ModelTrClass *newClass)
 
 void ModelSyst::addGroups(ModelResourcess newGroup, bool optimize)
 {
+    _parWasChanged = true;
     _totalNumberOfGroups += newGroup.k();
     _totalGroupsCapacity += newGroup.V();
     if (optimize)
@@ -958,6 +1010,7 @@ void ModelSyst::addGroups(ModelResourcess newGroup, bool optimize)
 
 void ModelSyst::addQeues(ModelResourcess qeue, bool optimize)
 {
+    _parWasChanged = true;
     _totalNumberOfBuffers += qeue.k();
     _totalBufferCapacity += qeue.V();
 
@@ -998,6 +1051,7 @@ void ModelSyst::setBufferSchedulerAlgorithm(BufferResourcessScheduler algorithm)
 
 void ModelSyst::clearAll()
 {
+    _parWasChanged = true;
     for (int i=0; i<_noOfTrClasses; i++)
         delete _trClasses[i];
     _noOfTrClasses = 0;
@@ -1017,6 +1071,13 @@ const ModelTrClass *ModelSyst::getClass(int idx) const
     if (idx < _noOfTrClasses)
         return _trClasses[idx];
     return nullptr;
+}
+
+const ModelSyst::ConstSyst &ModelSyst::getConstSyst() const
+{
+    if (_parWasChanged)
+        updateConstSyst();
+    return constSyst;
 }
 
 ServerResourcessScheduler ModelSyst::getGroupsSchedulerAlgorithm() const
@@ -1046,8 +1107,8 @@ bool ModelSyst::operator==(const ModelSyst &rho) const
 
     int32_t *vA, *vB, *kA, *kB, cA, cB;
 
-    getLinkParameters(&kA, &vA, &cA);
-    rho.getLinkParameters(&kB, &vB, &cB);
+    getServerGroupDescription(&kA, &vA, &cA);
+    rho.getServerGroupDescription(&kB, &vB, &cB);
 
     if (cA != cB)
         result = false;
@@ -1069,8 +1130,8 @@ bool ModelSyst::operator==(const ModelSyst &rho) const
     delete []kA;
     delete []kB;
 
-    getBufferParameters(&kA, &vA, &cA);
-    rho.getBufferParameters(&kB, &vB, &cB);
+    getBufferGroupDescription(&kA, &vA, &cA);
+    rho.getBufferGroupDescription(&kB, &vB, &cB);
 
     if (cA != cB)
         result = false;
@@ -1120,8 +1181,8 @@ bool ModelSyst::operator >(const ModelSyst &rho) const
     bool result = true;
     int32_t *vA, *vB, *kA, *kB, cA, cB;
 
-    getLinkParameters(&kA, &vA, &cA);
-    rho.getLinkParameters(&kB, &vB, &cB);
+    getServerGroupDescription(&kA, &vA, &cA);
+    rho.getServerGroupDescription(&kB, &vB, &cB);
 
     if (cA != cB)
         result = (cA > cB);
@@ -1170,8 +1231,8 @@ bool ModelSyst::operator <(const ModelSyst &rho) const
     bool result = true;
     int32_t *vA, *vB, *kA, *kB, cA, cB;
 
-    getLinkParameters(&kA, &vA, &cA);
-    rho.getLinkParameters(&kB, &vB, &cB);
+    getServerGroupDescription(&kA, &vA, &cA);
+    rho.getServerGroupDescription(&kB, &vB, &cB);
 
     if (cA != cB)
         result = (cA < cB);

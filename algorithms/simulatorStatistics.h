@@ -17,6 +17,17 @@ public:
     inline void statsClear() { occupancyTime = 0; }
 };
 
+
+class TimeStatisticsForClasses
+{
+public:
+    double blockingTime;                   ///< Time of the states, where the call service is not possible
+
+    TimeStatisticsForClasses() : blockingTime(0) { }
+    inline void statsClear() { blockingTime = 0; }
+};
+
+
 class TimeStatisticsMicroState
 {
 public:
@@ -61,6 +72,7 @@ private:
     QVector<QVector <EvenStatistics> >                eventsPerClassAndSystemState;
     QVector<QVector <QVector <EvenStatistics> > >     eventsPerClassAndServerStateAndSystem;
 
+    QVector<TimeStatisticsForClasses>                            timesPerClasses;
     QVector<TimeStatisticsMacroState>                            timesPerSystemState;
     QVector<QVector<TimeStatisticsMacroState> >                  timesPerServerAndBufferState;
 
@@ -84,6 +96,7 @@ public:
 
 
     void collectPre(double time, int n_s, int n_b, const QVector<int> &n_si, const QVector<int> &n_bi);
+    void collectPre(const ModelSyst *mSystem, double time, int n_s, int n_b, const QVector<int> &n_si, const QVector<int> &n_bi, const QVector<int> &n_sk, const QVector<int> &n_bk);
     void collectPost(int classIdx, int old_n, int n);
 };
 
@@ -97,6 +110,29 @@ public:
 
 class ServerStatistics
 {
+public:
+    enum class LastEvent
+    {
+        NewCallAccepted,
+        NewCallRejected,
+        CallServiceEnd,
+        None
+    };
+
+    class State
+    {
+    public:
+        State(int m);
+
+        int state;
+        int CallClassIndex;
+
+        LastEvent lastEvent;
+
+        QVector<int> microstate;
+        QVector<bool> servicePossibility;
+    };
+
 private:
     QVector<EvenStatistics>                      eventsPerClass;
     QVector<EvenStatistics>                      eventsPerState;
@@ -105,24 +141,15 @@ private:
     QVector<TimeStatisticsMacroState>            timesPerState;
     QVector<QVector<TimeStatisticsMicroState> >  timesPerClassAndState;
 
-
-public:
     QVector<QVector <GroupSetStatistics> >       timesPerGroupSets;                         /// Each set is different combination, sec. dimension: State
     QVector<QVector <GroupSetStatistics> >       timesPerGroupSetsSC;                       /// Each set is different combination, sec. dimension: Traffic class
     QVector<QVector <GroupSetStatistics> >       timesPerBestGroupSets;                     /// Each element determines the set that consist of 0, 1, ... k elements
     QVector<QVector <GroupSetStatistics> >       timesPerBestGroupSetsSC;                   /// Each element determines the set that consist of 0, 1, ... k elements
 
-//    QVector<QVector<double> >                    availabilityOnlyInAllGroupsInCombination;  /// Outside combination, the groups are not available
-    QVector<QVector<double> >                    availabilityInAllGroupsInCombination;      /// Don't care about the groups outside the combination
-    QVector<QVector<double> >                    inavailabilityInAllGroupsInCombination;    /// Don't care about the groups outside the combination
-
+public:
     QVector< QVector<int> > combinationList;
+    QVector<QVector<GroupSetStatistics>>         timesPerGroupsCombinations;
 
-    QVector<QVector<double> >                    freeAUsInWorstGroupInCombination;
-    QVector<QVector<double> >                    freeAUsInBestGroupInCombination;
-
-    QVector<QVector<double> >                    availabilityTimeInGroupSet;                /// Availability in given number of groups, other groups are not considered
-    QVector<QVector<double> >                    availabilityTimeOnlyInExactNoOfGroups;     /// Availability in EXACT number of groups, other groups are not available
 
 
     ServerStatistics(const ModelSyst * const system);
@@ -139,6 +166,7 @@ public:
     inline const GroupSetStatistics& getTimeBestGroupSetSC(int setPower, int classIdx)    const { return timesPerBestGroupSetsSC[setPower][classIdx]; }
 
     void collectPre(double time, int n, const QVector<int> &n_i);
+    void collectPre(const ModelSyst *mSystem, double time, int n, const QVector<int> &n_i, const QVector<int> &n_k);
     void collectPost(int classIdx, int old_n, int n);
 
     inline const QVector<int>& getSet(int combinationNo)                                  const { return combinationList[combinationNo]; }
