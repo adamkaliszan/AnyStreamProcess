@@ -792,7 +792,7 @@ void resultsXlsx::spreadshetWriteAUsFreeForGroupCombinations(QXlsx::Worksheet *s
                 {
 
                     double value;
-                    (*pointResults)->read(value, TypeResourcess_VsServerGroupsCombination::FreeAUsInEveryGroup, n, combIndex);
+                    (*pointResults)->read(value, TypeResourcess_VsServerGroupsCombination::AvailabilityInAllTheGroups, n, combIndex);
                     sheet->write(rowIdx, tmpColIdx, value, (rowSubIdx % 2) ? fmtRowValOdd : fmtRowValEven);
                     tmpColIdx++;
                 }
@@ -814,7 +814,7 @@ void resultsXlsx::spreadshetWriteAUsFreeForGroupCombinations(QXlsx::Worksheet *s
                     for (int n=0; n <= vMax; n++)
                     {
                         double value;
-                        pointResults->getConfidencyIntervall().read(value, TypeResourcess_VsServerGroupsCombination::FreeAUsInEveryGroup, n, combIndex);
+                        pointResults->getConfidencyIntervall().read(value, TypeResourcess_VsServerGroupsCombination::AvailabilityInAllTheGroups, n, combIndex);
                         sheet->write(rowIdx, tmpColIdx, value, (rowSubIdx % 2) ? fmtRowValOdd : fmtRowValEven);
                         tmpColIdx++;
                     }
@@ -963,7 +963,7 @@ void resultsXlsx::spreadshetWriteQoS_ForClasses(QXlsx::Worksheet *sheet, int &ro
                 {
 
                     double value;
-                    (*pointResults)->read(value, TypeResourcess_VsServerGroupsCombination::FreeAUsInEveryGroup, n, combIndex);
+                    (*pointResults)->read(value, TypeResourcess_VsServerGroupsCombination::AvailabilityInAllTheGroups, n, combIndex);
                     sheet->write(rowIdx, tmpColIdx, value, (rowSubIdx % 2) ? fmtRowValOdd : fmtRowValEven);
                     tmpColIdx++;
                 }
@@ -985,7 +985,7 @@ void resultsXlsx::spreadshetWriteQoS_ForClasses(QXlsx::Worksheet *sheet, int &ro
                     for (int n=0; n <= vMax; n++)
                     {
                         double value;
-                        pointResults->getConfidencyIntervall().read(value, TypeResourcess_VsServerGroupsCombination::FreeAUsInEveryGroup, n, combIndex);
+                        pointResults->getConfidencyIntervall().read(value, TypeResourcess_VsServerGroupsCombination::AvailabilityInAllTheGroups, n, combIndex);
                         sheet->write(rowIdx, tmpColIdx, value, (rowSubIdx % 2) ? fmtRowValOdd : fmtRowValEven);
                         tmpColIdx++;
                     }

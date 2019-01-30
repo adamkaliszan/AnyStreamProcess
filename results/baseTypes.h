@@ -128,7 +128,6 @@ enum class TypeForClassAndBufferState: unsigned
 enum class TypeResourcess_VsServerGroupsCombination: unsigned
 {
     FreeAUsInBestGroup,                  /// The best  subgroup has exactly n AUs available (not more)
-    FreeAUsInEveryGroup,                 /// The worst subgroup has exactly n AUs available (not more)
     AvailabilityOnlyInAllTheGroups,      /// Each group in combination is available, but groups outside combination are not available
     AvailabilityInAllTheGroups,          /// Each group in combination is available, don't care about other groups
     InavailabilityInAllTheGroups,        /// Each group in combination is not available, don't care about other groups

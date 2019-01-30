@@ -155,11 +155,9 @@ ServerStatistics::ServerStatistics(const ModelSyst * const system)
         timesPerClassAndState[classIdx].fill(TimeStatisticsMicroState());
     }
 
-
     timesPerGroupSets.resize(system->k_s()+1);
     timesPerGroupSetsSC.resize(system->k_s()+1);
-    timesPerBestGroupSets.resize(system->k_s()+1);
-    timesPerBestGroupSetsSC.resize(system->k_s()+1);
+
     for (int noOfNotConsideredGroups=0; noOfNotConsideredGroups <= system->k_s(); noOfNotConsideredGroups++)
     {
         timesPerGroupSets[noOfNotConsideredGroups].resize(system->v_sMax()+1);
@@ -167,23 +165,14 @@ ServerStatistics::ServerStatistics(const ModelSyst * const system)
 
         timesPerGroupSetsSC[noOfNotConsideredGroups].resize(system->v_sMax()+1);
         timesPerGroupSetsSC[noOfNotConsideredGroups].fill(GroupSetStatistics(), system->v_sMax()+1);
-
-        timesPerBestGroupSets[noOfNotConsideredGroups].resize(system->v_sMax()+1);
-        timesPerBestGroupSets[noOfNotConsideredGroups].fill(GroupSetStatistics(), system->v_sMax()+1);
-
-        timesPerBestGroupSetsSC[noOfNotConsideredGroups].resize(system->v_sMax()+1);
-        timesPerBestGroupSetsSC[noOfNotConsideredGroups].fill(GroupSetStatistics(), system->v_sMax()+1);
     }
 
     timesPerGroupsCombinations.resize(combinationList.length());
     for (int combinationNo=0; combinationNo<combinationList.length(); combinationNo++)
     {
-
+        timesPerGroupsCombinations[combinationNo].resize(system->v_sMax()+1);
         timesPerGroupsCombinations[combinationNo].fill(GroupSetStatistics(), system->v_sMax()+1);
     }
-
-
-    timesPerState.resize(system->vk_s()+1);
 }
 
 void ServerStatistics::collectPre(double time, int n, const QVector<int> &n_i)
@@ -197,10 +186,26 @@ void ServerStatistics::collectPre(double time, int n, const QVector<int> &n_i)
 void ServerStatistics::collectPre(const ModelSyst *mSystem, double time, int n, const QVector<int> &n_i, const QVector<int> &n_k)
 {
     timesPerState[n].occupancyTime+= time;
+
     for (int i=0; i< mSystem->getConstSyst().m; i++)
         timesPerClassAndState[i][n].occupancyUtilization = time * n_i[i];
 
-    timesPerBestGroupSets tmpAvailabilityInGroups.resize(k);
+
+
+    for (int k=0; k <= mSystem->getConstSyst().ks; k++)
+    {
+        int resAvailableInAllTheGroupsInTheSet;
+        int resAvailableOnlyInAllTheGroupsInTheSet;
+        int resAvailableInBestGroup;
+
+
+        for (int n=0; n <= mSystem->v_sMax(); n++)
+        {
+            ;//timesPerGroupSets[k][n].allInSetAvailable;
+        }
+    }
+
+
     /*
     // Uaktualnianie informacji o liczbie dostępnych zasobów w danej grupie
     for (int tmpK=0; tmpK<k; tmpK++)

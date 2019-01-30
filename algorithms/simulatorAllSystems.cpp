@@ -689,19 +689,17 @@ void SimulatorAll::Server::writesResultsOfSingleExperiment(RSingle &singleResult
         for (int n=0; n<=vMax; n++)
         {
             double result;
-            result = statistics->availabilityTimeInGroupSet[noOfgroups][n]/simulationTime;
+            result = statistics->getTimeGroupSet(noOfgroups, n).allInSetAvailable/simulationTime;
             singleResults.write(TypeForResourcessAndNumberOfServerGroups::AvailabilityInAllTheGroups, result, n, noOfgroups);
 
-            result = statistics->availabilityTimeOnlyInExactNoOfGroups[noOfgroups][n]/simulationTime;
+            result = statistics->getTimeGroupSet(noOfgroups, n).allInSetAvailableAllOutsideSetUnavailable/simulationTime;
             singleResults.write(TypeForResourcessAndNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, result, n, noOfgroups);
         }
         for (int classNo=0; classNo < m; classNo++)
         {
             double result = 0;
-
             int n = system->systemData->getClass(classNo)->t();
-
-            result = statistics->availabilityTimeInGroupSet[noOfgroups][n]/simulationTime;
+            result = statistics->getTimeGroupSet(noOfgroups, n).allInSetAvailableAllOutsideSetUnavailable/simulationTime;
             singleResults.write(TypeClassForServerBestGroupsSet::ServPossibilityOnlyInAllTheSubgroups, result, classNo, noOfgroups);
         }
     }
@@ -711,24 +709,16 @@ void SimulatorAll::Server::writesResultsOfSingleExperiment(RSingle &singleResult
         for (int n=0; n<=vMax; n++)
         {
             singleResults.write(TypeResourcess_VsServerGroupsCombination::FreeAUsInBestGroup
-                                , statistics->getTimeGroupSet(combinationNo, n).atLeastOneInetAvailable /simulationTime
-                                , n, combinationNo);
-
-            singleResults.write(TypeResourcess_VsServerGroupsCombination::FreeAUsInEveryGroup
-                                , statistics->freeAUsInWorstGroupInCombination[combinationNo][n]/simulationTime
-                                , n, combinationNo);
+              , statistics->getTimeGroupComb(combinationNo, n).atLeastOneInetAvailable / simulationTime, n, combinationNo);
 
             singleResults.write(TypeResourcess_VsServerGroupsCombination::AvailabilityOnlyInAllTheGroups
-                                , statistics->getTimeGroupSet(combinationNo, n).allInSetAvailableAllOutsideSetUnavailable /simulationTime
-                                , n, combinationNo);
+              , statistics->getTimeGroupComb(combinationNo, n).allInSetAvailableAllOutsideSetUnavailable / simulationTime, n, combinationNo);
 
             singleResults.write(TypeResourcess_VsServerGroupsCombination::AvailabilityInAllTheGroups
-                                , statistics->availabilityInAllGroupsInCombination[combinationNo][n]/simulationTime
-                                , n, combinationNo);
+              , statistics->getTimeGroupComb(combinationNo, n).allInSetAvailable / simulationTime, n, combinationNo);
 
             singleResults.write(TypeResourcess_VsServerGroupsCombination::InavailabilityInAllTheGroups
-                                , statistics->inavailabilityInAllGroupsInCombination[combinationNo][n]/simulationTime
-                                , n, combinationNo);
+              , statistics->getTimeGroupComb(combinationNo, n).allUnavailable / simulationTime, n, combinationNo);
         }
     }
 }

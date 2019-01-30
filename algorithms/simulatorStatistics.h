@@ -106,6 +106,7 @@ public:
     double allInSetAvailableAllOutsideSetUnavailable;
     double allInSetAvailable;
     double atLeastOneInetAvailable;
+    double allUnavailable;
 };
 
 class ServerStatistics
@@ -140,15 +141,12 @@ private:
 
     QVector<TimeStatisticsMacroState>            timesPerState;
     QVector<QVector<TimeStatisticsMicroState> >  timesPerClassAndState;
-
     QVector<QVector <GroupSetStatistics> >       timesPerGroupSets;                         /// Each set is different combination, sec. dimension: State
     QVector<QVector <GroupSetStatistics> >       timesPerGroupSetsSC;                       /// Each set is different combination, sec. dimension: Traffic class
-    QVector<QVector <GroupSetStatistics> >       timesPerBestGroupSets;                     /// Each element determines the set that consist of 0, 1, ... k elements
-    QVector<QVector <GroupSetStatistics> >       timesPerBestGroupSetsSC;                   /// Each element determines the set that consist of 0, 1, ... k elements
+    QVector<QVector<GroupSetStatistics>>         timesPerGroupsCombinations;
 
 public:
     QVector< QVector<int> > combinationList;
-    QVector<QVector<GroupSetStatistics>>         timesPerGroupsCombinations;
 
 
 
@@ -160,10 +158,10 @@ public:
     inline const TimeStatisticsMacroState& getTimeStatistics(int state)                   const { return timesPerState[state]; }
     inline const TimeStatisticsMicroState& getTimeStatisticsSC(int classNo, int state)    const { return timesPerClassAndState[classNo][state]; }
 
-    inline const GroupSetStatistics& getTimeGroupSet(int combinationNo, int state)        const { return timesPerGroupSets[combinationNo][state]; }
-    inline const GroupSetStatistics& getTimeBestGroupSet(int setPower, int state)         const { return timesPerBestGroupSets[setPower][state]; }
-    inline const GroupSetStatistics& getTimeGroupSetSC(int combinationNo, int classIdx)   const { return timesPerGroupSetsSC[combinationNo][classIdx]; }
-    inline const GroupSetStatistics& getTimeBestGroupSetSC(int setPower, int classIdx)    const { return timesPerBestGroupSetsSC[setPower][classIdx]; }
+    inline const GroupSetStatistics& getTimeGroupSet(int groupPower, int state)           const { return timesPerGroupSets[groupPower][state]; }
+    inline const GroupSetStatistics& getTimeGroupSetSC(int groupPower, int classIdx)      const { return timesPerGroupSetsSC[groupPower][classIdx]; }
+    inline const GroupSetStatistics& getTimeGroupComb(int combinationNo, int state)       const { return timesPerGroupsCombinations[combinationNo][state]; }
+
 
     void collectPre(double time, int n, const QVector<int> &n_i);
     void collectPre(const ModelSyst *mSystem, double time, int n, const QVector<int> &n_i, const QVector<int> &n_k);

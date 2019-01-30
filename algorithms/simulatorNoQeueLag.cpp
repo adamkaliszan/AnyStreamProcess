@@ -916,24 +916,16 @@ void SimulatorNoQeueLag::Server::writesResultsOfSingleExperiment(RSingle &single
         for (int n=0; n<=vMax; n++)
         {
             singleResults.write(TypeResourcess_VsServerGroupsCombination::FreeAUsInBestGroup
-                                , freeAUsInBestGroupInCombination[combinationNo][n]/simulationTime
-                                , n, combinationNo);
-
-            singleResults.write(TypeResourcess_VsServerGroupsCombination::FreeAUsInEveryGroup
-                                , freeAUsInWorstGroupInCombination[combinationNo][n]/simulationTime
-                                , n, combinationNo);
+              , freeAUsInBestGroupInCombination[combinationNo][n]/simulationTime, n, combinationNo);
 
             singleResults.write(TypeResourcess_VsServerGroupsCombination::AvailabilityOnlyInAllTheGroups
-                                , availabilityOnlyInAllGroupsInCombination[combinationNo][n]/simulationTime
-                                , n, combinationNo);
+              , availabilityOnlyInAllGroupsInCombination[combinationNo][n]/simulationTime, n, combinationNo);
 
             singleResults.write(TypeResourcess_VsServerGroupsCombination::AvailabilityInAllTheGroups
-                                , availabilityInAllGroupsInCombination[combinationNo][n]/simulationTime
-                                , n, combinationNo);
+              , availabilityInAllGroupsInCombination[combinationNo][n]/simulationTime, n, combinationNo);
 
             singleResults.write(TypeResourcess_VsServerGroupsCombination::InavailabilityInAllTheGroups
-                                , inavailabilityInAllGroupsInCombination[combinationNo][n]/simulationTime
-                                , n, combinationNo);
+             , inavailabilityInAllGroupsInCombination[combinationNo][n]/simulationTime, n, combinationNo);
         }
     }
 }
