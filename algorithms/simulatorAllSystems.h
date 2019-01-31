@@ -1,5 +1,6 @@
-#ifndef SIMULATORNOQEUE_LAG_H
-#define SIMULATORNOQEUE_LAG_H
+
+#ifndef SIMULATOR_ALL_SYSTEMS_H
+#define SIMULATOR_ALL_SYSTEMS_H
 
 #include <QExplicitlySharedDataPointer>
 
@@ -105,6 +106,7 @@ public:
         int n;                        ///< Number of occupied resourcess by all the classes
         int old_n;                    ///< Previous number of occupied resourcess by all the classes
         QVector<int> n_i;             ///< Number of occupied resourcess by given class. Vector length is m
+        QVector<int> t_i;             ///< Numbed od AUs required by single call of coresponding class
 
 
         void removeCallFromServer(Call *call);
@@ -113,6 +115,8 @@ public:
     public:
         System(const ModelSyst *system);
         ~System();
+
+        inline const QVector<int> &getClassRequiredResourcess() const { return t_i; }
 
 #define FOLDINGSTART { //Statistics
         void writesResultsOfSingleExperiment(RSingle &singleResults, double simulationTime);
@@ -125,9 +129,10 @@ public:
 #define FOLDINGEND }
 
 
-        bool serveNewCall(Call *newCall);
-        void endCallService(Call *call);
-        void FinishCall(Call *call, bool acceptedToService);
+        bool serveNewCall(Call *newCall);                                    ///< this call may be or not accepted to the service
+        void endCallService(Call *call);                                     ///< this call was accepted
+
+        void finishCall(Call *call, bool acceptedToService);                 ///< this call was accepted or rejected
         void cancellScheduledCall(Call *call) {  engine->removeProcess(call->proc); engine->reuseCall(call); }
 
         void serveCallsInEque();
@@ -151,8 +156,8 @@ public:
         QVector<int> n_i;                             /// Server microstate (numbers of occupied AS by all the offered classes
         QVector<int> n_k;                             /// Group state, occupancy state of each od the groups
 
-        mutable QVector<int> subgroupSequence;           /// Sequence of checking group for new call service
-        mutable QVector<int> subgroupFreeAUs; /// Number of AS that is now available in given group
+        mutable QVector<int> subgroupSequence;        /// Sequence of checking group for new call service
+        mutable QVector<int> subgroupFreeAUs;         /// Number of AS that is now available in given group
 
         ServerStatistics *statistics;
 
@@ -170,6 +175,7 @@ public:
 
         inline int get_n() const {return n; }
         inline const QVector<int> &getMicroStates() const { return n_i; }
+        inline const QVector<int> &getOccupancyOfTheGroups() const { return n_k; }
 
         void writesResultsOfSingleExperiment(RSingle& singleResults, double simulationTime);
 
@@ -185,7 +191,10 @@ public:
         void statsEnable(int serNo);
         void statsDisable();
         void statsClear();
+
         void statsColectPre(double time);
+
+
         void statsCollectPost(int classIdx, int old_n, int n);
         inline double statsGetWorkoutPerClassAndState(int i, int n) const;
         inline double statsGetOccupancyTimeOfState(int state) const;
@@ -248,6 +257,7 @@ public:
 
         inline int get_n() const {return n; }
         inline const QVector<int> &getMicroStates() const { return n_i; }
+        inline const QVector<int> &getOccupancyOfTheGroups() const { return n_i; }
 
 
 

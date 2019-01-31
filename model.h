@@ -418,6 +418,21 @@ public:
 
 class ModelSyst
 {
+    class ConstSyst
+    {
+    public:
+        int m;
+        int Vs;
+        int Vb;
+
+        int ks;
+        int kb;
+
+        QVector<int> t;
+        QVector<int> vs;
+        QVector<int> vb;
+    };
+
     friend QTextStream& operator<<(QTextStream &stream, const ModelSyst &model);
     friend QDebug&      operator<<(QDebug &stream, const ModelSyst &model);
 
@@ -440,22 +455,30 @@ private:
     int _totalNumberOfBuffers; // Liczba wszystkich kolejek
     int _capacityTypeOfQeues;  // Array length TODO use QVector<>
 
-    int _totalAt;              // suma wszystkich proporcji
+    int _totalAt;              ///< Sum of all traffic proportions
 
+    mutable bool _parWasChanged;        ///< System parameters ware changed. Recalculate system vectors
+    mutable ConstSyst constSyst;
 
 public:
     ModelSyst();
     ~ModelSyst();
 
-    void getLinkParameters(int32_t **k
+    void getServerGroupDescription(int32_t **k
             , int32_t **v
             , int32_t *numberOfTypes
             ) const;
-    void getBufferParameters(int32_t **k
+    void getBufferGroupDescription(int32_t **k
             , int32_t **v
             , int32_t *numberOfTypes
             ) const;
+
+    const QVector<int> &getServerGroupCapacityVector() const;
+    const QVector<int> &getBufferCapacityVector() const;
+
+
     const ModelTrClass *getClass(int idx) const;
+    const ConstSyst &getConstSyst() const;
 
     ServerResourcessScheduler getGroupsSchedulerAlgorithm() const;
 
@@ -496,6 +519,8 @@ public:
 
     inline BufferResourcessScheduler getBufferScheduler() const {return _bufferSchedulerAlgorithm; }
     inline ServerResourcessScheduler getServerScheduler() const {return _serverSchedulerAlgorithm; }
+
+    void updateConstSyst() const;
 
     void clearAll();
 };

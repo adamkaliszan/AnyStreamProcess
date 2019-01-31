@@ -221,6 +221,9 @@ SimulatorAll::System::System(const ModelSyst *system)
     , old_n(0)
 {
     n_i.resize(m);
+    t_i.resize(m);
+    for (int i=0; i<m; i++)
+        t_i[i]=system->getClass(i)->t();
 
     systemData = system;
 
@@ -395,7 +398,7 @@ bool SimulatorAll::System::serveNewCall(SimulatorAll::Call *newCall)
     }
     else
     {
-        FinishCall(newCall, false);
+        finishCall(newCall, false);
         return false;
     }
 }
@@ -406,7 +409,7 @@ void SimulatorAll::System::endCallService(SimulatorAll::Call *call)
     calls.removeAll(call);
 
     n-=call->reqAS;
-    FinishCall(call, true);
+    finishCall(call, true);
 }
 
 void SimulatorAll::System::removeCallFromServer(SimulatorAll::Call *call)
@@ -419,7 +422,7 @@ void SimulatorAll::System::removeCallFromBuffer(SimulatorAll::Call *call)
     buffer->removeCall(call);
 }
 
-void SimulatorAll::System::FinishCall(SimulatorAll::Call *call, bool acceptedToService)
+void SimulatorAll::System::finishCall(SimulatorAll::Call *call, bool acceptedToService)
 {
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
     if (call->classIdx > 100)
@@ -452,10 +455,19 @@ void SimulatorAll::System::statsCollectPre(double time)
 
     int n_s = server->get_n();
     int n_b = buffer->get_n();
+
+    const QVector<int> &t = getClassRequiredResourcess();
+
     const QVector<int> &nMs_s = server->getMicroStates();
     const QVector<int> &nMs_b = buffer->getMicroStates();
 
-    statistics->collectPre(time, n_s, n_b, nMs_s, nMs_b);
+    const QVector<int> &nKs_s = server->getOccupancyOfTheGroups();
+    const QVector<int> &nKs_b = buffer->getOccupancyOfTheGroups();
+
+
+    statistics->collectPre(this->systemData, time, n_s, n_b, nMs_s, nMs_b, nKs_s, nKs_b);
+
+
     server->statsColectPre(time);
     buffer->statsColectPre(time);
 }
@@ -677,19 +689,17 @@ void SimulatorAll::Server::writesResultsOfSingleExperiment(RSingle &singleResult
         for (int n=0; n<=vMax; n++)
         {
             double result;
-            result = statistics->availabilityTimeInGroupSet[noOfgroups][n]/simulationTime;
+            result = statistics->getTimeGroupSet(noOfgroups, n).allInSetAvailable/simulationTime;
             singleResults.write(TypeForResourcessAndNumberOfServerGroups::AvailabilityInAllTheGroups, result, n, noOfgroups);
 
-            result = statistics->availabilityTimeOnlyInExactNoOfGroups[noOfgroups][n]/simulationTime;
+            result = statistics->getTimeGroupSet(noOfgroups, n).allInSetAvailableAllOutsideSetUnavailable/simulationTime;
             singleResults.write(TypeForResourcessAndNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, result, n, noOfgroups);
         }
         for (int classNo=0; classNo < m; classNo++)
         {
             double result = 0;
-
             int n = system->systemData->getClass(classNo)->t();
-
-            result = statistics->availabilityTimeInGroupSet[noOfgroups][n]/simulationTime;
+            result = statistics->getTimeGroupSet(noOfgroups, n).allInSetAvailableAllOutsideSetUnavailable/simulationTime;
             singleResults.write(TypeClassForServerBestGroupsSet::ServPossibilityOnlyInAllTheSubgroups, result, classNo, noOfgroups);
         }
     }
@@ -699,24 +709,16 @@ void SimulatorAll::Server::writesResultsOfSingleExperiment(RSingle &singleResult
         for (int n=0; n<=vMax; n++)
         {
             singleResults.write(TypeResourcess_VsServerGroupsCombination::FreeAUsInBestGroup
-                                , statistics->getTimeGroupSet(combinationNo, n).atLeastOneInetAvailable /simulationTime
-                                , n, combinationNo);
-
-            singleResults.write(TypeResourcess_VsServerGroupsCombination::FreeAUsInEveryGroup
-                                , statistics->freeAUsInWorstGroupInCombination[combinationNo][n]/simulationTime
-                                , n, combinationNo);
+              , statistics->getTimeGroupComb(combinationNo, n).atLeastOneInetAvailable / simulationTime, n, combinationNo);
 
             singleResults.write(TypeResourcess_VsServerGroupsCombination::AvailabilityOnlyInAllTheGroups
-                                , statistics->getTimeGroupSet(combinationNo, n).allInSetAvailableAllOutsideSetUnavailable /simulationTime
-                                , n, combinationNo);
+              , statistics->getTimeGroupComb(combinationNo, n).allInSetAvailableAllOutsideSetUnavailable / simulationTime, n, combinationNo);
 
             singleResults.write(TypeResourcess_VsServerGroupsCombination::AvailabilityInAllTheGroups
-                                , statistics->availabilityInAllGroupsInCombination[combinationNo][n]/simulationTime
-                                , n, combinationNo);
+              , statistics->getTimeGroupComb(combinationNo, n).allInSetAvailable / simulationTime, n, combinationNo);
 
             singleResults.write(TypeResourcess_VsServerGroupsCombination::InavailabilityInAllTheGroups
-                                , statistics->inavailabilityInAllGroupsInCombination[combinationNo][n]/simulationTime
-                                , n, combinationNo);
+              , statistics->getTimeGroupComb(combinationNo, n).allUnavailable / simulationTime, n, combinationNo);
         }
     }
 }
