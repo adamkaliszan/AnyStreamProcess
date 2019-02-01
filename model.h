@@ -431,6 +431,9 @@ class ModelSyst
         QVector<int> t;
         QVector<int> vs;
         QVector<int> vb;
+
+
+        bool isInBlockingState(int classNo, const QVector<int> &serverGroupsState, const QVector<int> bufferGroupsState) const;
     };
 
     friend QTextStream& operator<<(QTextStream &stream, const ModelSyst &model);

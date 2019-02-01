@@ -855,8 +855,9 @@ ModelSyst::ModelSyst():
   , _noOfTypesOfBuffers(0)
   , _totalBufferCapacity(0)
   , _totalNumberOfBuffers(0)
-  , _totalAt(0), id(0)
+  , _totalAt(0)
   , _parWasChanged(true)
+  , id(0)
 {
     _capacityTrClasses = 4;
     _trClasses = new ModelTrClass*[_capacityTrClasses];
@@ -1990,6 +1991,33 @@ bool ModelTrClass::SimulatorProcess_DepPlus##X##Y::endOfCallService(SimulatorSin
     return SimulatorProcess_DepPlus::endOfCallService<SimulatorProcess_DepPlus##X##Y>(system, proc);\
 }
 
+
+
+
+bool ModelSyst::ConstSyst::isInBlockingState(int classNo, const QVector<int> &serverGroupsState, const QVector<int> bufferGroupsState) const
+{
+    bool result = true;
+    for (int x=0; x < vs.length(); x++)
+    {
+        if (serverGroupsState[x] + t[classNo] <= vs[x])
+        {
+            result = false;
+            break;
+        }
+    }
+    if (result)
+    {
+        for (int x=0; x < vb.length(); x++)
+        {
+            if (bufferGroupsState[x] + t[classNo] <= vb[x])
+            {
+                result = false;
+                break;
+            }
+        }
+    }
+    return result;
+}
 
 CLASS_SIMULATOR_INDEP_CPP(M, M, NewCallExp, ServEndExp)
 CLASS_SIMULATOR_INDEP_CPP(M, U, NewCallExp, ServEndUni)

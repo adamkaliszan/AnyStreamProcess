@@ -456,8 +456,6 @@ void SimulatorAll::System::statsCollectPre(double time)
     int n_s = server->get_n();
     int n_b = buffer->get_n();
 
-    const QVector<int> &t = getClassRequiredResourcess();
-
     const QVector<int> &nMs_s = server->getMicroStates();
     const QVector<int> &nMs_b = buffer->getMicroStates();
 
@@ -466,7 +464,6 @@ void SimulatorAll::System::statsCollectPre(double time)
 
 
     statistics->collectPre(this->systemData, time, n_s, n_b, nMs_s, nMs_b, nKs_s, nKs_b);
-
 
     server->statsColectPre(time);
     buffer->statsColectPre(time);

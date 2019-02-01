@@ -65,34 +65,18 @@ void SystemStatistics::collectPre(double time, int n_s, int n_b, const QVector<i
 void SystemStatistics::collectPre(const ModelSyst *mSystem, double time, int n_s, int n_b
   , const QVector<int> &n_si, const QVector<int> &n_bi, const QVector<int> &n_sk, const QVector<int> &n_bk)
 {
+    for (int i=0; i<mSystem->m(); i++)
+    {
+        if (mSystem->getConstSyst().isInBlockingState(i, n_sk, n_bk))
+            timesPerClasses[i].blockingTime+= time;
+    }
+
     timesPerSystemState[n_s+n_b].occupancyTime+= time;
 
     timesPerServerAndBufferState[n_s][n_b].occupancyTime+= time;
 
     for (int i=0; i< mSystem->m(); i++)
     {
-        double blockingTime = time;
-        for (int k=0; k<mSystem->vk_s(); k++)
-        {
-            if (mSystem->getConstSyst().vs[k] - n_sk[i] >= mSystem->getConstSyst().t[i])
-            {
-                blockingTime = 0;
-                break;
-            }
-        }
-        if (blockingTime > 0)
-        {
-            for (int k=0; k<mSystem->vk_b(); k++)
-            {
-                if (mSystem->getConstSyst().vb[k] - n_bk[i] >= mSystem->getConstSyst().t[i])
-                {
-                    blockingTime = 0;
-                    break;
-                }
-            }
-        }
-        this->timesPerClasses[i].blockingTime+= blockingTime;
-
         timesPerClassAndSystemState[i][n_s+n_b].occupancyUtilization += (time*(n_si[i] + n_bi[i]));
         timesPerClassAndServerAndBufferState[i][n_s][n_b].occupancyUtilizationServer += (time*(n_si[i]));
         timesPerClassAndServerAndBufferState[i][n_s][n_b].occupancyUtilizationBuffer += (time*(n_bi[i]));
