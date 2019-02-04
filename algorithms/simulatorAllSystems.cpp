@@ -168,10 +168,27 @@ bool SimulatorAll::possible(const ModelSyst *system) const
     return simulator::possible(system);
 }
 
+StatisticEventType SimulatorAll::SimEvent2statEvent(SimulatorAll::EventType simEvent)
+{
+    switch (simEvent)
+    {
+    case EventType::callServiceEnded:
+    case EventType::callServiceEndedAndBufferDequeued:
+        return StatisticEventType::callServiceEnded;
+
+    case EventType::newCallAccepted:
+    case EventType::newCallEnqued:
+        return StatisticEventType::newCallAccepted;
+
+    case EventType::newCallRejected:
+        return StatisticEventType::newCallRejected;
+    }
+}
+
 void SimulatorAll::calculateSystem(const ModelSyst *system
-      , double a
-      , RInvestigator *results
-      , SimulationParameters *simParameters)
+                                   , double a
+                                   , RInvestigator *results
+                                   , SimulationParameters *simParameters)
 {
     prepareTemporaryData(system, a);
 
@@ -201,7 +218,7 @@ void SimulatorAll::calculateSystem(const ModelSyst *system
             int noOfServCalls = simParameters->noOfServicedCalls/simParameters->spaceBetweenSeries;
             engine->doSimExperiment(noOfLostCalls, seed, noOfServCalls);
         }
-        simData->statsEnable(serNo);
+        simData->statsEnable();
         double simulationTime = engine->doSimExperiment(simParameters->noOfLostCalls, seed, simParameters->noOfServicedCalls);
         simData->writesResultsOfSingleExperiment((*results)[serNo], simulationTime);
         qDebug("universal simulation experiment no %d", serNo+1);
@@ -266,6 +283,8 @@ double SimulatorAll::Engine::doSimExperiment(int numberOfLostCall, unsigned int 
     totalNumberOfLostCalls = 0;
     totalNumberOfServicedCalls = 0;
 
+    EventType event;
+
     if (numberOfServicedCalls == 0)
     {
         while(totalNumberOfLostCalls < numberOfLostCall)
@@ -274,8 +293,8 @@ double SimulatorAll::Engine::doSimExperiment(int numberOfLostCall, unsigned int 
             system->statsCollectPre(proc->time);
             simulationTime += proc->time;
             classIdx = proc->callData->classIdx;
-            proc->execute(proc, system);
-            system->statsCollectPost(classIdx);
+            event = proc->execute(proc, system);
+            system->statsCollectPost(classIdx, event);
         }
     }
     else
@@ -288,8 +307,8 @@ double SimulatorAll::Engine::doSimExperiment(int numberOfLostCall, unsigned int 
                 system->statsCollectPre(proc->time);
                 simulationTime += proc->time;
                 classIdx = proc->callData->classIdx;
-                proc->execute(proc, system);
-                system->statsCollectPost(classIdx);
+                event = proc->execute(proc, system);
+                system->statsCollectPost(classIdx, event);
             }
         }
         else
@@ -300,8 +319,8 @@ double SimulatorAll::Engine::doSimExperiment(int numberOfLostCall, unsigned int 
                 system->statsCollectPre(proc->time);
                 simulationTime += proc->time;
                 classIdx = proc->callData->classIdx;
-                proc->execute(proc, system);
-                system->statsCollectPost(classIdx);
+                event = proc->execute(proc, system);
+                system->statsCollectPost(classIdx, event);
             }
         }
     }
@@ -465,14 +484,15 @@ void SimulatorAll::System::statsCollectPre(double time)
 
     statistics->collectPre(this->systemData, time, n_s, n_b, nMs_s, nMs_b, nKs_s, nKs_b);
 
-    server->statsColectPre(time);
+    server->statsColectPre(this->systemData, time);
     buffer->statsColectPre(time);
 }
 
-void SimulatorAll::System::statsCollectPost(int classIdx)
+void SimulatorAll::System::statsCollectPost(int classIdx, EventType eventSim)
 {
     statistics->collectPost(classIdx, old_n, n);
-    server->statsCollectPost(classIdx, old_n, n);
+    server->statsCollectPost(classIdx, old_n, n, eventSim);
+    buffer->statsCollectPost(classIdx, old_n, n);
 }
 
 void SimulatorAll::System::statsClear()
@@ -482,7 +502,7 @@ void SimulatorAll::System::statsClear()
     buffer->statsClear();
 }
 
-void SimulatorAll::System::statsEnable(int serNo)
+void SimulatorAll::System::statsEnable()
 {
     statsClear();
 }
@@ -496,9 +516,9 @@ void SimulatorAll::Server::statsClear()
     statistics->clear();
 }
 
-void SimulatorAll::Server::statsColectPre(double time)
+void SimulatorAll::Server::statsColectPre(const ModelSyst *mSystem, double time)
 {
-    statistics->collectPre(time, n, n_i);
+    statistics->collectPre(mSystem, time, n, n_i, n_k);
 
     statsColectPreGroupsAvailability(time);
 }
@@ -508,9 +528,10 @@ void SimulatorAll::Server::statsColectPreGroupsAvailability(double time)
     (void) time;
 }
 
-void SimulatorAll::Server::statsCollectPost(int classIdx, int old_n, int n)
+void SimulatorAll::Server::statsCollectPost(int classIdx, int old_n, int n, SimulatorAll::EventType simEvent)
 {
-    statistics->collectPost(classIdx, old_n, n);
+    StatisticEventType statEvent = SimulatorAll::SimEvent2statEvent(simEvent);
+    statistics->collectPost(classIdx, old_n, n, statEvent);
 }
 
 double SimulatorAll::Server::statsGetWorkoutPerClassAndState(int i, int n) const
@@ -706,16 +727,13 @@ void SimulatorAll::Server::writesResultsOfSingleExperiment(RSingle &singleResult
         for (int n=0; n<=vMax; n++)
         {
             singleResults.write(TypeResourcess_VsServerGroupsCombination::FreeAUsInBestGroup
-              , statistics->getTimeGroupComb(combinationNo, n).atLeastOneInetAvailable / simulationTime, n, combinationNo);
-
-            singleResults.write(TypeResourcess_VsServerGroupsCombination::AvailabilityOnlyInAllTheGroups
-              , statistics->getTimeGroupComb(combinationNo, n).allInSetAvailableAllOutsideSetUnavailable / simulationTime, n, combinationNo);
+              , statistics->getTimeGroupComb(combinationNo, n).atLeasOneAvailable / simulationTime, n, combinationNo);
 
             singleResults.write(TypeResourcess_VsServerGroupsCombination::AvailabilityInAllTheGroups
-              , statistics->getTimeGroupComb(combinationNo, n).allInSetAvailable / simulationTime, n, combinationNo);
+              , statistics->getTimeGroupComb(combinationNo, n).allInCombinationAvailable / simulationTime, n, combinationNo);
 
             singleResults.write(TypeResourcess_VsServerGroupsCombination::InavailabilityInAllTheGroups
-              , statistics->getTimeGroupComb(combinationNo, n).allUnavailable / simulationTime, n, combinationNo);
+              , statistics->getTimeGroupComb(combinationNo, n).allInCombinationUnavailable / simulationTime, n, combinationNo);
         }
     }
 }
@@ -1095,7 +1113,7 @@ void ProcAll::initializeIndependent(
   , int sumPropAt
   , int V
   , double (*funTimeNewCall)(double, double)
-  , void (*funNewCall)(ProcAll *, SimulatorAll::System *)
+  , SimulatorAll::EventType (*funNewCall)(ProcAll *, SimulatorAll::System *)
 )
 {
     double IncE = 1.0 / trClass->intensityNewCallTotal(a, static_cast<size_t>(V), sumPropAt);
@@ -1115,8 +1133,8 @@ void ProcAll::ProcAll::initializeDependent(
   , int sumPropAt
   , int V
   , double (*funTimeNewCall)(double, double)
-  , void (*funNewCall)(ProcAll *, SimulatorAll::System *)
-  , void (*funEndCall)(ProcAll *, SimulatorAll::System *)
+  , SimulatorAll::EventType (*funNewCall)(ProcAll *, SimulatorAll::System *)
+  , SimulatorAll::EventType (*funEndCall)(ProcAll *, SimulatorAll::System *)
 )
 {
     double A = a*V*trClass->propAt()/sumPropAt / trClass->t();
@@ -1145,14 +1163,16 @@ void ProcAll::ProcAll::initializeDependent(
     engine->addProcess(this);
 }
 
-void ProcAll::newCallIndep(
+SimulatorAll::EventType ProcAll::newCallIndep(
     ProcAll *proc
   , SimulatorAll::System *system
   , double (*funTimeNewCall)(double, double)
   , double (*funTimeOfService)(double, double)
-  , void (*funNewCall)(ProcAll *proc, SimulatorAll::System *system)
+  , SimulatorAll::EventType (*funNewCall)(ProcAll *proc, SimulatorAll::System *system)
 )
 {
+    SimulatorAll::EventType result;
+
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
     if (proc->callData->classIdx > system->systemData->m())
         qFatal("Wrong class idx");
@@ -1163,7 +1183,7 @@ void ProcAll::newCallIndep(
     callData->DUmessageSize            = callData->reqAS * callData->plannedServiceTime;
     callData->proc                     = nullptr;
 
-    system->serveNewCall(callData);
+    result = system->serveNewCall(callData) ? SimulatorAll::EventType::newCallAccepted : SimulatorAll::EventType::newCallRejected;
 
     //Adding new process with state Waiting for new call
     ProcAll *newProc = proc;
@@ -1173,16 +1193,20 @@ void ProcAll::newCallIndep(
     newProc->execute = funNewCall;
     newProc->time = funTimeNewCall(newProc->callData->sourceE, newProc->callData->sourceD);
     system->engine->addProcess(newProc);
+
+    return result; //TODO uwzględnić bufor
 }
 
-void ProcAll::newCallDepMinus(
+SimulatorAll::EventType ProcAll::newCallDepMinus(
     ProcAll *proc
   , SimulatorAll::System *system
   , double (*funTimeNewCall)(double, double)
   , double (*funTimeOfService)(double, double)
-  , void (*funNewCall)(ProcAll *, SimulatorAll::System *)
+  , SimulatorAll::EventType (*funNewCall)(ProcAll *, SimulatorAll::System *)
 )
 {
+    SimulatorAll::EventType result;
+
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
     if (proc->callData->classIdx > system->systemData->m())
         qFatal("Wrong class idx");
@@ -1196,6 +1220,7 @@ void ProcAll::newCallDepMinus(
 
     if (system->serveNewCall(callData) == false)
     {
+        result = SimulatorAll::EventType::newCallRejected;
         ProcAll *newProc = system->engine->getNewProcess();
         newProc->callData = system->engine->getNewCall(callData);
 
@@ -1208,18 +1233,25 @@ void ProcAll::newCallDepMinus(
         newProc->time = funTimeNewCall(newProc->callData->sourceE, newProc->callData->sourceD);
         system->engine->addProcess(newProc);
     }
+    else
+    {
+        result = SimulatorAll::EventType::newCallAccepted; //TODO uwzględnić bufor
+    }
 
     system->engine->reuseProcess(proc);
+
+    return result;
 }
 
-void ProcAll::newCallDepPlus(
-    ProcAll *proc
+SimulatorAll::EventType ProcAll::newCallDepPlus(ProcAll *proc
   , SimulatorAll::System *system
   , double (*funTimeNewCall)(double, double)
   , double (*funTimeOfService)(double, double)
-  , void (*funNewCall)(ProcAll *, SimulatorAll::System *)
+  , SimulatorAll::EventType (*funNewCall)(ProcAll *, SimulatorAll::System *)
 )
 {
+    SimulatorAll::EventType result;
+
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
     if (proc->callData->classIdx > system->systemData->m())
         qFatal("Wrong class idx");
@@ -1250,6 +1282,7 @@ void ProcAll::newCallDepPlus(
 
     if (system->serveNewCall(callData) == true)
     {
+        result = SimulatorAll::EventType::newCallAccepted;//TODO uwzględnić bufor
         ProcAll *newProc = system->engine->getNewProcess();
         newProc->callData = system->engine->getNewCall(callData);
         newProc->callData->proc = newProc;
@@ -1261,10 +1294,17 @@ void ProcAll::newCallDepPlus(
         newProc->time = funTimeNewCall(newProc->callData->sourceE, newProc->callData->sourceD);
         system->engine->addProcess(newProc);
     }
+    else
+    {
+        result = SimulatorAll::EventType::newCallRejected;
+    }
+
     system->engine->reuseProcess(proc);
+
+    return result;
 }
 
-void ProcAll::callServiceEndedIndependent(ProcAll *proc, SimulatorAll::System *system)
+SimulatorAll::EventType ProcAll::callServiceEndedIndependent(ProcAll *proc, SimulatorAll::System *system)
 {
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
     if (proc->callData->classIdx > system->systemData->m())
@@ -1274,13 +1314,14 @@ void ProcAll::callServiceEndedIndependent(ProcAll *proc, SimulatorAll::System *s
 
     proc->callData = nullptr;
     system->engine->reuseProcess(proc);
+
+    return SimulatorAll::EventType::callServiceEnded;
 }
 
-void ProcAll::callServiceEndedDependentMinus(
-    ProcAll *proc
+SimulatorAll::EventType ProcAll::callServiceEndedDependentMinus(ProcAll *proc
   , SimulatorAll::System *system
   , double (*funTimeNewCall)(double, double)
-  , void (*funNewCall)(ProcAll *, SimulatorAll::System *)
+  , SimulatorAll::EventType(*funNewCall)(ProcAll *, SimulatorAll::System *)
 )
 {
     ProcAll *newProc = system->engine->getNewProcess();
@@ -1300,9 +1341,11 @@ void ProcAll::callServiceEndedDependentMinus(
     newProc->execute = funNewCall;
     newProc->time = funTimeNewCall(newProc->callData->sourceE, newProc->callData->sourceD);
     system->engine->addProcess(newProc);
+
+    return SimulatorAll::EventType::callServiceEnded;
 }
 
-void ProcAll::callServiceEndedDependentPlus(ProcAll *proc, SimulatorAll::System *system)
+SimulatorAll::EventType ProcAll::callServiceEndedDependentPlus(ProcAll *proc, SimulatorAll::System *system)
 {
     SimulatorAll::Call *scheduledCall = proc->callData->complementaryCall;
 
@@ -1317,6 +1360,8 @@ void ProcAll::callServiceEndedDependentPlus(ProcAll *proc, SimulatorAll::System 
 
     proc->callData = nullptr;
     system->engine->reuseProcess(proc);
+
+    return SimulatorAll::EventType::callServiceEnded;
 }
 
 
@@ -1380,6 +1425,13 @@ void SimulatorAll::Buffer::statsClear()
 void SimulatorAll::Buffer::statsColectPre(double time)
 {
     (void) time;
+}
+
+void SimulatorAll::Buffer::statsCollectPost(int classIdx, int old_n, int n)
+{
+    (void) classIdx;
+    (void) old_n;
+    (void) n;
 }
 
 void SimulatorAll::Buffer::removeCall(SimulatorAll::Call *first)

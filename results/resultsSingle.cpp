@@ -687,10 +687,6 @@ RSingle &RSingle::write(TypeResourcess_VsServerGroupsCombination type, double va
         dataPerGroupCombination[groupCombinationIndex].availabilityProbabilities[numberOfResourcess].freeInBestGroup = value;
         break;
 
-    case TypeResourcess_VsServerGroupsCombination::AvailabilityOnlyInAllTheGroups:
-        dataPerGroupCombination[groupCombinationIndex].availabilityProbabilities[numberOfResourcess].availabilityOnlyInAllTheGroups = value;
-        break;
-
     case TypeResourcess_VsServerGroupsCombination::AvailabilityInAllTheGroups:
         dataPerGroupCombination[groupCombinationIndex].availabilityProbabilities[numberOfResourcess].availabilityInAllTheGroups = value;
         break;
@@ -708,10 +704,6 @@ bool RSingle::read(double &result, TypeResourcess_VsServerGroupsCombination type
     {
     case TypeResourcess_VsServerGroupsCombination::FreeAUsInBestGroup:
         result = dataPerGroupCombination[groupCombinationIndex].availabilityProbabilities[numberOfResourcess].freeInBestGroup;
-        break;
-
-    case TypeResourcess_VsServerGroupsCombination::AvailabilityOnlyInAllTheGroups:
-        result = dataPerGroupCombination[groupCombinationIndex].availabilityProbabilities[numberOfResourcess].availabilityOnlyInAllTheGroups;
         break;
 
     case TypeResourcess_VsServerGroupsCombination::AvailabilityInAllTheGroups:

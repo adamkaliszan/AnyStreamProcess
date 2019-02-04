@@ -918,9 +918,6 @@ void SimulatorNoQeueLag::Server::writesResultsOfSingleExperiment(RSingle &single
             singleResults.write(TypeResourcess_VsServerGroupsCombination::FreeAUsInBestGroup
               , freeAUsInBestGroupInCombination[combinationNo][n]/simulationTime, n, combinationNo);
 
-            singleResults.write(TypeResourcess_VsServerGroupsCombination::AvailabilityOnlyInAllTheGroups
-              , availabilityOnlyInAllGroupsInCombination[combinationNo][n]/simulationTime, n, combinationNo);
-
             singleResults.write(TypeResourcess_VsServerGroupsCombination::AvailabilityInAllTheGroups
               , availabilityInAllGroupsInCombination[combinationNo][n]/simulationTime, n, combinationNo);
 

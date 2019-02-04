@@ -38,12 +38,23 @@ public:
     class Buffer;                     ///< Consists of one or more groups
     struct Call;
 
+    enum class EventType
+    {
+        newCallAccepted,
+        newCallEnqued,
+        newCallRejected,
+        callServiceEnded,
+        callServiceEndedAndBufferDequeued
+    };
+
+    static StatisticEventType SimEvent2statEvent(EventType simEvent);
+
     class Engine
     {
 
     private:
-        int       totalNumberOfServicedCalls;  /// Simulation experiment ending rules
-        int       totalNumberOfLostCalls;      /// Simulation experiment ending rules
+        int       totalNumberOfServicedCalls;  ///< Simulation experiment ending rules
+        int       totalNumberOfLostCalls;      ///< Simulation experiment ending rules
 
         QStack<Call *> uselessCalls;
         SimulatorDataCollection<ProcAll> *agenda;
@@ -122,10 +133,10 @@ public:
         void writesResultsOfSingleExperiment(RSingle &singleResults, double simulationTime);
 
         void statsCollectPre(double time);
-        void statsCollectPost(int classIdx);
+        void statsCollectPost(int classIdx, EventType eventSim);
         void statsClear();
         void statsDisable();
-        void statsEnable(int serNo);
+        void statsEnable();
 #define FOLDINGEND }
 
 
@@ -188,14 +199,14 @@ public:
         void removeCall(Call *call);
 
 #define FOLDINGSTART { //Statistics
-        void statsEnable(int serNo);
+        void statsEnable();
         void statsDisable();
         void statsClear();
 
-        void statsColectPre(double time);
+        void statsColectPre(const ModelSyst *mSystem, double time);
 
 
-        void statsCollectPost(int classIdx, int old_n, int n);
+        void statsCollectPost(int classIdx, int old_n, int n, EventType simEvent);
         inline double statsGetWorkoutPerClassAndState(int i, int n) const;
         inline double statsGetOccupancyTimeOfState(int state) const;
 #define FOLDINGEND }
@@ -242,7 +253,7 @@ public:
         inline double getAvgNoOfASinStateN(int classIdx, int n)  { return AStime_ofOccupiedAS_byClassI_inStateN[classIdx][n]; }
 
 #define FOLDINGSTART { //Statistics
-        void statsEnable(int serNo);
+        void statsEnable();
         void statsDisable();
         void statsClear();
         void statsColectPre(double time);
@@ -290,29 +301,29 @@ public:
         double incommingTmin;
         double incommingTmax;
 
-        double plannedServiceTime;     /// Expected time of service ending
-        double timeOnServer;           /// Total time of being in server
+        double plannedServiceTime;     ///< Expected time of service ending
+        double timeOnServer;           ///< Total time of being in server
         double timeOnSystem;
 
 
         double DUmessageSize;
         double DUtransfered;
 
-        const ModelTrClass *trClass;  /// Traffic Class data (parameters like call service intensity, number of BBUs, ...)
-        int classIdx;                 /// Class number
-        int reqAS;                    /// Required number of allocation slots.
-        int allocatedAS;              /// Number of allocated AS
+        const ModelTrClass *trClass;  ///< Traffic Class data (parameters like call service intensity, number of BBUs, ...)
+        int classIdx;                 ///< Class number
+        int reqAS;                    ///< Required number of allocation slots.
+        int allocatedAS;              ///< Number of allocated AS
 
-        int firstAuIndexInAGroup;     /// Index of a first AU in a group, next AUs are allocated in a sequence
-        int groupIndex;               /// Index of the group, where the call was allocated
+        int firstAuIndexInAGroup;     ///< Index of a first AU in a group, next AUs are allocated in a sequence
+        int groupIndex;               ///< Index of the group, where the call was allocated
 
         ProcAll *proc;
-        Call *complementaryCall;      /// Only for Pascal tr classes
+        Call *complementaryCall;      ///< Only tr. classes where no os sourcess is increasing with the number of serviced calls
 
         void fillData(struct Call *src);
         void IncrTimeInServer(double time);
         void collectTheStats(double time);
-        void (*trEndedFun)(ProcAll *proc, SimulatorAll::System *system);
+        SimulatorAll::EventType (*trEndedFun)(ProcAll *proc, SimulatorAll::System *system);
     };
 
 
@@ -320,6 +331,7 @@ private:
     bool isItTheSameSystem(ModelSyst *system);
 
 };
+
 
 class ProcAll
 {
@@ -338,15 +350,14 @@ private:
     PROC_STATE state;
 
 
-    void initializeIndependent(
-              SimulatorAll::Engine *system
+    void initializeIndependent(SimulatorAll::Engine *system
             , const ModelTrClass *trClass
             , int classIdx
             , double a
             , int sumPropAt
             , int V
             , double (*funTimeNewCall)(double, double)
-            , void (*funNewCall)(ProcAll *proc, SimulatorAll::System *system)
+            , SimulatorAll::EventType (*funNewCall)(ProcAll *, SimulatorAll::System *)
             );
 
 #define INDEPENDENT_ALL(X,Y,NEW_CALL_DISTR,CALL_SERV_DISTRIB) \
@@ -355,9 +366,9 @@ private:
       initializeIndependent(system, trClass, idx, a, sumPropAt, V, simulator::distr##NEW_CALL_DISTR, newCallIndep##X##Y);\
     } \
       \
-    inline static void newCallIndep##X##Y(ProcAll *proc, SimulatorAll::System *system)\
+    inline static SimulatorAll::EventType newCallIndep##X##Y(ProcAll *proc, SimulatorAll::System *system)\
     {\
-      newCallIndep(proc, system, simulator::distr##NEW_CALL_DISTR, simulator::distr##CALL_SERV_DISTRIB,  newCallIndep##X##Y);\
+      return newCallIndep(proc, system, simulator::distr##NEW_CALL_DISTR, simulator::distr##CALL_SERV_DISTRIB,  newCallIndep##X##Y);\
     }\
 
     INDEPENDENT_ALL(M,M,LambdaED,LambdaED)
@@ -399,8 +410,8 @@ private:
             , int sumPropAt
             , int V
             , double (*funTimeNewCall)(double, double)
-            , void (*funNewCall)(ProcAll *proc, SimulatorAll::System *system)
-            , void (*funEndCall)(ProcAll *proc, SimulatorAll::System *system)
+            , SimulatorAll::EventType(*funNewCall)(ProcAll *, SimulatorAll::System *)
+            , SimulatorAll::EventType(*funEndCall)(ProcAll *, SimulatorAll::System *)
             );
 #define DEP_MINUS_ALL(X,Y,NEW_CALL_DISTR,CALL_SERV_DISTRIB) \
     void initializeDepMinus##X##Y(SimulatorAll::Engine *engine, const ModelTrClass *trClass, int idx, double a, int sumPropAt, int V) \
@@ -408,14 +419,14 @@ private:
         initializeDependent(engine, trClass, idx, a, sumPropAt, V, simulator::distr##NEW_CALL_DISTR, newCallDepMinus##X##Y, transmisionEndedDepMinus##X##Y);\
     }\
      \
-    inline static void newCallDepMinus##X##Y(ProcAll *proc, SimulatorAll::System *system)\
+    inline static SimulatorAll::EventType newCallDepMinus##X##Y(ProcAll *proc, SimulatorAll::System *system)\
     {\
-        newCallDepMinus(proc, system, simulator::distr##NEW_CALL_DISTR, simulator::distr##CALL_SERV_DISTRIB, newCallDepMinus##X##Y);\
+        return newCallDepMinus(proc, system, simulator::distr##NEW_CALL_DISTR, simulator::distr##CALL_SERV_DISTRIB, newCallDepMinus##X##Y);\
     }\
      \
-    inline static void transmisionEndedDepMinus##X##Y(ProcAll *proc, SimulatorAll::System *system)\
+    inline static SimulatorAll::EventType transmisionEndedDepMinus##X##Y(ProcAll *proc, SimulatorAll::System *system)\
     {\
-        callServiceEndedDependentMinus(proc, system, simulator::distr##NEW_CALL_DISTR, newCallDepMinus##X##Y);\
+        return callServiceEndedDependentMinus(proc, system, simulator::distr##NEW_CALL_DISTR, newCallDepMinus##X##Y);\
     }\
 
     DEP_MINUS_ALL(M,M,LambdaED,LambdaED)
@@ -457,9 +468,9 @@ private:
         initializeDependent(engine, trClass, idx, a, sumPropAt, V, simulator::distr##NEW_CALL_DISTR, newCallDepPlus##X##Y, callServiceEndedDependentPlus);\
     }\
      \
-    static void newCallDepPlus##X##Y(ProcAll *proc, SimulatorAll::System *system)\
+    static SimulatorAll::EventType newCallDepPlus##X##Y(ProcAll *proc, SimulatorAll::System *system)\
     {\
-        newCallDepPlus(proc, system, simulator::distr##NEW_CALL_DISTR, simulator::distr##CALL_SERV_DISTRIB, newCallDepPlus##X##Y);\
+        return newCallDepPlus(proc, system, simulator::distr##NEW_CALL_DISTR, simulator::distr##CALL_SERV_DISTRIB, newCallDepPlus##X##Y);\
     }
 
     DEP_Plus_ALL(M,M,LambdaED,LambdaED)
@@ -494,39 +505,37 @@ private:
 
 #undef DEP_Plus_ALL
 
-    static void newCallIndep(
-        ProcAll *proc, SimulatorAll::System *system
+    static SimulatorAll::EventType newCallIndep(ProcAll *proc, SimulatorAll::System *system
       , double (*funTimeNewCall)(double, double)
       , double (*funTimeOfService)(double, double)
-      , void (*funNewCall)(ProcAll *proc, SimulatorAll::System *system)
+      , SimulatorAll::EventType (*funNewCall)(ProcAll *, SimulatorAll::System *)
     );
 
-    static void callServiceEndedIndependent(ProcAll *proc, SimulatorAll::System *system);
+    static SimulatorAll::EventType callServiceEndedIndependent(ProcAll *proc, SimulatorAll::System *system);
 
-    static void newCallDepMinus(
+    static SimulatorAll::EventType newCallDepMinus(ProcAll *proc
+      , SimulatorAll::System *system
+      , double (*funTimeNewCall)(double, double)
+      , double (*funTimeOfService)(double, double)
+      , SimulatorAll::EventType(*funNewCall)(ProcAll *, SimulatorAll::System *)
+    );
+
+    static SimulatorAll::EventType callServiceEndedDependentMinus(
+        ProcAll *proc
+      , SimulatorAll::System *system
+      , double (*funTimeNewCall)(double, double)
+      , SimulatorAll::EventType (*funNewCall)(ProcAll *proc, SimulatorAll::System *system)
+    );
+
+    static SimulatorAll::EventType newCallDepPlus(
         ProcAll *proc
       , SimulatorAll::System *system
       , double (*funTimeNewCall)(double, double)
       , double (*funTimeOfService)(double, double)
-      , void (*funNewCall)(ProcAll *proc, SimulatorAll::System *system)
+      , SimulatorAll::EventType (*funNewCall)(ProcAll *, SimulatorAll::System *)
     );
 
-    static void callServiceEndedDependentMinus(
-        ProcAll *proc
-      , SimulatorAll::System *system
-      , double (*funTimeNewCall)(double, double)
-      , void (*funNewCall)(ProcAll *proc, SimulatorAll::System *system)
-    );
-
-    static void newCallDepPlus(
-        ProcAll *proc
-      , SimulatorAll::System *system
-      , double (*funTimeNewCall)(double, double)
-      , double (*funTimeOfService)(double, double)
-      , void (*funNewCall)(ProcAll *, SimulatorAll::System *)
-    );
-
-    static void callServiceEndedDependentPlus(ProcAll *proc, SimulatorAll::System *system);
+    static SimulatorAll::EventType callServiceEndedDependentPlus(ProcAll *proc, SimulatorAll::System *system);
 
 public:
     double time;             /// Those value can be out of date. Use them only on object taken from agenda
@@ -546,7 +555,7 @@ public:
       , int sumPropAt
       , int V
     );
-    void (*execute)(ProcAll *simClass, SimulatorAll::System *system);
+    SimulatorAll::EventType (*execute)(ProcAll *simClass, SimulatorAll::System *system);
 };
 
 } // namespace Algorithms

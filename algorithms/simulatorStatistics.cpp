@@ -128,6 +128,18 @@ ServerStatistics::ServerStatistics(const ModelSyst * const system)
 {
     combinationList = Utils::UtilsLAG::getPossibleCombinationsFinal(system->k_s());
 
+    eventsPerClass.resize(system->m());
+    eventsPerClass.fill(EvenStatistics());
+
+    eventsPerState.resize(system->V()+1);
+    eventsPerState.fill(EvenStatistics());
+
+    eventsPerClassAndState.resize(system->m());
+    for (int classIdx=0; classIdx<system->m(); classIdx++)
+    {
+        eventsPerClassAndState[classIdx].resize(system->V()+1);
+        eventsPerClassAndState[classIdx].fill(EvenStatistics());
+    }
 
     timesPerState.resize(system->V()+1);
     timesPerState.fill(TimeStatisticsMacroState());
@@ -140,215 +152,153 @@ ServerStatistics::ServerStatistics(const ModelSyst * const system)
     }
 
     timesPerGroupSets.resize(system->k_s()+1);
-    timesPerGroupSetsSC.resize(system->k_s()+1);
 
     for (int noOfNotConsideredGroups=0; noOfNotConsideredGroups <= system->k_s(); noOfNotConsideredGroups++)
     {
         timesPerGroupSets[noOfNotConsideredGroups].resize(system->v_sMax()+1);
         timesPerGroupSets[noOfNotConsideredGroups].fill(GroupSetStatistics(), system->v_sMax()+1);
-
-        timesPerGroupSetsSC[noOfNotConsideredGroups].resize(system->v_sMax()+1);
-        timesPerGroupSetsSC[noOfNotConsideredGroups].fill(GroupSetStatistics(), system->v_sMax()+1);
     }
 
     timesPerGroupsCombinations.resize(combinationList.length());
     for (int combinationNo=0; combinationNo<combinationList.length(); combinationNo++)
     {
         timesPerGroupsCombinations[combinationNo].resize(system->v_sMax()+1);
-        timesPerGroupsCombinations[combinationNo].fill(GroupSetStatistics(), system->v_sMax()+1);
     }
-}
-
-void ServerStatistics::collectPre(double time, int n, const QVector<int> &n_i)
-{
-    timesPerState[n].occupancyTime+= time;
-    for (int i=0; i< n_i.length(); i++)
-        timesPerClassAndState[i][n].occupancyUtilization = time * n_i[i];
-
 }
 
 void ServerStatistics::collectPre(const ModelSyst *mSystem, double time, int n, const QVector<int> &n_i, const QVector<int> &n_k)
 {
+//timesPerState
     timesPerState[n].occupancyTime+= time;
 
+//timesPerClassAndState
     for (int i=0; i< mSystem->getConstSyst().m; i++)
         timesPerClassAndState[i][n].occupancyUtilization = time * n_i[i];
 
+//timesPerGroupSets
+    QVector<int> availability;
+    availability.fill(0, mSystem->getConstSyst().ks+1);
 
-
-    for (int k=0; k <= mSystem->getConstSyst().ks; k++)
+    availability[0] = 0;
+    for (int k=0; k < mSystem->getConstSyst().ks; k++)
     {
-        int resAvailableInAllTheGroupsInTheSet;
-        int resAvailableOnlyInAllTheGroupsInTheSet;
-        int resAvailableInBestGroup;
+        availability[k+1] = mSystem->getConstSyst().vs[k] - n_k[k];
+    }
+    qSort(availability);
+    std::reverse(availability.begin(), availability.end());//, std::back_inserter( availability ));
+    timesPerGroupSets[0][0].allInSetAvailable+= time;
+    timesPerGroupSets[0][0].allInSetAvailableAllOutsideSetUnavailable+= time;
+    for (int k=1; k <= mSystem->getConstSyst().ks; k++)
+    {
+        for (int n=0; n <= availability[k-1]; n++)
+            timesPerGroupSets[k][n].allInSetAvailable+= time;
 
-
-        for (int n=0; n <= mSystem->v_sMax(); n++)
-        {
-            ;//timesPerGroupSets[k][n].allInSetAvailable;
-        }
+        for (int n=availability[k]+1; n <= availability[k-1]; n++)
+            timesPerGroupSets[k][n].allInSetAvailable+= time;
     }
 
-
-    /*
-    // Uaktualnianie informacji o liczbie dostępnych zasobów w danej grupie
-    for (int tmpK=0; tmpK<k; tmpK++)
-        tmpAvailabilityInGroups[tmpK] = groups[tmpK]->getNoOfFreeAUs(true);
-
-    // Zapis statystyk dla kombinacji podgrup
-    for (int combinatinNo=0; combinatinNo < combinationList.length(); combinatinNo++)
+//timesPerGroupsCombinations
+    for (int combinationNo = 0; combinationNo < combinationList.length(); combinationNo++)
     {
-        int minAvailability = V;
-        int maxAvailability = 0;
-        int complementaryMaxAvailability = -1;
-        foreach (int groupNo, combinationList[combinatinNo].first)
+        int k = combinationList[combinationNo].length();
+        availability.resize(k);
+
+        int min = mSystem->v_sMax();
+        int max = 0;
+        for (int groupNo=0; groupNo < k; groupNo++)
         {
-            minAvailability = qMin<int>(minAvailability, tmpAvailabilityInGroups[groupNo]);
-            maxAvailability = qMax<int>(maxAvailability, tmpAvailabilityInGroups[groupNo]);
+            availability[groupNo] = mSystem->getConstSyst().vs[groupNo] - n_k[groupNo];
+            if (availability[groupNo] > max)
+                max = availability[groupNo];
+            if (availability[groupNo] < min)
+                min = availability[groupNo];
         }
-        foreach (int complGroupNo, combinationList[combinatinNo].second)
-        {
-            complementaryMaxAvailability
-                    = qMax<int>(complementaryMaxAvailability, tmpAvailabilityInGroups[complGroupNo]);
-        }
+        for (int n=0; n<=max; n++)
+            timesPerGroupsCombinations[combinationNo][n].atLeasOneAvailable = time;
 
-        freeAUsInWorstGroupInCombination[combinatinNo][minAvailability]+= time;
-        freeAUsInBestGroupInCombination[combinatinNo][maxAvailability]+= time;
+        for (int n=0; n<=min; n++)
+            timesPerGroupsCombinations[combinationNo][n].allInCombinationAvailable = time;
 
-        for (int n=minAvailability; n>complementaryMaxAvailability; n--)
-            availabilityOnlyInAllGroupsInCombination[combinatinNo][n]+= time;
-
-        for (int n=minAvailability; n>=0; n--)
-            availabilityInAllGroupsInCombination[combinatinNo][n]+= time;
-
-        for (int n=maxAvailability+1; n<=vMax; n++)
-            inavailabilityInAllGroupsInCombination[combinatinNo][n]+= time;
+        for (int n=max+1; n<=mSystem->v_sMax(); n++)
+            timesPerGroupsCombinations[combinationNo][n].allInCombinationUnavailable = time;
     }
-
-    // Zapis statystyk dla określonej liczby dowolnych podgrup
-
-
-    availabilityTimeInGroupSet[0][0] += time;
-
-    for (int availableResourcess=0; availableResourcess <= vMax; availableResourcess++)
-    {
-        int noOfGroups = 0;
-
-        for (int i=0; i<k; i++)
-        {
-            if (tmpAvailabilityInGroups[i] >= availableResourcess)
-                noOfGroups++;
-        }
-        for (int i=0; i<=noOfGroups; i++)
-            availabilityTimeInGroupSet[i][availableResourcess]+= time;
-        availabilityTimeOnlyInExactNoOfGroups[noOfGroups][availableResourcess] += time;
-    }
-
-    for (int i=0; i<m; i++)
-    {
-        resourceUtilizationByClass[i]          += (time*n_i[i]);
-        resourceUtilizationByClassInState[i][n]+= (time*n_i[i]);
-    }
-    timePerState[n].occupancyTime += time;
-
-    int maxCallRequirement = getMaxNumberOfAsInSingleGroup();
-    //timePerState[V-maxCallRequirement].availabilityTime += time;
-
-    foreach(Call *tmpCall, this->calls)
-        tmpCall->IncrTimeInServer(time);
-
-    for (int groupNo=0; groupNo < k; groupNo++)
-        groups[groupNo]->statsColectPre(time);
-
-
-    // Uaktualnianie informacji o liczbie dostępnych zasobów w danej grupie
-    tmpAvailabilityInGroups.resize(k);
-    for (int tmpK=0; tmpK<k; tmpK++)
-        tmpAvailabilityInGroups[tmpK] = groups[tmpK]->getNoOfFreeAUs(true);
-
-    // Zapis statystyk dla kombinacji podgrup
-    for (int combinatinNo=0; combinatinNo < combinationList.length(); combinatinNo++)
-    {
-        int minAvailability = V;
-        int maxAvailability = 0;
-        int complementaryMaxAvailability = -1;
-        foreach (int groupNo, combinationList[combinatinNo].first)
-        {
-            minAvailability = qMin<int>(minAvailability, tmpAvailabilityInGroups[groupNo]);
-            maxAvailability = qMax<int>(maxAvailability, tmpAvailabilityInGroups[groupNo]);
-        }
-        foreach (int complGroupNo, combinationList[combinatinNo].second)
-        {
-            complementaryMaxAvailability
-                    = qMax<int>(complementaryMaxAvailability, tmpAvailabilityInGroups[complGroupNo]);
-        }
-
-        freeAUsInWorstGroupInCombination[combinatinNo][minAvailability]+= time;
-        freeAUsInBestGroupInCombination[combinatinNo][maxAvailability]+= time;
-
-        for (int n=minAvailability; n>complementaryMaxAvailability; n--)
-            availabilityOnlyInAllGroupsInCombination[combinatinNo][n]+= time;
-
-        for (int n=minAvailability; n>=0; n--)
-            availabilityInAllGroupsInCombination[combinatinNo][n]+= time;
-
-        for (int n=maxAvailability+1; n<=vMax; n++)
-            inavailabilityInAllGroupsInCombination[combinatinNo][n]+= time;
-    }
-
-    // Zapis statystyk dla określonej liczby dowolnych podgrup
-
-
-    availabilityTimeInGroupSet[0][0] += time;
-
-    for (int availableResourcess=0; availableResourcess <= vMax; availableResourcess++)
-    {
-        int noOfGroups = 0;
-
-        for (int i=0; i<k; i++)
-        {
-            if (tmpAvailabilityInGroups[i] >= availableResourcess)
-                noOfGroups++;
-        }
-        for (int i=0; i<=noOfGroups; i++)
-            availabilityTimeInGroupSet[i][availableResourcess]+= time;
-        availabilityTimeOnlyInExactNoOfGroups[noOfGroups][availableResourcess] += time;
-    }
-     */
-
 }
 
-void ServerStatistics::collectPost(int classIdx, int old_n, int n)
+void ServerStatistics::collectPost(int classIdx, int old_n, int n, StatisticEventType event)
 {
-    //for (int groupNo=0; groupNo < k; groupNo++)
-    //    groups[groupNo]->statsCollectPost(classIdx);
+//eventsPerClass
+    switch (event)
+    {
+    case StatisticEventType::newCallAccepted:
+        eventsPerClass[classIdx].outNewOffered++;
+        eventsPerClass[classIdx].outNewAccepted++;
+        eventsPerClass[classIdx].inNew++;
+        break;
+
+    case StatisticEventType::newCallRejected:
+        eventsPerClass[classIdx].outNewOffered++;
+        eventsPerClass[classIdx].outNewLost++;
+        break;
+
+    case StatisticEventType::callServiceEnded:
+        eventsPerClass[classIdx].outEnd++;
+        eventsPerClass[classIdx].inEnd++;
+        break;
+    }
+//eventsPerState
+    switch (event)
+    {
+    case StatisticEventType::newCallAccepted:
+        eventsPerState[old_n].outNewOffered++;
+        eventsPerClass[old_n].outNewAccepted++;
+        eventsPerClass[n].inNew++;
+        break;
+
+    case StatisticEventType::newCallRejected:
+        eventsPerClass[old_n].outNewOffered++;
+        eventsPerClass[old_n].outNewLost++;
+        break;
+
+    case StatisticEventType::callServiceEnded:
+        eventsPerClass[old_n].outEnd++;
+        eventsPerClass[n].inEnd++;
+        break;
+    }
+//eventsPerClassAndState
+    switch (event)
+    {
+    case StatisticEventType::newCallAccepted:
+        eventsPerClassAndState[classIdx][old_n].outNewOffered++;
+        eventsPerClassAndState[classIdx][old_n].outNewAccepted++;
+        eventsPerClassAndState[classIdx][n].inNew++;
+        break;
+
+    case StatisticEventType::newCallRejected:
+        eventsPerClassAndState[classIdx][old_n].outNewOffered++;
+        eventsPerClassAndState[classIdx][old_n].outNewLost++;
+        break;
+
+    case StatisticEventType::callServiceEnded:
+        eventsPerClassAndState[classIdx][old_n].outEnd++;
+        eventsPerClassAndState[classIdx][n].inEnd++;
+        break;
+    }
 }
 
 void ServerStatistics::clear()
 {
-    /*
-    for (int n=0; n<=V; n++)
-        timePerState[n].statsClear();
+    eventsPerClass.fill(EvenStatistics());
+    eventsPerState.fill(EvenStatistics());
+    for (int classNo=0; classNo < eventsPerClassAndState.length(); classNo++)
+        eventsPerClassAndState[classNo].fill(EvenStatistics());
 
-    for (int groupNo=0; groupNo < k; groupNo++)
-    {
-        groups[groupNo]->statsClear();
-    }
-
-    for (int combinatinNo=0; combinatinNo < combinationList.length(); combinatinNo++)
-    {        freeAUsInWorstGroupInCombination[combinatinNo].fill(0, vMax+1);
-        freeAUsInBestGroupInCombination[combinatinNo].fill(0, vMax+1);
-        availabilityOnlyInAllGroupsInCombination[combinatinNo].fill(0, vMax+1);
-        availabilityInAllGroupsInCombination[combinatinNo].fill(0, vMax+1);
-        inavailabilityInAllGroupsInCombination[combinatinNo].fill(0, vMax+1);
-    }
-
-    for (int noOfGroups=0; noOfGroups <= k; noOfGroups++)
-    {
-        availabilityTimeInGroupSet[noOfGroups].fill(0, vMax+1);
-        availabilityTimeOnlyInExactNoOfGroups[noOfGroups].fill(0, vMax+1);
-    }
-    */
+    timesPerState.fill(TimeStatisticsMacroState());
+    for (int classNo=0; classNo < timesPerClassAndState.length(); classNo++)
+        timesPerClassAndState[classNo].fill(TimeStatisticsMicroState());
+    for (int groupNo=0; groupNo < timesPerGroupSets.length(); groupNo++)
+        timesPerGroupSets[groupNo].fill(GroupSetStatistics());
+    for (int combinationNo=0; combinationNo < timesPerGroupsCombinations.length(); combinationNo++)
+        timesPerGroupsCombinations[combinationNo].fill(GroupCombinationStatistics());
 }
 
 BufferStatistics::BufferStatistics(const ModelSyst * const system)
@@ -358,7 +308,20 @@ BufferStatistics::BufferStatistics(const ModelSyst * const system)
 
 void BufferStatistics::clear()
 {
+    eventsPerClass.fill(EvenStatistics());
+    eventsPerState.fill(EvenStatistics());
 
+    for (int classIdx=0; classIdx<eventsPerClassAndState.length(); classIdx++)
+    {
+        eventsPerClassAndState[classIdx].fill(EvenStatistics());
+    }
+
+    timesPerState.fill(TimeStatisticsMacroState());
+
+    for (int classIdx=0; classIdx<timesPerClassAndState.length(); classIdx++)
+    {
+        timesPerClassAndState[classIdx].fill(TimeStatisticsMicroState());
+    }
 }
 
 void BufferStatistics::collectPre(double time, int n, const QVector<int> &n_i)
