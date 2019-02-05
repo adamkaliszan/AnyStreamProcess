@@ -95,7 +95,6 @@ public:
     inline const EvenStatistics& getEventStatisticsSC(int classNo, int serverState, int bufferState)                  const { return eventsPerClassAndServerStateAndSystem[classNo][serverState][bufferState] ;}
 
 
-    void collectPre(double time, int n_s, int n_b, const QVector<int> &n_si, const QVector<int> &n_bi);
     void collectPre(const ModelSyst *mSystem, double time, int n_s, int n_b, const QVector<int> &n_si, const QVector<int> &n_bi, const QVector<int> &n_sk, const QVector<int> &n_bk);
     void collectPost(int classIdx, int old_n, int n);
 };

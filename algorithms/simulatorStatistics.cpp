@@ -10,6 +10,8 @@ SystemStatistics::SystemStatistics(const ModelSyst * const system)
     int vk_s = system->vk_s();
     int vk_b = system->vk_b();
     int m = system->m();
+
+    timesPerClasses.resize(m);
     timesPerSystemState.resize(vk_sb + 1);
     eventsPerSystemState.resize(vk_sb + 1);
 
@@ -46,20 +48,6 @@ SystemStatistics::SystemStatistics(const ModelSyst * const system)
 void SystemStatistics::clear()
 {
 
-}
-
-void SystemStatistics::collectPre(double time, int n_s, int n_b, const QVector<int> &n_si, const QVector<int> &n_bi)
-{
-    timesPerSystemState[n_s+n_b].occupancyTime+= time;
-
-    timesPerServerAndBufferState[n_s][n_b].occupancyTime+= time;
-
-    for (int i=0; i< timesPerClassAndSystemState.length(); i++)
-    {
-        timesPerClassAndSystemState[i][n_s+n_b].occupancyUtilization += (time*(n_si[i] + n_bi[i]));
-        timesPerClassAndServerAndBufferState[i][n_s][n_b].occupancyUtilizationServer += (time*(n_si[i]));
-        timesPerClassAndServerAndBufferState[i][n_s][n_b].occupancyUtilizationBuffer += (time*(n_bi[i]));
-    }
 }
 
 void SystemStatistics::collectPre(const ModelSyst *mSystem, double time, int n_s, int n_b
@@ -250,18 +238,18 @@ void ServerStatistics::collectPost(int classIdx, int old_n, int n, StatisticEven
     {
     case StatisticEventType::newCallAccepted:
         eventsPerState[old_n].outNewOffered++;
-        eventsPerClass[old_n].outNewAccepted++;
-        eventsPerClass[n].inNew++;
+        eventsPerState[old_n].outNewAccepted++;
+        eventsPerState[n].inNew++;
         break;
 
     case StatisticEventType::newCallRejected:
-        eventsPerClass[old_n].outNewOffered++;
-        eventsPerClass[old_n].outNewLost++;
+        eventsPerState[old_n].outNewOffered++;
+        eventsPerState[old_n].outNewLost++;
         break;
 
     case StatisticEventType::callServiceEnded:
-        eventsPerClass[old_n].outEnd++;
-        eventsPerClass[n].inEnd++;
+        eventsPerState[old_n].outEnd++;
+        eventsPerState[n].inEnd++;
         break;
     }
 //eventsPerClassAndState

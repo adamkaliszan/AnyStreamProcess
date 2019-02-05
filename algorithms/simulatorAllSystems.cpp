@@ -355,6 +355,16 @@ void SimulatorAll::System::writesResultsOfSingleExperiment(RSingle& singleResult
         if (E < 0)
             qFatal("Wrong E");
         singleResults.write(TypeForClass::BlockingProbability, E, i);
+
+        if (statistics->getEventStatisticsSC(i).outNewOffered > 0)
+        {
+            double B = (statistics->getEventStatisticsSC(i).outNewOffered - statistics->getEventStatisticsSC(i).outNewAccepted);
+            B/= statistics->getEventStatisticsSC(i).outNewOffered;
+
+            if (B < 0)
+                qFatal("Wrong B");
+            singleResults.write(TypeForClass::LossProbability, B, i);
+        }
     }
 
     for (int n=0; n<=V; n++)
@@ -381,7 +391,7 @@ void SimulatorAll::System::writesResultsOfSingleExperiment(RSingle& singleResult
     for (int n=0; n<=Vs; n++)
     {//TODO use servers statistics
         double stateProbability = server->getTimeOfState(n) / simulationTime;
-        singleResults.write(TypeForSystemState::StateProbability, stateProbability, n);
+        singleResults.write(TypeForServerState::StateProbability, stateProbability, n);
 
         for (int i=0; i<m; i++)
         {
@@ -399,7 +409,7 @@ bool SimulatorAll::System::serveNewCall(SimulatorAll::Call *newCall)
 
 #endif
     int groupNumber;
-     bool isPlace = server->findAS(newCall->reqAS, groupNumber);
+    bool isPlace = server->findAS(newCall->reqAS, groupNumber);
 
     if (isPlace)
     {
@@ -613,8 +623,9 @@ void SimulatorAll::Server::removeCall(SimulatorAll::Call *call)
 {
     this->subgroupFreeAUs[call->groupIndex] +=call->allocatedAS;
     calls.removeAll(call);
-    n_i[call->classIdx] -=call->allocatedAS;
     n -=call->allocatedAS;
+    n_i[call->classIdx]-= call->allocatedAS;
+    n_k[call->groupIndex]-= call->allocatedAS;
 }
 
 double SimulatorAll::Server::resourceUtilization(int classNumber, int stateNo) const
@@ -643,7 +654,7 @@ SimulatorAll::Server::Server(System *system)
     subgroupSequence.resize(k);
     for (int j=0; j<k; j++)
     {
-        subgroupFreeAUs[j] = system->systemData->v_s(j);
+        subgroupFreeAUs[j] = system->systemData->getConstSyst().vs[j];
         subgroupSequence[j] = j;
     }
 
@@ -664,40 +675,51 @@ void SimulatorAll::Server::writesResultsOfSingleExperiment(RSingle &singleResult
         result = stateTime/simulationTime;
         singleResults.write(TypeForServerState::StateProbability, result, n);
 
-        result = statistics->getEventStatistics(n).outNewOffered/stateTime;
-        singleResults.write(TypeForServerState::IntensityNewCallOut, result, n);
+        if (stateTime > 0)
+        {
+            result = statistics->getEventStatistics(n).outNewOffered/stateTime;
+            singleResults.write(TypeForServerState::IntensityNewCallOut, result, n);
 
-        result = statistics->getEventStatistics(n).inNew/stateTime;
-        singleResults.write(TypeForServerState::IntensityNewCallIn, result, n);
+            result = statistics->getEventStatistics(n).inNew/stateTime;
+            singleResults.write(TypeForServerState::IntensityNewCallIn, result, n);
 
-        result = statistics->getEventStatistics(n).outEnd/stateTime;
-        singleResults.write(TypeForServerState::IntensityEndCallOut, result, n);
+            result = statistics->getEventStatistics(n).outEnd/stateTime;
+            singleResults.write(TypeForServerState::IntensityEndCallOut, result, n);
 
-        result = statistics->getEventStatistics(n).inEnd/stateTime;
-        singleResults.write(TypeForServerState::IntensityEndCallIn, result, n);
+            result = statistics->getEventStatistics(n).inEnd/stateTime;
+            singleResults.write(TypeForServerState::IntensityEndCallIn, result, n);
+        }
 
         for (int classNo=0; classNo < m; classNo++)
         {
-            result = statistics->getEventStatisticsSC(classNo, n).outNewOffered/stateTime;
-            singleResults.write(TypeForClassAndServerState::OfferedNewCallIntensityOut, result, n, classNo);
+            if (stateTime > 0)
+            {
+                result = statistics->getEventStatisticsSC(classNo, n).outNewOffered/stateTime;
+                singleResults.write(TypeForClassAndServerState::OfferedNewCallIntensityOut, result, classNo, n);
 
-            result = statistics->getEventStatisticsSC(classNo, n).outNewAccepted/stateTime;
-            singleResults.write(TypeForClassAndServerState::RealNewCallIntensityOut, result, n, classNo);
+                result = statistics->getEventStatisticsSC(classNo, n).outNewAccepted/stateTime;
+                singleResults.write(TypeForClassAndServerState::RealNewCallIntensityOut, result, classNo, n);
+            }
+            if (statistics->getEventStatisticsSC(classNo, n).outNewOffered > 0)
+            {
+                result = statistics->getEventStatisticsSC(classNo, n).outNewAccepted / statistics->getEventStatisticsSC(classNo, n).outNewOffered;
+                singleResults.write(TypeForClassAndServerState::CAC_Probability, result, classNo, n);
+            }
 
-            result = statistics->getEventStatisticsSC(classNo, n).outNewOffered/statistics->getEventStatisticsSC(classNo, n).outNewAccepted;
-            singleResults.write(TypeForClassAndServerState::CAC_Probability, result, n, classNo);
+            if (stateTime > 0)
+            {
+                result = statistics->getEventStatisticsSC(classNo, n).inNew/stateTime;
+                singleResults.write(TypeForClassAndServerState::NewCallIntensityIn, result, classNo, n);
 
-            result = statistics->getEventStatisticsSC(classNo, n).inNew/statistics->getEventStatisticsSC(classNo, n).outNewAccepted;
-            singleResults.write(TypeForClassAndServerState::NewCallIntensityIn, result, n, classNo);
+                result = statistics->getEventStatisticsSC(classNo, n).outEnd/stateTime;
+                singleResults.write(TypeForClassAndServerState::EndCallIntensityOut, result, classNo, n);
 
-            result = statistics->getEventStatisticsSC(classNo, n).outEnd/statistics->getEventStatisticsSC(classNo, n).outNewAccepted;
-            singleResults.write(TypeForClassAndServerState::EndCallIntensityOut, result, n, classNo);
+                result = statistics->getEventStatisticsSC(classNo, n).inEnd/stateTime;
+                singleResults.write(TypeForClassAndServerState::EndCallIntensityIn, result, classNo, n);
 
-            result = statistics->getEventStatisticsSC(classNo, n).inEnd/statistics->getEventStatisticsSC(classNo, n).outNewAccepted;
-            singleResults.write(TypeForClassAndServerState::EndCallIntensityIn, result, n, classNo);
-
-            result = statistics->getTimeStatisticsSC(classNo, n).occupancyUtilization/stateTime;
-            singleResults.write(TypeForClassAndServerState::Usage, result, n, classNo);
+                result = statistics->getTimeStatisticsSC(classNo, n).occupancyUtilization/stateTime;
+                singleResults.write(TypeForClassAndServerState::Usage, result, classNo, n);
+            }
         }
     }
 
