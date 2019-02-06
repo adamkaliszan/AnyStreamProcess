@@ -71,7 +71,7 @@ void SystemStatistics::collectPre(const ModelSyst *mSystem, double time, int n_s
     }
 }
 
-void SystemStatistics::collectPost(int classIdx, int old_n, int n)
+void SystemStatistics::collectPost(int classIdx, int old_n, int n, StatisticEventType event)
 {
     if (n == old_n) //nowe zgłoszenie zostało odrzucone
     {
@@ -98,14 +98,14 @@ void SystemStatistics::collectPost(int classIdx, int old_n, int n)
     else if (n > old_n) //przyjęcie do obsługi zgłoszenia
     {
         eventsPerClass[classIdx].outNewOffered++;
-        eventsPerClass[classIdx].outNewAccepted++;
+        eventsPerClass[classIdx].outNewAcceptedByServer++;
         eventsPerClass[classIdx].inNew++;
 
         eventsPerSystemState[old_n].outNewOffered++;
-        eventsPerSystemState[old_n].outNewAccepted++;
+        eventsPerSystemState[old_n].outNewAcceptedByServer++;
 
         eventsPerClassAndSystemState[classIdx][old_n].outNewOffered++;
-        eventsPerClassAndSystemState[classIdx][old_n].outNewAccepted++;
+        eventsPerClassAndSystemState[classIdx][old_n].outNewAcceptedByServer++;
 
         eventsPerSystemState[n].inNew++;
         eventsPerClassAndSystemState[classIdx][n].inNew++;
@@ -161,8 +161,9 @@ void ServerStatistics::collectPre(const ModelSyst *mSystem, double time, int n, 
 
 //timesPerClassAndState
     for (int i=0; i< mSystem->getConstSyst().m; i++)
-        timesPerClassAndState[i][n].occupancyUtilization = time * n_i[i];
-
+    {
+        timesPerClassAndState[i][n].occupancyUtilizationServer = time * n_i[i];
+    }
 //timesPerGroupSets
     QVector<int> availability;
     availability.fill(0, mSystem->getConstSyst().ks+1);
@@ -178,11 +179,14 @@ void ServerStatistics::collectPre(const ModelSyst *mSystem, double time, int n, 
     timesPerGroupSets[0][0].allInSetAvailableAllOutsideSetUnavailable+= time;
     for (int k=1; k <= mSystem->getConstSyst().ks; k++)
     {
+        for (int n=availability[k]+1; n <= availability[k-1]; n++)
+            timesPerGroupSets[k][n].allInSetAvailableAllOutsideSetUnavailable+= time;
+
         for (int n=0; n <= availability[k-1]; n++)
             timesPerGroupSets[k][n].allInSetAvailable+= time;
 
-        for (int n=availability[k]+1; n <= availability[k-1]; n++)
-            timesPerGroupSets[k][n].allInSetAvailable+= time;
+        for (int n=availability[0]+1; n <= mSystem->getConstSyst().Vs; n++)
+            timesPerGroupSets[k][n].allUnavailable+= time;
     }
 
 //timesPerGroupsCombinations
@@ -202,13 +206,13 @@ void ServerStatistics::collectPre(const ModelSyst *mSystem, double time, int n, 
                 min = availability[groupNo];
         }
         for (int n=0; n<=max; n++)
-            timesPerGroupsCombinations[combinationNo][n].atLeasOneAvailable = time;
+            timesPerGroupsCombinations[combinationNo][n].oneOrMoreInCombinationAvailable+= time;
 
         for (int n=0; n<=min; n++)
-            timesPerGroupsCombinations[combinationNo][n].allInCombinationAvailable = time;
+            timesPerGroupsCombinations[combinationNo][n].allInCombinationAvailable+= time;
 
         for (int n=max+1; n<=mSystem->v_sMax(); n++)
-            timesPerGroupsCombinations[combinationNo][n].allInCombinationUnavailable = time;
+            timesPerGroupsCombinations[combinationNo][n].allInCombinationUnavailable+= time;
     }
 }
 
@@ -219,7 +223,7 @@ void ServerStatistics::collectPost(int classIdx, int old_n, int n, StatisticEven
     {
     case StatisticEventType::newCallAccepted:
         eventsPerClass[classIdx].outNewOffered++;
-        eventsPerClass[classIdx].outNewAccepted++;
+        eventsPerClass[classIdx].outNewAcceptedByServer++;
         eventsPerClass[classIdx].inNew++;
         break;
 
@@ -238,7 +242,7 @@ void ServerStatistics::collectPost(int classIdx, int old_n, int n, StatisticEven
     {
     case StatisticEventType::newCallAccepted:
         eventsPerState[old_n].outNewOffered++;
-        eventsPerState[old_n].outNewAccepted++;
+        eventsPerState[old_n].outNewAcceptedByServer++;
         eventsPerState[n].inNew++;
         break;
 
@@ -257,7 +261,7 @@ void ServerStatistics::collectPost(int classIdx, int old_n, int n, StatisticEven
     {
     case StatisticEventType::newCallAccepted:
         eventsPerClassAndState[classIdx][old_n].outNewOffered++;
-        eventsPerClassAndState[classIdx][old_n].outNewAccepted++;
+        eventsPerClassAndState[classIdx][old_n].outNewAcceptedByServer++;
         eventsPerClassAndState[classIdx][n].inNew++;
         break;
 

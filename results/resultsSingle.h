@@ -54,9 +54,6 @@ public:
     RSingle &write(TypeResourcess_VsServerGroupsCombination, double value, int numberOfResourcess, int groupCombinationIndex);
     bool read(double &result, TypeResourcess_VsServerGroupsCombination type, int numberOfResourcess, int groupCombinationIndex) const;
 
-    RSingle &write(TypeClassForServerBestGroupsSet, double value, int classNumber, int numberOfGroups);
-    bool read(double &result, TypeClassForServerBestGroupsSet type, int classNumber, int numberOfGroups) const;
-
     RSingle &write(TypeForResourcessAndNumberOfServerGroups type, double value, int numberOfResourcess, int numberOfGroups);
     bool read(double &result, TypeForResourcessAndNumberOfServerGroups type, int numberOfResourcess, int numberOfGroups) const;
 
@@ -99,18 +96,17 @@ private:
     QVector<DataForClassesAndState>     dataPerClassAndSystemStateForBuffer;
     QVector<DataForClassesAndState>     dataPerClassAndSystemStateForSystem;
     QVector<DataPerGroups>              dataPerGroupCombination;
-    QVector<DataPerGroups>              dataPerBestGroups;
     QVector<DataPerGroups>              dataPerExactGroupNumber;
 
 
     struct DataGeneral
     {
-        double systemUtilization;     /// Expected value of system state probability distribution
-        double serverUtilization;     /// Expected value of server state probability distribution
-        double bufferUtilization;     /// Expected value of buffer state probability distribution - buffer length
-        double totalTime;             /// Tatal time between call arrival and leawing the system wait+service time
-        double serviceTime;           /// Total time of service
-        double waitingTime;           /// Total time of waiting in the buffer
+        double systemUtilization;     ///< Expected value of system state probability distribution
+        double serverUtilization;     ///< Expected value of server state probability distribution
+        double bufferUtilization;     ///< Expected value of buffer state probability distribution - buffer length
+        double totalTime;             ///< Tatal time between call arrival and leawing the system wait+service time
+        double serviceTime;           ///< Total time of service
+        double waitingTime;           ///< Total time of waiting in the buffer
 
         DataGeneral(): systemUtilization(0), serverUtilization(0), bufferUtilization(0), totalTime(0), serviceTime(0), waitingTime(0) {}
 

@@ -48,7 +48,8 @@ enum class TypeForBufferState: unsigned
 enum class TypeForSystemState: unsigned
 {
     StateProbability,
-    IntensityNewCallOut,
+    IntensityNewCallOutOffered,
+    IntensityNewCallOutAccepted,
     IntensityEndCallOut,
     IntensityNewCallIn,
     IntensityEndCallIn
@@ -68,17 +69,17 @@ enum class TypeForServerAngBufferState: unsigned
  */
 enum class TypeForClassAndSystemState: unsigned
 {
-    UsageForServer,                      /// (yServer_i(nSystem) t_i / nSystem
-    UsageForBuffer,                       /// (yBuffer_i(nSystem) t_i / nSystem
-    UsageForSystem,                      /// (y_i(n) t_i)/n
+    UsageForServer,                      ///< (yServer_i(nSystem) t_i / nSystem
+    UsageForBuffer,                      ///< (yBuffer_i(nSystem) t_i / nSystem
+    UsageForSystem,                      ///< (y_i(n) t_i)/n
 
-    CAC_ProbabilityForServer,            /// \signa_i(n)
-    CAC_ProbabilityForQueue,             /// \signa_i(n)
-    CAC_ProbabilityForSystem,            /// \signa_i(n)
+    CAC_ProbabilityForServer,            ///< \signa_i(n)
+    CAC_ProbabilityForQueue,             ///< \signa_i(n)
+    CAC_ProbabilityForSystem,            ///< \signa_i(n)
 
-    OfferedNewCallIntensityOutForServer, //
-    OfferedNewCallIntensityOutForQueue, //
-    OfferedNewCallIntensityOutForSystem, //
+    OfferedNewCallIntensityOutForServer, ///
+    OfferedNewCallIntensityOutForQueue,  ///
+    OfferedNewCallIntensityOutForSystem, ///
 
     RealNewCallIntensityOutForServer,
     RealNewCallIntensityOutForQueue,
@@ -105,31 +106,31 @@ enum class TypeForClassAndSystemState: unsigned
  */
 enum class TypeForClassAndServerState: unsigned
 {
-    Usage,                      ///< (y_i(n) t_i)/n
-    CAC_Probability,            ///< \signa_i(n)
+    Usage,                               ///< (y_i(n) t_i)/n
     OfferedNewCallIntensityOut,
     RealNewCallIntensityOut,
     NewCallIntensityIn,
     EndCallIntensityOut,
-    EndCallIntensityIn
+    EndCallIntensityIn,
+    CAC_Probability                      ///< \signa_i(n)
 };
 
 enum class TypeForClassAndBufferState: unsigned
 {
-    Usage,                      /// (y_i(n) t_i)/n
-    CAC_Probability,            /// \signa_i(n)
+    Usage,                               ///< (y_i(n) t_i)/n
     OfferedNewCallIntensityOut,
     RealNewCallIntensityOut,
     NewCallIntensityIn,
     EndCallIntensityOut,
-    EndCallIntensityIn
+    EndCallIntensityIn,
+    CAC_Probability                      ///< \signa_i(n)
 };
 
 enum class TypeResourcess_VsServerGroupsCombination: unsigned
 {
-    FreeAUsInBestGroup,                  /// The best  subgroup has exactly n AUs available (not more)
-    AvailabilityInAllTheGroups,          /// Each group in combination is available, don't care about other groups
-    InavailabilityInAllTheGroups,        /// Each group in combination is not available, don't care about other groups
+    AvailabilityInOneOrMoreGroups,       ///< There is one or more groups in combination with given number of available resourcess
+    AvailabilityInAllTheGroups,          ///< Each group in combination is available, don't care about other groups
+    InavailabilityInAllTheGroups,        ///< Each group in combination is not available, don't care about other groups
 };
 
 /**
@@ -137,18 +138,11 @@ enum class TypeResourcess_VsServerGroupsCombination: unsigned
  */
 enum class TypeForResourcessAndNumberOfServerGroups: unsigned
 {
-    AvailabilityOnlyInAllTheGroups,      /// All the subgroups in the set has this availability, groups outside the sat does not have such availability
-    AvailabilityInAllTheGroups,          /// All the subgroups in the set has this availability, groups outside are not considered
-    InavailabilityInAllTheGroups         /// All the subgroups in the set are not available, groups outside are not considered
+    AvailabilityOnlyInAllTheGroups,      ///< All the subgroups in the set has this availability, groups outside the sat does not have such availability
+    AvailabilityInAllTheGroups,          ///< All the subgroups in the set has this availability, groups outside are not considered
+    InavailabilityInAllTheGroups         ///< All the subgroups in the set are not available, groups outside are not considered
 };
 
-enum class TypeClassForServerBestGroupsSet: unsigned
-{
-    ServPossibilityInBestSubgroup,
-    ServPossibilityOnlyInAllTheSubgroups,
-    ServPossibilityInAllTheSubgroups,
-    ServImpossibilityInAllTheSubgroups,
-};
 } // namespace Results
 
 #endif // RESULTS_BASE_TYPES_H

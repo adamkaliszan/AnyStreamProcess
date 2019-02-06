@@ -31,7 +31,6 @@ void RSingle::init(const ModelSyst *system)
     dataPerClassAndSystemStateForServer.fill(DataForClassesAndState(), (V+1)*m);
     dataPerClassAndSystemStateForBuffer.fill(DataForClassesAndState(), (V+1)*m);
     dataPerGroupCombination.fill(DataPerGroups(vMax+1, m), ::Utils::UtilsLAG::getPossibleCombinations(system->k_s()).length());
-    dataPerBestGroups.fill(DataPerGroups(vMax+1, m), (system->k_s())+1);
     dataPerExactGroupNumber.fill(DataPerGroups(vMax+1, m), (system->k_s())+1);
 }
 
@@ -177,7 +176,7 @@ RSingle &RSingle::write(TypeForSystemState type, double value, int systemState)
         dataPerSystemState[systemState].endCallInIntensity = value;
         break;
 
-    case TypeForSystemState::IntensityNewCallOut:
+    case TypeForSystemState::IntensityNewCallOutOffered:
         dataPerSystemState[systemState].newCallOutIntensity = value;
         break;
 
@@ -204,7 +203,7 @@ bool RSingle::read(double &result, TypeForSystemState type, int systemState) con
         result = dataPerSystemState[systemState].endCallInIntensity;
         break;
 
-    case TypeForSystemState::IntensityNewCallOut:
+    case TypeForSystemState::IntensityNewCallOutOffered:
         result = dataPerSystemState[systemState].newCallOutIntensity;
         break;
 
@@ -683,7 +682,7 @@ RSingle &RSingle::write(TypeResourcess_VsServerGroupsCombination type, double va
 {
     switch(type)
     {
-    case TypeResourcess_VsServerGroupsCombination::FreeAUsInBestGroup:
+    case TypeResourcess_VsServerGroupsCombination::AvailabilityInOneOrMoreGroups:
         dataPerGroupCombination[groupCombinationIndex].availabilityProbabilities[numberOfResourcess].freeInBestGroup = value;
         break;
 
@@ -702,7 +701,7 @@ bool RSingle::read(double &result, TypeResourcess_VsServerGroupsCombination type
 {
     switch(type)
     {
-    case TypeResourcess_VsServerGroupsCombination::FreeAUsInBestGroup:
+    case TypeResourcess_VsServerGroupsCombination::AvailabilityInOneOrMoreGroups:
         result = dataPerGroupCombination[groupCombinationIndex].availabilityProbabilities[numberOfResourcess].freeInBestGroup;
         break;
 
@@ -712,50 +711,6 @@ bool RSingle::read(double &result, TypeResourcess_VsServerGroupsCombination type
 
     case TypeResourcess_VsServerGroupsCombination::InavailabilityInAllTheGroups:
         result = dataPerGroupCombination[groupCombinationIndex].availabilityProbabilities[numberOfResourcess].inavailabilityInAllTheGroups;
-        break;
-    }
-    return true;
-}
-
-RSingle &RSingle::write(TypeClassForServerBestGroupsSet type, double value, int classNumber, int numberOfGroups)
-{
-    switch(type)
-    {
-    case TypeClassForServerBestGroupsSet::ServPossibilityInBestSubgroup:
-        dataPerBestGroups[numberOfGroups].availabilityClasses[classNumber].availabilityInBestSubgroup = value;
-        break;
-    case TypeClassForServerBestGroupsSet::ServPossibilityOnlyInAllTheSubgroups:
-        dataPerBestGroups[numberOfGroups].availabilityClasses[classNumber].availabilityOnlyInAllSubgroups = value;
-        break;
-    case TypeClassForServerBestGroupsSet::ServPossibilityInAllTheSubgroups:
-        dataPerBestGroups[numberOfGroups].availabilityClasses[classNumber].availabilityInAllSubgroups = value;
-        break;
-    case TypeClassForServerBestGroupsSet::ServImpossibilityInAllTheSubgroups:
-        dataPerBestGroups[numberOfGroups].availabilityClasses[classNumber].inavailabilityInAllSubgroups = value;
-        break;
-
-    }
-    return *this;
-}
-
-bool RSingle::read(double &result, TypeClassForServerBestGroupsSet type, int classNumber, int numberOfGroups) const
-{
-    switch(type)
-    {
-    case TypeClassForServerBestGroupsSet::ServPossibilityInBestSubgroup:
-        result = dataPerBestGroups[numberOfGroups].availabilityClasses[classNumber].availabilityInBestSubgroup;
-        break;
-
-    case TypeClassForServerBestGroupsSet::ServPossibilityOnlyInAllTheSubgroups:
-        result = dataPerBestGroups[numberOfGroups].availabilityClasses[classNumber].availabilityOnlyInAllSubgroups;
-        break;
-
-    case TypeClassForServerBestGroupsSet::ServPossibilityInAllTheSubgroups:
-        result = dataPerBestGroups[numberOfGroups].availabilityClasses[classNumber].availabilityInAllSubgroups;
-        break;
-
-    case TypeClassForServerBestGroupsSet::ServImpossibilityInAllTheSubgroups:
-        result = dataPerBestGroups[numberOfGroups].availabilityClasses[classNumber].inavailabilityInAllSubgroups;
         break;
     }
     return true;
@@ -894,7 +849,6 @@ RSingle& RSingle::operator+=(const RSingle &rho)
     Utils::addElementsToFirst<DataForClassesAndState>(dataPerClassAndSystemStateForBuffer, rho.dataPerClassAndSystemStateForBuffer);
     Utils::addElementsToFirst<DataForClassesAndState>(dataPerClassAndSystemStateForSystem, rho.dataPerClassAndSystemStateForSystem);
     Utils::addElementsToFirst<RSingle::DataPerGroups>(dataPerGroupCombination, rho.dataPerGroupCombination);
-    Utils::addElementsToFirst<RSingle::DataPerGroups>(dataPerBestGroups, rho.dataPerBestGroups);
     Utils::addElementsToFirst<RSingle::DataPerGroups>(dataPerExactGroupNumber, rho.dataPerExactGroupNumber);
     return *this;
 }
@@ -913,7 +867,6 @@ RSingle RSingle::operator-(const RSingle &rho) const
     result.dataPerClassAndSystemStateForBuffer  = Utils::subtractElements<DataForClassesAndState>(dataPerClassAndSystemStateForBuffer,  rho.dataPerClassAndSystemStateForBuffer);
     result.dataPerClassAndSystemStateForSystem = Utils::subtractElements<DataForClassesAndState>(dataPerClassAndSystemStateForSystem, rho.dataPerClassAndSystemStateForSystem);
     result.dataPerGroupCombination             = Utils::subtractElements<RSingle::DataPerGroups> (this->dataPerGroupCombination, rho.dataPerGroupCombination);
-    result.dataPerBestGroups                   = Utils::subtractElements<RSingle::DataPerGroups> (this->dataPerBestGroups, rho.dataPerBestGroups);
     result.dataPerExactGroupNumber             = Utils::subtractElements<RSingle::DataPerGroups> (this->dataPerExactGroupNumber, rho.dataPerExactGroupNumber);
     return result;
 }
@@ -932,7 +885,6 @@ RSingle RSingle::operator^(double rho) const
     result.dataPerClassAndSystemStateForBuffer  = Utils::powerElementTempl<DataForClassesAndState>(dataPerClassAndSystemStateForBuffer, rho);
     result.dataPerClassAndSystemStateForSystem = Utils::powerElementTempl<DataForClassesAndState>(dataPerClassAndSystemStateForSystem, rho);
     result.dataPerGroupCombination             = Utils::powerElementTempl<RSingle::DataPerGroups> (this->dataPerGroupCombination, rho);
-    result.dataPerBestGroups                   = Utils::powerElementTempl<RSingle::DataPerGroups> (this->dataPerBestGroups, rho);
     result.dataPerExactGroupNumber             = Utils::powerElementTempl<RSingle::DataPerGroups> (this->dataPerExactGroupNumber, rho);
     return result;
 }
@@ -967,7 +919,6 @@ RSingle &RSingle::operator/=(double rho)
     Utils::divideElementToFirst<RSingle::DataForClassesAndState>(dataPerClassAndSystemStateForBuffer, rho);
     Utils::divideElementToFirst<RSingle::DataForClassesAndState>(dataPerClassAndSystemStateForSystem, rho);
     Utils::divideElementToFirst<RSingle::DataPerGroups>(dataPerGroupCombination, rho);
-    Utils::divideElementToFirst<RSingle::DataPerGroups>(dataPerBestGroups, rho);
     Utils::divideElementToFirst<RSingle::DataPerGroups>(dataPerExactGroupNumber, rho);
     return *this;
 }
@@ -985,7 +936,6 @@ RSingle &RSingle::operator*=(double rho)
     Utils::multiplyElementToFirst<RSingle::DataForClassesAndState>(dataPerClassAndSystemStateForBuffer, rho);
     Utils::multiplyElementToFirst<RSingle::DataForClassesAndState>(dataPerClassAndSystemStateForSystem, rho);
     Utils::multiplyElementToFirst<RSingle::DataPerGroups>(dataPerGroupCombination, rho);
-    Utils::multiplyElementToFirst<RSingle::DataPerGroups>(dataPerBestGroups, rho);
     Utils::multiplyElementToFirst<RSingle::DataPerGroups>(dataPerExactGroupNumber, rho);
     return *this;
 }
@@ -1003,15 +953,22 @@ void RSingle::sqrt()
     Utils::sqrtTemplate<RSingle::DataForClassesAndState>(dataPerClassAndSystemStateForBuffer);
     Utils::sqrtTemplate<RSingle::DataForClassesAndState>(dataPerClassAndSystemStateForSystem);
     Utils::sqrtTemplate<RSingle::DataPerGroups>(dataPerGroupCombination);
-    Utils::sqrtTemplate<RSingle::DataPerGroups>(dataPerBestGroups);
     Utils::sqrtTemplate<RSingle::DataPerGroups>(dataPerExactGroupNumber);
 }
 
 void RSingle::clear()
 {
     dataPerClasses.fill(DataForClasses());
+    dataPerSystemState.fill(DataForStates());
+    dataPerServerState.fill(DataForStates());
+    dataPerBufferState.fill(DataForStates());
+    dataPerServerAndBufferState.fill(DataForStates());;
+    dataPerClassAndServerState.fill(DataForClassesAndState());
+    dataPerClassAndQueueState.fill(DataForClassesAndState());
+    dataPerClassAndSystemStateForServer.fill(DataForClassesAndState());
+    dataPerClassAndSystemStateForBuffer.fill(DataForClassesAndState());
+    dataPerClassAndSystemStateForSystem.fill(DataForClassesAndState());
     dataPerGroupCombination.fill(DataPerGroups(vMax+1, m));
-    dataPerBestGroups.fill(DataPerGroups(vMax+1, m));
     dataPerExactGroupNumber.fill(DataPerGroups(vMax+1, m));
 }
 

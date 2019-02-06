@@ -8,6 +8,13 @@
 namespace Algorithms
 {
 
+enum class StatisticEventType
+{
+    newCallAccepted,
+    newCallRejected,
+    callServiceEnded,
+};
+
 class TimeStatisticsMacroState
 {
 public:
@@ -32,9 +39,11 @@ class TimeStatisticsMicroState
 {
 public:
     double occupancyUtilization;           ///< State duration time of state n * number of AUs occupied by class i
+    double occupancyUtilizationServer;
+    double occupancyUtilizationBuffer;
 
-    TimeStatisticsMicroState() : occupancyUtilization(0) { }
-    inline void statsClear() { occupancyUtilization = 0; }
+    TimeStatisticsMicroState() : occupancyUtilization(0), occupancyUtilizationServer(0), occupancyUtilizationBuffer(0) { }
+    inline void statsClear() { occupancyUtilization = 0; occupancyUtilizationServer = 0; occupancyUtilizationBuffer = 0; }
 };
 
 class TimeStatisticsMicroStateDetail
@@ -50,15 +59,16 @@ public:
 class EvenStatistics
 {
 public:
-    long unsigned int inNew;               ///< Number of events when this state was reached because of new call acceptance
-    long unsigned int inEnd;               ///< Number of events when this state was reached because of call service ending
+    long unsigned int inNew;                  ///< Number of events when this state was reached because of new call acceptance
+    long unsigned int inEnd;                  ///< Number of events when this state was reached because of call service ending
 
-    long unsigned int outNewOffered;       ///< Number of events when new call was offered in this state (don't care if was accepted or not). New state is possible, but astatistisc are enconted to old one
-    long unsigned int outNewAccepted;      ///< Number of events when new call was offered and accepted. There is new state, but statistics are encounted to old one
-    long unsigned int outNewLost;          ///< Number of events when new call sas offered and wasn't accepted
-    long unsigned int outEnd;              ///< Number of events when the state was leaved because of call service ending
+    long unsigned int outNewOffered;          ///< Number of events when new call was offered in this state (don't care if was accepted or not). New state is possible, but astatistisc are enconted to old one
+    long unsigned int outNewAcceptedByServer; ///< Number of events when new call was offered and accepted by server. There is new state, but statistics are encounted to old one
+    long unsigned int outNewAcceptedByBuffer; ///< Number of events when new call was offered and accepted by buffer. There was no place in server
+    long unsigned int outNewLost;             ///< Number of events when new call sas offered and wasn't accepted
+    long unsigned int outEnd;                 ///< Number of events when the state was leaved because of call service ending
 
-    EvenStatistics(): inNew(0), inEnd(0), outNewOffered(0), outNewAccepted(0), outNewLost(0), outEnd(0) { }
+    EvenStatistics(): inNew(0), inEnd(0), outNewOffered(0), outNewAcceptedByServer(0), outNewAcceptedByBuffer(0), outNewLost(0), outEnd(0) { }
     inline void statsClear() { memset(this, 0, sizeof(class EvenStatistics)); }
 };
 
@@ -96,7 +106,7 @@ public:
 
 
     void collectPre(const ModelSyst *mSystem, double time, int n_s, int n_b, const QVector<int> &n_si, const QVector<int> &n_bi, const QVector<int> &n_sk, const QVector<int> &n_bk);
-    void collectPost(int classIdx, int old_n, int n);
+    void collectPost(int classIdx, int old_n, int n, StatisticEventType event);
 };
 
 class GroupSetStatistics
@@ -104,21 +114,15 @@ class GroupSetStatistics
 public:
     double allInSetAvailableAllOutsideSetUnavailable;
     double allInSetAvailable;
+    double allUnavailable;
 };
 
 class GroupCombinationStatistics
 {
 public:
     double allInCombinationAvailable;
-    double atLeasOneAvailable;
+    double oneOrMoreInCombinationAvailable;
     double allInCombinationUnavailable;
-};
-
-enum class StatisticEventType
-{
-    newCallAccepted,
-    newCallRejected,
-    callServiceEnded,
 };
 
 class ServerStatistics

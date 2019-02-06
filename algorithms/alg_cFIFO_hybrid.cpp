@@ -338,7 +338,7 @@ void AlgorithmHybrid::calculateSystem(const ModelSyst *system
         (*results)->write(TypeForSystemState::IntensityEndCallIn, P.getState(n).tIntInEnd, n);
 
     //Intensywności przejść (wyjście ze stanu)
-        (*results)->write(TypeForSystemState::IntensityNewCallOut, P.getState(n).tIntOutNew, n);
+        (*results)->write(TypeForSystemState::IntensityNewCallOutOffered, P.getState(n).tIntOutNew, n);
         (*results)->write(TypeForSystemState::IntensityEndCallOut, P.getState(n).tIntOutEnd, n);
     }
 

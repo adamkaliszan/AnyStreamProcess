@@ -900,22 +900,13 @@ void SimulatorNoQeueLag::Server::writesResultsOfSingleExperiment(RSingle &single
             result = availabilityTimeOnlyInExactNoOfGroups[noOfgroups][n]/simulationTime;
             singleResults.write(TypeForResourcessAndNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, result, n, noOfgroups);
         }
-        for (int i=0; i < m; i++)
-        {
-            double result = 0;
-
-            int n = system->systemData->getClass(i)->t();
-
-            result = availabilityTimeInGroupSet[noOfgroups][n]/simulationTime;
-            singleResults.write(TypeClassForServerBestGroupsSet::ServPossibilityOnlyInAllTheSubgroups, result, i, noOfgroups);
-        }
     }
 
     for (int combinationNo=0; combinationNo < (int) combinationList.length(); combinationNo++)
     {
         for (int n=0; n<=vMax; n++)
         {
-            singleResults.write(TypeResourcess_VsServerGroupsCombination::FreeAUsInBestGroup
+            singleResults.write(TypeResourcess_VsServerGroupsCombination::AvailabilityInOneOrMoreGroups
               , freeAUsInBestGroupInCombination[combinationNo][n]/simulationTime, n, combinationNo);
 
             singleResults.write(TypeResourcess_VsServerGroupsCombination::AvailabilityInAllTheGroups
