@@ -154,9 +154,86 @@ void GnuplotScript::WriteScript(QTextStream &script, QString dataFileName, QStri
     script<<"\n";
 }
 
-void GnuplotScript::WriteData(QTextStream &scriptData, double &minY, double &maxY, Results::Type type)
+void GnuplotScript::WriteScript(QString scriptFileName, QString dataFileName, QString graphFileName, double minY, double maxY, Results::Type QoS_MainParam)
 {
+    QFile file(scriptFileName);
+    file.open(QFile::WriteOnly | QFile::Text);
+    QTextStream script(&file);
+    //WriteScript(script, dataFileName, graphFileName, minY, maxY, QoS_MainParam);
+    file.close();
+}
+
+void GnuplotScript::WriteDataAndScript(QString baseFileName, const ModelSyst *system, Results::Settings *setting, Results::Type qosType)
+{
+    struct Results::ParametersSet parameters;
+    QFile dataFile(baseFileName + ".dat");
+    QFile scriptFile(baseFileName + ".gp");
+
+    dataFile.open(QFile::WriteOnly | QFile::Text);
+    scriptFile.open(QFile::WriteOnly | QFile::Text);
+
+    QTextStream dataStream(&dataFile);
+    QTextStream scriptStream(&scriptFile);
+
+
+    QPair<double, double> minMax(DBL_MAX, -DBL_MAX);
+
+
+    int i;
+    foreach(Investigator *algorithm, systemResults->getAvailableAlgorithms())
+    {
+        QVariant tmpVariant;
+        QList<QVariant> listPar1;
+        QList<QVariant> listPar2;
+        QString name1;
+        QString name2;
+
+        Settings::fillListWithParameters(listPar1, setting->additionalParameter1, system, systemResults->getAvailableAperAU());
+        Settings::fillListWithParameters(listPar2, setting->additionalParameter2, system, systemResults->getAvailableAperAU());
+
+        QLineSeries singlePlot;
+
+        if (listPar1.length()>0)
+        {
+            foreach(QVariant tmpVariant, listPar1)
+            {
+                name1 = Settings::updateParameters(parameters, tmpVariant, setting->additionalParameter1, system, systemResults);
+                if (listPar2.length()>0)
+                {
+                    foreach(QVariant tmpVariant2, listPar2)
+                    {
+                        name2 = Settings::updateParameters(parameters, tmpVariant, setting->additionalParameter1, system, systemResults);
+                        setting->getSinglePlot(&singlePlot, minMax, *systemResults, algorithm, parameters);
+                    }
+                }
+                else
+                {
+                    setting->getSinglePlot(&singlePlot, minMax, *systemResults, algorithm, parameters);
+                }
+            }
+        }
+        else
+        {
+            setting->getSinglePlot(&singlePlot, minMax, *systemResults, algorithm, parameters);
+        }
+    }
+
+
+//    foreach(decimal a, systemResults->getAvailableAperAU())
+//    {
+//        foreach(Investigator *algorithm,  algorithms)
+//        {
+//            RInvestigator *res = systemResults->getInvestigationResults(algorithm, a);
+
+//            (*res)->read()
+//        }
+
+//    }
+
     int clColumns = 0;
+
+//   systemResults->getInvestigationResults()
+
 #if 0
     AlgorithmResults *algRes = NULL;
 
@@ -248,24 +325,10 @@ void GnuplotScript::WriteData(QTextStream &scriptData, double &minY, double &max
         scriptData<<"\n";
     }
 #endif
-}
 
-void GnuplotScript::WriteScript(QString scriptFileName, QString dataFileName, QString graphFileName, double minY, double maxY, Results::Type QoS_MainParam)
-{
-    QFile file(scriptFileName);
-    file.open(QFile::WriteOnly | QFile::Text);
-    QTextStream script(&file);
-    //WriteScript(script, dataFileName, graphFileName, minY, maxY, QoS_MainParam);
-    file.close();
-}
 
-void GnuplotScript::WriteData(QString dataFileName, double &minY, double &maxY, Results::Type QoS_MainParam)
-{
-    QFile file(dataFileName);
-    file.open(QFile::WriteOnly | QFile::Text);
-    QTextStream scriptData(&file);
-    WriteData(scriptData, minY, maxY, QoS_MainParam);
-    file.close();
+    dataFile.close();
+    scriptFile.close();
 }
 
 void GnuplotScript::Show(Results::Type QoS_par, QList<ModelTrClass*> selClasses, bool useColors)

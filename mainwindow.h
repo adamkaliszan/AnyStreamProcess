@@ -61,9 +61,13 @@ public:
 
     void updateAlgorithmsList();
 
-    void updateQoS_ComboBox();
+    QSet<Results::Type> getPossibleQoS_Types();
+
+    void updateQoS_ComboBox(QSet<Results::Type> &qos);
 
     void prepareQoS_ComboBoxex();
+
+    void updateGnuplotActions(QSet<Results::Type> &qos);
 
 private:
     QList<SimulationParameters*> simulationParameters;
@@ -76,6 +80,9 @@ private:
     QtCharts::QValueAxis         *axisX;
     QtCharts::QLogValueAxis      *axisYlog;
     QtCharts::QValueAxis         *axisYlinear;
+
+public slots:
+    void on_gnuplotSave();
 
 private slots:
     void on_pushButton_wiazkiDodaj_clicked();
@@ -211,7 +218,6 @@ private:
     void addTestedAlgorithm(Investigator *algorithm);
     void addExperimentalAlgorithm(Investigator *algorithm);
     void fillListWidgetWithParams(QListWidget *outList, QLabel *outLabel, Results::ParameterType paramType);
-    QString updateParameters(Results::ParametersSet &outParameters, const QVariant &variant, Results::ParameterType paramType);
     void clearParameters(Results::ParametersSet &outParameters);
 };
 

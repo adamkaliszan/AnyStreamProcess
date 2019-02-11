@@ -1243,25 +1243,18 @@
      <x>0</x>
      <y>0</y>
      <width>735</width>
-     <height>22</height>
+     <height>28</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
      <string>File</string>
     </property>
-    <widget class="QMenu" name="menuSave_results_to_gnuplot">
+    <widget class="QMenu" name="menuFileGnuplot">
      <property name="title">
       <string>Save results to gnuplot</string>
      </property>
-     <addaction name="actionGnuplotBlocking_probability"/>
-     <addaction name="actionGnuplotLoss_probability"/>
-     <addaction name="actionGnuplotAvarage_qeue_length"/>
-     <addaction name="actionGnuplotYtInQeue"/>
      <addaction name="separator"/>
-     <addaction name="actionGnuplotAvarage_number_of_calls_in_qeue"/>
-     <addaction name="actionGnuplotAbsoluteWaitingTime"/>
-     <addaction name="actionGnuplotEffectiveWaitingTime"/>
     </widget>
     <widget class="QMenu" name="menuZapisz_do_arkusza_XSLX">
      <property name="title">
@@ -1270,10 +1263,10 @@
      <addaction name="actionSaveXSLX_QoSforClasses"/>
      <addaction name="actionSaveXLSX_subroupAvailability"/>
     </widget>
-    <addaction name="actionWczytaj_system"/>
+    <addaction name="menuFileLoadSystem"/>
     <addaction name="actionZapisz_system"/>
     <addaction name="separator"/>
-    <addaction name="menuSave_results_to_gnuplot"/>
+    <addaction name="menuFileGnuplot"/>
     <addaction name="menuZapisz_do_arkusza_XSLX"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
@@ -1296,19 +1289,9 @@
     <string>Zapisz system</string>
    </property>
   </action>
-  <action name="actionWczytaj_system">
+  <action name="menuFileLoadSystem">
    <property name="text">
     <string>Wczytaj system</string>
-   </property>
-  </action>
-  <action name="actionSaveToSpreadsheetBlProb">
-   <property name="text">
-    <string>Prawdopodobieństwo blokady</string>
-   </property>
-  </action>
-  <action name="actionSaveToSpreadsheetLossProb">
-   <property name="text">
-    <string>Prawdopodobieństwo strat</string>
    </property>
   </action>
   <action name="actionSaveToSpreadsheetAll">
@@ -1336,57 +1319,9 @@
     <string>Zajęte zasoby w stanie n</string>
    </property>
   </action>
-  <action name="actionSaveToSpreadsheeTrDistribNQ">
-   <property name="text">
-    <string>Rozkład zajętości n q</string>
-   </property>
-  </action>
-  <action name="actionGnuplotBlocking_probability">
-   <property name="text">
-    <string>Blocking probability</string>
-   </property>
-  </action>
-  <action name="actionGnuplotLoss_probability">
-   <property name="text">
-    <string>Loss probability</string>
-   </property>
-  </action>
-  <action name="actionGnuplotAvarage_qeue_length">
-   <property name="text">
-    <string>Avarage qeue length</string>
-   </property>
-  </action>
   <action name="actionAbout">
    <property name="text">
     <string>About</string>
-   </property>
-  </action>
-  <action name="actionGnuplotAvarage_number_of_calls_in_qeue">
-   <property name="text">
-    <string>Avarage number of calls in qeue</string>
-   </property>
-  </action>
-  <action name="actionGnuplotEffectiveWaitingTime">
-   <property name="text">
-    <string>Effective waiting time</string>
-   </property>
-  </action>
-  <action name="actionGnuplotAbsoluteWaitingTime">
-   <property name="text">
-    <string>Absolute waiting time</string>
-   </property>
-  </action>
-  <action name="actionGnuplotYtInQeue">
-   <property name="text">
-    <string>Number of resourcess of qeue occupied by calls</string>
-   </property>
-  </action>
-  <action name="actionZapiszZajetoscPpodgrup">
-   <property name="text">
-    <string>Zajętość podgrup</string>
-   </property>
-   <property name="toolTip">
-    <string>Zapisz Zajętość podgrup</string>
    </property>
   </action>
   <action name="actionSaveXSLX_QoSforClasses">
@@ -1413,102 +1348,6 @@
   <include location="resources.qrc"/>
  </resources>
  <connections>
-  <connection>
-   <sender>actionGnuplotBlocking_probability</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>saveResultsGnuplotE()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>294</x>
-     <y>325</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>actionGnuplotLoss_probability</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>saveResultsGnuplotLoss()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>294</x>
-     <y>325</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>actionGnuplotAvarage_qeue_length</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>saveResultsGnuplotAvgQeueLen()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>294</x>
-     <y>325</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>actionGnuplotAvarage_number_of_calls_in_qeue</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>saveResultsGnuplotAvnNbrCallsInQeue()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>294</x>
-     <y>375</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>actionGnuplotEffectiveWaitingTime</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>saveResultsGnuplotEffectiveWaitingTime()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>294</x>
-     <y>375</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>actionGnuplotAbsoluteWaitingTime</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>saveResultsGnuplotAbsoluteWaitingTime()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>294</x>
-     <y>375</y>
-    </hint>
-   </hints>
-  </connection>
   <connection>
    <sender>spinBoxClassesSourcess</sender>
    <signal>valueChanged(int)</signal>

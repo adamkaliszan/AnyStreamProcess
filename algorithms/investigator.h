@@ -49,7 +49,7 @@ public:
     virtual bool possible(const ModelSyst *system) const;
     virtual bool possibleAlternative(const ModelSyst *system) const;
 
-    QSet<Results::Type> getQoS_Set() const {return myQoS_Set; }
+    QSet<Results::Type> getQoS_Set() const;
 
     bool hasConfIntervall() const { return _hasConfIntervall; }
 

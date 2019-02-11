@@ -23,6 +23,17 @@ bool Investigator::possibleAlternative(const ModelSyst *system) const
     return true;
 }
 
+QSet<Type> Investigator::getQoS_Set() const
+{
+    QSet<Type> result;
+    foreach (Type type, myQoS_Set)
+    {
+        //TODO add this method if (system->hasQoS(type))
+            result+= type;
+    }
+    return result;
+}
+
 
 
 bool Investigator::correctSystemParameters(ModelSyst *system, double a)

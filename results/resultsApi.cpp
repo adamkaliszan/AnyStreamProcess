@@ -1,5 +1,7 @@
 #include "resultsApi.h"
 
+#include "utils/lag.h"
+
 namespace Results
 {
 
@@ -871,6 +873,118 @@ double Settings::getXmax(RSystem &rSystem) const
     }
 
     return result;
+}
+
+QString Settings::updateParameters(ParametersSet &outParameters, const QVariant &variant, ParameterType paramType, const ModelSyst *system, RSystem *resultsForSystem)
+{
+    QString result;
+
+    switch (paramType)
+    {
+    case Results::ParameterType::OfferedTrafficPerAS:
+        outParameters.a = variant.value<double>();
+        result = QString("%1").arg(static_cast<double>(outParameters.a));
+        break;
+
+    case Results::ParameterType::TrafficClass:
+        outParameters.classIndex = variant.value<int>();
+        result = QString("%1").arg(system->getClass(outParameters.classIndex)->shortName());
+        break;
+
+    case Results::ParameterType::SystemState:
+        outParameters.systemState = variant.value<int>();
+        result = QString("%1").arg(outParameters.systemState);
+        break;
+
+    case Results::ParameterType::ServerState:
+        outParameters.serverState = variant.value<int>();
+        result = QString("%1").arg(outParameters.serverState);
+        break;
+
+    case Results::ParameterType::BufferState:
+        outParameters.bufferState = variant.value<int>();
+        result = QString("%1").arg(outParameters.bufferState);
+        break;
+
+    case Results::ParameterType::CombinationNumber:
+        outParameters.combinationNumber = variant.value<int>();
+        result = QString("%1").arg(resultsForSystem->getGroupCombinationStr(outParameters.combinationNumber));
+        break;
+
+    case Results::ParameterType::NumberOfGroups:
+        outParameters.numberOfGroups = variant.value<int>();
+        break;
+
+    case Results::ParameterType::None:
+        break;
+    }
+    return result;
+}
+
+void Settings::fillListWithParameters(QList<QVariant> &list, ParameterType paramType, const ModelSyst *system, QList<decimal> offeredTraffic)
+{
+    list.clear();
+    QVariant tmpVariant;
+    int i;
+    switch (paramType)
+    {
+    case ParameterType::None:
+        break;
+    case ParameterType::TrafficClass:
+        for (i=0; i<system->m(); i++)
+        {
+            tmpVariant.setValue<int>(i);
+            list.append(tmpVariant);
+        }
+        break;
+    case ParameterType::OfferedTrafficPerAS:
+        foreach(decimal a, offeredTraffic)
+        {
+            tmpVariant.setValue<decimal>(a);
+            list.append(tmpVariant);
+        }
+        break;
+    case ParameterType::SystemState:
+        for (i=0; i<=system->V(); i++)
+        {
+            tmpVariant.setValue<int>(i);
+            list.append(tmpVariant);
+        }
+        break;
+    case ParameterType::ServerState:
+        for (i=0; i<=system->vk_s(); i++)
+        {
+            tmpVariant.setValue<int>(i);
+            list.append(tmpVariant);
+        }
+        break;
+
+    case ParameterType::BufferState:
+        for (i=0; i<=system->vk_b(); i++)
+        {
+            tmpVariant.setValue<int>(i);
+            list.append(tmpVariant);
+        }
+        break;
+
+    case ParameterType::NumberOfGroups:
+        for (i=0; i<=system->k_s(); i++)
+        {
+            tmpVariant.setValue<int>(i);
+            list.append(tmpVariant);
+        }
+        break;
+
+    case ParameterType::CombinationNumber:
+        int noOfComb = Utils::UtilsLAG::getPossibleCombinations(system->k_s()).length();
+        for (i=0; i < noOfComb; i++)
+        {
+            tmpVariant.setValue<int>(i);
+            list.append(tmpVariant);
+        }
+        break;
+    }
+
 }
 
 } //namespace Results

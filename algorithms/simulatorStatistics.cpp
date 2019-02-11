@@ -185,7 +185,7 @@ void ServerStatistics::collectPre(const ModelSyst *mSystem, double time, int n, 
         for (int n=0; n <= availability[k-1]; n++)
             timesPerGroupSets[k][n].allInSetAvailable+= time;
 
-        for (int n=availability[0]+1; n <= mSystem->getConstSyst().Vs; n++)
+        for (int n=availability[0]+1; n <= mSystem->v_sMax(); n++)
             timesPerGroupSets[k][n].allUnavailable+= time;
     }
 

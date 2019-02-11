@@ -828,16 +828,20 @@ void MainWindow::updateAlgorithmsList()
     update(); //Update Window form
 }
 
-void MainWindow::updateQoS_ComboBox()
+QSet<Results::Type> MainWindow::getPossibleQoS_Types()
 {
     QSet<Results::Type> possibleQoS_Types;
-
     foreach (Investigator *alg, this->algorithms)
     {
         if (alg->possible(this->system) && alg->calculationDone && alg->isSelected)
             possibleQoS_Types += alg->getQoS_Set();
     }
+    return possibleQoS_Types;
+}
 
+
+void MainWindow::updateQoS_ComboBox(QSet<Results::Type> &qos)
+{
     ui->comboBoxResultsQtType->clear();
     ui->comboBoxResultsQtX_axis->clear();
     ui->listWidgetResultsQtAdditionalParameters1->setVisible(false);
@@ -845,10 +849,38 @@ void MainWindow::updateQoS_ComboBox()
     ui->labelResultsQtAdditionalParameters1->setVisible(false);
     ui->labelResultsQtAdditionalParameters2->setVisible(false);
 
-    foreach (Results::Type type, possibleQoS_Types)
+    foreach (Results::Type type, qos)
         ui->comboBoxResultsQtType->addItem(Results::TypesAndSettings::typeToString(type), QVariant::fromValue(type));
 
     update(); //Update Window form
+}
+
+void MainWindow::updateGnuplotActions(QSet<Type> &qos)
+{
+//    menuSave_results_to_gnuplot
+    QMenu *gnuplotMenu = this->menuBar()->findChild<QMenu *>("menuFileGnuplot");
+    gnuplotMenu->clear();
+    foreach (Results::Type type, qos)
+    {
+        QAction *newAction = gnuplotMenu->addAction(Results::TypesAndSettings::typeToString(type), this, SLOT(on_gnuplotSave()));
+        QVariant tmpVariant;
+        tmpVariant.setValue<Results::Type>(type);
+        newAction->setData(tmpVariant);
+    }
+}
+
+void MainWindow::on_gnuplotSave()
+{
+    QAction *qAction = qobject_cast<QAction *>(sender());
+    Results::Type type = qAction->data().value<Results::Type>();
+
+    QString defaultFileName;
+    QTextStream textStream(&defaultFileName);
+    textStream<<"~/";
+    textStream<<*system;
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Save the results"), defaultFileName, tr("Gnuplot Files (*.gp)"));
+
+    saveTheResults(fileName, type);
 }
 
 bool MainWindow::fillSystem()
@@ -1056,60 +1088,15 @@ void MainWindow::on_pushButtonStart_clicked()
         Investigator *tmpAlg = tmpItem->data(Qt::UserRole).value<Investigator *>();
         tmpAlg->calculationDone = true;
     }
-    updateQoS_ComboBox();
+    QSet<Results::Type> qosPar = getPossibleQoS_Types();
+    updateQoS_ComboBox(qosPar);
+    updateGnuplotActions(qosPar);
 }
 
-QString MainWindow::updateParameters(struct Results::ParametersSet &outParameters, const QVariant &variant, Results::ParameterType paramType)
-{
-    QString result;
-
-    switch (paramType)
-    {
-    case Results::ParameterType::OfferedTrafficPerAS:
-        outParameters.a = variant.value<double>();
-        outParameters.aDebug = variant.value<double>();
-        result = QString("%1").arg(static_cast<double>(outParameters.a));
-        break;
-
-    case Results::ParameterType::TrafficClass:
-        outParameters.classIndex = variant.value<int>();
-        result = QString("%1").arg(system->getClass(outParameters.classIndex)->shortName());
-        break;
-
-    case Results::ParameterType::SystemState:
-        outParameters.systemState = variant.value<int>();
-        result = QString("%1").arg(outParameters.systemState);
-        break;
-
-    case Results::ParameterType::ServerState:
-        outParameters.serverState = variant.value<int>();
-        result = QString("%1").arg(outParameters.serverState);
-        break;
-
-    case Results::ParameterType::BufferState:
-        outParameters.bufferState = variant.value<int>();
-        result = QString("%1").arg(outParameters.bufferState);
-        break;
-
-    case Results::ParameterType::CombinationNumber:
-        outParameters.combinationNumber = variant.value<int>();
-        result = QString("%1").arg(resultsForSystem->getGroupCombinationStr(outParameters.combinationNumber));
-        break;
-
-    case Results::ParameterType::NumberOfGroups:
-        outParameters.numberOfGroups = variant.value<int>();
-        break;
-
-    case Results::ParameterType::None:
-        break;
-    }
-    return result;
-}
 
 void MainWindow::clearParameters(ParametersSet &outParameters)
 {
     outParameters.a = -1;
-    outParameters.aDebug = -1;
     outParameters.classIndex = -1;
     outParameters.systemState = -1;
     outParameters.serverState = -1;
@@ -1118,16 +1105,14 @@ void MainWindow::clearParameters(ParametersSet &outParameters)
     outParameters.numberOfGroups = -1;
 }
 
-void MainWindow::saveTheResults(QString &fileName, Results::Type QoStype)
+void MainWindow::saveTheResults(QString &fileName, Results::Type qosType)
 {
     QString scriptFileName = fileName + QString(".gp");
     QString dataFileName = fileName + QString(".dat");
     QString graphBaseFileName = fileName;
 
-    double minY = 1, maxY=0;
-
-    scrGnuplot->WriteData(dataFileName, minY, maxY, QoStype);
-    scrGnuplot->WriteScript(scriptFileName, dataFileName.split("/").last(), graphBaseFileName.split("/").last(), minY, maxY, QoStype);
+    Results::Settings *setting = Results::TypesAndSettings::getSetting(qosType);
+    scrGnuplot->WriteDataAndScript(fileName, this->system, setting, qosType);
 }
 
 void MainWindow::saveResultsGnuplotE()
@@ -1863,13 +1848,13 @@ void MainWindow::on_ResultsQtChartRefresh()
         {
             foreach (const QListWidgetItem *tmpItem1, ui->listWidgetResultsQtAdditionalParameters1->selectedItems())
             {
-                QString name = updateParameters(parameters, tmpItem1->data(Qt::UserRole), setting->additionalParameter1);
+                QString name = Settings::updateParameters(parameters, tmpItem1->data(Qt::UserRole), setting->additionalParameter1, system, resultsForSystem);
                 if (setting->additionalParameter2 != Results::ParameterType::None)
                 {
                     int par2LwIdx = 0;
                     foreach (const QListWidgetItem *tmpItem2, ui->listWidgetResultsQtAdditionalParameters2->selectedItems())
                     {
-                        QString name2 = updateParameters(parameters, tmpItem2->data(Qt::UserRole), setting->additionalParameter2);
+                        QString name2 = Settings::updateParameters(parameters, tmpItem2->data(Qt::UserRole), setting->additionalParameter2, system, resultsForSystem);
                         QLineSeries *series = new QLineSeries();
                         setting->getSinglePlot(series, yMinAndMax, *resultsForSystem, algorithm, parameters, !ui->checkBoxResultsQtLogScaleOnAxisY->isChecked());
 

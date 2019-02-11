@@ -495,27 +495,27 @@ public:
     int m(void)        const {return _noOfTrClasses;}
     int V(void)              const {return _totalGroupsCapacity + _totalBufferCapacity;}
 
-    int v_s(int groupClNo)   const;                                        /// Single server group capacity
-    int vk_s(void)           const {return _totalGroupsCapacity; }         /// Server capacity
-    int vk_s(int groupClNo)  const;                                        /// Capacity of givens class of server's groups
-    int v_sMax(void)         const;                                        /// Capacity of the biggest group in the server
-    int k_s(void)            const {return _totalNumberOfGroups; }         /// Total number of server groups
-    int k_s(int groupClNo)   const;                                        /// Number of servers group of given class (GLAG model)
-    int k_sType(void)        const {return _noOfTypesOfGroups; }           /// Total number of servers group classes (1 for FAG and LAG, >1 for GLAG)
+    int v_s(int groupClNo)   const;                                        ///< Single server group capacity
+    int vk_s(void)           const {return _totalGroupsCapacity; }         ///< Server capacity
+    int vk_s(int groupClNo)  const;                                        ///< Capacity of givens class of server's groups
+    int v_sMax(void)         const;                                        ///< Capacity of the biggest group in the server
+    int k_s(void)            const {return _totalNumberOfGroups; }         ///< Total number of server groups
+    int k_s(int groupClNo)   const;                                        ///< Number of servers group of given class (GLAG model)
+    int k_sType(void)        const {return _noOfTypesOfGroups; }           ///< Total number of servers group classes (1 for FAG and LAG, >1 for GLAG)
 
-    int v_b(int bufferClNo)  const;                                        /// Single buffer group capacity
-    int vk_b(void)           const {return _totalBufferCapacity; }         /// Buffer capacity
-    int vk_b(int bufferClNo) const;                                        /// Capacity of givens class of buffers's groups
-    int v_bMax(void)         const;                                        /// Capacity of the biggest group in the buffer
-    int k_b(void)            const {return _totalNumberOfBuffers; }        /// Total number of buffer groups
-    int k_b(int bufferClNo)  const;                                        /// Number of buffers group of given class
-    int k_bType(void)        const {return _noOfTypesOfBuffers; }          /// Total number of buffers group classes
+    int v_b(int bufferClNo)  const;                                        ///< Single buffer group capacity
+    int vk_b(void)           const {return _totalBufferCapacity; }         ///< Buffer capacity
+    int vk_b(int bufferClNo) const;                                        ///< Capacity of givens class of buffers's groups
+    int v_bMax(void)         const;                                        ///< Capacity of the biggest group in the buffer
+    int k_b(void)            const {return _totalNumberOfBuffers; }        ///< Total number of buffer groups
+    int k_b(int bufferClNo)  const;                                        ///< Number of buffers group of given class
+    int k_bType(void)        const {return _noOfTypesOfBuffers; }          ///< Total number of buffers group classes
 
     int id;
 
-    void addClass(ModelTrClass *newClass);                            //Creates a copy. The copy is added to the system
-    void addGroups(ModelResourcess newGroup, bool optimize = true);   //Add groups to the system. Previous types of group are checked before
-    void addQeues(ModelResourcess qeue, bool optimize = true);        //Add qeues to the system
+    void addClass(ModelTrClass *newClass);                                 ///< Creates a copy. The copy is added to the system
+    void addGroups(ModelResourcess newGroup, bool optimize = true);        ///< Add groups to the system. Previous types of group are checked before
+    void addQeues(ModelResourcess qeue, bool optimize = true);             ///< Add qeues to the system
 
     void setServerSchedulerAlgorithm(ServerResourcessScheduler algorithm);
     void setBufferSchedulerAlgorithm(BufferResourcessScheduler algorithm);

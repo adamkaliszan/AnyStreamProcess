@@ -27,7 +27,6 @@ enum class ParameterType
 struct ParametersSet
 {
     decimal a;                  ///< Offered traffic per Servers AU
-    double aDebug;              //< TODO remove it
     int    classIndex;          ///< Some QoS parameters are concerned with traffic class
     int    systemState;         ///< System state (server + buffer)
     int    serverState;         ///< Server only state, buffer state is not considered
@@ -65,6 +64,9 @@ public:
 
     QString name;               ///< Name without shortcuts
     QString shortName;          ///< Name with shortcuts
+
+    static QString updateParameters(struct Results::ParametersSet &outParameters, const QVariant &variant, Results::ParameterType paramType, const ModelSyst *system, Results::RSystem *resultsForSystem);
+    static void fillListWithParameters(QList<QVariant> &list, ParameterType paramType, const ModelSyst *system, QList<decimal> offeredTraffic);
 };
 
 class SettingsTypeForClass: public Settings

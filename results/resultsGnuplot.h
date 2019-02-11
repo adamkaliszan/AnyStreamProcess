@@ -44,8 +44,7 @@ public:
 
     void WriteScript(QString scriptFileName, QString dataFileName, QString graphFileName, double minY, double maxY, Type QoS_MainParam);
     void WriteScript(QTextStream &script, QString dataFileName, QString graphFileName, Type QoS_MainParam, double minY, double maxY, bool isLogScale);
-    void WriteData(QString dataFileName, double &minY, double &maxY, Type QoS_MainParam);
-    void WriteData(QTextStream &scriptData, double &minY, double &maxY, Type type);
+    void WriteDataAndScript(QString dataFileName, const ModelSyst *system, Settings *setting, Type qosType);
 
     void Show(Type QoS_par, QList<ModelTrClass *> selClasses, bool useColors);
 };
