@@ -33,6 +33,18 @@ struct ParametersSet
     int    bufferState;         ///< Queue only state, server state is not considered
     int    combinationNumber;   ///< In LAG systems, we can consider specified combination of groups e.g. groups {1, 3} or {1, 2}
     int    numberOfGroups;      ///< In LAG systems, we can consider specified number of any groups e.g. 1 or 3 groups
+
+    ParametersSet(): a(-1), classIndex(-1), systemState(-1), serverState(-1), bufferState(-1), combinationNumber(-1), numberOfGroups(-1) {}
+
+    bool operator<(const ParametersSet &rho) const;
+};
+
+
+class ResultMap
+{
+    QVector<decimal> xValue;
+    QVector<QVector<double>> yValues;
+    QVector<QPair<Investigator*, ParametersSet>> columnDescriptor;
 };
 
 class Settings
@@ -46,7 +58,10 @@ public:
       , GKP_bottomLeft
     };
 
-    Settings(QString name, QString shortName): name(name), shortName(shortName) {}
+    Settings() {;}
+    Settings(QString name, QString shortName): name(name), shortName(shortName) {;}
+
+    virtual ~Settings() {}
 
     QList<ParameterType> dependencyParameters;
 
@@ -56,11 +71,13 @@ public:
 
     bool setFunctionalParameter(ParameterType param);
 
-    virtual bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const = 0;
+    virtual bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const =0;
+    virtual bool getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet) const = 0;
+
+    virtual QList<ParametersSet> getParametersList(const ModelSyst *system) const = 0;
+
     virtual double getXmin(RSystem &rSystem) const;
     virtual double getXmax(RSystem &rSystem) const;
-
-    virtual ~Settings() {}
 
     QString name;               ///< Name without shortcuts
     QString shortName;          ///< Name with shortcuts
@@ -77,7 +94,9 @@ private:
 public:
     SettingsTypeForClass(TypeForClass qos, QString name, QString shortName);
 
-    virtual bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
+    bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
+    bool getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet) const;
+    virtual QList<ParametersSet> getParametersList(const ModelSyst *system) const;
 };
 
 
@@ -89,6 +108,8 @@ public:
     SettingsTypeForSystemState(TypeForSystemState qos, QString name, QString shortName);
 
     bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
+    bool getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet) const;
+    virtual QList<ParametersSet> getParametersList(const ModelSyst *system) const;
 };
 
 class SettingsTypeForServerState: public Settings
@@ -99,6 +120,8 @@ public:
     SettingsTypeForServerState(TypeForServerState qos, QString name, QString shortName);
 
     bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
+    bool getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet) const;
+    virtual QList<ParametersSet> getParametersList(const ModelSyst *system) const;
 };
 
 class SettingsTypeForBufferState: public Settings
@@ -109,6 +132,8 @@ public:
     SettingsTypeForBufferState(TypeForBufferState qos, QString name, QString shortName);
 
     bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
+    bool getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet) const;
+    virtual QList<ParametersSet> getParametersList(const ModelSyst *system) const;
 };
 
 class SettingsTypeForClassAndSystemState: public Settings
@@ -119,6 +144,8 @@ public:
     SettingsTypeForClassAndSystemState(TypeForClassAndSystemState qos, QString name, QString shortName);
 
     bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
+    bool getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet) const;
+    virtual QList<ParametersSet> getParametersList(const ModelSyst *system) const;
 };
 
 class SettingsTypeForClassAndServerState: public Settings
@@ -129,6 +156,8 @@ public:
     SettingsTypeForClassAndServerState(TypeForClassAndServerState qos, QString name, QString shortName);
 
     bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
+    bool getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet) const;
+    virtual QList<ParametersSet> getParametersList(const ModelSyst *system) const;
 };
 
 class SettingsTypeForClassAndBufferState: public Settings
@@ -139,6 +168,8 @@ public:
     SettingsTypeForClassAndBufferState(TypeForClassAndBufferState qos, QString name, QString shortName);
 
     bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
+    bool getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet) const;
+    virtual QList<ParametersSet> getParametersList(const ModelSyst *system) const;
 };
 
 class SettingsInavailabilityForClassInAllGroupsInCombination: public Settings
@@ -147,6 +178,8 @@ public:
     SettingsInavailabilityForClassInAllGroupsInCombination(QString name, QString shortName);
 
     bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
+    bool getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet) const;
+    virtual QList<ParametersSet> getParametersList(const ModelSyst *system) const;
 };
 
 class SettingsAvailableSubroupDistribution: public Settings
@@ -155,6 +188,8 @@ public:
     SettingsAvailableSubroupDistribution(QString name, QString shortName);
 
     bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
+    bool getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet) const;
+    virtual QList<ParametersSet> getParametersList(const ModelSyst *system) const;
 };
 
 
@@ -175,6 +210,9 @@ public:
     static QString parameterToString(ParameterType parameter);
 
     static QString typeToX_AxisString(Type type);
+
+    QMap<ParametersSet, QVector<double>> getPlotsY(RSystem &rSystem, Type qos, ParameterType functionalParameter, Investigator *algorithm);
+    const QVector<decimal> getPlotsX(RSystem &rSystem, ParameterType functionalParameter);
 };
 
 

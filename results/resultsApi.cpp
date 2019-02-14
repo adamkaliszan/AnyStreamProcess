@@ -106,6 +106,40 @@ QString TypesAndSettings::typeToX_AxisString(Type type)
     return result;
 }
 
+QMap<ParametersSet, QVector<double>> TypesAndSettings::getPlotsY(RSystem &rSystem, Type qos, ParameterType functionalParameter, Investigator *algorithm)
+{
+    Settings *qosSettings = _myMap[qos];
+    qosSettings->setFunctionalParameter(functionalParameter);
+    QList<ParametersSet> sysParams = qosSettings->getParametersList(&rSystem.getModel());
+
+    QMap<ParametersSet, QVector<double>> result;
+
+    foreach (ParametersSet sysParam, sysParams)
+    {
+        QVector<double> vector;
+        qosSettings->getSinglePlot(vector, rSystem, algorithm, sysParam);
+        result.insert(sysParam, vector);
+    }
+    return result;
+}
+
+const QVector<decimal> TypesAndSettings::getPlotsX(RSystem &rSystem, ParameterType functionalParameter)
+{
+    QVector<decimal> result;
+    switch (functionalParameter)
+    {
+    case ParameterType::OfferedTrafficPerAS:
+        foreach(decimal a, rSystem.getAvailableAperAU())
+        {
+            result.append(a);
+        }
+    default:
+        qFatal("Not implemented");
+    }
+
+    return result;
+}
+
 QString TypesAndSettings::parameterToString(ParameterType parameter)
 {
     QString result;
@@ -204,7 +238,25 @@ bool SettingsTypeForClass::getSinglePlot(QLineSeries *outPlot, QPair<double, dou
             {
                 if ((y>0) || linearScale)
                 {
-                    *outPlot<<QPointF(static_cast<double>(parametersSet.a), y);
+                    *outPlot<<QPointF(static_cast<double>(i), y);
+                    result = true;
+                }
+            }
+        }
+    }
+
+    if (functionalParameter == ParameterType::TrafficClass)
+    {
+        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+
+        for (int i=0; i <rSystem.getModel().m(); i++)
+        {
+            double y=0;
+            if ((*singlePoint)->read(y, qos, i))
+            {
+                if (y>0)
+                {
+                    outPlot->append(i, y);
                     result = true;
                 }
             }
@@ -213,6 +265,57 @@ bool SettingsTypeForClass::getSinglePlot(QLineSeries *outPlot, QPair<double, dou
     return result;
 }
 
+QList<ParametersSet> SettingsTypeForClass::getParametersList(const ModelSyst *system) const
+{
+    QList<ParametersSet> result;
+    for (int i=0; i<system->m(); i++)
+    {
+        ParametersSet item;
+        item.classIndex = i;
+        result.append(item);
+    }
+    return result;
+}
+
+bool SettingsTypeForClass::getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
+{
+    bool result = false;
+
+    outPlot.clear();
+    if (functionalParameter == ParameterType::OfferedTrafficPerAS)
+    {
+        foreach(decimal a, rSystem.getAvailableAperAU())
+        {
+            const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+
+            double y=0;
+
+            if ((*singlePoint)->read(y, qos, parametersSet.classIndex))
+            {
+                outPlot.append(y);
+                if (y>0)
+                    result = true;
+            }
+        }
+    }
+
+    if (functionalParameter == ParameterType::TrafficClass)
+    {
+        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+
+        for (int i=0; i <rSystem.getModel().m(); i++)
+        {
+            double y=0;
+            if ((*singlePoint)->read(y, qos, i))
+            {
+                outPlot.append(y);
+                if (y>0)
+                    result = true;
+            }
+        }
+    }
+    return result;
+}
 
 SettingsTypeForSystemState::SettingsTypeForSystemState(TypeForSystemState qos, QString name, QString shortName): Settings (name, shortName), qos(qos)
 {
@@ -268,6 +371,57 @@ bool SettingsTypeForSystemState::getSinglePlot(QLineSeries *outPlot, QPair<doubl
                 }
             }
         }
+    }
+    return result;
+}
+
+bool SettingsTypeForSystemState::getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
+{
+    bool result = false;
+
+    outPlot.clear();
+    if (functionalParameter == ParameterType::OfferedTrafficPerAS)
+    {
+        foreach(decimal a, rSystem.getAvailableAperAU())
+        {
+            const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+
+            double y=0;
+            if ((*singlePoint)->read(y, qos, parametersSet.systemState))
+            {
+                outPlot.append(y);
+                if (y > 0)
+                    result = true;
+            }
+        }
+    }
+
+    if (functionalParameter == ParameterType::SystemState)
+    {
+        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+        for (int n=0; n<=rSystem.getModel().V(); n++)
+        {
+            double y=0;
+
+            if ((*singlePoint)->read(y, qos, n))
+            {
+                outPlot.append(y);
+                if (y > 0)
+                    result = true;
+            }
+        }
+    }
+    return result;
+}
+
+QList<ParametersSet> SettingsTypeForSystemState::getParametersList(const ModelSyst *system) const
+{
+    QList<ParametersSet> result;
+    for (int n=0; n <= system->V(); n++)
+    {
+        ParametersSet item;
+        item.systemState = n;
+        result.append(item);
     }
     return result;
 }
@@ -330,6 +484,57 @@ bool SettingsTypeForServerState::getSinglePlot(QLineSeries *outPlot, QPair<doubl
     return result;
 }
 
+bool SettingsTypeForServerState::getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
+{
+    bool result = false;
+
+    outPlot.clear();
+    if (functionalParameter == ParameterType::OfferedTrafficPerAS)
+    {
+        foreach(decimal a, rSystem.getAvailableAperAU())
+        {
+            const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+
+            double y=0;
+            if ((*singlePoint)->read(y, qos, parametersSet.serverState))
+            {
+                outPlot.append(y);
+                if (y > 0)
+                    result = true;
+            }
+        }
+    }
+
+    if (functionalParameter == ParameterType::ServerState)
+    {
+        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+        for (int n=0; n<=rSystem.getModel().vk_s(); n++)
+        {
+            double y=0;
+
+            if ((*singlePoint)->read(y, qos, n))
+            {
+                outPlot.append(y);
+                if (y > 0)
+                    result = true;
+            }
+        }
+    }
+    return result;
+}
+
+QList<ParametersSet> SettingsTypeForServerState::getParametersList(const ModelSyst *system) const
+{
+    QList<ParametersSet> result;
+    for (int n=0; n <= system->vk_s(); n++)
+    {
+        ParametersSet item;
+        item.serverState = n;
+        result.append(item);
+    }
+    return result;
+}
+
 SettingsTypeForBufferState::SettingsTypeForBufferState(TypeForBufferState qos, QString name, QString shortName): Settings (name, shortName), qos(qos)
 {
     dependencyParameters.append(ParameterType::OfferedTrafficPerAS);
@@ -388,6 +593,57 @@ bool SettingsTypeForBufferState::getSinglePlot(QLineSeries *outPlot, QPair<doubl
     return result;
 }
 
+bool SettingsTypeForBufferState::getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
+{
+    bool result = false;
+
+    outPlot.clear();
+    if (functionalParameter == ParameterType::OfferedTrafficPerAS)
+    {
+        foreach(decimal a, rSystem.getAvailableAperAU())
+        {
+            const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+
+            double y=0;
+            if ((*singlePoint)->read(y, qos, parametersSet.bufferState))
+            {
+                outPlot.append(y);
+                if (y>0)
+                    result = true;
+            }
+        }
+    }
+
+    if (functionalParameter == ParameterType::BufferState)
+    {
+        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+        for (int n=0; n<=rSystem.getModel().vk_b(); n++)
+        {
+            double y=0;
+
+            if ((*singlePoint)->read(y, qos, n))
+            {
+                outPlot.append(y);
+                if (y>0)
+                    result = true;
+            }
+        }
+    }
+    return result;
+}
+
+QList<ParametersSet> SettingsTypeForBufferState::getParametersList(const ModelSyst *system) const
+{
+    QList<ParametersSet> result;
+    for (int n=0; n <= system->vk_b(); n++)
+    {
+        ParametersSet item;
+        item.bufferState = n;
+        result.append(item);
+    }
+    return result;
+}
+
 SettingsTypeForClassAndSystemState::SettingsTypeForClassAndSystemState(TypeForClassAndSystemState qos, QString name, QString shortName): Settings (name, shortName), qos(qos)
 {
     dependencyParameters.append(ParameterType::SystemState);
@@ -412,13 +668,8 @@ bool SettingsTypeForClassAndSystemState::getSinglePlot(QLineSeries *outPlot, QPa
             double y=0;
             if ((*singlePoint)->read(y, qos, parametersSet.classIndex, parametersSet.systemState))
             {
-                if ((y > 0) || linearScale)
+                if (y > 0)
                 {
-                    if (yMinAndMax.first > y)
-                        yMinAndMax.first = y;
-                    if (yMinAndMax.second < y)
-                        yMinAndMax.second = y;
-
                     *outPlot<<QPointF(static_cast<double>(a), y);
                     result = true;
                 }
@@ -451,12 +702,80 @@ bool SettingsTypeForClassAndSystemState::getSinglePlot(QLineSeries *outPlot, QPa
             double y=0;
             if ((*singlePoint)->read(y, qos, i, parametersSet.systemState))
             {
-                if ((y > 0) || linearScale)
+                if (y > 0)
                 {
                     *outPlot<<QPointF(i, y);
                     result = true;
                 }
             }
+        }
+    }
+    return result;
+}
+
+bool SettingsTypeForClassAndSystemState::getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
+{
+    bool result = false;
+
+    outPlot.clear();
+    if (functionalParameter == ParameterType::OfferedTrafficPerAS)
+    {
+        foreach(decimal a, rSystem.getAvailableAperAU())
+        {
+            const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+            double y=0;
+            if ((*singlePoint)->read(y, qos, parametersSet.classIndex, parametersSet.systemState))
+            {
+                outPlot.append(y);
+                if (y>0)
+                    result = true;
+            }
+        }
+    }
+
+    if (functionalParameter == ParameterType::SystemState)
+    {
+        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+        for (int n=0; n<=rSystem.getModel().V(); n++)
+        {
+            double y=0;
+            if ((*singlePoint)->read(y, qos, parametersSet.classIndex, n))
+            {
+                outPlot.append(y);
+                if ((y > 0))
+                    result = true;
+            }
+        }
+    }
+
+    if (functionalParameter == ParameterType::TrafficClass)
+    {
+        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+        for (int i=0; i<rSystem.getModel().m(); i++)
+        {
+            double y=0;
+            if ((*singlePoint)->read(y, qos, i, parametersSet.systemState))
+            {
+                outPlot.append(y);
+                if ((y > 0))
+                    result = true;
+            }
+        }
+    }
+    return result;
+}
+
+QList<ParametersSet> SettingsTypeForClassAndSystemState::getParametersList(const ModelSyst *system) const
+{
+    QList<ParametersSet> result;
+    for (int i=0; i < system->m(); i++)
+    {
+        for (int n=0; n <= system->V(); n++)
+        {
+            ParametersSet item;
+            item.systemState = n;
+            item.classIndex = i;
+            result.append(item);
         }
     }
     return result;
@@ -539,6 +858,77 @@ bool SettingsTypeForClassAndServerState::getSinglePlot(QLineSeries *outPlot, QPa
     return result;
 }
 
+bool SettingsTypeForClassAndServerState::getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
+{
+    bool result = false;
+
+    outPlot.clear();
+    if (functionalParameter == ParameterType::OfferedTrafficPerAS)
+    {
+        foreach(decimal a, rSystem.getAvailableAperAU())
+        {
+            const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+
+            double y=0;
+            if ((*singlePoint)->read(y, qos, parametersSet.classIndex, parametersSet.serverState))
+            {
+                outPlot.append(y);
+                if (y>0)
+                    result = true;
+            }
+        }
+    }
+
+    if (functionalParameter == ParameterType::SystemState)
+    {
+        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+        for (int n=0; n<=rSystem.getModel().vk_s(); n++)
+        {
+            double y=0;
+
+            if ((*singlePoint)->read(y, qos, parametersSet.classIndex, n))
+            {
+                outPlot.append(y);
+                if (y>0)
+                    result = true;
+            }
+        }
+    }
+
+    if (functionalParameter == ParameterType::TrafficClass)
+    {
+        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+        for (int i=0; i<rSystem.getModel().m(); i++)
+        {
+            double y=0;
+
+            if ((*singlePoint)->read(y, qos, i, parametersSet.serverState))
+            {
+                outPlot.append(y);
+                if (y > 0)
+                    result = true;
+            }
+        }
+    }
+    return result;
+}
+
+QList<ParametersSet> SettingsTypeForClassAndServerState::getParametersList(const ModelSyst *system) const
+{
+    QList<ParametersSet> result;
+    for (int i=0; i < system->m(); i++)
+    {
+        for (int n=0; n <= system->vk_s(); n++)
+        {
+            ParametersSet item;
+            item.serverState = n;
+            item.classIndex = i;
+            result.append(item);
+        }
+    }
+    return result;
+}
+
 SettingsTypeForClassAndBufferState::SettingsTypeForClassAndBufferState(TypeForClassAndBufferState qos, QString name, QString shortName): Settings (name, shortName), qos(qos)
 {
     dependencyParameters.append(ParameterType::BufferState);
@@ -611,6 +1001,77 @@ bool SettingsTypeForClassAndBufferState::getSinglePlot(QLineSeries *outPlot, QPa
                     result = true;
                 }
             }
+        }
+    }
+    return result;
+}
+
+bool SettingsTypeForClassAndBufferState::getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
+{
+    bool result = false;
+
+    outPlot.clear();
+    if (functionalParameter == ParameterType::OfferedTrafficPerAS)
+    {
+        foreach(decimal a, rSystem.getAvailableAperAU())
+        {
+            const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+
+            double y=0;
+            if ((*singlePoint)->read(y, qos, parametersSet.classIndex, parametersSet.bufferState))
+            {
+                outPlot.append(y);
+                if ((y > 0))
+                    result = true;
+            }
+        }
+    }
+
+    if (functionalParameter == ParameterType::SystemState)
+    {
+        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+        for (int n=0; n<=rSystem.getModel().vk_b(); n++)
+        {
+            double y=0;
+
+            if ((*singlePoint)->read(y, qos, parametersSet.classIndex, n))
+            {
+                outPlot.append(y);
+                if ((y > 0))
+                    result = true;
+            }
+        }
+    }
+
+    if (functionalParameter == ParameterType::TrafficClass)
+    {
+        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+        for (int i=0; i<rSystem.getModel().m(); i++)
+        {
+            double y=0;
+
+            if ((*singlePoint)->read(y, qos, i, parametersSet.bufferState))
+            {
+                outPlot.append(y);
+                if ((y > 0))
+                    result = true;
+            }
+        }
+    }
+    return result;
+}
+
+QList<ParametersSet> SettingsTypeForClassAndBufferState::getParametersList(const ModelSyst *system) const
+{
+    QList<ParametersSet> result;
+    for (int i=0; i < system->m(); i++)
+    {
+        for (int n=0; n <= system->vk_b(); n++)
+        {
+            ParametersSet item;
+            item.bufferState = n;
+            item.classIndex = i;
+            result.append(item);
         }
     }
     return result;
@@ -700,6 +1161,88 @@ bool SettingsInavailabilityForClassInAllGroupsInCombination::getSinglePlot(QLine
     return result;
 }
 
+bool SettingsInavailabilityForClassInAllGroupsInCombination::getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
+{
+    bool result = false;
+
+    outPlot.clear();
+    if (functionalParameter == ParameterType::OfferedTrafficPerAS)
+    {
+        foreach(decimal a, rSystem.getAvailableAperAU())
+        {
+            const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+            double x = static_cast<double>(a);
+            double y=0;
+            int t = rSystem.getModel().getClass(parametersSet.classIndex)->t();
+
+            if ((*singlePoint)->read(y, TypeResourcess_VsServerGroupsCombination::InavailabilityInAllTheGroups, t, parametersSet.combinationNumber))
+            {
+                outPlot.append(y);
+                if (y > 0)
+                {
+                    result = true;
+                }
+            }
+        }
+    }
+
+    if (functionalParameter == ParameterType::NumberOfGroups)
+    {
+        int noOfCombinations = rSystem.getNoOfGroupsCombinations();
+
+        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+        for (int n=0; n <= noOfCombinations; n++)
+        {
+            double y=0;
+            int t = rSystem.getModel().getClass(parametersSet.classIndex)->t();
+
+            if ((*singlePoint)->read(y, TypeResourcess_VsServerGroupsCombination::AvailabilityInAllTheGroups, t, n))
+            {
+                outPlot.append(y);
+                if (y > 0)
+                    result = true;
+            }
+        }
+    }
+
+    if (functionalParameter == ParameterType::TrafficClass)
+    {
+        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+        for (int i=0; i < rSystem.getModel().m(); i++)
+        {
+            double y=0;
+            int t = rSystem.getModel().getClass(i)->t();
+
+            if ((*singlePoint)->read(y, TypeResourcess_VsServerGroupsCombination::AvailabilityInAllTheGroups, t, parametersSet.combinationNumber))
+            {
+                outPlot.append(y);
+                if (y > 0)
+                    result = true;
+            }
+        }
+    }
+
+    return result;
+}
+
+QList<ParametersSet> SettingsInavailabilityForClassInAllGroupsInCombination::getParametersList(const ModelSyst *system) const
+{
+    QList<ParametersSet> result;
+    int noOfCOmbinations = Utils::UtilsLAG::getPossibleCombinations(system->k_s()).length();
+
+    for (int i=0; i < system->m(); i++)
+    {
+        for (int combNo=0; combNo < noOfCOmbinations; combNo++)
+        {
+            ParametersSet item;
+            item.combinationNumber = combNo;
+            item.classIndex = i;
+            result.append(item);
+        }
+    }
+    return result;
+}
+
 SettingsAvailableSubroupDistribution::SettingsAvailableSubroupDistribution(QString name, QString shortName): Settings (name, shortName)
 {
     dependencyParameters.append(ParameterType::OfferedTrafficPerAS);
@@ -780,6 +1323,79 @@ bool SettingsAvailableSubroupDistribution::getSinglePlot(QLineSeries *outPlot, Q
         }
     }
 
+    return result;
+}
+
+bool SettingsAvailableSubroupDistribution::getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
+{
+    bool result = false;
+
+    outPlot.clear();
+    if (functionalParameter == ParameterType::OfferedTrafficPerAS)
+    {
+        int t = rSystem.getModel().getClass(parametersSet.classIndex)->t();
+        foreach(decimal a, rSystem.getAvailableAperAU())
+        {
+            const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+            double x = static_cast<double>(a);
+
+
+            double y=0;
+            if ((*singlePoint)->read(y, TypeForResourcessAndNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, t, parametersSet.numberOfGroups))
+            {
+                outPlot.append(y);
+                if (y > 0)
+                    result = true;
+
+            }
+        }
+    }
+
+    if (functionalParameter == ParameterType::NumberOfGroups)
+    {
+        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+        int t = rSystem.getModel().getClass(parametersSet.classIndex)->t();
+        for (int k=0; k <= rSystem.getModel().k_s(); k++)
+        {
+            double y=0;
+
+            if ((*singlePoint)->read(y, TypeForResourcessAndNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, t, k))
+            {
+                if (y > 0)
+                    result = true;
+                outPlot.append(y);
+            }
+        }
+    }
+
+    if (functionalParameter == ParameterType::TrafficClass)
+    {
+        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+        for (int i=0; i < rSystem.getModel().m(); i++)
+        {
+            double y=0;
+            int t = rSystem.getModel().getClass(i)->t();
+
+            if ((*singlePoint)->read(y, TypeForResourcessAndNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, t, parametersSet.numberOfGroups))
+            {
+                outPlot.append(y);
+                if (y > 0)
+                    result = true;
+            }
+        }
+    }
+    return result;
+}
+
+QList<ParametersSet> SettingsAvailableSubroupDistribution::getParametersList(const ModelSyst *system) const
+{
+    QList<ParametersSet> result;
+    for (int k=0; k < system->k_s(); k++)
+    {
+        ParametersSet item;
+        item.numberOfGroups = k;
+        result.append(item);
+    }
     return result;
 }
 
@@ -985,6 +1601,34 @@ void Settings::fillListWithParameters(QList<QVariant> &list, ParameterType param
         break;
     }
 
+}
+
+bool ParametersSet::operator<(const ParametersSet &rho) const
+{
+    bool result = true;
+
+    if (a > 0)
+        return a < rho.a;
+
+    if (classIndex > 0)
+        return classIndex < rho.classIndex;
+
+    if (systemState > 0)
+        return systemState < rho.systemState;
+
+    if (serverState > 0)
+        return serverState < rho.serverState;
+
+    if (bufferState > 0)
+        return bufferState < rho.bufferState;
+
+    if (combinationNumber > 0)
+        return combinationNumber < rho.combinationNumber;
+
+    if (numberOfGroups > 0)
+        return numberOfGroups < rho.numberOfGroups;
+
+    return result;
 }
 
 } //namespace Results

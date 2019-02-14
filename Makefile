@@ -35,7 +35,7 @@ MOVE          = mv -f
 TAR           = tar -cf
 COMPRESS      = gzip -9f
 DISTNAME      = kolejki1.0.0
-DISTDIR = /home/adam/github/AnyStreamProcess/.tmp/kolejki1.0.0
+DISTDIR = /home/adam/GitHub/AnyStreamProcess/.tmp/kolejki1.0.0
 LINK          = g++
 LFLAGS        = -Wl,-rpath,/opt/Qt/5.11.2/gcc_64/lib
 LIBS          = $(SUBLIBS) -lboost_iostreams -lboost_system -lboost_filesystem -L/opt/Qt/5.11.2/gcc_64/lib -lQt5Charts -lQt5PrintSupport -lQt5Widgets -lQt5Xlsx -lQt5Gui -lQt5Sql -lQt5Core -lGL -lpthread 
@@ -1474,7 +1474,7 @@ moc_mainwindow.cpp: /opt/Qt/5.11.2/gcc_64/include/QtWidgets/QMainWindow \
 		mainwindow.h \
 		moc_predefs.h \
 		/opt/Qt/5.11.2/gcc_64/bin/moc
-	/opt/Qt/5.11.2/gcc_64/bin/moc $(DEFINES) --include /home/adam/github/AnyStreamProcess/moc_predefs.h -I/opt/Qt/5.11.2/gcc_64/mkspecs/linux-g++ -I/home/adam/github/AnyStreamProcess -I/home/adam/github/AnyStreamProcess/3rd/QtXlsxWriter/include/QtXlsx -I/opt/Qt/5.11.2/gcc_64/include -I/opt/Qt/5.11.2/gcc_64/include/QtCharts -I/opt/Qt/5.11.2/gcc_64/include/QtPrintSupport -I/opt/Qt/5.11.2/gcc_64/include/QtWidgets -I/opt/Qt/5.11.2/gcc_64/include/QtXlsx -I/opt/Qt/5.11.2/gcc_64/include/QtGui -I/opt/Qt/5.11.2/gcc_64/include/QtSql -I/opt/Qt/5.11.2/gcc_64/include/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include mainwindow.h -o moc_mainwindow.cpp
+	/opt/Qt/5.11.2/gcc_64/bin/moc $(DEFINES) --include /home/adam/GitHub/AnyStreamProcess/moc_predefs.h -I/opt/Qt/5.11.2/gcc_64/mkspecs/linux-g++ -I/home/adam/GitHub/AnyStreamProcess -I/home/adam/GitHub/AnyStreamProcess/3rd/QtXlsxWriter/include/QtXlsx -I/opt/Qt/5.11.2/gcc_64/include -I/opt/Qt/5.11.2/gcc_64/include/QtCharts -I/opt/Qt/5.11.2/gcc_64/include/QtPrintSupport -I/opt/Qt/5.11.2/gcc_64/include/QtWidgets -I/opt/Qt/5.11.2/gcc_64/include/QtXlsx -I/opt/Qt/5.11.2/gcc_64/include/QtGui -I/opt/Qt/5.11.2/gcc_64/include/QtSql -I/opt/Qt/5.11.2/gcc_64/include/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include mainwindow.h -o moc_mainwindow.cpp
 
 moc_dialogAbout.cpp: /opt/Qt/5.11.2/gcc_64/include/QtWidgets/QDialog \
 		/opt/Qt/5.11.2/gcc_64/include/QtWidgets/qdialog.h \
@@ -1802,7 +1802,7 @@ moc_dialogAbout.cpp: /opt/Qt/5.11.2/gcc_64/include/QtWidgets/QDialog \
 		dialogAbout.h \
 		moc_predefs.h \
 		/opt/Qt/5.11.2/gcc_64/bin/moc
-	/opt/Qt/5.11.2/gcc_64/bin/moc $(DEFINES) --include /home/adam/github/AnyStreamProcess/moc_predefs.h -I/opt/Qt/5.11.2/gcc_64/mkspecs/linux-g++ -I/home/adam/github/AnyStreamProcess -I/home/adam/github/AnyStreamProcess/3rd/QtXlsxWriter/include/QtXlsx -I/opt/Qt/5.11.2/gcc_64/include -I/opt/Qt/5.11.2/gcc_64/include/QtCharts -I/opt/Qt/5.11.2/gcc_64/include/QtPrintSupport -I/opt/Qt/5.11.2/gcc_64/include/QtWidgets -I/opt/Qt/5.11.2/gcc_64/include/QtXlsx -I/opt/Qt/5.11.2/gcc_64/include/QtGui -I/opt/Qt/5.11.2/gcc_64/include/QtSql -I/opt/Qt/5.11.2/gcc_64/include/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include dialogAbout.h -o moc_dialogAbout.cpp
+	/opt/Qt/5.11.2/gcc_64/bin/moc $(DEFINES) --include /home/adam/GitHub/AnyStreamProcess/moc_predefs.h -I/opt/Qt/5.11.2/gcc_64/mkspecs/linux-g++ -I/home/adam/GitHub/AnyStreamProcess -I/home/adam/GitHub/AnyStreamProcess/3rd/QtXlsxWriter/include/QtXlsx -I/opt/Qt/5.11.2/gcc_64/include -I/opt/Qt/5.11.2/gcc_64/include/QtCharts -I/opt/Qt/5.11.2/gcc_64/include/QtPrintSupport -I/opt/Qt/5.11.2/gcc_64/include/QtWidgets -I/opt/Qt/5.11.2/gcc_64/include/QtXlsx -I/opt/Qt/5.11.2/gcc_64/include/QtGui -I/opt/Qt/5.11.2/gcc_64/include/QtSql -I/opt/Qt/5.11.2/gcc_64/include/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include dialogAbout.h -o moc_dialogAbout.cpp
 
 compiler_moc_objc_header_make_all:
 compiler_moc_objc_header_clean:
@@ -17435,7 +17435,8 @@ resultsApi.o: results/resultsApi.cpp results/resultsApi.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qvxymodelmapper.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qxylegendmarker.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCharts/qtchartsversion.h \
-		results/resultsSingleGroup.h
+		results/resultsSingleGroup.h \
+		utils/lag.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o resultsApi.o results/resultsApi.cpp
 
 simulatorAllSystems.o: algorithms/simulatorAllSystems.cpp algorithms/simulatorAllSystems.h \
@@ -18003,9 +18004,9 @@ simulatorAllSystems.o: algorithms/simulatorAllSystems.cpp algorithms/simulatorAl
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o simulatorAllSystems.o algorithms/simulatorAllSystems.cpp
 
 simulatorStatistics.o: algorithms/simulatorStatistics.cpp algorithms/simulatorStatistics.h \
-		model.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QMetaType \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qmetatype.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/QVector \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qvector.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qalgorithms.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qglobal.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qconfig-bootstrapped.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qconfig.h \
@@ -18027,33 +18028,36 @@ simulatorStatistics.o: algorithms/simulatorStatistics.cpp algorithms/simulatorSt
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qmutex.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qnumeric.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qversiontagging.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qbytearray.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qiterator.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qlist.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qrefcount.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qnamespace.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qarraydata.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qhashfunctions.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qstring.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qchar.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qbytearray.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qnamespace.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qstringliteral.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qstringalgorithms.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qstringview.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qstringbuilder.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qpair.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qbytearraylist.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qstringlist.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qregexp.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qstringmatcher.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qpoint.h \
+		model.h \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/QMetaType \
+		/opt/Qt/5.11.2/gcc_64/include/QtCore/qmetatype.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qvarlengtharray.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qcontainerfwd.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qalgorithms.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qobjectdefs.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qobjectdefs_impl.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/QTextStream \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qtextstream.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qiodevice.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qobject.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qstring.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qchar.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qstringliteral.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qstringalgorithms.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qstringview.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qstringbuilder.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qlist.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qiterator.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qhashfunctions.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qpair.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qbytearraylist.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qstringlist.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qregexp.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qstringmatcher.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qcoreevent.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qscopedpointer.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qobject_impl.h \
@@ -18062,8 +18066,6 @@ simulatorStatistics.o: algorithms/simulatorStatistics.cpp algorithms/simulatorSt
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qmap.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qdebug.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qhash.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qvector.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/qpoint.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qset.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qcontiguouscache.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qsharedpointer.h \
@@ -18090,7 +18092,7 @@ simulatorStatistics.o: algorithms/simulatorStatistics.cpp algorithms/simulatorSt
 		/opt/Qt/5.11.2/gcc_64/include/QtCore/qfiledevice.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtGui/qvector2d.h \
 		/opt/Qt/5.11.2/gcc_64/include/QtGui/qtouchdevice.h \
-		/opt/Qt/5.11.2/gcc_64/include/QtCore/QVector
+		utils/lag.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o simulatorStatistics.o algorithms/simulatorStatistics.cpp
 
 qrc_resources.o: qrc_resources.cpp 
