@@ -81,7 +81,7 @@ QString TypesAndSettings::typeToX_AxisString(Type type)
 {
     QString result;
     const Settings *tmp = getSettingConst(type);
-    switch (tmp->functionalParameter)
+    switch (tmp->getFunctionalParameter())
     {
     case ParameterType::OfferedTrafficPerAS:
         result = "a";
@@ -133,6 +133,7 @@ const QVector<decimal> TypesAndSettings::getPlotsX(RSystem &rSystem, ParameterTy
         {
             result.append(a);
         }
+        break;
     default:
         qFatal("Not implemented");
     }
@@ -215,14 +216,11 @@ bool SettingsTypeForClass::getSinglePlot(QLineSeries *outPlot, QPair<double, dou
             {
                 if ((y>0) || linearScale)
                 {
-                    if (yMinAndMax.first > y)
-                        yMinAndMax.first = y;
-                    if (yMinAndMax.second < y)
-                        yMinAndMax.second = y;
-
                     *outPlot<<QPointF(x, y);
                     result = true;
                 }
+                yMinAndMax.first = qMin<double>(yMinAndMax.first, y);
+                yMinAndMax.second = qMax<double>(yMinAndMax.second, y);
             }
         }
     }
@@ -241,27 +239,12 @@ bool SettingsTypeForClass::getSinglePlot(QLineSeries *outPlot, QPair<double, dou
                     *outPlot<<QPointF(static_cast<double>(i), y);
                     result = true;
                 }
+                yMinAndMax.first = qMin<double>(yMinAndMax.first, y);
+                yMinAndMax.second = qMax<double>(yMinAndMax.second, y);
             }
         }
     }
 
-    if (functionalParameter == ParameterType::TrafficClass)
-    {
-        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
-
-        for (int i=0; i <rSystem.getModel().m(); i++)
-        {
-            double y=0;
-            if ((*singlePoint)->read(y, qos, i))
-            {
-                if (y>0)
-                {
-                    outPlot->append(i, y);
-                    result = true;
-                }
-            }
-        }
-    }
     return result;
 }
 
@@ -288,14 +271,14 @@ bool SettingsTypeForClass::getSinglePlot(QVector<double> &outPlot, RSystem &rSys
         {
             const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
 
-            double y=0;
+            double y=SNANL;
 
             if ((*singlePoint)->read(y, qos, parametersSet.classIndex))
             {
-                outPlot.append(y);
                 if (y>0)
                     result = true;
             }
+            outPlot.append(y);
         }
     }
 
@@ -305,13 +288,13 @@ bool SettingsTypeForClass::getSinglePlot(QVector<double> &outPlot, RSystem &rSys
 
         for (int i=0; i <rSystem.getModel().m(); i++)
         {
-            double y=0;
+            double y=SNANL;
             if ((*singlePoint)->read(y, qos, i))
             {
-                outPlot.append(y);
                 if (y>0)
                     result = true;
             }
+            outPlot.append(y);
         }
     }
     return result;
@@ -346,6 +329,8 @@ bool SettingsTypeForSystemState::getSinglePlot(QLineSeries *outPlot, QPair<doubl
                     *outPlot<<QPointF(static_cast<double>(a), y);
                     result = true;
                 }
+                yMinAndMax.first = qMin<double>(yMinAndMax.first, y);
+                yMinAndMax.second = qMax<double>(yMinAndMax.second, y);
             }
         }
     }
@@ -359,16 +344,13 @@ bool SettingsTypeForSystemState::getSinglePlot(QLineSeries *outPlot, QPair<doubl
 
             if ((*singlePoint)->read(y, qos, n))
             {
-                if (yMinAndMax.first > y)
-                    yMinAndMax.first = y;
-                if (yMinAndMax.second < y)
-                    yMinAndMax.second = y;
-
                 if ((y > 0) || linearScale)
                 {
                     *outPlot<<QPointF(n, y);
                     result = true;
                 }
+                yMinAndMax.first = qMin<double>(yMinAndMax.first, y);
+                yMinAndMax.second = qMax<double>(yMinAndMax.second, y);
             }
         }
     }
@@ -386,13 +368,13 @@ bool SettingsTypeForSystemState::getSinglePlot(QVector<double> &outPlot, RSystem
         {
             const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
 
-            double y=0;
+            double y=SNANL;
             if ((*singlePoint)->read(y, qos, parametersSet.systemState))
             {
-                outPlot.append(y);
                 if (y > 0)
                     result = true;
             }
+            outPlot.append(y);
         }
     }
 
@@ -401,14 +383,14 @@ bool SettingsTypeForSystemState::getSinglePlot(QVector<double> &outPlot, RSystem
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int n=0; n<=rSystem.getModel().V(); n++)
         {
-            double y=0;
+            double y=SNANL;
 
             if ((*singlePoint)->read(y, qos, n))
             {
-                outPlot.append(y);
                 if (y > 0)
                     result = true;
             }
+            outPlot.append(y);
         }
     }
     return result;
@@ -452,14 +434,11 @@ bool SettingsTypeForServerState::getSinglePlot(QLineSeries *outPlot, QPair<doubl
             {
                 if ((y > 0) || linearScale)
                 {
-                    if (yMinAndMax.first > y)
-                        yMinAndMax.first = y;
-                    if (yMinAndMax.second < y)
-                        yMinAndMax.second = y;
-
                     *outPlot<<QPointF(static_cast<double>(a), y);
                     result = true;
                 }
+                yMinAndMax.first = qMin<double>(yMinAndMax.first, y);
+                yMinAndMax.second = qMax<double>(yMinAndMax.second, y);
             }
         }
     }
@@ -478,6 +457,8 @@ bool SettingsTypeForServerState::getSinglePlot(QLineSeries *outPlot, QPair<doubl
                     *outPlot<<QPointF(n, y);
                     result = true;
                 }
+                yMinAndMax.first = qMin<double>(yMinAndMax.first, y);
+                yMinAndMax.second = qMax<double>(yMinAndMax.second, y);
             }
         }
     }
@@ -495,13 +476,13 @@ bool SettingsTypeForServerState::getSinglePlot(QVector<double> &outPlot, RSystem
         {
             const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
 
-            double y=0;
+            double y=SNANL;
             if ((*singlePoint)->read(y, qos, parametersSet.serverState))
             {
-                outPlot.append(y);
                 if (y > 0)
                     result = true;
             }
+            outPlot.append(y);
         }
     }
 
@@ -510,14 +491,14 @@ bool SettingsTypeForServerState::getSinglePlot(QVector<double> &outPlot, RSystem
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int n=0; n<=rSystem.getModel().vk_s(); n++)
         {
-            double y=0;
+            double y=SNANL;
 
             if ((*singlePoint)->read(y, qos, n))
             {
-                outPlot.append(y);
                 if (y > 0)
                     result = true;
             }
+            outPlot.append(y);
         }
     }
     return result;
@@ -561,14 +542,11 @@ bool SettingsTypeForBufferState::getSinglePlot(QLineSeries *outPlot, QPair<doubl
             {
                 if ((y > 0) || linearScale)
                 {
-                    if (yMinAndMax.first > y)
-                        yMinAndMax.first = y;
-                    if (yMinAndMax.second < y)
-                        yMinAndMax.second = y;
-
                     *outPlot<<QPointF(static_cast<double>(a), y);
                     result = true;
                 }
+                yMinAndMax.first = qMin<double>(yMinAndMax.first, y);
+                yMinAndMax.second = qMax<double>(yMinAndMax.second, y);
             }
         }
     }
@@ -587,6 +565,8 @@ bool SettingsTypeForBufferState::getSinglePlot(QLineSeries *outPlot, QPair<doubl
                     *outPlot<<QPointF(n, y);
                     result = true;
                 }
+                yMinAndMax.first = qMin<double>(yMinAndMax.first, y);
+                yMinAndMax.second = qMax<double>(yMinAndMax.second, y);
             }
         }
     }
@@ -604,13 +584,13 @@ bool SettingsTypeForBufferState::getSinglePlot(QVector<double> &outPlot, RSystem
         {
             const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
 
-            double y=0;
+            double y=SNANL;
             if ((*singlePoint)->read(y, qos, parametersSet.bufferState))
             {
-                outPlot.append(y);
                 if (y>0)
                     result = true;
             }
+            outPlot.append(y);
         }
     }
 
@@ -619,14 +599,14 @@ bool SettingsTypeForBufferState::getSinglePlot(QVector<double> &outPlot, RSystem
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int n=0; n<=rSystem.getModel().vk_b(); n++)
         {
-            double y=0;
+            double y=SNANL;
 
             if ((*singlePoint)->read(y, qos, n))
             {
-                outPlot.append(y);
                 if (y>0)
                     result = true;
             }
+            outPlot.append(y);
         }
     }
     return result;
@@ -673,6 +653,8 @@ bool SettingsTypeForClassAndSystemState::getSinglePlot(QLineSeries *outPlot, QPa
                     *outPlot<<QPointF(static_cast<double>(a), y);
                     result = true;
                 }
+                yMinAndMax.first = qMin<double>(yMinAndMax.first, y);
+                yMinAndMax.second = qMax<double>(yMinAndMax.second, y);
             }
         }
     }
@@ -690,6 +672,8 @@ bool SettingsTypeForClassAndSystemState::getSinglePlot(QLineSeries *outPlot, QPa
                     *outPlot<<QPointF(n, y);
                     result = true;
                 }
+                yMinAndMax.first = qMin<double>(yMinAndMax.first, y);
+                yMinAndMax.second = qMax<double>(yMinAndMax.second, y);
             }
         }
     }
@@ -707,6 +691,8 @@ bool SettingsTypeForClassAndSystemState::getSinglePlot(QLineSeries *outPlot, QPa
                     *outPlot<<QPointF(i, y);
                     result = true;
                 }
+                yMinAndMax.first = qMin<double>(yMinAndMax.first, y);
+                yMinAndMax.second = qMax<double>(yMinAndMax.second, y);
             }
         }
     }
@@ -723,13 +709,13 @@ bool SettingsTypeForClassAndSystemState::getSinglePlot(QVector<double> &outPlot,
         foreach(decimal a, rSystem.getAvailableAperAU())
         {
             const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
-            double y=0;
+            double y=SNANL;
             if ((*singlePoint)->read(y, qos, parametersSet.classIndex, parametersSet.systemState))
             {
-                outPlot.append(y);
                 if (y>0)
                     result = true;
             }
+            outPlot.append(y);
         }
     }
 
@@ -738,13 +724,13 @@ bool SettingsTypeForClassAndSystemState::getSinglePlot(QVector<double> &outPlot,
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int n=0; n<=rSystem.getModel().V(); n++)
         {
-            double y=0;
+            double y=SNANL;
             if ((*singlePoint)->read(y, qos, parametersSet.classIndex, n))
             {
-                outPlot.append(y);
                 if ((y > 0))
                     result = true;
             }
+            outPlot.append(y);
         }
     }
 
@@ -753,13 +739,13 @@ bool SettingsTypeForClassAndSystemState::getSinglePlot(QVector<double> &outPlot,
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int i=0; i<rSystem.getModel().m(); i++)
         {
-            double y=0;
+            double y=SNANL;
             if ((*singlePoint)->read(y, qos, i, parametersSet.systemState))
             {
-                outPlot.append(y);
                 if ((y > 0))
                     result = true;
             }
+            outPlot.append(y);
         }
     }
     return result;
@@ -806,16 +792,13 @@ bool SettingsTypeForClassAndServerState::getSinglePlot(QLineSeries *outPlot, QPa
             double y=0;
             if ((*singlePoint)->read(y, qos, parametersSet.classIndex, parametersSet.serverState))
             {
-                if (yMinAndMax.first > y)
-                    yMinAndMax.first = y;
-                if (yMinAndMax.second < y)
-                    yMinAndMax.second = y;
-
                 if ((y > 0) || linearScale)
                 {
                     *outPlot<<QPointF(static_cast<double>(a), y);
                     result = true;
                 }
+                yMinAndMax.first = qMin<double>(yMinAndMax.first, y);
+                yMinAndMax.second = qMax<double>(yMinAndMax.second, y);
             }
         }
     }
@@ -834,6 +817,8 @@ bool SettingsTypeForClassAndServerState::getSinglePlot(QLineSeries *outPlot, QPa
                     *outPlot<<QPointF(n, y);
                     result = true;
                 }
+                yMinAndMax.first = qMin<double>(yMinAndMax.first, y);
+                yMinAndMax.second = qMax<double>(yMinAndMax.second, y);
             }
         }
     }
@@ -852,6 +837,8 @@ bool SettingsTypeForClassAndServerState::getSinglePlot(QLineSeries *outPlot, QPa
                     *outPlot<<QPointF(i, y);
                     result = true;
                 }
+                yMinAndMax.first = qMin<double>(yMinAndMax.first, y);
+                yMinAndMax.second = qMax<double>(yMinAndMax.second, y);
             }
         }
     }
@@ -869,13 +856,13 @@ bool SettingsTypeForClassAndServerState::getSinglePlot(QVector<double> &outPlot,
         {
             const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
 
-            double y=0;
+            double y=SNANL;
             if ((*singlePoint)->read(y, qos, parametersSet.classIndex, parametersSet.serverState))
             {
-                outPlot.append(y);
                 if (y>0)
                     result = true;
             }
+            outPlot.append(y);
         }
     }
 
@@ -884,14 +871,14 @@ bool SettingsTypeForClassAndServerState::getSinglePlot(QVector<double> &outPlot,
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int n=0; n<=rSystem.getModel().vk_s(); n++)
         {
-            double y=0;
+            double y=SNANL;
 
             if ((*singlePoint)->read(y, qos, parametersSet.classIndex, n))
             {
-                outPlot.append(y);
                 if (y>0)
                     result = true;
             }
+            outPlot.append(y);
         }
     }
 
@@ -900,14 +887,14 @@ bool SettingsTypeForClassAndServerState::getSinglePlot(QVector<double> &outPlot,
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int i=0; i<rSystem.getModel().m(); i++)
         {
-            double y=0;
+            double y=SNANL;
 
             if ((*singlePoint)->read(y, qos, i, parametersSet.serverState))
             {
-                outPlot.append(y);
                 if (y > 0)
                     result = true;
             }
+            outPlot.append(y);
         }
     }
     return result;
@@ -954,16 +941,13 @@ bool SettingsTypeForClassAndBufferState::getSinglePlot(QLineSeries *outPlot, QPa
             double y=0;
             if ((*singlePoint)->read(y, qos, parametersSet.classIndex, parametersSet.bufferState))
             {
-                if (yMinAndMax.first > y)
-                    yMinAndMax.first = y;
-                if (yMinAndMax.second < y)
-                    yMinAndMax.second = y;
-
                 if ((y > 0) || linearScale)
                 {
                     *outPlot<<QPointF(static_cast<double>(a), y);
                     result = true;
                 }
+                yMinAndMax.first = qMin<double>(yMinAndMax.first, y);
+                yMinAndMax.second = qMax<double>(yMinAndMax.second, y);
             }
         }
     }
@@ -982,6 +966,8 @@ bool SettingsTypeForClassAndBufferState::getSinglePlot(QLineSeries *outPlot, QPa
                     *outPlot<<QPointF(n, y);
                     result = true;
                 }
+                yMinAndMax.first = qMin<double>(yMinAndMax.first, y);
+                yMinAndMax.second = qMax<double>(yMinAndMax.second, y);
             }
         }
     }
@@ -1000,6 +986,8 @@ bool SettingsTypeForClassAndBufferState::getSinglePlot(QLineSeries *outPlot, QPa
                     *outPlot<<QPointF(i, y);
                     result = true;
                 }
+                yMinAndMax.first = qMin<double>(yMinAndMax.first, y);
+                yMinAndMax.second = qMax<double>(yMinAndMax.second, y);
             }
         }
     }
@@ -1017,13 +1005,13 @@ bool SettingsTypeForClassAndBufferState::getSinglePlot(QVector<double> &outPlot,
         {
             const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
 
-            double y=0;
+            double y=SNANL;
             if ((*singlePoint)->read(y, qos, parametersSet.classIndex, parametersSet.bufferState))
             {
-                outPlot.append(y);
                 if ((y > 0))
                     result = true;
             }
+            outPlot.append(y);
         }
     }
 
@@ -1032,14 +1020,14 @@ bool SettingsTypeForClassAndBufferState::getSinglePlot(QVector<double> &outPlot,
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int n=0; n<=rSystem.getModel().vk_b(); n++)
         {
-            double y=0;
+            double y=SNANL;
 
             if ((*singlePoint)->read(y, qos, parametersSet.classIndex, n))
             {
-                outPlot.append(y);
                 if ((y > 0))
                     result = true;
             }
+            outPlot.append(y);
         }
     }
 
@@ -1048,14 +1036,14 @@ bool SettingsTypeForClassAndBufferState::getSinglePlot(QVector<double> &outPlot,
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int i=0; i<rSystem.getModel().m(); i++)
         {
-            double y=0;
+            double y=SNANL;
 
             if ((*singlePoint)->read(y, qos, i, parametersSet.bufferState))
             {
-                outPlot.append(y);
                 if ((y > 0))
                     result = true;
             }
+            outPlot.append(y);
         }
     }
     return result;
@@ -1106,14 +1094,11 @@ bool SettingsInavailabilityForClassInAllGroupsInCombination::getSinglePlot(QLine
             {
                 if ((y > 0) || linearScale)
                 {
-                    if (yMinAndMax.first > y)
-                        yMinAndMax.first = y;
-                    if (yMinAndMax.second < y)
-                        yMinAndMax.second = y;
-
                     *outPlot<<QPointF(x, y);
                     result = true;
                 }
+                yMinAndMax.first = qMin<double>(yMinAndMax.first, y);
+                yMinAndMax.second = qMax<double>(yMinAndMax.second, y);
             }
         }
     }
@@ -1135,6 +1120,8 @@ bool SettingsInavailabilityForClassInAllGroupsInCombination::getSinglePlot(QLine
                     *outPlot<<QPointF(n, y);
                     result = true;
                 }
+                yMinAndMax.first = qMin<double>(yMinAndMax.first, y);
+                yMinAndMax.second = qMax<double>(yMinAndMax.second, y);
             }
         }
     }
@@ -1154,6 +1141,8 @@ bool SettingsInavailabilityForClassInAllGroupsInCombination::getSinglePlot(QLine
                     *outPlot<<QPointF(i, y);
                     result = true;
                 }
+                yMinAndMax.first = qMin<double>(yMinAndMax.first, y);
+                yMinAndMax.second = qMax<double>(yMinAndMax.second, y);
             }
         }
     }
@@ -1171,37 +1160,34 @@ bool SettingsInavailabilityForClassInAllGroupsInCombination::getSinglePlot(QVect
         foreach(decimal a, rSystem.getAvailableAperAU())
         {
             const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
-            double x = static_cast<double>(a);
-            double y=0;
+            double y=SNANL;
             int t = rSystem.getModel().getClass(parametersSet.classIndex)->t();
 
             if ((*singlePoint)->read(y, TypeResourcess_VsServerGroupsCombination::InavailabilityInAllTheGroups, t, parametersSet.combinationNumber))
             {
-                outPlot.append(y);
                 if (y > 0)
-                {
                     result = true;
-                }
             }
+            outPlot.append(y);
         }
     }
 
     if (functionalParameter == ParameterType::NumberOfGroups)
     {
         int noOfCombinations = rSystem.getNoOfGroupsCombinations();
-
+        int t = rSystem.getModel().getClass(parametersSet.classIndex)->t();
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+
         for (int n=0; n <= noOfCombinations; n++)
         {
-            double y=0;
-            int t = rSystem.getModel().getClass(parametersSet.classIndex)->t();
+            double y=SNANL;
 
             if ((*singlePoint)->read(y, TypeResourcess_VsServerGroupsCombination::AvailabilityInAllTheGroups, t, n))
             {
-                outPlot.append(y);
                 if (y > 0)
                     result = true;
             }
+            outPlot.append(y);
         }
     }
 
@@ -1210,15 +1196,15 @@ bool SettingsInavailabilityForClassInAllGroupsInCombination::getSinglePlot(QVect
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int i=0; i < rSystem.getModel().m(); i++)
         {
-            double y=0;
+            double y=SNANL;
             int t = rSystem.getModel().getClass(i)->t();
 
             if ((*singlePoint)->read(y, TypeResourcess_VsServerGroupsCombination::AvailabilityInAllTheGroups, t, parametersSet.combinationNumber))
             {
-                outPlot.append(y);
                 if (y > 0)
                     result = true;
             }
+            outPlot.append(y);
         }
     }
 
@@ -1273,14 +1259,11 @@ bool SettingsAvailableSubroupDistribution::getSinglePlot(QLineSeries *outPlot, Q
             {
                 if ((y > 0) || linearScale)
                 {
-                    if (yMinAndMax.first > y)
-                        yMinAndMax.first = y;
-                    if (yMinAndMax.second < y)
-                        yMinAndMax.second = y;
-
                     *outPlot<<QPointF(x, y);
                     result = true;
                 }
+                yMinAndMax.first = qMin<double>(yMinAndMax.first, y);
+                yMinAndMax.second = qMax<double>(yMinAndMax.second, y);
             }
         }
     }
@@ -1300,6 +1283,8 @@ bool SettingsAvailableSubroupDistribution::getSinglePlot(QLineSeries *outPlot, Q
                     *outPlot<<QPointF(k, y);
                     result = true;
                 }
+                yMinAndMax.first = qMin<double>(yMinAndMax.first, y);
+                yMinAndMax.second = qMax<double>(yMinAndMax.second, y);
             }
         }
     }
@@ -1319,10 +1304,11 @@ bool SettingsAvailableSubroupDistribution::getSinglePlot(QLineSeries *outPlot, Q
                     *outPlot<<QPointF(i, y);
                     result = true;
                 }
+                yMinAndMax.first = qMin<double>(yMinAndMax.first, y);
+                yMinAndMax.second = qMax<double>(yMinAndMax.second, y);
             }
         }
     }
-
     return result;
 }
 
@@ -1337,17 +1323,14 @@ bool SettingsAvailableSubroupDistribution::getSinglePlot(QVector<double> &outPlo
         foreach(decimal a, rSystem.getAvailableAperAU())
         {
             const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
-            double x = static_cast<double>(a);
 
-
-            double y=0;
+            double y=SNANL;
             if ((*singlePoint)->read(y, TypeForResourcessAndNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, t, parametersSet.numberOfGroups))
             {
-                outPlot.append(y);
                 if (y > 0)
                     result = true;
-
             }
+            outPlot.append(y);
         }
     }
 
@@ -1357,14 +1340,14 @@ bool SettingsAvailableSubroupDistribution::getSinglePlot(QVector<double> &outPlo
         int t = rSystem.getModel().getClass(parametersSet.classIndex)->t();
         for (int k=0; k <= rSystem.getModel().k_s(); k++)
         {
-            double y=0;
+            double y=SNANL;
 
             if ((*singlePoint)->read(y, TypeForResourcessAndNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, t, k))
             {
                 if (y > 0)
                     result = true;
-                outPlot.append(y);
             }
+            outPlot.append(y);
         }
     }
 
@@ -1373,15 +1356,16 @@ bool SettingsAvailableSubroupDistribution::getSinglePlot(QVector<double> &outPlo
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int i=0; i < rSystem.getModel().m(); i++)
         {
-            double y=0;
+            double y=SNANL;
             int t = rSystem.getModel().getClass(i)->t();
 
             if ((*singlePoint)->read(y, TypeForResourcessAndNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, t, parametersSet.numberOfGroups))
             {
-                outPlot.append(y);
                 if (y > 0)
                     result = true;
             }
+            outPlot.append(y);
+
         }
     }
     return result;
@@ -1485,9 +1469,7 @@ double Settings::getXmax(RSystem &rSystem) const
 
     case ParameterType::None:
         break;
-
     }
-
     return result;
 }
 
@@ -1603,29 +1585,88 @@ void Settings::fillListWithParameters(QList<QVariant> &list, ParameterType param
 
 }
 
+QString Settings::getTypeValue(const ParametersSet &params, ParameterType type, const ModelSyst *system)
+{
+    QString result;
+    QTextStream str;
+    str.setString(&result, QIODevice::Append);
+
+    switch (type)
+    {
+    case Results::ParameterType::TrafficClass:
+        str<<system->getClass(params.classIndex)->shortName();
+        break;
+
+    case Results::ParameterType::SystemState:
+        str<<params.systemState;
+        break;
+
+    case Results::ParameterType::ServerState:
+        str<<params.serverState;
+        break;
+
+    case Results::ParameterType::BufferState:
+        str<<params.bufferState;
+        break;
+
+    case Results::ParameterType::CombinationNumber:
+        str<<params.combinationNumber;
+        break;
+
+    case Results::ParameterType::NumberOfGroups:
+        str<<params.numberOfGroups;
+        break;
+
+    case Results::ParameterType::OfferedTrafficPerAS:
+        str<<static_cast<double>(params.a);
+        break;
+
+    case Results::ParameterType::None:
+        break;
+    }
+    str.flush();
+    return result;
+}
+
+QString Settings::getParameterDescription(const ParametersSet &params, const ModelSyst *system)
+{
+    QString result;
+    QTextStream str;
+    str.setString(&result, QIODevice::Append);
+
+    if (additionalParameter1 != ParameterType::None)
+        str<<getTypeValue(params, additionalParameter1, system);
+
+    if (additionalParameter2 != ParameterType::None)
+        str<<getTypeValue(params, additionalParameter2, system);
+
+    str.flush();
+    return result;
+}
+
 bool ParametersSet::operator<(const ParametersSet &rho) const
 {
-    bool result = true;
+    bool result = false;
 
-    if (a > 0)
+    if (a < rho.a)
         return a < rho.a;
 
-    if (classIndex > 0)
+    if (classIndex != rho.classIndex)
         return classIndex < rho.classIndex;
 
-    if (systemState > 0)
+    if (systemState != rho.systemState)
         return systemState < rho.systemState;
 
-    if (serverState > 0)
+    if (serverState != rho.serverState)
         return serverState < rho.serverState;
 
-    if (bufferState > 0)
+    if (bufferState != rho.bufferState)
         return bufferState < rho.bufferState;
 
-    if (combinationNumber > 0)
+    if (combinationNumber != rho.combinationNumber)
         return combinationNumber < rho.combinationNumber;
 
-    if (numberOfGroups > 0)
+    if (numberOfGroups != rho.numberOfGroups)
         return numberOfGroups < rho.numberOfGroups;
 
     return result;

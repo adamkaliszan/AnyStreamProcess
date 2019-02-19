@@ -42,14 +42,7 @@ public:
     void setFontSize(int size)           { this->fontSize = size; }
     int getFontSize() const              { return fontSize; }
 
-    void WriteScript(QString scriptFileName, QString dataFileName, QString graphFileName, double minY, double maxY, Type QoS_MainParam);
-    void WriteScript(QTextStream &script, QString dataFileName, QString graphFileName, Type QoS_MainParam, double minY, double maxY, bool isLogScale);
-    void WriteDataAndScript(QString dataFileName, const ModelSyst *system, Settings *setting, Type qosType);
-
-    void Show(Type QoS_par, QList<ModelTrClass *> selClasses, bool useColors);
+    void WriteDataAndScript(QString baseFileName, const ModelSyst *system, Settings *setting, Type qosType);
 };
-
-QTextStream &operator<<(QTextStream &st, GnuplotScript &results);
-std::ostream &operator<<(std::ostream &st, GnuplotScript &results);
 
 #endif // RESULTSGNUPLOT_H

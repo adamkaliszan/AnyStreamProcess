@@ -694,7 +694,7 @@ void MainWindow::on_comboBoxResultsQtType_currentIndexChanged(int index)
        {
 
            ui->comboBoxResultsQtX_axis->addItem(Results::TypesAndSettings::parameterToString(param), QVariant::fromValue(param));
-           if (param == settings->functionalParameter)
+           if (param == settings->getFunctionalParameter())
                currentIndex = tmpIndex;
            tmpIndex++;
        }
@@ -712,8 +712,8 @@ void MainWindow::on_comboBoxResultsQtX_axis_currentIndexChanged(int index)
     Results::ParameterType paramType = ui->comboBoxResultsQtX_axis->currentData().value<Results::ParameterType>();
     settings->setFunctionalParameter(paramType);
 
-    fillListWidgetWithParams(ui->listWidgetResultsQtAdditionalParameters1, ui->labelResultsQtAdditionalParameters1, settings->additionalParameter1);
-    fillListWidgetWithParams(ui->listWidgetResultsQtAdditionalParameters2, ui->labelResultsQtAdditionalParameters2, settings->additionalParameter2);
+    fillListWidgetWithParams(ui->listWidgetResultsQtAdditionalParameters1, ui->labelResultsQtAdditionalParameters1, settings->getAdditionalParameter1());
+    fillListWidgetWithParams(ui->listWidgetResultsQtAdditionalParameters2, ui->labelResultsQtAdditionalParameters2, settings->getAdditionalParameter2());
 }
 
 void MainWindow::on_listWidgetKlasy_currentItemChanged(QListWidgetItem *current, QListWidgetItem *previous)
@@ -1112,6 +1112,7 @@ void MainWindow::saveTheResults(QString &fileName, Results::Type qosType)
     QString graphBaseFileName = fileName;
 
     Results::Settings *setting = Results::TypesAndSettings::getSetting(qosType);
+    scrGnuplot->systemResults = this->resultsForSystem;
     scrGnuplot->WriteDataAndScript(fileName, this->system, setting, qosType);
 }
 
@@ -1844,17 +1845,17 @@ void MainWindow::on_ResultsQtChartRefresh()
 
         clearParameters(parameters);
 
-        if (setting->additionalParameter1 != Results::ParameterType::None)
+        if (setting->getAdditionalParameter1() != Results::ParameterType::None)
         {
             foreach (const QListWidgetItem *tmpItem1, ui->listWidgetResultsQtAdditionalParameters1->selectedItems())
             {
-                QString name = Settings::updateParameters(parameters, tmpItem1->data(Qt::UserRole), setting->additionalParameter1, system, resultsForSystem);
-                if (setting->additionalParameter2 != Results::ParameterType::None)
+                QString name = Settings::updateParameters(parameters, tmpItem1->data(Qt::UserRole), setting->getAdditionalParameter1(), system, resultsForSystem);
+                if (setting->getAdditionalParameter2() != Results::ParameterType::None)
                 {
                     int par2LwIdx = 0;
                     foreach (const QListWidgetItem *tmpItem2, ui->listWidgetResultsQtAdditionalParameters2->selectedItems())
                     {
-                        QString name2 = Settings::updateParameters(parameters, tmpItem2->data(Qt::UserRole), setting->additionalParameter2, system, resultsForSystem);
+                        QString name2 = Settings::updateParameters(parameters, tmpItem2->data(Qt::UserRole), setting->getAdditionalParameter2(), system, resultsForSystem);
                         QLineSeries *series = new QLineSeries();
                         setting->getSinglePlot(series, yMinAndMax, *resultsForSystem, algorithm, parameters, !ui->checkBoxResultsQtLogScaleOnAxisY->isChecked());
 

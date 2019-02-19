@@ -49,7 +49,16 @@ class ResultMap
 
 class Settings
 {
+protected:
+    ParameterType functionalParameter;
+    ParameterType additionalParameter1;
+    ParameterType additionalParameter2;
+
 public:
+    ParameterType getFunctionalParameter() const {return  functionalParameter;}
+    ParameterType getAdditionalParameter1() const {return additionalParameter1;}
+    ParameterType getAdditionalParameter2() const {return additionalParameter2;}
+
     enum class GnuplotKeyPosition
     {
         GKP_topRight
@@ -65,9 +74,7 @@ public:
 
     QList<ParameterType> dependencyParameters;
 
-    ParameterType functionalParameter;
-    ParameterType additionalParameter1;
-    ParameterType additionalParameter2;
+
 
     bool setFunctionalParameter(ParameterType param);
 
@@ -84,6 +91,10 @@ public:
 
     static QString updateParameters(struct Results::ParametersSet &outParameters, const QVariant &variant, Results::ParameterType paramType, const ModelSyst *system, Results::RSystem *resultsForSystem);
     static void fillListWithParameters(QList<QVariant> &list, ParameterType paramType, const ModelSyst *system, QList<decimal> offeredTraffic);
+
+    QString getTypeValue(const ParametersSet &params, Results::ParameterType type, const ModelSyst *system);
+
+    QString getParameterDescription(const ParametersSet &params, const ModelSyst *system);
 };
 
 class SettingsTypeForClass: public Settings
@@ -204,15 +215,17 @@ private:
 
 public:
     static const Settings *getSettingConst(Type type);
-    static  Settings *getSetting(Type type);
+    static Settings *getSetting(Type type);
     static QString typeToString(Type type);
 
     static QString parameterToString(ParameterType parameter);
 
     static QString typeToX_AxisString(Type type);
 
-    QMap<ParametersSet, QVector<double>> getPlotsY(RSystem &rSystem, Type qos, ParameterType functionalParameter, Investigator *algorithm);
-    const QVector<decimal> getPlotsX(RSystem &rSystem, ParameterType functionalParameter);
+
+
+    static QMap<ParametersSet, QVector<double>> getPlotsY(RSystem &rSystem, Type qos, ParameterType functionalParameter, Investigator *algorithm);
+    static const QVector<decimal> getPlotsX(RSystem &rSystem, ParameterType functionalParameter);
 };
 
 

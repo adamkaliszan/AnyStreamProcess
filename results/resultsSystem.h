@@ -19,7 +19,7 @@ public:
     RInvestigator& createNewInvestigation(Investigator *algorithm, decimal aPerAU, unsigned noOfSeries = 1);
     RInvestigator *getInvestigationResults(Investigator *algorithm, decimal aPerAU);
 
-    const QList<decimal>       getAvailableAperAU()     const { return _aPerAU;     }
+    const QList<decimal> &     getAvailableAperAU()     const { return _aPerAU;     }
     const QList<Investigator*> getAvailableAlgorithms() const { return _algorithms; }
 
     int getNumberOrCalculatedAlgorithms() const;

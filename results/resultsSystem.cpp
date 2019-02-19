@@ -8,7 +8,7 @@ namespace Results
 RSystem::RSystem(const ModelSyst &model)
     : model(model)
 {
-
+    _aPerAU.clear();
 }
 
 RInvestigator& RSystem::createNewInvestigation(Investigator *algorithm, decimal aPerAU, unsigned noOfSeries)
@@ -62,10 +62,11 @@ double RSystem::getMinAperAU() const
 {
     double result = -1;
 
-    if (getAvailableAperAU().length()>0)
+    const QList<decimal> &aList = getAvailableAperAU();
+    if (aList.length()>0)
     {
-        result = static_cast<double>(getAvailableAperAU()[0]);
-        foreach(decimal a, getAvailableAperAU())
+        result = static_cast<double>(aList[0]);
+        foreach(decimal a, aList)
         {
             double tmp = static_cast<double>(a);
             if (result > tmp)
