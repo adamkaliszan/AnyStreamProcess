@@ -244,7 +244,6 @@ bool SettingsTypeForClass::getSinglePlot(QLineSeries *outPlot, QPair<double, dou
             }
         }
     }
-
     return result;
 }
 
