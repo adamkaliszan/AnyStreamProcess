@@ -10,9 +10,10 @@ void GnuplotScript::WriteDataAndScript(QString baseFileName, const ModelSyst *sy
     scriptFile.open(QFile::WriteOnly | QFile::Text);
 
     QTextStream scriptStream(&scriptFile);
+    scriptStream.setCodec("Windows-1250");
 
-    scriptStream<<"set terminal postscript enhanced font 'Times,6' persist\r\n";
-    scriptStream<<"set encoding iso_8859_2\r\n";
+    scriptStream<<"set terminal postscript enhanced 'Times' 6 color\r\n";
+    scriptStream<<"set encoding cp1250\r\n";
     scriptStream<<"set lmargin 9\n";
     scriptStream<<"set xlabel \"a (traffic offered to a single BBU of the server)\"\n";
     scriptStream<<"set xtics 0.1\n";
@@ -39,18 +40,26 @@ void GnuplotScript::WriteDataAndScript(QString baseFileName, const ModelSyst *sy
         scriptStream<<"unset ytics\n";
     }
 
-    scriptStream<<"set ytics nomirror\n";
-    scriptStream<<"set border 3\n";
-    scriptStream<<"set size 0.32, 0.30\n";
-    scriptStream<<"set grid\n";
-    scriptStream<<"set style line 1 lt 1 lw 0\n";
-    scriptStream<<"set key box linestyle 1\n";
-    scriptStream<<"set key right bottom\n";
-    scriptStream<<"set ylabel \""<<setting->name<<"\" offset 1.5\n";
+    scriptStream<<"set colorsequence podo\r\n";
+    scriptStream<<"set ytics nomirror\r\n";
+    scriptStream<<"set border 3\r\n";
+    scriptStream<<"set size 0.32, 0.30\r\n";
+    scriptStream<<"set grid\r\n";
+    scriptStream<<"set style line 1 lt 1 lw 0\r\n";
+    scriptStream<<"set key box linestyle 1\r\n";
+    scriptStream<<"set key right bottom\r\n";
+    scriptStream<<"set ylabel \""<<setting->name<<"\" offset 1.5\r\n";
 
+    scriptStream<<"set output \""<<baseFileName<<".eps\"\r\n";
 
     scriptStream<<"plot\\\r\n";
     int i;
+
+    int lc = 1;
+    int dt = 1;
+    int lw = 1;
+
+    bool firstPlot = true;
     foreach(Investigator *algorithm, systemResults->getAvailableAlgorithms())
     {
         if (!algorithm->getQoS_Set().contains(qosType))
@@ -68,6 +77,9 @@ void GnuplotScript::WriteDataAndScript(QString baseFileName, const ModelSyst *sy
 
         dataStream<<"#"<<TypesAndSettings::parameterToString(setting->getFunctionalParameter());
         int colNo = 2;
+
+        dt = 1;
+        lw = 1;
         foreach(ParametersSet param, yVals.keys())
         {
             dataStream<<"\t"<<setting->getParameterDescription(param, system);
@@ -76,15 +88,37 @@ void GnuplotScript::WriteDataAndScript(QString baseFileName, const ModelSyst *sy
             {
                 dataStream<<"\t+-";
 
-                scriptStream<<"\t"<<dataFileName<<" 1:"<<colNo<<" with lines label '"<<setting->getParameterDescription(param, system)<<"'\\\r\n";
+                if (firstPlot)
+                {
+                    firstPlot = false;
+                    scriptStream<<"    ";
+                }
+                else
+                    scriptStream<<"  , ";
+
+                scriptStream<<"\""<<dataFileName<<"\" using 1:"<<colNo<<" with lines dt "<<dt<<" lw "<<lw<<" lc "<<lc<<" title '"<<setting->getParameterDescription(param, system)<<"' \\\r\n";
+                scriptStream<<"  , \""<<dataFileName<<"\" using 1:"<<colNo<<":"<<colNo+1<<" with yerrorbars pt 1 lc "<<lc<<" notitle \\\r\n";
                 colNo++;
             }
             else
             {
-                scriptStream<<"\t"<<dataFileName<<" 1:"<<colNo<<":"<<colNo+1<<" with errors label '"<<setting->getParameterDescription(param, system)<<"'\\\r\n";
+                if (firstPlot)
+                {
+                    firstPlot = false;
+                    scriptStream<<"    ";
+                }
+                else
+                    scriptStream<<"  , ";
+                scriptStream<<"\""<<dataFileName<<"\" using 1:"<<colNo<<" with lines dt "<<dt<<" lw "<<lw<<" lc "<<lc<<" title '"<<setting->getParameterDescription(param, system)<<"' \\\r\n";
             }
             colNo++;
 
+            dt++;
+            if (dt == 6)
+            {
+                dt = 1;
+                lw++;
+            }
         }
         dataStream<<"\n";
 
@@ -104,8 +138,10 @@ void GnuplotScript::WriteDataAndScript(QString baseFileName, const ModelSyst *sy
                     dataStream<<"\t0";
             }
             dataStream<<"\n";
+
         }
         dataFile.close();
+        lc++;
     }
     scriptStream<<"\r\n";
 

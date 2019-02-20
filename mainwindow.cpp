@@ -877,6 +877,7 @@ void MainWindow::on_gnuplotSave()
     QString defaultFileName;
     QTextStream textStream(&defaultFileName);
     textStream<<"~/";
+    textStream<<TypesAndSettings::typeToString(type);
     textStream<<*system;
     QString fileName = QFileDialog::getSaveFileName(this, tr("Save the results"), defaultFileName, tr("Gnuplot Files (*.gp)"));
 

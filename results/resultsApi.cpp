@@ -126,16 +126,47 @@ QMap<ParametersSet, QVector<double>> TypesAndSettings::getPlotsY(RSystem &rSyste
 const QVector<decimal> TypesAndSettings::getPlotsX(RSystem &rSystem, ParameterType functionalParameter)
 {
     QVector<decimal> result;
+
+    int noOfComb = Utils::UtilsLAG::getPossibleCombinations(rSystem.getModel().k_s()).length();
     switch (functionalParameter)
     {
     case ParameterType::OfferedTrafficPerAS:
         foreach(decimal a, rSystem.getAvailableAperAU())
-        {
             result.append(a);
-        }
         break;
-    default:
-        qFatal("Not implemented");
+
+    case ParameterType::TrafficClass:
+        for (int n=0; n < rSystem.getModel().m(); n++)
+            result.append(n);
+        break;
+
+    case ParameterType::SystemState:
+        for (int n=0; n <= rSystem.getModel().V(); n++)
+            result.append(n);
+        break;
+
+    case ParameterType::ServerState:
+        for (int n=0; n <= rSystem.getModel().vk_s(); n++)
+            result.append(n);
+        break;
+
+    case ParameterType::BufferState:
+        for (int n=0; n <= rSystem.getModel().vk_b(); n++)
+            result.append(n);
+        break;
+
+    case ParameterType::NumberOfGroups:
+        for (int n=0; n <= rSystem.getModel().k_s(); n++)
+            result.append(n);
+        break;
+
+    case ParameterType::CombinationNumber:
+        for (int n=0; n < noOfComb; n++)
+            result.append(n);
+        break;
+
+    case ParameterType::None:
+        break;
     }
 
     return result;
