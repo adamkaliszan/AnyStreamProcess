@@ -46,8 +46,9 @@ enum class Type
     EndCallInIntensityBufferVsSystemState,
 
 //Parameters for LAG systems
-    AllSugbrupsInGivenCombinationNotAvailableForCallsOfGivenClass,     // LAG, all subgroups in a given combination and class are available
-    AvailableSubroupDistribution,
+    AllSugbrupsInGivenCombinationAvailableForCallsOfGivenClass,        // LAG, all subgroups in a given combination and class are available
+    AllSugbrupsInGivenCombinationNotAvailableForCallsOfGivenClass,     // LAG, all subgroups in a given combination and class are NOT available
+    AvailableSubroupDistribution
 };
 
 inline unsigned int qHash(Type key, unsigned int seed)

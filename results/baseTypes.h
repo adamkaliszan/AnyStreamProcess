@@ -133,6 +133,14 @@ enum class TypeResourcess_VsServerGroupsCombination: unsigned
     InavailabilityInAllTheGroups,        ///< Each group in combination is not available, don't care about other groups
 };
 
+enum class TypeClasses_VsServerGroupsCombination: unsigned
+{
+    AvailabilityInOneOrMoreGroups,       ///< There is one or more groups in combination with given number of available resourcess
+    AvailabilityInAllTheGroups,          ///< Each group in combination is available, don't care about other groups
+    InavailabilityInAllTheGroups,        ///< Each group in combination is not available, don't care about other groups
+};
+
+
 /**
  * @brief The QoS resultus vs: 1) minimum number resourcess in a single group 2) number of server groups
  */

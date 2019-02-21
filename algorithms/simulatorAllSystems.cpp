@@ -159,6 +159,7 @@ SimulatorAll::SimulatorAll() : simulator()
 {
     myQoS_Set << Results::Type::AllSugbrupsInGivenCombinationNotAvailableForCallsOfGivenClass;
     myQoS_Set << Results::Type::AvailableSubroupDistribution;
+    myQoS_Set << Results::Type::AllSugbrupsInGivenCombinationAvailableForCallsOfGivenClass;
 
     system = nullptr;
 }

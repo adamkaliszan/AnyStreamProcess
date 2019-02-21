@@ -96,7 +96,7 @@ void GnuplotScript::WriteDataAndScript(QString baseFileName, const ModelSyst *sy
                 else
                     scriptStream<<"  , ";
 
-                scriptStream<<"\""<<dataFileName<<"\" using 1:"<<colNo<<" with lines dt "<<dt<<" lw "<<lw<<" lc "<<lc<<" title '"<<setting->getParameterDescription(param, system)<<"' \\\r\n";
+                scriptStream<<"\""<<dataFileName<<"\" using 1:"<<colNo<<" with lines dt "<<dt<<" lw "<<lw<<" lc "<<lc<<" title '"<<algorithm->shortName()<<" "<<setting->getParameterDescription(param, system)<<"' \\\r\n";
                 scriptStream<<"  , \""<<dataFileName<<"\" using 1:"<<colNo<<":"<<colNo+1<<" with yerrorbars pt 1 lc "<<lc<<" notitle \\\r\n";
                 colNo++;
             }

@@ -12,6 +12,7 @@ algRekLagGS::algRekLagGS()
      << Results::Type::LossProbability
      << Results::Type::OccupancyDistribution
      << Results::Type::AllSugbrupsInGivenCombinationNotAvailableForCallsOfGivenClass
+     << Results::Type::AllSugbrupsInGivenCombinationAvailableForCallsOfGivenClass
      << Results::Type::AvailableSubroupDistribution;
 }
 
@@ -213,6 +214,7 @@ algRekLagGS2::algRekLagGS2()
      << Results::Type::LossProbability
      << Results::Type::OccupancyDistribution
      << Results::Type::AllSugbrupsInGivenCombinationNotAvailableForCallsOfGivenClass
+     << Results::Type::AllSugbrupsInGivenCombinationAvailableForCallsOfGivenClass
     ;
 }
 

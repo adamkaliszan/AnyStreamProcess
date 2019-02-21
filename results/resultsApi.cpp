@@ -44,8 +44,9 @@ void TypesAndSettings::_initialize()
     _myMap.insert(Type::EndCallOutIntensityBufferVsSystemState                 , new SettingsTypeForClassAndBufferState(TypeForClassAndBufferState::EndCallIntensityOut                , "Call service ending intensity vs current buffer state", "UiBOut(n)"));
     _myMap.insert(Type::EndCallInIntensityBufferVsSystemState                  , new SettingsTypeForClassAndBufferState(TypeForClassAndBufferState::EndCallIntensityIn                 , "Call service ending intensity vs new buffer state"    , "UiBIn(n)" ));
 
-    _myMap.insert(Type::AllSugbrupsInGivenCombinationNotAvailableForCallsOfGivenClass
-      , new SettingsInavailabilityForClassInAllGroupsInCombination("All groups in combination are not available for class i"    , "combNA_i"));
+    _myMap.insert(Type::AllSugbrupsInGivenCombinationNotAvailableForCallsOfGivenClass, new SettingsForClassAndServerGroupsCombination(TypeClasses_VsServerGroupsCombination::InavailabilityInAllTheGroups, "All groups in combination are not available for class i" , "combNA_i"));
+    _myMap.insert(Type::AllSugbrupsInGivenCombinationAvailableForCallsOfGivenClass   , new SettingsForClassAndServerGroupsCombination(TypeClasses_VsServerGroupsCombination::AvailabilityInAllTheGroups  , "All groups in combination are available for class i"     , "combAA_i"));
+
     _myMap.insert(Type::AvailableSubroupDistribution
       , new SettingsAvailableSubroupDistribution(                  "Distribution of available groups"                           , "RDP"));
 
@@ -1095,7 +1096,7 @@ QList<ParametersSet> SettingsTypeForClassAndBufferState::getParametersList(const
     return result;
 }
 
-SettingsInavailabilityForClassInAllGroupsInCombination::SettingsInavailabilityForClassInAllGroupsInCombination(QString name, QString shortName): Settings (name, shortName)
+SettingsForClassAndServerGroupsCombination::SettingsForClassAndServerGroupsCombination(TypeClasses_VsServerGroupsCombination qos, QString name, QString shortName): Settings (name, shortName), qos(qos)
 {
     dependencyParameters.append(ParameterType::OfferedTrafficPerAS);
     dependencyParameters.append(ParameterType::TrafficClass);
@@ -1106,9 +1107,26 @@ SettingsInavailabilityForClassInAllGroupsInCombination::SettingsInavailabilityFo
     additionalParameter2 = ParameterType::CombinationNumber;
 }
 
-bool SettingsInavailabilityForClassInAllGroupsInCombination::getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
+bool SettingsForClassAndServerGroupsCombination::getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
 {
     bool result = false;
+
+    TypeResourcess_VsServerGroupsCombination typeToRead;
+
+    switch (qos)
+    {
+    case TypeClasses_VsServerGroupsCombination::AvailabilityInAllTheGroups:
+        typeToRead = TypeResourcess_VsServerGroupsCombination::AvailabilityInAllTheGroups;
+        break;
+
+    case TypeClasses_VsServerGroupsCombination::AvailabilityInOneOrMoreGroups:
+        typeToRead = TypeResourcess_VsServerGroupsCombination::AvailabilityInOneOrMoreGroups;
+        break;
+
+    case TypeClasses_VsServerGroupsCombination::InavailabilityInAllTheGroups:
+        typeToRead = TypeResourcess_VsServerGroupsCombination::InavailabilityInAllTheGroups;
+        break;
+    }
 
     outPlot->clear();
     if (functionalParameter == ParameterType::OfferedTrafficPerAS)
@@ -1120,7 +1138,7 @@ bool SettingsInavailabilityForClassInAllGroupsInCombination::getSinglePlot(QLine
             double y=0;
             int t = rSystem.getModel().getClass(parametersSet.classIndex)->t();
 
-            if ((*singlePoint)->read(y, TypeResourcess_VsServerGroupsCombination::InavailabilityInAllTheGroups, t, parametersSet.combinationNumber))
+            if ((*singlePoint)->read(y, typeToRead, t, parametersSet.combinationNumber))
             {
                 if ((y > 0) || linearScale)
                 {
@@ -1143,7 +1161,7 @@ bool SettingsInavailabilityForClassInAllGroupsInCombination::getSinglePlot(QLine
             double y=0;
             int t = rSystem.getModel().getClass(parametersSet.classIndex)->t();
 
-            if ((*singlePoint)->read(y, TypeResourcess_VsServerGroupsCombination::AvailabilityInAllTheGroups, t, n))
+            if ((*singlePoint)->read(y, typeToRead, t, n))
             {
                 if ((y > 0) || linearScale)
                 {
@@ -1164,7 +1182,7 @@ bool SettingsInavailabilityForClassInAllGroupsInCombination::getSinglePlot(QLine
             double y=0;
             int t = rSystem.getModel().getClass(i)->t();
 
-            if ((*singlePoint)->read(y, TypeResourcess_VsServerGroupsCombination::AvailabilityInAllTheGroups, t, parametersSet.combinationNumber))
+            if ((*singlePoint)->read(y, typeToRead, t, parametersSet.combinationNumber))
             {
                 if ((y > 0) || linearScale)
                 {
@@ -1180,7 +1198,7 @@ bool SettingsInavailabilityForClassInAllGroupsInCombination::getSinglePlot(QLine
     return result;
 }
 
-bool SettingsInavailabilityForClassInAllGroupsInCombination::getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
+bool SettingsForClassAndServerGroupsCombination::getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
 {
     bool result = false;
 
@@ -1241,7 +1259,7 @@ bool SettingsInavailabilityForClassInAllGroupsInCombination::getSinglePlot(QVect
     return result;
 }
 
-QList<ParametersSet> SettingsInavailabilityForClassInAllGroupsInCombination::getParametersList(const ModelSyst *system) const
+QList<ParametersSet> SettingsForClassAndServerGroupsCombination::getParametersList(const ModelSyst *system) const
 {
     QList<ParametersSet> result;
     int noOfCOmbinations = Utils::UtilsLAG::getPossibleCombinations(system->k_s()).length();
@@ -1404,11 +1422,15 @@ bool SettingsAvailableSubroupDistribution::getSinglePlot(QVector<double> &outPlo
 QList<ParametersSet> SettingsAvailableSubroupDistribution::getParametersList(const ModelSyst *system) const
 {
     QList<ParametersSet> result;
-    for (int k=0; k < system->k_s(); k++)
+    for (int k=0; k <= system->k_s(); k++)
     {
-        ParametersSet item;
-        item.numberOfGroups = k;
-        result.append(item);
+        for (int i=0; i < system->m(); i++)
+        {
+            ParametersSet item;
+            item.numberOfGroups = k;
+            item.classIndex = i;
+            result.append(item);
+        }
     }
     return result;
 }
@@ -1640,7 +1662,7 @@ QString Settings::getTypeValue(const ParametersSet &params, ParameterType type, 
         break;
 
     case Results::ParameterType::CombinationNumber:
-        str<<params.combinationNumber;
+        str<<Utils::UtilsLAG::getCombinationString(Utils::UtilsLAG::getPossibleCombinationsFinal(system->k_s())[params.combinationNumber]);
         break;
 
     case Results::ParameterType::NumberOfGroups:
@@ -1668,7 +1690,7 @@ QString Settings::getParameterDescription(const ParametersSet &params, const Mod
         str<<getTypeValue(params, additionalParameter1, system);
 
     if (additionalParameter2 != ParameterType::None)
-        str<<getTypeValue(params, additionalParameter2, system);
+        str<<" "<<getTypeValue(params, additionalParameter2, system);
 
     str.flush();
     return result;

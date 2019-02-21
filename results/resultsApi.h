@@ -183,10 +183,13 @@ public:
     virtual QList<ParametersSet> getParametersList(const ModelSyst *system) const;
 };
 
-class SettingsInavailabilityForClassInAllGroupsInCombination: public Settings
+class SettingsForClassAndServerGroupsCombination: public Settings
 {
+private:
+    TypeClasses_VsServerGroupsCombination qos;
+
 public:
-    SettingsInavailabilityForClassInAllGroupsInCombination(QString name, QString shortName);
+    SettingsForClassAndServerGroupsCombination(TypeClasses_VsServerGroupsCombination qos, QString name, QString shortName);
 
     bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
     bool getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet) const;
