@@ -271,6 +271,7 @@ void SimulatorAll::Engine::initialize(double a, int sumPropAt, int V)
 double SimulatorAll::Engine::doSimExperiment(int numberOfLostCall, unsigned int seed, int numberOfServicedCalls)
 {
     double simulationTime = 0;
+    double deltaTime;
     int classIdx;
 #define DO_SIM_EXP \
     ProcAll *proc = takeFirstProcess();\
@@ -290,8 +291,10 @@ double SimulatorAll::Engine::doSimExperiment(int numberOfLostCall, unsigned int 
         while(totalNumberOfLostCalls < numberOfLostCall)
         {
             ProcAll *proc = takeFirstProcess();
-            system->statsCollectPre(proc->time);
-            simulationTime += proc->time;
+            deltaTime = proc->time;
+            assert(deltaTime>=0);
+            system->statsCollectPre(deltaTime);
+            simulationTime+= deltaTime;
             classIdx = proc->callData->classIdx;
             event = proc->execute(proc, system);
             system->statsCollectPost(classIdx, event);
@@ -304,8 +307,10 @@ double SimulatorAll::Engine::doSimExperiment(int numberOfLostCall, unsigned int 
             while(totalNumberOfLostCalls < numberOfLostCall && totalNumberOfServicedCalls < numberOfServicedCalls)
             {
                 ProcAll *proc = takeFirstProcess();
-                system->statsCollectPre(proc->time);
-                simulationTime += proc->time;
+                deltaTime = proc->time;
+                assert(deltaTime>=0);
+                system->statsCollectPre(deltaTime);
+                simulationTime += deltaTime;
                 classIdx = proc->callData->classIdx;
                 event = proc->execute(proc, system);
                 system->statsCollectPost(classIdx, event);
@@ -316,8 +321,10 @@ double SimulatorAll::Engine::doSimExperiment(int numberOfLostCall, unsigned int 
             while(totalNumberOfServicedCalls < numberOfServicedCalls)
             {
                 ProcAll *proc = takeFirstProcess();
-                system->statsCollectPre(proc->time);
-                simulationTime += proc->time;
+                deltaTime = proc->time;
+                assert(deltaTime>=0);
+                system->statsCollectPre(deltaTime);
+                simulationTime += deltaTime;
                 classIdx = proc->callData->classIdx;
                 event = proc->execute(proc, system);
                 system->statsCollectPost(classIdx, event);
@@ -390,12 +397,15 @@ void SimulatorAll::System::writesResultsOfSingleExperiment(RSingle& singleResult
 
     }
 /// TypeForSystemState
+    double totalStatesDurationTime = 0;
     for (int n=0; n<=V; n++)
     {
         double stateDurationTime = statistics->getTimeStatistics(n).occupancyTime;
+        totalStatesDurationTime += stateDurationTime;
 
     /// StateProbability
         double p = stateDurationTime / simulationTime;
+        assert(p <= 1);
         singleResults.write(TypeForSystemState::StateProbability, p, n);
 
     /// IntensityNewCallOutOffered,
@@ -521,6 +531,7 @@ void SimulatorAll::System::writesResultsOfSingleExperiment(RSingle& singleResult
             stateDurationTime =  statistics->getTimeStatistics(n).occupancyTime;
 
         }
+        assert(totalStatesDurationTime < simulationTime*1.1);
     }
 }
 

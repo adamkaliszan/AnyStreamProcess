@@ -47,7 +47,44 @@ SystemStatistics::SystemStatistics(const ModelSyst * const system)
 
 void SystemStatistics::clear()
 {
+    for (int n=0; n<eventsPerClass.length(); n++)
+        eventsPerClass[n].statsClear();
 
+    for (int n=0; n<eventsPerSystemState.length(); n++)
+        eventsPerSystemState[n].statsClear();
+
+    for (int i=0; i<eventsPerServerAndBufferState.length(); i++)
+        for (int n=0; n<eventsPerServerAndBufferState[i].length(); n++)
+            eventsPerServerAndBufferState[i][n].statsClear();
+
+    for (int i=0; i<eventsPerClassAndSystemState.length(); i++)
+        for (int n=0; n<eventsPerClassAndSystemState[i].length(); n++)
+            eventsPerClassAndSystemState[i][n].statsClear();
+
+    for (int i=0; i<eventsPerClassAndServerStateAndSystem.length(); i++)
+        for (int n=0; n<eventsPerClassAndServerStateAndSystem[i].length(); n++)
+            for (int l=0; l<eventsPerClassAndServerStateAndSystem[i][n].length(); l++)
+                eventsPerClassAndServerStateAndSystem[i][n][l].statsClear();
+
+    for (int i=0; i<timesPerClasses.length(); i++)
+        timesPerClasses[i].statsClear();
+
+    for (int i=0; i<timesPerSystemState.length(); i++)
+        timesPerSystemState[i].statsClear();
+
+    for (int i=0; i<timesPerServerAndBufferState.length(); i++)
+        for (int n=0; n<timesPerServerAndBufferState[i].length(); n++)
+            timesPerServerAndBufferState[i][n].statsClear();
+
+
+    for (int i=0; i<timesPerClassAndSystemState.length(); i++)
+        for (int n=0; n<timesPerClassAndSystemState[i].length(); n++)
+            timesPerClassAndSystemState[i][n].statsClear();
+
+    for (int i=0; i<timesPerClassAndServerAndBufferState.length(); i++)
+        for (int n=0; n<timesPerClassAndServerAndBufferState[i].length(); n++)
+            for (int l=0; l<timesPerClassAndServerAndBufferState[i][n].length(); l++)
+                timesPerClassAndServerAndBufferState[i][n][l].statsClear();
 }
 
 void SystemStatistics::collectPre(const ModelSyst *mSystem, double time, int n_s, int n_b
@@ -278,7 +315,7 @@ void ServerStatistics::collectPost(int classIdx, int old_n, int n, StatisticEven
 }
 
 void ServerStatistics::clear()
-{
+{      
     eventsPerClass.fill(EvenStatistics());
     eventsPerState.fill(EvenStatistics());
     for (int classNo=0; classNo < eventsPerClassAndState.length(); classNo++)
