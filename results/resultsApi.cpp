@@ -111,7 +111,7 @@ QMap<ParametersSet, QVector<double>> TypesAndSettings::getPlotsY(RSystem &rSyste
 {
     Settings *qosSettings = _myMap[qos];
     qosSettings->setFunctionalParameter(functionalParameter);
-    QList<ParametersSet> sysParams = qosSettings->getParametersList(&rSystem.getModel());
+    QList<ParametersSet> sysParams = qosSettings->getParametersList(&rSystem.getModel(), rSystem.getAvailableAperAU());
 
     QMap<ParametersSet, QVector<double>> result;
 
@@ -279,14 +279,35 @@ bool SettingsTypeForClass::getSinglePlot(QLineSeries *outPlot, QPair<double, dou
     return result;
 }
 
-QList<ParametersSet> SettingsTypeForClass::getParametersList(const ModelSyst *system) const
+QList<ParametersSet> SettingsTypeForClass::getParametersList(const ModelSyst *system, const QList<decimal> &aOfPerAU) const
 {
     QList<ParametersSet> result;
-    for (int i=0; i<system->m(); i++)
+    int i;
+    decimal a;
+    switch (functionalParameter)
     {
-        ParametersSet item;
-        item.classIndex = i;
-        result.append(item);
+    case ParameterType::OfferedTrafficPerAS:
+        for (i=0; i<system->m(); i++)
+        {
+            ParametersSet item;
+            item.classIndex = i;
+            item.a = -1;
+            result.append(item);
+        }
+        break;
+
+    case ParameterType::TrafficClass:
+        foreach (a, aOfPerAU)
+        {
+            ParametersSet item;
+            item.classIndex = -1;
+            item.a = a;
+            result.append(item);
+        }
+        break;
+
+    default:
+        qFatal("Wrong functional parameter");
     }
     return result;
 }
@@ -427,15 +448,34 @@ bool SettingsTypeForSystemState::getSinglePlot(QVector<double> &outPlot, RSystem
     return result;
 }
 
-QList<ParametersSet> SettingsTypeForSystemState::getParametersList(const ModelSyst *system) const
+QList<ParametersSet> SettingsTypeForSystemState::getParametersList(const ModelSyst *system, const QList<decimal> &aOfPerAU) const
 {
     QList<ParametersSet> result;
-    for (int n=0; n <= system->V(); n++)
+    int n;
+
+    switch (functionalParameter)
     {
-        ParametersSet item;
-        item.systemState = n;
-        result.append(item);
+    case ParameterType::OfferedTrafficPerAS:
+        for (n=0; n <= system->V(); n++)
+        {
+            ParametersSet item;
+            item.systemState = n;
+            result.append(item);
+        }
+        break;
+    case ParameterType::SystemState:
+        foreach (decimal a, aOfPerAU)
+        {
+            ParametersSet item;
+            item.systemState = -1;
+            item.a = a;
+            result.append(item);
+        }
+        break;
+    default:
+        qFatal("Wrong functional parameter");
     }
+
     return result;
 }
 
@@ -535,14 +575,36 @@ bool SettingsTypeForServerState::getSinglePlot(QVector<double> &outPlot, RSystem
     return result;
 }
 
-QList<ParametersSet> SettingsTypeForServerState::getParametersList(const ModelSyst *system) const
+QList<ParametersSet> SettingsTypeForServerState::getParametersList(const ModelSyst *system, const QList<decimal> &aOfPerAU) const
 {
     QList<ParametersSet> result;
-    for (int n=0; n <= system->vk_s(); n++)
+    int n;
+    decimal a;
+
+    switch (functionalParameter)
     {
-        ParametersSet item;
-        item.serverState = n;
-        result.append(item);
+    case ParameterType::OfferedTrafficPerAS:
+        for (n=0; n <= system->vk_s(); n++)
+        {
+            ParametersSet item;
+            item.serverState = n;
+            item.a = -1;
+            result.append(item);
+        }
+        break;
+
+    case ParameterType::ServerState:
+        foreach (a, aOfPerAU)
+        {
+            ParametersSet item;
+            item.serverState = -1;
+            item.a = a;
+            result.append(item);
+        }
+        break;
+
+    default:
+        qFatal("Wrong functional parameter");
     }
     return result;
 }
@@ -643,14 +705,36 @@ bool SettingsTypeForBufferState::getSinglePlot(QVector<double> &outPlot, RSystem
     return result;
 }
 
-QList<ParametersSet> SettingsTypeForBufferState::getParametersList(const ModelSyst *system) const
+QList<ParametersSet> SettingsTypeForBufferState::getParametersList(const ModelSyst *system, const QList<decimal> &aOfPerAU) const
 {
     QList<ParametersSet> result;
-    for (int n=0; n <= system->vk_b(); n++)
+    int n;
+    decimal a;
+
+    switch(functionalParameter)
     {
-        ParametersSet item;
-        item.bufferState = n;
-        result.append(item);
+    case ParameterType::OfferedTrafficPerAS:
+        for (n=0; n <= system->vk_b(); n++)
+        {
+            ParametersSet item;
+            item.bufferState = n;
+            item.a = -1;
+            result.append(item);
+        }
+        break;
+
+    case ParameterType::BufferState:
+        foreach (a, aOfPerAU)
+        {
+            ParametersSet item;
+            item.bufferState = -1;
+            item.a = a;
+            result.append(item);
+        }
+        break;
+
+    default:
+        qFatal("Wrong functional parameter");
     }
     return result;
 }
@@ -782,18 +866,53 @@ bool SettingsTypeForClassAndSystemState::getSinglePlot(QVector<double> &outPlot,
     return result;
 }
 
-QList<ParametersSet> SettingsTypeForClassAndSystemState::getParametersList(const ModelSyst *system) const
+QList<ParametersSet> SettingsTypeForClassAndSystemState::getParametersList(const ModelSyst *system, const QList<decimal> &aOfPerAU) const
 {
     QList<ParametersSet> result;
-    for (int i=0; i < system->m(); i++)
+    int i;
+    int n;
+    switch (functionalParameter)
     {
-        for (int n=0; n <= system->V(); n++)
+    case ParameterType::OfferedTrafficPerAS:
+        for (i=0; i < system->m(); i++)
         {
-            ParametersSet item;
-            item.systemState = n;
-            item.classIndex = i;
-            result.append(item);
+            for (n=0; n <= system->V(); n++)
+            {
+                ParametersSet item;
+                item.systemState = n;
+                item.classIndex = i;
+                result.append(item);
+            }
         }
+        break;
+    case ParameterType::SystemState:
+        foreach (decimal a, aOfPerAU)
+        {
+            for (i=0; i < system->m(); i++)
+            {
+                ParametersSet item;
+                item.systemState = -1;
+                item.classIndex = i;
+                item.a = a;
+                result.append(item);
+            }
+        }
+        break;
+    case ParameterType::TrafficClass:
+        foreach (decimal a, aOfPerAU)
+        {
+            for (n=0; n <= system->V(); n++)
+            {
+                ParametersSet item;
+                item.classIndex = -1;
+                item.systemState = n;
+                item.a = a;
+                result.append(item);
+            }
+        }
+        break;
+    default:
+        qFatal("Wrong functional parameter");
     }
     return result;
 }
@@ -931,18 +1050,58 @@ bool SettingsTypeForClassAndServerState::getSinglePlot(QVector<double> &outPlot,
     return result;
 }
 
-QList<ParametersSet> SettingsTypeForClassAndServerState::getParametersList(const ModelSyst *system) const
+QList<ParametersSet> SettingsTypeForClassAndServerState::getParametersList(const ModelSyst *system, const QList<decimal> &aOfPerAU) const
 {
     QList<ParametersSet> result;
-    for (int i=0; i < system->m(); i++)
+
+    int i;
+    int n;
+    decimal a;
+    switch (functionalParameter)
     {
-        for (int n=0; n <= system->vk_s(); n++)
+    case ParameterType::OfferedTrafficPerAS:
+        for (i=0; i < system->m(); i++)
         {
-            ParametersSet item;
-            item.serverState = n;
-            item.classIndex = i;
-            result.append(item);
+            for (n=0; n <= system->vk_s(); n++)
+            {
+                ParametersSet item;
+                item.serverState = n;
+                item.classIndex = i;
+                result.append(item);
+            }
         }
+        break;
+
+    case ParameterType::TrafficClass:
+        foreach (a, aOfPerAU)
+        {
+            for (n=0; n <= system->vk_s(); n++)
+            {
+                ParametersSet item;
+                item.serverState = n;
+                item.classIndex = -1;
+                item.a = a;
+                result.append(item);
+            }
+        }
+        break;
+
+    case ParameterType::ServerState:
+        foreach (a, aOfPerAU)
+        {
+            for (i=0; i < system->m(); i++)
+            {
+                ParametersSet item;
+                item.serverState = -1;
+                item.classIndex = i;
+                item.a = a;
+                result.append(item);
+            }
+        }
+        break;
+
+    default:
+        qFatal("Wrong functional parameter");
     }
     return result;
 }
@@ -1080,18 +1239,57 @@ bool SettingsTypeForClassAndBufferState::getSinglePlot(QVector<double> &outPlot,
     return result;
 }
 
-QList<ParametersSet> SettingsTypeForClassAndBufferState::getParametersList(const ModelSyst *system) const
+QList<ParametersSet> SettingsTypeForClassAndBufferState::getParametersList(const ModelSyst *system, const QList<decimal> &aOfPerAU) const
 {
     QList<ParametersSet> result;
-    for (int i=0; i < system->m(); i++)
+    int i;
+    int n;
+    decimal a;
+
+    switch(functionalParameter)
     {
-        for (int n=0; n <= system->vk_b(); n++)
+    case ParameterType::OfferedTrafficPerAS:
+        for (i=0; i < system->m(); i++)
         {
-            ParametersSet item;
-            item.bufferState = n;
-            item.classIndex = i;
-            result.append(item);
+            for (n=0; n <= system->vk_b(); n++)
+            {
+                ParametersSet item;
+                item.bufferState = n;
+                item.classIndex = i;
+                result.append(item);
+            }
         }
+        break;
+    case ParameterType::TrafficClass:
+        foreach (a, aOfPerAU)
+        {
+            for (n=0; n <= system->vk_b(); n++)
+            {
+                ParametersSet item;
+                item.bufferState = n;
+                item.classIndex = -1;
+                item.a = a;
+                result.append(item);
+            }
+
+        }
+        break;
+
+    case ParameterType::BufferState:
+        foreach (a, aOfPerAU)
+        {
+            for (i=0; i < system->m(); i++)
+            {
+                ParametersSet item;
+                item.bufferState = -1;
+                item.classIndex = i;
+                item.a = a;
+                result.append(item);
+            }
+        }
+        break;
+    default:
+        qFatal("Qrong functional parameter");
     }
     return result;
 }
@@ -1259,20 +1457,59 @@ bool SettingsForClassAndServerGroupsCombination::getSinglePlot(QVector<double> &
     return result;
 }
 
-QList<ParametersSet> SettingsForClassAndServerGroupsCombination::getParametersList(const ModelSyst *system) const
+QList<ParametersSet> SettingsForClassAndServerGroupsCombination::getParametersList(const ModelSyst *system, const QList<decimal> &aOfPerAU) const
 {
     QList<ParametersSet> result;
     int noOfCOmbinations = Utils::UtilsLAG::getPossibleCombinations(system->k_s()).length();
+    int i;
+    int combNo;
+    decimal a;
 
-    for (int i=0; i < system->m(); i++)
+    switch (functionalParameter)
     {
-        for (int combNo=0; combNo < noOfCOmbinations; combNo++)
+    case ParameterType::OfferedTrafficPerAS:
+        for (i=0; i < system->m(); i++)
         {
-            ParametersSet item;
-            item.combinationNumber = combNo;
-            item.classIndex = i;
-            result.append(item);
+            for (combNo=0; combNo < noOfCOmbinations; combNo++)
+            {
+                ParametersSet item;
+                item.combinationNumber = combNo;
+                item.classIndex = i;
+                result.append(item);
+            }
         }
+        break;
+    case ParameterType::TrafficClass:
+        foreach (a, aOfPerAU)
+        {
+            for (combNo=0; combNo < noOfCOmbinations; combNo++)
+            {
+                ParametersSet item;
+                item.combinationNumber = combNo;
+                item.classIndex = -1;
+                item.a = a;
+                result.append(item);
+            }
+        }
+        break;
+
+    case ParameterType::CombinationNumber:
+        foreach (a, aOfPerAU)
+        {
+            for (i=0; i < system->m(); i++)
+            {
+                ParametersSet item;
+                item.combinationNumber = -1;
+                item.classIndex = i;
+                item.a = a;
+                result.append(item);
+            }
+        }
+        break;
+
+    default:
+        qFatal("wrong functional parameter");
+
     }
     return result;
 }
@@ -1419,18 +1656,57 @@ bool SettingsAvailableSubroupDistribution::getSinglePlot(QVector<double> &outPlo
     return result;
 }
 
-QList<ParametersSet> SettingsAvailableSubroupDistribution::getParametersList(const ModelSyst *system) const
+QList<ParametersSet> SettingsAvailableSubroupDistribution::getParametersList(const ModelSyst *system, const QList<decimal> &aOfPerAU) const
 {
     QList<ParametersSet> result;
-    for (int k=0; k <= system->k_s(); k++)
+    int k;
+    int i;
+    decimal a;
+
+    switch (functionalParameter)
     {
-        for (int i=0; i < system->m(); i++)
+    case ParameterType::OfferedTrafficPerAS:
+        for (k=0; k <= system->k_s(); k++)
         {
-            ParametersSet item;
-            item.numberOfGroups = k;
-            item.classIndex = i;
-            result.append(item);
+            for (i=0; i < system->m(); i++)
+            {
+                ParametersSet item;
+                item.numberOfGroups = k;
+                item.classIndex = i;
+                result.append(item);
+            }
         }
+        break;
+    case ParameterType::NumberOfGroups:
+        foreach (a, aOfPerAU)
+        {
+            for (i=0; i < system->m(); i++)
+            {
+                ParametersSet item;
+                item.numberOfGroups = -1;
+                item.classIndex = i;
+                item.a = a;
+                result.append(item);
+            }
+        }
+        break;
+
+    case ParameterType::TrafficClass:
+        foreach (a, aOfPerAU)
+        {
+            for (k=0; k <= system->k_s(); k++)
+            {
+                ParametersSet item;
+                item.numberOfGroups = k;
+                item.classIndex = -1;
+                item.a = a;
+                result.append(item);
+            }
+        }
+        break;
+
+    default:
+        qFatal("Wrong functional parameter");
     }
     return result;
 }

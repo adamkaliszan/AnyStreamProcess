@@ -81,7 +81,7 @@ public:
     virtual bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const =0;
     virtual bool getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet) const = 0;
 
-    virtual QList<ParametersSet> getParametersList(const ModelSyst *system) const = 0;
+    virtual QList<ParametersSet> getParametersList(const ModelSyst *system, const QList<decimal> &aOfPerAU) const = 0;
 
     virtual double getXmin(RSystem &rSystem) const;
     virtual double getXmax(RSystem &rSystem) const;
@@ -107,7 +107,7 @@ public:
 
     bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
     bool getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet) const;
-    virtual QList<ParametersSet> getParametersList(const ModelSyst *system) const;
+    virtual QList<ParametersSet> getParametersList(const ModelSyst *system, const QList<decimal> &aOfPerAU) const;
 };
 
 
@@ -120,7 +120,7 @@ public:
 
     bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
     bool getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet) const;
-    virtual QList<ParametersSet> getParametersList(const ModelSyst *system) const;
+    virtual QList<ParametersSet> getParametersList(const ModelSyst *system, const QList<decimal> &aOfPerAU) const;
 };
 
 class SettingsTypeForServerState: public Settings
@@ -132,7 +132,7 @@ public:
 
     bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
     bool getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet) const;
-    virtual QList<ParametersSet> getParametersList(const ModelSyst *system) const;
+    virtual QList<ParametersSet> getParametersList(const ModelSyst *system, const QList<decimal> &aOfPerAU) const;
 };
 
 class SettingsTypeForBufferState: public Settings
@@ -144,7 +144,7 @@ public:
 
     bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
     bool getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet) const;
-    virtual QList<ParametersSet> getParametersList(const ModelSyst *system) const;
+    virtual QList<ParametersSet> getParametersList(const ModelSyst *system, const QList<decimal> &aOfPerAU) const;
 };
 
 class SettingsTypeForClassAndSystemState: public Settings
@@ -156,7 +156,7 @@ public:
 
     bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
     bool getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet) const;
-    virtual QList<ParametersSet> getParametersList(const ModelSyst *system) const;
+    virtual QList<ParametersSet> getParametersList(const ModelSyst *system, const QList<decimal> &aOfPerAU) const;
 };
 
 class SettingsTypeForClassAndServerState: public Settings
@@ -168,7 +168,7 @@ public:
 
     bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
     bool getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet) const;
-    virtual QList<ParametersSet> getParametersList(const ModelSyst *system) const;
+    virtual QList<ParametersSet> getParametersList(const ModelSyst *system, const QList<decimal> &aOfPerAU) const;
 };
 
 class SettingsTypeForClassAndBufferState: public Settings
@@ -180,7 +180,7 @@ public:
 
     bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
     bool getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet) const;
-    virtual QList<ParametersSet> getParametersList(const ModelSyst *system) const;
+    virtual QList<ParametersSet> getParametersList(const ModelSyst *system, const QList<decimal> &aOfPerAU) const;
 };
 
 class SettingsForClassAndServerGroupsCombination: public Settings
@@ -193,7 +193,7 @@ public:
 
     bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
     bool getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet) const;
-    virtual QList<ParametersSet> getParametersList(const ModelSyst *system) const;
+    virtual QList<ParametersSet> getParametersList(const ModelSyst *system, const QList<decimal> &aOfPerAU) const;
 };
 
 class SettingsAvailableSubroupDistribution: public Settings
@@ -203,7 +203,7 @@ public:
 
     bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
     bool getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet) const;
-    virtual QList<ParametersSet> getParametersList(const ModelSyst *system) const;
+    virtual QList<ParametersSet> getParametersList(const ModelSyst *system, const QList<decimal> &aOfPerAU) const;
 };
 
 
