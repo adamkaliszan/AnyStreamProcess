@@ -526,6 +526,8 @@ public:
     void updateConstSyst() const;
 
     void clearAll();
+
+    QString getGnuplotDescription() const;
 };
 
 QTextStream &operator<<(QTextStream &stream, const ModelSyst &model);

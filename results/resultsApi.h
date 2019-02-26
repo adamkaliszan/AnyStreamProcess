@@ -95,6 +95,7 @@ public:
     QString getTypeValue(const ParametersSet &params, Results::ParameterType type, const ModelSyst *system);
 
     QString getParameterDescription(const ParametersSet &params, const ModelSyst *system);
+    QString getParameterDescription(const ParametersSet &params, const ModelSyst *system, const QList<ParameterType> dontDescribeMe);
 };
 
 class SettingsTypeForClass: public Settings

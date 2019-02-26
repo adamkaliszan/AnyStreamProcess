@@ -1067,6 +1067,45 @@ void ModelSyst::clearAll()
     _totalNumberOfBuffers = 0;
 }
 
+QString ModelSyst::getGnuplotDescription() const
+{
+    QString result;
+    QTextStream str;
+    str.setString(&result);
+
+    str<<"S"<<vk_s();
+    if (k_s() > 1)
+    {
+        str<<"(";
+        switch (_serverSchedulerAlgorithm)
+        {
+        case ServerResourcessScheduler::Random:
+            str<<"R";
+            break;
+        case ServerResourcessScheduler::Sequencial:
+            str<<"S";
+            break;
+        }
+        str<<k_s()<<")";
+    }
+    if (vk_b() > 0)
+        str<<" B"<<vk_b();
+    str<<" m"<<m();
+    if (m()>0)
+    {
+        str<<"(";
+        for(int i=0; i < m(); i++)
+        {
+            if (i > 0)
+                str<<" ";
+            const ModelTrClass *tmp = getClass(i);
+            str<<*tmp;
+        }
+        str<<")";
+    }
+    return result;
+}
+
 const ModelTrClass *ModelSyst::getClass(int idx) const
 {
     if (idx < _noOfTrClasses)

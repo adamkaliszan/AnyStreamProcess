@@ -1,15 +1,31 @@
 #include "results/resultsGnuplot.h"
 
-void GnuplotScript::WriteDataAndScript(QString baseFileName, const ModelSyst *system, Results::Settings *setting, Results::Type qosType)
+void GnuplotScript::WriteDataAndScript(QString baseFileNameWithPath, const ModelSyst *system, Results::Settings *setting, Results::Type qosType)
 {
     int logScale = 1;
     struct Results::ParametersSet parameters;
 
-    QFile scriptFile(baseFileName + ".gp");
+    QFile scriptFile(baseFileNameWithPath + ".gp");
 
     scriptFile.open(QFile::WriteOnly | QFile::Text);
 
     QTextStream scriptStream(&scriptFile);
+
+    QTextStream *scriptStreamTrClass = new QTextStream[system->m()];
+    QVector<QString> scriptStringTrClass(system->m());
+    bool firstPlot = true;
+    QVector<bool> firstPlotTrClass(system->m(), true);
+
+    QList<ParameterType> noDescList;
+    noDescList.append(ParameterType::TrafficClass);
+
+    QString baseFileName = baseFileNameWithPath.mid(baseFileNameWithPath.lastIndexOf("/")+1);
+
+    for(int i=0; i<system->m(); i++)
+    {
+        scriptStreamTrClass[i].setString(&scriptStringTrClass[i]);
+        scriptStreamTrClass[i].setCodec("Windows-1250");
+    }
     scriptStream.setCodec("Windows-1250");
 
     scriptStream<<"set terminal postscript enhanced 'Times' 6 color\r\n";
@@ -22,6 +38,8 @@ void GnuplotScript::WriteDataAndScript(QString baseFileName, const ModelSyst *sy
 
     if (logScale == 1)
     {
+        scriptStream<<"set logscale y\r\n";
+
         scriptStream<<"set yrange ["<<0.00000001<<":"<<1<<"]\n";
         scriptStream<<"set ytics (\\\n";
         scriptStream<<"0.00000001, 0.00000002, \"\" 0.00000003, \"\" 0.00000004, 0.00000005, \"\" 0.00000006, \"\" 0.00000008, \"\" 0.00000009, \\\n";
@@ -43,7 +61,7 @@ void GnuplotScript::WriteDataAndScript(QString baseFileName, const ModelSyst *sy
     scriptStream<<"set colorsequence podo\r\n";
     scriptStream<<"set ytics nomirror\r\n";
     scriptStream<<"set border 3\r\n";
-    scriptStream<<"set size 0.32, 0.30\r\n";
+    scriptStream<<"set size 0.64, 0.60\r\n";
     scriptStream<<"set grid\r\n";
     scriptStream<<"set style line 1 lt 1 lw 0\r\n";
     scriptStream<<"set key box linestyle 1\r\n";
@@ -51,15 +69,24 @@ void GnuplotScript::WriteDataAndScript(QString baseFileName, const ModelSyst *sy
     scriptStream<<"set ylabel \""<<setting->name<<"\" offset 1.5\r\n";
 
     scriptStream<<"set output \""<<baseFileName<<".eps\"\r\n";
-
     scriptStream<<"plot\\\r\n";
+    for(int i=0; i<system->m(); i++)
+    {
+        scriptStreamTrClass[i]<<"set title \""<<system->getGnuplotDescription()<<" class "<<i+1<<"\"\r\n";
+        scriptStreamTrClass[i]<<"set output \""<<baseFileName<<"trClass"<<i+1<<".eps\"\r\n";
+        scriptStreamTrClass[i]<<"plot\\\r\n";
+    }
+
     int i;
 
     int lc = 1;
     int dt = 1;
     int lw = 1;
 
-    bool firstPlot = true;
+    QVector<int> dtTrClass(system->m(), 1);
+    QVector<int> lwTrClass(system->m(), 1);
+
+
     foreach(Investigator *algorithm, systemResults->getAvailableAlgorithms())
     {
         if (!algorithm->getQoS_Set().contains(qosType))
@@ -67,9 +94,10 @@ void GnuplotScript::WriteDataAndScript(QString baseFileName, const ModelSyst *sy
         QVector<decimal> xVals = TypesAndSettings::getPlotsX(*systemResults, setting->getFunctionalParameter());
         QMap<ParametersSet, QVector<double>> yVals = TypesAndSettings::getPlotsY(*systemResults, qosType, setting->getFunctionalParameter(), algorithm);
 
-        QString dataFileName = baseFileName + algorithm->shortName() + ".dat";
+        QString dataFileNameWithPath = baseFileNameWithPath + algorithm->shortName() + ".dat";
+        QString dataFileName = dataFileNameWithPath.mid(dataFileNameWithPath.lastIndexOf("/")+1);
 
-        QFile dataFile(dataFileName);
+        QFile dataFile(dataFileNameWithPath);
         dataFile.open(QFile::WriteOnly | QFile::Text);
         QTextStream dataStream(&dataFile);
 
@@ -80,6 +108,9 @@ void GnuplotScript::WriteDataAndScript(QString baseFileName, const ModelSyst *sy
 
         dt = 1;
         lw = 1;
+        dtTrClass.fill(1);
+        lwTrClass.fill(1);
+
         foreach(ParametersSet param, yVals.keys())
         {
             dataStream<<"\t"<<setting->getParameterDescription(param, system);
@@ -98,6 +129,22 @@ void GnuplotScript::WriteDataAndScript(QString baseFileName, const ModelSyst *sy
 
                 scriptStream<<"\""<<dataFileName<<"\" using 1:"<<colNo<<" with lines dt "<<dt<<" lw "<<lw<<" lc "<<lc<<" title '"<<algorithm->shortName()<<" "<<setting->getParameterDescription(param, system)<<"' \\\r\n";
                 scriptStream<<"  , \""<<dataFileName<<"\" using 1:"<<colNo<<":"<<colNo+1<<" with yerrorbars pt 1 lc "<<lc<<" notitle \\\r\n";
+
+
+                if (param.classIndex >= 0)
+                {
+                    if (firstPlotTrClass[param.classIndex])
+                    {
+                        firstPlotTrClass[param.classIndex] = false;
+                        scriptStreamTrClass[param.classIndex]<<"    ";
+                    }
+                    else
+                        scriptStreamTrClass[param.classIndex]<<"  , ";
+
+                    scriptStreamTrClass[param.classIndex]<<"\""<<dataFileName<<"\" using 1:"<<colNo<<" with lines dt "<<dtTrClass[param.classIndex]<<" lw "<<lwTrClass[param.classIndex]<<" lc "<<lc<<" title '"<<algorithm->shortName()<<" "<<setting->getParameterDescription(param, system, noDescList)<<"' \\\r\n";
+                    scriptStreamTrClass[param.classIndex]<<"  , \""<<dataFileName<<"\" using 1:"<<colNo<<":"<<colNo+1<<" with yerrorbars pt 1 lc "<<lc<<" notitle \\\r\n";
+                }
+
                 colNo++;
             }
             else
@@ -109,7 +156,19 @@ void GnuplotScript::WriteDataAndScript(QString baseFileName, const ModelSyst *sy
                 }
                 else
                     scriptStream<<"  , ";
-                scriptStream<<"\""<<dataFileName<<"\" using 1:"<<colNo<<" with lines dt "<<dt<<" lw "<<lw<<" lc "<<lc<<" title '"<<setting->getParameterDescription(param, system)<<"' \\\r\n";
+                scriptStream<<"\""<<dataFileName<<"\" using 1:"<<colNo<<" with lines dt "<<dt<<" lw "<<lw<<" lc "<<lc<<" title '"<<algorithm->shortName()<<" "<<setting->getParameterDescription(param, system)<<"' \\\r\n";
+
+                if (param.classIndex >= 0)
+                {
+                    if (firstPlotTrClass[param.classIndex])
+                    {
+                        firstPlotTrClass[param.classIndex] = false;
+                        scriptStreamTrClass[param.classIndex]<<"    ";
+                    }
+                    else
+                        scriptStreamTrClass[param.classIndex]<<"  , ";
+                    scriptStreamTrClass[param.classIndex]<<"\""<<dataFileName<<"\" using 1:"<<colNo<<" with lines dt "<<dtTrClass[param.classIndex]<<" lw "<<lwTrClass[param.classIndex]<<" lc "<<lc<<" title '"<<algorithm->shortName()<<" "<<setting->getParameterDescription(param, system, noDescList)<<"' \\\r\n";
+                }
             }
             colNo++;
 
@@ -119,9 +178,18 @@ void GnuplotScript::WriteDataAndScript(QString baseFileName, const ModelSyst *sy
                 dt = 1;
                 lw++;
             }
+
+            if (param.classIndex>=0)
+            {
+                dtTrClass[param.classIndex]++;
+                if (dtTrClass[param.classIndex] == 6)
+                {
+                    dtTrClass[param.classIndex] = 1;
+                    lwTrClass[param.classIndex]++;
+                }
+            }
         }
         dataStream<<"\n";
-
 
         for (i=0; i < xVals.length(); i++)
         {
@@ -145,6 +213,15 @@ void GnuplotScript::WriteDataAndScript(QString baseFileName, const ModelSyst *sy
     }
     scriptStream<<"\r\n";
 
+    if (setting->getAdditionalParameter1() == ParameterType::TrafficClass || setting->getAdditionalParameter2() == ParameterType::TrafficClass)
+    {
+        for (i=0; i<system->m(); i++)
+        {
+            scriptStream<<scriptStringTrClass[i]<<"\r\n";
+        }
+    }
+
+    delete []scriptStreamTrClass;
     scriptFile.close();
 }
 

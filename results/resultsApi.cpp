@@ -1460,7 +1460,12 @@ bool SettingsForClassAndServerGroupsCombination::getSinglePlot(QVector<double> &
 QList<ParametersSet> SettingsForClassAndServerGroupsCombination::getParametersList(const ModelSyst *system, const QList<decimal> &aOfPerAU) const
 {
     QList<ParametersSet> result;
-    int noOfCOmbinations = Utils::UtilsLAG::getPossibleCombinations(system->k_s()).length();
+
+    QVector<QVector<int>> combinations = Utils::UtilsLAG::getPossibleCombinationsFinal(system->k_s());
+
+    int noOfCOmbinations = combinations.length();
+    int lstNoOfGroupInCombination = -1;
+
     int i;
     int combNo;
     decimal a;
@@ -1472,6 +1477,10 @@ QList<ParametersSet> SettingsForClassAndServerGroupsCombination::getParametersLi
         {
             for (combNo=0; combNo < noOfCOmbinations; combNo++)
             {
+                if ((system->getGroupsSchedulerAlgorithm() == ServerResourcessScheduler::Random) && combinations[combNo].length() == lstNoOfGroupInCombination)
+                    continue;
+                lstNoOfGroupInCombination = combinations[combNo].length();
+
                 ParametersSet item;
                 item.combinationNumber = combNo;
                 item.classIndex = i;
@@ -1484,6 +1493,10 @@ QList<ParametersSet> SettingsForClassAndServerGroupsCombination::getParametersLi
         {
             for (combNo=0; combNo < noOfCOmbinations; combNo++)
             {
+                if ((system->getGroupsSchedulerAlgorithm() == ServerResourcessScheduler::Random) && combinations[combNo].length() == lstNoOfGroupInCombination)
+                    continue;
+                lstNoOfGroupInCombination = combinations[combNo].length();
+
                 ParametersSet item;
                 item.combinationNumber = combNo;
                 item.classIndex = -1;
@@ -1966,6 +1979,22 @@ QString Settings::getParameterDescription(const ParametersSet &params, const Mod
         str<<getTypeValue(params, additionalParameter1, system);
 
     if (additionalParameter2 != ParameterType::None)
+        str<<" "<<getTypeValue(params, additionalParameter2, system);
+
+    str.flush();
+    return result;
+}
+
+QString Settings::getParameterDescription(const ParametersSet &params, const ModelSyst *system, const QList<ParameterType> dontDescribeMe)
+{
+    QString result;
+    QTextStream str;
+    str.setString(&result, QIODevice::Append);
+
+    if ((additionalParameter1 != ParameterType::None) && !dontDescribeMe.contains(additionalParameter1))
+        str<<getTypeValue(params, additionalParameter1, system);
+
+    if ((additionalParameter2 != ParameterType::None) && !dontDescribeMe.contains(additionalParameter2))
         str<<" "<<getTypeValue(params, additionalParameter2, system);
 
     str.flush();
