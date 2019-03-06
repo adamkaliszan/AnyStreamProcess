@@ -110,6 +110,7 @@ void SystemStatistics::collectPre(const ModelSyst *mSystem, double time, int n_s
 
 void SystemStatistics::collectPost(int classIdx, int old_n, int n, StatisticEventType event)
 {
+    (void) event;
     if (n == old_n) //nowe zgłoszenie zostało odrzucone
     {
         eventsPerClass[classIdx].outNewOffered++;

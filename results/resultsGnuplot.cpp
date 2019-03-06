@@ -1,3 +1,4 @@
+#include <cmath>
 #include "results/resultsGnuplot.h"
 
 void GnuplotScript::WriteDataAndScript(QString baseFileNameWithPath, const ModelSyst *system, Results::Settings *setting, Results::Type qosType)
@@ -197,7 +198,7 @@ void GnuplotScript::WriteDataAndScript(QString baseFileNameWithPath, const Model
 
             foreach(ParametersSet param, yVals.keys())
             {
-                if (isnan(yVals[param][i]))
+                if (std::isnan(yVals[param][i]))
                     dataStream<<"\t0";
                 else
                     dataStream<<"\t"<<yVals[param][i];

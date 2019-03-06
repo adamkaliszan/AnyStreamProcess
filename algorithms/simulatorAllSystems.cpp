@@ -184,6 +184,7 @@ StatisticEventType SimulatorAll::SimEvent2statEvent(SimulatorAll::EventType simE
     case EventType::newCallRejected:
         return StatisticEventType::newCallRejected;
     }
+    return StatisticEventType::newCallRejected;
 }
 
 void SimulatorAll::calculateSystem(const ModelSyst *system
@@ -339,8 +340,6 @@ void SimulatorAll::System::writesResultsOfSingleExperiment(RSingle& singleResult
 {
     server->writesResultsOfSingleExperiment(singleResults, simulationTime);
 
-
-    int Vs = server->getV();
     int V  = server->getV() + buffer->getV();
     int m  = systemData->m();
 

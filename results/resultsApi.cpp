@@ -1,3 +1,4 @@
+#include <cmath>
 #include "resultsApi.h"
 
 #include "utils/lag.h"
@@ -323,7 +324,7 @@ bool SettingsTypeForClass::getSinglePlot(QVector<double> &outPlot, RSystem &rSys
         {
             const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
 
-            double y=SNANL;
+            double y=0;
 
             if ((*singlePoint)->read(y, qos, parametersSet.classIndex))
             {
@@ -340,7 +341,7 @@ bool SettingsTypeForClass::getSinglePlot(QVector<double> &outPlot, RSystem &rSys
 
         for (int i=0; i <rSystem.getModel().m(); i++)
         {
-            double y=SNANL;
+            double y=0;
             if ((*singlePoint)->read(y, qos, i))
             {
                 if (y>0)
@@ -420,7 +421,7 @@ bool SettingsTypeForSystemState::getSinglePlot(QVector<double> &outPlot, RSystem
         {
             const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
 
-            double y=SNANL;
+            double y=0;
             if ((*singlePoint)->read(y, qos, parametersSet.systemState))
             {
                 if (y > 0)
@@ -435,7 +436,7 @@ bool SettingsTypeForSystemState::getSinglePlot(QVector<double> &outPlot, RSystem
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int n=0; n<=rSystem.getModel().V(); n++)
         {
-            double y=SNANL;
+            double y=0;
 
             if ((*singlePoint)->read(y, qos, n))
             {
@@ -547,7 +548,7 @@ bool SettingsTypeForServerState::getSinglePlot(QVector<double> &outPlot, RSystem
         {
             const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
 
-            double y=SNANL;
+            double y=0;
             if ((*singlePoint)->read(y, qos, parametersSet.serverState))
             {
                 if (y > 0)
@@ -562,7 +563,7 @@ bool SettingsTypeForServerState::getSinglePlot(QVector<double> &outPlot, RSystem
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int n=0; n<=rSystem.getModel().vk_s(); n++)
         {
-            double y=SNANL;
+            double y=0;
 
             if ((*singlePoint)->read(y, qos, n))
             {
@@ -677,7 +678,7 @@ bool SettingsTypeForBufferState::getSinglePlot(QVector<double> &outPlot, RSystem
         {
             const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
 
-            double y=SNANL;
+            double y=0;
             if ((*singlePoint)->read(y, qos, parametersSet.bufferState))
             {
                 if (y>0)
@@ -692,7 +693,7 @@ bool SettingsTypeForBufferState::getSinglePlot(QVector<double> &outPlot, RSystem
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int n=0; n<=rSystem.getModel().vk_b(); n++)
         {
-            double y=SNANL;
+            double y=0;
 
             if ((*singlePoint)->read(y, qos, n))
             {
@@ -824,7 +825,7 @@ bool SettingsTypeForClassAndSystemState::getSinglePlot(QVector<double> &outPlot,
         foreach(decimal a, rSystem.getAvailableAperAU())
         {
             const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
-            double y=SNANL;
+            double y=0;
             if ((*singlePoint)->read(y, qos, parametersSet.classIndex, parametersSet.systemState))
             {
                 if (y>0)
@@ -839,7 +840,7 @@ bool SettingsTypeForClassAndSystemState::getSinglePlot(QVector<double> &outPlot,
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int n=0; n<=rSystem.getModel().V(); n++)
         {
-            double y=SNANL;
+            double y=0;
             if ((*singlePoint)->read(y, qos, parametersSet.classIndex, n))
             {
                 if ((y > 0))
@@ -854,7 +855,7 @@ bool SettingsTypeForClassAndSystemState::getSinglePlot(QVector<double> &outPlot,
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int i=0; i<rSystem.getModel().m(); i++)
         {
-            double y=SNANL;
+            double y=0;
             if ((*singlePoint)->read(y, qos, i, parametersSet.systemState))
             {
                 if ((y > 0))
@@ -1006,7 +1007,7 @@ bool SettingsTypeForClassAndServerState::getSinglePlot(QVector<double> &outPlot,
         {
             const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
 
-            double y=SNANL;
+            double y=0;
             if ((*singlePoint)->read(y, qos, parametersSet.classIndex, parametersSet.serverState))
             {
                 if (y>0)
@@ -1021,7 +1022,7 @@ bool SettingsTypeForClassAndServerState::getSinglePlot(QVector<double> &outPlot,
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int n=0; n<=rSystem.getModel().vk_s(); n++)
         {
-            double y=SNANL;
+            double y=0;
 
             if ((*singlePoint)->read(y, qos, parametersSet.classIndex, n))
             {
@@ -1037,7 +1038,7 @@ bool SettingsTypeForClassAndServerState::getSinglePlot(QVector<double> &outPlot,
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int i=0; i<rSystem.getModel().m(); i++)
         {
-            double y=SNANL;
+            double y=0;
 
             if ((*singlePoint)->read(y, qos, i, parametersSet.serverState))
             {
@@ -1195,7 +1196,7 @@ bool SettingsTypeForClassAndBufferState::getSinglePlot(QVector<double> &outPlot,
         {
             const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
 
-            double y=SNANL;
+            double y=0;
             if ((*singlePoint)->read(y, qos, parametersSet.classIndex, parametersSet.bufferState))
             {
                 if ((y > 0))
@@ -1210,7 +1211,7 @@ bool SettingsTypeForClassAndBufferState::getSinglePlot(QVector<double> &outPlot,
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int n=0; n<=rSystem.getModel().vk_b(); n++)
         {
-            double y=SNANL;
+            double y=0;
 
             if ((*singlePoint)->read(y, qos, parametersSet.classIndex, n))
             {
@@ -1226,7 +1227,7 @@ bool SettingsTypeForClassAndBufferState::getSinglePlot(QVector<double> &outPlot,
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int i=0; i<rSystem.getModel().m(); i++)
         {
-            double y=SNANL;
+            double y=0;
 
             if ((*singlePoint)->read(y, qos, i, parametersSet.bufferState))
             {
@@ -1406,7 +1407,7 @@ bool SettingsForClassAndServerGroupsCombination::getSinglePlot(QVector<double> &
         foreach(decimal a, rSystem.getAvailableAperAU())
         {
             const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
-            double y=SNANL;
+            double y=0;
             int t = rSystem.getModel().getClass(parametersSet.classIndex)->t();
 
             if ((*singlePoint)->read(y, TypeResourcess_VsServerGroupsCombination::InavailabilityInAllTheGroups, t, parametersSet.combinationNumber))
@@ -1426,7 +1427,7 @@ bool SettingsForClassAndServerGroupsCombination::getSinglePlot(QVector<double> &
 
         for (int n=0; n <= noOfCombinations; n++)
         {
-            double y=SNANL;
+            double y=0;
 
             if ((*singlePoint)->read(y, TypeResourcess_VsServerGroupsCombination::AvailabilityInAllTheGroups, t, n))
             {
@@ -1442,7 +1443,7 @@ bool SettingsForClassAndServerGroupsCombination::getSinglePlot(QVector<double> &
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int i=0; i < rSystem.getModel().m(); i++)
         {
-            double y=SNANL;
+            double y=0;
             int t = rSystem.getModel().getClass(i)->t();
 
             if ((*singlePoint)->read(y, TypeResourcess_VsServerGroupsCombination::AvailabilityInAllTheGroups, t, parametersSet.combinationNumber))
@@ -1622,7 +1623,7 @@ bool SettingsAvailableSubroupDistribution::getSinglePlot(QVector<double> &outPlo
         {
             const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
 
-            double y=SNANL;
+            double y=0;
             if ((*singlePoint)->read(y, TypeForResourcessAndNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, t, parametersSet.numberOfGroups))
             {
                 if (y > 0)
@@ -1638,7 +1639,7 @@ bool SettingsAvailableSubroupDistribution::getSinglePlot(QVector<double> &outPlo
         int t = rSystem.getModel().getClass(parametersSet.classIndex)->t();
         for (int k=0; k <= rSystem.getModel().k_s(); k++)
         {
-            double y=SNANL;
+            double y=0;
 
             if ((*singlePoint)->read(y, TypeForResourcessAndNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, t, k))
             {
@@ -1654,7 +1655,7 @@ bool SettingsAvailableSubroupDistribution::getSinglePlot(QVector<double> &outPlo
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int i=0; i < rSystem.getModel().m(); i++)
         {
-            double y=SNANL;
+            double y=0;
             int t = rSystem.getModel().getClass(i)->t();
 
             if ((*singlePoint)->read(y, TypeForResourcessAndNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, t, parametersSet.numberOfGroups))
