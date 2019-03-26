@@ -14,18 +14,19 @@
 #include <QGraphicsScene>
 #include <QGraphicsItem>
 
+#include "config.h"
 #include "model.h"
 #include "algorithms/simulationParameters.h"
 
 #include "results/resultsSystem.h"
 #include "results/resultsApi.h"
 #include "results/resultsGnuplot.h"
-#include "results/resultsXlsx.h"
 
 
 #include "utils/decimal.h"
 
 #include "dialogAbout.h"
+#include "dialogconfig.h"
 
 
 namespace Ui {
@@ -147,8 +148,6 @@ private slots:
 
     void on_comboBox_CallServStrType_currentIndexChanged(int index);
 
-    void on_actionSaveXLSX_subroupAvailability_triggered();
-
     void on_comboBoxServerSchedulerAlgorithm_currentIndexChanged(int index);
 
     void on_comboBoxBufferSchedulerAlgorithm_currentIndexChanged(int index);
@@ -160,6 +159,8 @@ private slots:
     void on_comboBoxResultsQtX_axis_currentIndexChanged(int index);
 
 
+
+    void on_actionConfigure_triggered();
 
 private:
     QVector<ModelSyst*>  vectPredefinedSystems;
@@ -180,10 +181,10 @@ private:
     QString m_langPath; // Path of language files. This is always fixed to /languages.
 
     DialogAbout    *dlgAbout;
+    DialogConfig   *dlgConfig;
 
     ModelSyst      *system;
     GnuplotScript  *scrGnuplot;
-    resultsXlsx    *xlsxWriter;
 
     QGraphicsScene *sceneSysModel;
 

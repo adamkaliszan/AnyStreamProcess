@@ -1256,18 +1256,11 @@
      </property>
      <addaction name="separator"/>
     </widget>
-    <widget class="QMenu" name="menuZapisz_do_arkusza_XSLX">
-     <property name="title">
-      <string>Zapisz do arkusza XSLX</string>
-     </property>
-     <addaction name="actionSaveXSLX_QoSforClasses"/>
-     <addaction name="actionSaveXLSX_subroupAvailability"/>
-    </widget>
     <addaction name="menuFileLoadSystem"/>
     <addaction name="actionZapisz_system"/>
     <addaction name="separator"/>
     <addaction name="menuFileGnuplot"/>
-    <addaction name="menuZapisz_do_arkusza_XSLX"/>
+    <addaction name="actionConfigure"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -1332,6 +1325,11 @@
   <action name="actionSaveXLSX_subroupAvailability">
    <property name="text">
     <string>Zajętość podgrup</string>
+   </property>
+  </action>
+  <action name="actionConfigure">
+   <property name="text">
+    <string>Configure</string>
    </property>
   </action>
  </widget>

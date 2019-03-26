@@ -42,11 +42,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
     isDbWorking   = false;
     dlgAbout      = new DialogAbout();
+    dlgConfig     = new DialogConfig();
     system        = new ModelSyst();
     scrGnuplot    = new GnuplotScript();
 
     resultsForSystem = new Results::RSystem(*system);
-    xlsxWriter  = new resultsXlsx(resultsForSystem);
 
     ui->setupUi(this);
 
@@ -78,6 +78,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+    dlgConfig->close();
+    delete dlgConfig;
     dlgAbout->close();
     delete dlgAbout;
 
@@ -106,7 +108,6 @@ MainWindow::~MainWindow()
     }
 
     delete scrGnuplot;
-    delete xlsxWriter;
     delete system;
     delete ui;
 }
@@ -763,20 +764,21 @@ void MainWindow::on_listWidgetKlasy_currentItemChanged(QListWidgetItem *current,
 void MainWindow::readDataBase()
 {
     db = QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("mysql-475253.vipserv.org");
-    db.setDatabaseName("makgywer_kolejki");
-    db.setUserName("makgywer_kolejki");
-    db.setPassword("nuka");
 
-    isDbWorking = false;
-    //db.open();
-    //QSqlError tmp = db.lastError();
-    //if (!isDbWorking)
-    ///{
-    //    qDebug("Błąd otwarcia bazy danych\n");
-    //    qDebug()<<tmp;
-    //    return;
-    //}
+    db.setHostName(appConfig.value("dbURL").value<QString>());
+    db.setDatabaseName(appConfig.value("dbName").value<QString>());
+    db.setUserName(appConfig.value("dbUserName").value<QString>());
+    db.setPassword(appConfig.value("dbPassword").value<QString>());
+
+
+    isDbWorking = db.open();
+    QSqlError tmp = db.lastError();
+    if (!isDbWorking)
+    {
+        qDebug("Błąd otwarcia bazy danych\n");
+        qDebug()<<tmp;
+    }
+
     ui->horizontalLayoutPredefinedSystems->setEnabled(isDbWorking);
 
     dbReadSystems();
@@ -1621,12 +1623,6 @@ void MainWindow::on_comboBox_CallServStrType_currentIndexChanged(int index)
     }
 }
 
-void MainWindow::on_actionSaveXLSX_subroupAvailability_triggered()
-{
-    QString fileName = ReadFilename("xlsx");
-    xlsxWriter->SaveGroupsAvailability(fileName);
-}
-
 void MainWindow::on_comboBoxServerSchedulerAlgorithm_currentIndexChanged(int index)
 {
     (void) index;
@@ -1943,4 +1939,9 @@ void MainWindow::on_ResultsQtChartRefresh()
         chart->legend()->show();
     else
         chart->legend()->hide();
+}
+
+void MainWindow::on_actionConfigure_triggered()
+{
+    dlgConfig->show();
 }

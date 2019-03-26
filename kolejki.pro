@@ -6,7 +6,6 @@
 
 QT += core gui sql
 QT += widgets
-QT += xlsx
 QT += charts
 
 QTPLUGIN += qsqlmysql
@@ -63,12 +62,13 @@ SOURCES += main.cpp\
     results/resultsInvestigator.cpp \
     results/resultsSystem.cpp \
     algorithms/algRekLagGS.cpp \
-    results/resultsXlsx.cpp \
     utils/utilsMisc.cpp \
     results/resultsSingleGroup.cpp \
     results/resultsApi.cpp \
     algorithms/simulatorAllSystems.cpp \
-    algorithms/simulatorStatistics.cpp
+    algorithms/simulatorStatistics.cpp \
+    dialogconfig.cpp \
+    config.cpp
 
 HEADERS  += mainwindow.h \
     model.h \
@@ -110,14 +110,17 @@ HEADERS  += mainwindow.h \
     utils/utilsMisc.h \
     results/resultsSingleGroup.h \
     results/resultsSingleGroup.h \
-    results/resultsXlsx.h \
     results/resultsApi.h \
     results/resultsApiTypes.h \
     algorithms/simulatorAllSystems.h \
-    algorithms/simulatorStatistics.h
+    algorithms/simulatorStatistics.h \
+    dialogconfig.h \
+    config.h
 
 FORMS    += mainwindow.ui \
-    dialogAbout.ui
+    dialogAbout.ui \
+    dialogconfig.ui \
+    dialogconfig.ui
 
 RESOURCES += \
     resources.qrc
