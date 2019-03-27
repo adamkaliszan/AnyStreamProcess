@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'dialogAbout.ui'
 **
-** Created by: Qt User Interface Compiler version 5.11.2
+** Created by: Qt User Interface Compiler version 5.12.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -28,17 +28,17 @@ public:
     void setupUi(QDialog *Dialog)
     {
         if (Dialog->objectName().isEmpty())
-            Dialog->setObjectName(QStringLiteral("Dialog"));
+            Dialog->setObjectName(QString::fromUtf8("Dialog"));
         Dialog->resize(400, 300);
         verticalLayout = new QVBoxLayout(Dialog);
-        verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
+        verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
         graphicsViewAbout = new QGraphicsView(Dialog);
-        graphicsViewAbout->setObjectName(QStringLiteral("graphicsViewAbout"));
+        graphicsViewAbout->setObjectName(QString::fromUtf8("graphicsViewAbout"));
 
         verticalLayout->addWidget(graphicsViewAbout);
 
         textBrowserAbout = new QTextBrowser(Dialog);
-        textBrowserAbout->setObjectName(QStringLiteral("textBrowserAbout"));
+        textBrowserAbout->setObjectName(QString::fromUtf8("textBrowserAbout"));
         QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(1);

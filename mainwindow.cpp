@@ -930,10 +930,67 @@ bool MainWindow::dbReadSystems()
 {
     const int noOfTypes = 3;
 
-    QSqlQuery pobieranieSystemu;
-    pobieranieSystemu.exec("SELECT * FROM systemy");
 
-    while (pobieranieSystemu.next())
+    QSqlQuery dbSystems;
+    dbSystems.exec("SELECT * FROM Systems");
+
+    while (dbSystems.next())
+    {
+        ModelSyst *tmpSyst = new ModelSyst();
+        int id = dbSystems.value("Id").toInt();
+
+        int idClassSet = dbSystems.value("IdClassSet").toInt();
+        int idServerSet = dbSystems.value("IdServerSet").toInt();
+        int idBufferSet = dbSystems.value("IdBufferSet").toInt();
+
+
+        QSqlQuery singleSystem;
+        singleSystem.exec(QString("SELECT * FROM TrClasses JOIN TrClassesConn WHERE TrClasses.Id = TrClassesConn.IdClass AND TrClassesConn.IdClassSet = %1\r\n").arg(idClassSet));
+
+        while (singleSystem.next())
+        {
+            ModelTrClass *trClass = new ModelTrClass();
+            trClass->setT(singleSystem.value("t").toInt());
+            trClass->setPropAt(singleSystem.value("propAT").toInt());
+
+            ModelTrClass::StreamType callStreamType = ModelTrClass::StreamType::Poisson;
+            ModelTrClass::SourceType sourceType = ModelTrClass::SourceType::Independent;
+
+            QString sourceTypeStr = singleSystem.value("sourceType").toString();
+
+            if (sourceTypeStr == "ascending")
+                sourceType = ModelTrClass::SourceType::DependentPlus;
+
+            if (sourceTypeStr == "descending")
+                sourceType = ModelTrClass::SourceType::DependentMinus;
+
+
+            QString CallStrTypeStr = singleSystem.value("CallStreamType").toString();
+            if (CallStrTypeStr == "uni")
+                callStreamType = ModelTrClass::StreamType::Uniform;
+
+            if (CallStrTypeStr == "norm")
+                callStreamType = ModelTrClass::StreamType::Normal;
+
+            if (CallStrTypeStr == "gamma")
+                callStreamType = ModelTrClass::StreamType::Gamma;
+
+            if (CallStrTypeStr == "pareto")
+                callStreamType = ModelTrClass::StreamType::Pareto;
+
+
+            trClass->setNewCallStrType(callStreamType, sourceType);
+
+            trClass->setNoOfSourcess(singleSystem.value("S").toInt());
+
+            tmpSyst->addClass(trClass);
+        }
+    }
+
+/*    QSqlQuery systemStructure;
+    systemStructure.exec("SELECT * FROM systemy");
+
+    while (systemStructure.next())
     {
         ModelSyst *tmpSyst = new ModelSyst();
 
@@ -1010,6 +1067,7 @@ bool MainWindow::dbReadSystems()
         }
         vectPredefinedSystems.append(tmpSyst);
     }
+    */
     return true;
 }
 
