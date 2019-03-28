@@ -58,7 +58,8 @@ public:
     bool fillSystem();
     void readDataBase();
 
-    static ModelTrClass::StreamType DBstrTostreamType(QString str);
+    static ModelTrClass::StreamType DBstrToStreamType(QString str);
+    static ModelTrClass::SourceType DBstrToSourceType(QString str);
 
     void updateAlgorithmsList();
 

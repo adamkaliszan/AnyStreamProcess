@@ -796,13 +796,13 @@ void MainWindow::readDataBase()
     updateAlgorithmsList();
 }
 
-ModelTrClass::StreamType MainWindow::DBstrTostreamType(QString str)
+ModelTrClass::StreamType MainWindow::DBstrToStreamType(QString str)
 {
-    if (str == QString("exponential"))
+    if (str == QString("exp"))
         return ModelTrClass::StreamType::Poisson;
-    if (str == QString("normal"))
+    if (str == QString("norm"))
         return ModelTrClass::StreamType::Normal;
-    if (str == QString("uniform"))
+    if (str == QString("uni"))
         return ModelTrClass::StreamType::Uniform;
     if (str == QString("gamma"))
         return ModelTrClass::StreamType::Gamma;
@@ -810,6 +810,20 @@ ModelTrClass::StreamType MainWindow::DBstrTostreamType(QString str)
         return ModelTrClass::StreamType::Pareto;
     else
         qFatal("unrecognized stream type");
+}
+
+ModelTrClass::SourceType MainWindow::DBstrToSourceType(QString str)
+{
+    if (str == QString("const"))
+        return ModelTrClass::SourceType::Independent;
+
+    if (str == QString("descending"))
+        return ModelTrClass::SourceType::DependentMinus;
+
+    if (str == QString("ascending"))
+        return ModelTrClass::SourceType::DependentPlus;
+    else
+        qFatal("unrecognized source type");
 }
 
 void MainWindow::updateAlgorithmsList()
@@ -896,6 +910,8 @@ bool MainWindow::fillSystem()
     foreach (QListWidgetItem *tmpItem, ui->listWidgetKlasy->findItems(QString("*"), Qt::MatchWrap | Qt::MatchWildcard))
     {
         ModelTrClass *tmpClass = tmpItem->data(Qt::UserRole).value<ModelTrClass *>();
+        if (tmpClass == nullptr)
+            continue;
         system->addClass(tmpClass);
         progress = 1;
     }
@@ -935,7 +951,7 @@ bool MainWindow::dbReadSystems()
     dbSystems.exec("SELECT * FROM Systems");
 
     while (dbSystems.next())
-    {
+    {   
         ModelSyst *tmpSyst = new ModelSyst();
         int id = dbSystems.value("Id").toInt();
 
@@ -944,47 +960,68 @@ bool MainWindow::dbReadSystems()
         int idBufferSet = dbSystems.value("IdBufferSet").toInt();
 
 
+        qDebug("Adding system %d (%d %d %d)", id, idClassSet, idServerSet, idBufferSet);
+
         QSqlQuery singleSystem;
         singleSystem.exec(QString("SELECT * FROM TrClasses JOIN TrClassesConn WHERE TrClasses.Id = TrClassesConn.IdClass AND TrClassesConn.IdClassSet = %1\r\n").arg(idClassSet));
+
+        tmpSyst->id = id;
 
         while (singleSystem.next())
         {
             ModelTrClass *trClass = new ModelTrClass();
             trClass->setT(singleSystem.value("t").toInt());
             trClass->setPropAt(singleSystem.value("propAT").toInt());
+            trClass->setMu(singleSystem.value("u").toDouble());
 
-            ModelTrClass::StreamType callStreamType = ModelTrClass::StreamType::Poisson;
-            ModelTrClass::SourceType sourceType = ModelTrClass::SourceType::Independent;
-
-            QString sourceTypeStr = singleSystem.value("sourceType").toString();
-
-            if (sourceTypeStr == "ascending")
-                sourceType = ModelTrClass::SourceType::DependentPlus;
-
-            if (sourceTypeStr == "descending")
-                sourceType = ModelTrClass::SourceType::DependentMinus;
-
-
-            QString CallStrTypeStr = singleSystem.value("CallStreamType").toString();
-            if (CallStrTypeStr == "uni")
-                callStreamType = ModelTrClass::StreamType::Uniform;
-
-            if (CallStrTypeStr == "norm")
-                callStreamType = ModelTrClass::StreamType::Normal;
-
-            if (CallStrTypeStr == "gamma")
-                callStreamType = ModelTrClass::StreamType::Gamma;
-
-            if (CallStrTypeStr == "pareto")
-                callStreamType = ModelTrClass::StreamType::Pareto;
-
-
-            trClass->setNewCallStrType(callStreamType, sourceType);
-
+            ModelTrClass::StreamType streamType = DBstrToStreamType(singleSystem.value("arrivalPDF").toString());
+            ModelTrClass::SourceType sourceType = DBstrToSourceType(singleSystem.value("sourceType").toString());
+            trClass->setNewCallStrType(streamType, sourceType);
             trClass->setNoOfSourcess(singleSystem.value("S").toInt());
+            trClass->setIncommingExPerDx(singleSystem.value("arrivalED").toDouble());
+
+
+            streamType = DBstrToStreamType(singleSystem.value("servicePDF").toString());
+            trClass->setCallServStrType(streamType);
+            trClass->setServiceExPerDx(singleSystem.value("serviceED").toDouble());
 
             tmpSyst->addClass(trClass);
+
+            QString classDescription;
+            QTextStream classDescriptionStream(&classDescription);
+            classDescriptionStream<<*trClass;
+
+            qDebug("Adding class %s", classDescription.toStdString().data());
         }
+
+        if (idServerSet > 0)
+        {
+            singleSystem.exec(QString("SELECT * FROM ResServer JOIN ResServerConn WHERE ResServer.Id = ResServerConn.IdServer AND ResServerConn.IdServerSet = %1\r\n").arg(idServerSet));
+            while (singleSystem.next())
+            {
+                int k = singleSystem.value("k").toInt();
+                int v = singleSystem.value("v").toInt();
+                ModelResourcess tmpGroup(k, v);
+                tmpSyst->addGroups(tmpGroup);
+            }
+        }
+
+        if (idBufferSet > 0)
+        {
+            singleSystem.exec(QString("SELECT * FROM ResBuffer JOIN ResBufferConn WHERE ResBuffer.Id = ResBufferConn.IdServer AND ResBufferConn.IdBufferSet = %1\r\n").arg(idServerSet));
+            while (singleSystem.next())
+            {
+                int k = singleSystem.value("k").toInt();
+                int v = singleSystem.value("v").toInt();
+                ModelResourcess tmpGroup(k, v);
+                tmpSyst->addQeues(tmpGroup);
+            }
+        }
+        QString systemDescription;
+        QTextStream systemDescriptionStream(&systemDescription);
+        systemDescriptionStream<<*tmpSyst;
+        qDebug("Adding system %s", systemDescription.toStdString().data());
+        vectPredefinedSystems.append(tmpSyst);
     }
 
 /*    QSqlQuery systemStructure;
