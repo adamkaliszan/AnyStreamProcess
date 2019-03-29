@@ -1639,7 +1639,7 @@ void MainWindow::on_comboBoxPredefinedSystems_currentIndexChanged(int index)
     ui->listWidgetKlasy->clear();
     for (int i=0; i<system->m(); i++)
     {
-        const ModelTrClass *trClass = system->getClass(i);
+        ModelTrClass *trClass = system->getClassClone(i);
 
         QString classDescription = trClass->shortName();
 

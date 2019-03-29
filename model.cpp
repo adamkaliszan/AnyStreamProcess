@@ -1113,6 +1113,15 @@ const ModelTrClass *ModelSyst::getClass(int idx) const
     return nullptr;
 }
 
+ModelTrClass *ModelSyst::getClassClone(int idx) const
+{
+    ModelTrClass *result = nullptr;
+    if (idx < _noOfTrClasses)
+        result = new ModelTrClass(*_trClasses[idx]);
+
+    return result;
+}
+
 const ModelSyst::ConstSyst &ModelSyst::getConstSyst() const
 {
     if (_parWasChanged)

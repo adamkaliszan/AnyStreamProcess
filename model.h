@@ -481,6 +481,7 @@ public:
 
 
     const ModelTrClass *getClass(int idx) const;
+    ModelTrClass *getClassClone(int idx) const;
     const ConstSyst &getConstSyst() const;
 
     ServerResourcessScheduler getGroupsSchedulerAlgorithm() const;
