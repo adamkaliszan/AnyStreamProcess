@@ -18,7 +18,7 @@ namespace Algorithms
 
 class ProcAll;
 
-class SimulatorAll: public simulator
+class SimulatorAll: public Simulator
 {
 public:
     SimulatorAll();
@@ -363,12 +363,12 @@ private:
 #define INDEPENDENT_ALL(X,Y,NEW_CALL_DISTR,CALL_SERV_DISTRIB) \
     void initializeIndep##X##Y(SimulatorAll::Engine *system, const ModelTrClass *trClass, int idx, double a, int sumPropAt, int V)\
     { \
-      initializeIndependent(system, trClass, idx, a, sumPropAt, V, simulator::distr##NEW_CALL_DISTR, newCallIndep##X##Y);\
+      initializeIndependent(system, trClass, idx, a, sumPropAt, V, Simulator::distr##NEW_CALL_DISTR, newCallIndep##X##Y);\
     } \
       \
     inline static SimulatorAll::EventType newCallIndep##X##Y(ProcAll *proc, SimulatorAll::System *system)\
     {\
-      return newCallIndep(proc, system, simulator::distr##NEW_CALL_DISTR, simulator::distr##CALL_SERV_DISTRIB,  newCallIndep##X##Y);\
+      return newCallIndep(proc, system, Simulator::distr##NEW_CALL_DISTR, Simulator::distr##CALL_SERV_DISTRIB,  newCallIndep##X##Y);\
     }\
 
     INDEPENDENT_ALL(M,M,LambdaED,LambdaED)
@@ -416,17 +416,17 @@ private:
 #define DEP_MINUS_ALL(X,Y,NEW_CALL_DISTR,CALL_SERV_DISTRIB) \
     void initializeDepMinus##X##Y(SimulatorAll::Engine *engine, const ModelTrClass *trClass, int idx, double a, int sumPropAt, int V) \
     {\
-        initializeDependent(engine, trClass, idx, a, sumPropAt, V, simulator::distr##NEW_CALL_DISTR, newCallDepMinus##X##Y, transmisionEndedDepMinus##X##Y);\
+        initializeDependent(engine, trClass, idx, a, sumPropAt, V, Simulator::distr##NEW_CALL_DISTR, newCallDepMinus##X##Y, transmisionEndedDepMinus##X##Y);\
     }\
      \
     inline static SimulatorAll::EventType newCallDepMinus##X##Y(ProcAll *proc, SimulatorAll::System *system)\
     {\
-        return newCallDepMinus(proc, system, simulator::distr##NEW_CALL_DISTR, simulator::distr##CALL_SERV_DISTRIB, newCallDepMinus##X##Y);\
+        return newCallDepMinus(proc, system, Simulator::distr##NEW_CALL_DISTR, Simulator::distr##CALL_SERV_DISTRIB, newCallDepMinus##X##Y);\
     }\
      \
     inline static SimulatorAll::EventType transmisionEndedDepMinus##X##Y(ProcAll *proc, SimulatorAll::System *system)\
     {\
-        return callServiceEndedDependentMinus(proc, system, simulator::distr##NEW_CALL_DISTR, newCallDepMinus##X##Y);\
+        return callServiceEndedDependentMinus(proc, system, Simulator::distr##NEW_CALL_DISTR, newCallDepMinus##X##Y);\
     }\
 
     DEP_MINUS_ALL(M,M,LambdaED,LambdaED)
@@ -465,12 +465,12 @@ private:
 #define DEP_Plus_ALL(X,Y,NEW_CALL_DISTR,CALL_SERV_DISTRIB) \
     void initializeDepPlus##X##Y(SimulatorAll::Engine *engine, const ModelTrClass *trClass, int idx, double a, int sumPropAt, int V)\
     {\
-        initializeDependent(engine, trClass, idx, a, sumPropAt, V, simulator::distr##NEW_CALL_DISTR, newCallDepPlus##X##Y, callServiceEndedDependentPlus);\
+        initializeDependent(engine, trClass, idx, a, sumPropAt, V, Simulator::distr##NEW_CALL_DISTR, newCallDepPlus##X##Y, callServiceEndedDependentPlus);\
     }\
      \
     static SimulatorAll::EventType newCallDepPlus##X##Y(ProcAll *proc, SimulatorAll::System *system)\
     {\
-        return newCallDepPlus(proc, system, simulator::distr##NEW_CALL_DISTR, simulator::distr##CALL_SERV_DISTRIB, newCallDepPlus##X##Y);\
+        return newCallDepPlus(proc, system, Simulator::distr##NEW_CALL_DISTR, Simulator::distr##CALL_SERV_DISTRIB, newCallDepPlus##X##Y);\
     }
 
     DEP_Plus_ALL(M,M,LambdaED,LambdaED)

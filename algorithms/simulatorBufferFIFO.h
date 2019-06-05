@@ -17,7 +17,7 @@ namespace Algorithms
 class ProcBufferFifo;
 class CallData;
 
-class SimulatorBufferFifo: public simulator
+class SimulatorBufferFifo: public Simulator
 {
 public:
     SimulatorBufferFifo();

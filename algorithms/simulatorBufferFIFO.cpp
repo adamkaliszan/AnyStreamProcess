@@ -6,7 +6,7 @@
 namespace Algorithms
 {
 
-SimulatorBufferFifo::SimulatorBufferFifo(): simulator()
+SimulatorBufferFifo::SimulatorBufferFifo(): Simulator()
 {
     myQoS_Set
        <<Results::Type::BlockingProbability

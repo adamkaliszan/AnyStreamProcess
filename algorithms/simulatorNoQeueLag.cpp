@@ -9,7 +9,7 @@
 namespace Algorithms
 {
 
-SimulatorNoQeueLag::SimulatorNoQeueLag() : simulator()
+SimulatorNoQeueLag::SimulatorNoQeueLag() : Simulator()
 {
     myQoS_Set << Results::Type::BlockingProbability;
     myQoS_Set << Results::Type::OccupancyDistribution;
@@ -23,7 +23,7 @@ bool SimulatorNoQeueLag::possible(const ModelSyst *system) const
 {
     if (system->vk_b() > 0)
         return false;
-    return simulator::possible(system);
+    return Simulator::possible(system);
 }
 
 void SimulatorNoQeueLag::calculateSystem(const ModelSyst *system

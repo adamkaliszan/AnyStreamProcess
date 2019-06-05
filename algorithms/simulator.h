@@ -7,13 +7,13 @@
 namespace Algorithms
 {
 
-class simulator : public Investigator
+class Simulator : public Investigator
 {
 public:
     static std::random_device rd;
     static std::mt19937 gen;
 
-    simulator();
+    Simulator();
 
     bool isItTheSameSystem(ModelSyst *system);
 

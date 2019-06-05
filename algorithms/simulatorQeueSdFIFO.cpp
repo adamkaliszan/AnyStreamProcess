@@ -5,7 +5,7 @@
 namespace Algorithms
 {
 
-SimulatorQeueSdFifo::SimulatorQeueSdFifo(): simulator() { }
+SimulatorQeueSdFifo::SimulatorQeueSdFifo(): Simulator() { }
 
 bool SimulatorQeueSdFifo::possible(const ModelSyst *system) const
 {

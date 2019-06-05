@@ -14,7 +14,7 @@ namespace Algorithms
 
 class ProcNoQeue;
 
-class simulatorNoQeue: public simulator
+class simulatorNoQeue: public Simulator
 {
 public:
     simulatorNoQeue();
@@ -221,12 +221,12 @@ private:
 #define INDEPENDENT_NO_QEUE(X,Y,NEW_CALL_DISTR,CALL_SERV_DISTRIB) \
     void initializeIndep##X##Y(simulatorNoQeue::System *system, const ModelTrClass *trClass, int idx, double a, int sumPropAt, int V)\
     { \
-      initializeIndependent(system, trClass, idx, a, sumPropAt, V, simulator::distr##NEW_CALL_DISTR, newCallIndep##X##Y);\
+      initializeIndependent(system, trClass, idx, a, sumPropAt, V, Simulator::distr##NEW_CALL_DISTR, newCallIndep##X##Y);\
     } \
       \
     inline static void newCallIndep##X##Y(ProcNoQeue *proc, simulatorNoQeue::System *system)\
     {\
-      newCallIndep(proc, system, simulator::distr##NEW_CALL_DISTR, simulator::distr##CALL_SERV_DISTRIB,  newCallIndep##X##Y);\
+      newCallIndep(proc, system, Simulator::distr##NEW_CALL_DISTR, Simulator::distr##CALL_SERV_DISTRIB,  newCallIndep##X##Y);\
     }\
 
     INDEPENDENT_NO_QEUE(M,M,LambdaED,LambdaED)
@@ -275,17 +275,17 @@ private:
 #define DEP_MINUS_NO_QEUE(X,Y,NEW_CALL_DISTR,CALL_SERV_DISTRIB) \
     void initializeDepMinus##X##Y(simulatorNoQeue::System *system, const ModelTrClass *trClass, int idx, double a, int sumPropAt, int V) \
     {\
-        initializeDependent(system, trClass, idx, a, sumPropAt, V, simulator::distr##NEW_CALL_DISTR, newCallDepMinus##X##Y, transmisionEndedDepMinus##X##Y);\
+        initializeDependent(system, trClass, idx, a, sumPropAt, V, Simulator::distr##NEW_CALL_DISTR, newCallDepMinus##X##Y, transmisionEndedDepMinus##X##Y);\
     }\
      \
     inline static void newCallDepMinus##X##Y(ProcNoQeue *proc, simulatorNoQeue::System *system)\
     {\
-      newCallDepMinus(proc, system, simulator::distr##NEW_CALL_DISTR, simulator::distr##CALL_SERV_DISTRIB, newCallDepMinus##X##Y);\
+      newCallDepMinus(proc, system, Simulator::distr##NEW_CALL_DISTR, Simulator::distr##CALL_SERV_DISTRIB, newCallDepMinus##X##Y);\
     }\
      \
     inline static void transmisionEndedDepMinus##X##Y(ProcNoQeue *proc, simulatorNoQeue::System *system)\
     {\
-      transmisionEndedDependentMinus(proc, system, simulator::distr##NEW_CALL_DISTR, newCallDepMinus##X##Y);\
+      transmisionEndedDependentMinus(proc, system, Simulator::distr##NEW_CALL_DISTR, newCallDepMinus##X##Y);\
     }\
 
     DEP_MINUS_NO_QEUE(M,M,LambdaED,LambdaED)
@@ -324,12 +324,12 @@ private:
 #define DEP_Plus_NO_QEUE(X,Y,NEW_CALL_DISTR,CALL_SERV_DISTRIB) \
     void initializeDepPlus##X##Y(simulatorNoQeue::System *system, const ModelTrClass *trClass, int idx, double a, int sumPropAt, int V)\
     {\
-        initializeDependent(system, trClass, idx, a, sumPropAt, V, simulator::distr##NEW_CALL_DISTR, newCallDepPlus##X##Y, transmisionEndedDependentPlus);\
+        initializeDependent(system, trClass, idx, a, sumPropAt, V, Simulator::distr##NEW_CALL_DISTR, newCallDepPlus##X##Y, transmisionEndedDependentPlus);\
     }\
      \
     static void newCallDepPlus##X##Y(ProcNoQeue *proc, simulatorNoQeue::System *system)\
     {\
-      newCallDepPlus(proc, system, simulator::distr##NEW_CALL_DISTR, simulator::distr##CALL_SERV_DISTRIB, newCallDepPlus##X##Y);\
+        newCallDepPlus(proc, system, Simulator::distr##NEW_CALL_DISTR, Simulator::distr##CALL_SERV_DISTRIB, newCallDepPlus##X##Y);\
     }
 
     DEP_Plus_NO_QEUE(M,M,LambdaED,LambdaED)

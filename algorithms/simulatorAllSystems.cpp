@@ -155,7 +155,7 @@ SimulatorAll::Call *SimulatorAll::Engine::getNewCall(
     return result;
 }
 
-SimulatorAll::SimulatorAll() : simulator()
+SimulatorAll::SimulatorAll() : Simulator()
 {
     myQoS_Set << Results::Type::AllSugbrupsInGivenCombinationNotAvailableForCallsOfGivenClass;
     myQoS_Set << Results::Type::AvailableSubroupDistribution;
@@ -166,7 +166,7 @@ SimulatorAll::SimulatorAll() : simulator()
 
 bool SimulatorAll::possible(const ModelSyst *system) const
 {
-    return simulator::possible(system);
+    return Simulator::possible(system);
 }
 
 StatisticEventType SimulatorAll::SimEvent2statEvent(SimulatorAll::EventType simEvent)

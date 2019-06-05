@@ -5,7 +5,7 @@
 namespace Algorithms
 {
 
-SimulatorQeueFifo::SimulatorQeueFifo(): simulator()
+SimulatorQeueFifo::SimulatorQeueFifo(): Simulator()
 {
     myQoS_Set
        <<Results::Type::BlockingProbability
@@ -23,7 +23,7 @@ bool SimulatorQeueFifo::possible(const ModelSyst *system) const
 {
     if (system->vk_b() <= 0)
         return false;
-    return simulator::possible(system);
+    return Simulator::possible(system);
 }
 
 void SimulatorQeueFifo::calculateSystem(const ModelSyst *system

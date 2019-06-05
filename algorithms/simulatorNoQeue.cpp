@@ -5,7 +5,7 @@
 namespace Algorithms
 {
 
-simulatorNoQeue::simulatorNoQeue() : simulator()
+simulatorNoQeue::simulatorNoQeue() : Simulator()
 {
     system = nullptr;
 }
@@ -25,7 +25,7 @@ bool simulatorNoQeue::possible(const ModelSyst *system) const
     if (system->k_s() > 0)
         return false;
 
-    return simulator::possible(system);
+    return Simulator::possible(system);
 }
 
 void simulatorNoQeue::calculateSystem(const ModelSyst *system

@@ -14,7 +14,7 @@ namespace Algorithms
 
 class ProcQeueSdFifo;
 
-class SimulatorQeueSdFifo: public simulator
+class SimulatorQeueSdFifo: public Simulator
 {
 public:
     SimulatorQeueSdFifo();
@@ -200,7 +200,7 @@ private:
             , int V
             )
     {
-        initializeErlang(system, trClass, idx, a, sumPropAt, V, simulator::distrLambdaED, newCallErlangMM);
+        initializeErlang(system, trClass, idx, a, sumPropAt, V, Simulator::distrLambdaED, newCallErlangMM);
     }
 
     void initializeErlangMU(
@@ -212,7 +212,7 @@ private:
             , int V
             )
     {
-        initializeErlang(system, trClass, idx, a, sumPropAt, V, simulator::distrLambdaED, newCallErlangMU);
+        initializeErlang(system, trClass, idx, a, sumPropAt, V, Simulator::distrLambdaED, newCallErlangMU);
     }
 
     void initializeErlangMN(
@@ -224,7 +224,7 @@ private:
             , int V
             )
     {
-        initializeErlang(system, trClass, idx, a, sumPropAt, V, simulator::distrLambdaED, newCallErlangMN);
+        initializeErlang(system, trClass, idx, a, sumPropAt, V, Simulator::distrLambdaED, newCallErlangMN);
     }
 
     void initializeErlangUM(
@@ -236,7 +236,7 @@ private:
             , int V
             )
     {
-        initializeErlang(system, trClass, idx, a, sumPropAt, V, simulator::distrUniformED, newCallErlangUM);
+        initializeErlang(system, trClass, idx, a, sumPropAt, V, Simulator::distrUniformED, newCallErlangUM);
     }
 
     void initializeErlangUU(
@@ -248,7 +248,7 @@ private:
             , int V
             )
     {
-        initializeErlang(system, trClass, idx, a, sumPropAt, V, simulator::distrUniformED, newCallErlangUU);
+        initializeErlang(system, trClass, idx, a, sumPropAt, V, Simulator::distrUniformED, newCallErlangUU);
     }
 
     void initializeErlangUN(
@@ -260,7 +260,7 @@ private:
             , int V
             )
     {
-        initializeErlang(system, trClass, idx, a, sumPropAt, V, simulator::distrUniformED, newCallErlangUN);
+        initializeErlang(system, trClass, idx, a, sumPropAt, V, Simulator::distrUniformED, newCallErlangUN);
     }
 
     void initializeErlangNM(
@@ -272,7 +272,7 @@ private:
             , int V
             )
     {
-        initializeErlang(system, trClass, idx, a, sumPropAt, V, simulator::distrNormalED, newCallErlangNM);
+        initializeErlang(system, trClass, idx, a, sumPropAt, V, Simulator::distrNormalED, newCallErlangNM);
     }
 
     void initializeErlangNU(
@@ -284,7 +284,7 @@ private:
             , int V
             )
     {
-        initializeErlang(system, trClass, idx, a, sumPropAt, V, simulator::distrNormalED, newCallErlangNU);
+        initializeErlang(system, trClass, idx, a, sumPropAt, V, Simulator::distrNormalED, newCallErlangNU);
     }
 
     void initializeErlangNN(
@@ -296,7 +296,7 @@ private:
             , int V
             )
     {
-        initializeErlang(system, trClass, idx, a, sumPropAt, V, simulator::distrNormalED, newCallErlangNN);
+        initializeErlang(system, trClass, idx, a, sumPropAt, V, Simulator::distrNormalED, newCallErlangNN);
     }
 
     static void newCallErlang(
@@ -312,7 +312,7 @@ private:
             , SimulatorQeueSdFifo::System *system
             )
     {
-        ProcQeueSdFifo::newCallErlang(proc, system, simulator::distrLambdaED, simulator::distrLambdaED, ProcQeueSdFifo::newCallErlangMM);
+        ProcQeueSdFifo::newCallErlang(proc, system, Simulator::distrLambdaED, Simulator::distrLambdaED, ProcQeueSdFifo::newCallErlangMM);
     }
 
     static void newCallErlangMU(
@@ -320,7 +320,7 @@ private:
             , SimulatorQeueSdFifo::System *system
             )
     {
-        ProcQeueSdFifo::newCallErlang(proc, system, simulator::distrLambdaED, simulator::distrUniformED, ProcQeueSdFifo::newCallErlangMU);
+        ProcQeueSdFifo::newCallErlang(proc, system, Simulator::distrLambdaED, Simulator::distrUniformED, ProcQeueSdFifo::newCallErlangMU);
     }
 
     static void newCallErlangMN(
@@ -328,7 +328,7 @@ private:
             , SimulatorQeueSdFifo::System *system
             )
     {
-        ProcQeueSdFifo::newCallErlang(proc, system, simulator::distrLambdaED, simulator::distrNormalED, ProcQeueSdFifo::newCallErlangMN);
+        ProcQeueSdFifo::newCallErlang(proc, system, Simulator::distrLambdaED, Simulator::distrNormalED, ProcQeueSdFifo::newCallErlangMN);
     }
 
     static void newCallErlangUM(
@@ -336,7 +336,7 @@ private:
             , SimulatorQeueSdFifo::System *system
             )
     {
-        ProcQeueSdFifo::newCallErlang(proc, system, simulator::distrUniformED, simulator::distrLambdaED, ProcQeueSdFifo::newCallErlangUM);
+        ProcQeueSdFifo::newCallErlang(proc, system, Simulator::distrUniformED, Simulator::distrLambdaED, ProcQeueSdFifo::newCallErlangUM);
     }
 
     static void newCallErlangUU(
@@ -344,7 +344,7 @@ private:
             , SimulatorQeueSdFifo::System *system
             )
     {
-        ProcQeueSdFifo::newCallErlang(proc, system, simulator::distrUniformED, simulator::distrUniformED, ProcQeueSdFifo::newCallErlangUU);
+        ProcQeueSdFifo::newCallErlang(proc, system, Simulator::distrUniformED, Simulator::distrUniformED, ProcQeueSdFifo::newCallErlangUU);
     }
 
     static void newCallErlangUN(
@@ -352,7 +352,7 @@ private:
             , SimulatorQeueSdFifo::System *system
             )
     {
-        ProcQeueSdFifo::newCallErlang(proc, system, simulator::distrUniformED, simulator::distrNormalED, ProcQeueSdFifo::newCallErlangUN);
+        ProcQeueSdFifo::newCallErlang(proc, system, Simulator::distrUniformED, Simulator::distrNormalED, ProcQeueSdFifo::newCallErlangUN);
     }
 
     static void newCallErlangNM(
@@ -360,7 +360,7 @@ private:
             , SimulatorQeueSdFifo::System *system
             )
     {
-        ProcQeueSdFifo::newCallErlang(proc, system, simulator::distrNormalED, simulator::distrLambdaED, ProcQeueSdFifo::newCallErlangNM);
+        ProcQeueSdFifo::newCallErlang(proc, system, Simulator::distrNormalED, Simulator::distrLambdaED, ProcQeueSdFifo::newCallErlangNM);
     }
 
     static void newCallErlangNU(
@@ -368,7 +368,7 @@ private:
             , SimulatorQeueSdFifo::System *system
             )
     {
-        ProcQeueSdFifo::newCallErlang(proc, system, simulator::distrNormalED, simulator::distrUniformED, ProcQeueSdFifo::newCallErlangNU);
+        ProcQeueSdFifo::newCallErlang(proc, system, Simulator::distrNormalED, Simulator::distrUniformED, ProcQeueSdFifo::newCallErlangNU);
     }
 
     static void newCallErlangNN(
@@ -376,7 +376,7 @@ private:
             , SimulatorQeueSdFifo::System *system
             )
     {
-        ProcQeueSdFifo::newCallErlang(proc, system, simulator::distrNormalED, simulator::distrNormalED, ProcQeueSdFifo::newCallErlangNN);
+        ProcQeueSdFifo::newCallErlang(proc, system, Simulator::distrNormalED, Simulator::distrNormalED, ProcQeueSdFifo::newCallErlangNN);
     }
 
     static void transmisionEnded(ProcQeueSdFifo *proc, SimulatorQeueSdFifo::System *system);

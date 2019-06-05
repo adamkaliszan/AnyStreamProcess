@@ -3,7 +3,7 @@
 namespace Algorithms
 {
 
-simulator::simulator(): Investigator()
+Simulator::Simulator(): Investigator()
 {
     _hasConfIntervall = true;
     myQoS_Set
@@ -13,10 +13,10 @@ simulator::simulator(): Investigator()
 
 }
 
-std::random_device simulator::rd;
-std::mt19937 simulator::gen = std::mt19937(simulator::rd());
+std::random_device Simulator::rd;
+std::mt19937 Simulator::gen = std::mt19937(Simulator::rd());
 
-bool simulator::isItTheSameSystem(ModelSyst *system)
+bool Simulator::isItTheSameSystem(ModelSyst *system)
 {
     if (system == this->system)
         return true;
@@ -25,7 +25,7 @@ bool simulator::isItTheSameSystem(ModelSyst *system)
 }
 
 
-double simulator::distrLambdaED(double Ex, double D)
+double Simulator::distrLambdaED(double Ex, double D)
 {
     (void) D;
 /*
@@ -46,20 +46,20 @@ double simulator::distrLambdaED(double Ex, double D)
     return result;  //return -Math.Log(Los, Math.E) / wspInt
 }
 
-double simulator::distrNormalED(double Ex, double D)
+double Simulator::distrNormalED(double Ex, double D)
 {
     std::normal_distribution<> tmpDistrib(Ex, D);
 
     double result = 0;
     do
     {
-        result = tmpDistrib(simulator::gen);
+        result = tmpDistrib(Simulator::gen);
     }
     while (result <= 0);
     return result;
 }
 
-double simulator::distrUniformED(double Ex, double D)
+double Simulator::distrUniformED(double Ex, double D)
 {
     double DeltaT = sqrt(12*D);
 
@@ -79,7 +79,7 @@ double simulator::distrUniformED(double Ex, double D)
     return tMin+x;
 }
 
-double simulator::distrGammaED(double Ex, double D)
+double Simulator::distrGammaED(double Ex, double D)
 {
     double betha    = D/Ex;
     double alpha    = Ex / betha;
@@ -89,13 +89,13 @@ double simulator::distrGammaED(double Ex, double D)
     double result = 0;
     do
     {
-        result = tmpDistrib(simulator::gen);
+        result = tmpDistrib(Simulator::gen);
     }
     while (result <= 0);
     return result;
 }
 
-double simulator::distrParetoED(double Ex, double D)
+double Simulator::distrParetoED(double Ex, double D)
 {
     static std::uniform_real_distribution<double>uniformDis01(0.000001, 1);
 
@@ -104,13 +104,13 @@ double simulator::distrParetoED(double Ex, double D)
     double RevShape = 1.0/shape;
     double poz = Ex*mySqrtVal/(1.0 + mySqrtVal);
 
-    double randVal = uniformDis01(simulator::gen);
+    double randVal = uniformDis01(Simulator::gen);
     double pierw = pow(1.0-randVal, RevShape);
     double result = poz / pierw;
     return result;
 }
 
-double simulator::distrUniform(double tMin, double tMax)
+double Simulator::distrUniform(double tMin, double tMax)
 {
     double x = (tMax - tMin) * (static_cast<double>(qrand())/RAND_MAX);
     return tMin+x;
