@@ -48,7 +48,6 @@ SOURCES += main.cpp\
     algorithms/trclvector2.cpp \
     algorithms/algorithmConv.cpp \
     algorithms/simulatordatacollection.cpp \
-    algorithms/simulatorBufferFIFO.cpp \
     algorithms/simulator.cpp \
     algorithms/algorithmConv3d.cpp \
     algorithms/simulationParameters.cpp \
@@ -87,7 +86,6 @@ HEADERS  += mainwindow.h \
     algorithms/trclvector2.h \
     algorithms/algorithmConv.h \
     algorithms/simulatordatacollection.h \
-    algorithms/simulatorBufferFIFO.h \
     algorithms/simulator.h \
     algorithms/algorithmConv3d.h \
     algorithms/simulationParameters.h \

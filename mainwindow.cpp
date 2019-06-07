@@ -17,7 +17,6 @@
 #include "algorithms/algorithmHybridDiscr.h"
 #include "algorithms/algorithmHybridDiscrDesc.h"
 #include "algorithms/simulatorQeueFIFO.h"
-#include "algorithms/simulatorBufferFIFO.h"
 #include "algorithms/simulatorQeueSdFIFO.h"
 #include "algorithms/simulatorNoQeue.h"
 #include "algorithms/simulatorAllSystems.h"
@@ -234,7 +233,6 @@ void MainWindow::addAlgorithmsAndParams()
     //addExperimentalAlgorithm(new convolutionAlgorithmGamma3());
     //addExperimentalAlgorithm(new convolutionAlgorithm3d_v1());
     //addExperimentalAlgorithm(new Algorithm2Pass());
-    //addExperimentalAlgorithm(new SimulatorBufferFifo());
     //addExperimentalAlgorithm(new AlgorithmHybridDiscr());
 
     algorithms.append(new Algorithms::AlgorithmHybridNoFifo());
@@ -262,7 +260,6 @@ void MainWindow::addAlgorithmsAndParams()
     addExperimentalAlgorithm(new convolutionAlgorithmGamma3());
     //addExperimentalAlgorithm(new convolutionAlgorithm3d_v1());
     //addExperimentalAlgorithm(new Algorithm2Pass());
-    //addExperimentalAlgorithm(new SimulatorBufferFifo());
     addExperimentalAlgorithm(new AlgorithmHybridDiscr());
 
     addAlgorithm(new AlgorithmHybridNoFifo());

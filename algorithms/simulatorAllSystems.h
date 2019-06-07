@@ -93,12 +93,9 @@ public:
         const ModelSyst *systemData;  ///< Description of investigated system
         const int m;                  ///< Number of offered traffic classes
 
-    /// Total system capacity
-        const int vk_sb;
-    /// Total server capacity
-        const int vk_s;
-    /// Total buffer capacity
-        const int vk_b;
+        const int vk_sb;              ///< Total system capacity
+        const int vk_s;               ///< Total server capacity
+        const int vk_b;               ///< Total buffer capacity
 
     private:
         // System components
@@ -109,16 +106,12 @@ public:
 
         // Statistics and results
         SystemStatistics *statistics; ///< Statistics that are colected during simulation experiment
-        //simulationResults results;    //TODO deprecated, use newresult
-
-
 
         // System state
         int n;                        ///< Number of occupied resourcess by all the classes
         int old_n;                    ///< Previous number of occupied resourcess by all the classes
         QVector<int> n_i;             ///< Number of occupied resourcess by given class. Vector length is m
         QVector<int> t_i;             ///< Numbed od AUs required by single call of coresponding class
-
 
         void removeCallFromServer(Call *call);
         void removeCallFromBuffer(Call *call);
@@ -138,7 +131,6 @@ public:
         void statsDisable();
         void statsEnable();
 #define FOLDINGEND }
-
 
         bool serveNewCall(Call *newCall);                                    ///< this call may be or not accepted to the service
         void endCallService(Call *call);                                     ///< this call was accepted

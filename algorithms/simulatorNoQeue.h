@@ -121,8 +121,6 @@ public:
         inline void removeProcess(ProcNoQeue *proc);
         inline ProcNoQeue *takeFirstProcess() { return agenda->takeFirstProcess(); }
         void reuseProcess(ProcNoQeue *proc);
-
-        void serveCallsInEque();
     };
     class Server
     {

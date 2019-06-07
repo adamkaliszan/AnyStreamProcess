@@ -545,6 +545,7 @@ bool SimulatorAll::System::serveNewCall(SimulatorAll::Call *newCall)
     int groupNumber;
     bool isPlace = server->findAS(newCall->reqAS, groupNumber);
 
+
     if (isPlace)
     {
         engine->prepareCallToService(newCall);
@@ -561,8 +562,16 @@ bool SimulatorAll::System::serveNewCall(SimulatorAll::Call *newCall)
     }
     else
     {
-        finishCall(newCall, false);
-        return false;
+        if (0)
+        {
+            serveCallsInEque();
+            return true;
+        }
+        else
+        {
+            finishCall(newCall, false);
+            return false;
+        }
     }
 }
 
@@ -599,8 +608,67 @@ void SimulatorAll::System::finishCall(SimulatorAll::Call *call, bool acceptedToS
     else
     {
         engine->notifyServicedCall();
+        serveCallsInEque();
     }
     engine->reuseCall(call);
+
+}
+
+void SimulatorAll::System::serveCallsInEque()
+{
+#if 0
+    Call *tmpCall;
+    int numberOfAvailableAS;
+
+    numberOfAvailableAS = server->getNoOfFreeAS();
+    while(numberOfAvailableAS > 0)
+    {
+#ifndef DO_NOT_USE_SECUTIRY_CHECKS
+        buffer->consistencyCheck();
+#endif
+        tmpCall = buffer->getNextCall();
+        if (tmpCall == NULL)
+            break;
+
+        if (buffer->scheduler != BufferResourcessScheduler::Continuos && tmpCall->reqAS > numberOfAvailableAS)
+            break;
+
+        int maxResToAll = tmpCall->reqAS - tmpCall->allocatedAS;
+#ifndef DO_NOT_USE_SECUTIRY_CHECKS
+        if (buffer->n < (int)maxResToAll)
+            qFatal("Wrong number of max ressourcess to allocate");
+#endif
+        bool newCall = (tmpCall->allocatedAS == 0);
+        int noOfAS_toAllocate =qMin(numberOfAvailableAS, (int) maxResToAll);
+        tmpCall->allocatedAS += noOfAS_toAllocate;
+
+        double newTime = (tmpCall->DUmessageSize-tmpCall->DUtransfered)/tmpCall->allocatedAS;
+
+        server->addCall(tmpCall, noOfAS_toAllocate, newCall);
+
+        if (newCall)
+        {
+            tmpCall->proc = agenda->getNewProcess();
+            tmpCall->proc->time = newTime;
+            tmpCall->proc->callData = tmpCall;
+            tmpCall->proc->state = ProcQeueFifo::SENDING_DATA;
+            tmpCall->proc->execute = tmpCall->trEndedFun;
+            agenda->addProcess(tmpCall->proc);
+        }
+        else
+        {
+            agenda->changeProcessWakeUpTime(tmpCall->proc, newTime);
+        }
+        buffer->takeCall(tmpCall, noOfAS_toAllocate);
+
+
+        numberOfAvailableAS = server->getNoOfFreeAS();
+
+#ifndef DO_NOT_USE_SECUTIRY_CHECKS
+        buffer->consistencyCheck();
+#endif
+    }
+#endif
 }
 
 

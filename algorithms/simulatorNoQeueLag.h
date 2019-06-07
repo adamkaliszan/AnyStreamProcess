@@ -154,7 +154,6 @@ public:
         inline ProcNoQeueLag *takeFirstProcess()        { return agenda->takeFirstProcess(); }
         void reuseProcess(ProcNoQeueLag *proc);
 
-        void serveCallsInEque();
         int getMaxNumberOfAsInSingleGroup();
     };
     class Server
