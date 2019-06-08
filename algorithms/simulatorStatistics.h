@@ -197,7 +197,7 @@ private:
     QVector<QVector<TimeStatisticsMicroState> >       timesPerClassAndState;
 
 public:
-    BufferStatistics(const ModelSyst * const system);
+    BufferStatistics(const ModelSyst * system);
 
     inline const EvenStatistics& getEventStatistics(int state)                              const { return eventsPerState[state]; }
     inline const EvenStatistics& getEventStatisticsSC(int classNo)                          const { return eventsPerClass[classNo]; }

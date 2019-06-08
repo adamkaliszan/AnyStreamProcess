@@ -90,37 +90,39 @@ public:
     {
     public:
         Engine *engine;
-        const ModelSyst *systemData;  ///< Description of investigated system
-        const int m;                  ///< Number of offered traffic classes
 
-        const int vk_sb;              ///< Total system capacity
-        const int vk_s;               ///< Total server capacity
-        const int vk_b;               ///< Total buffer capacity
+        const struct Parameters
+        {
+            Parameters(const ModelSyst *data);
+            const int m;              ///< Number of offered traffic classes
+            const int vk_sb;          ///< Total system capacity
+            const int vk_s;           ///< Total server capacity
+            const int vk_b;           ///< Total buffer capacity
+            const QVector<int> t_i;   ///< Numbed od AUs required by single call of coresponding class
+
+            const ModelSyst  *data;    ///< Description of investigated system
+        } par;                        ///< System Parameters
 
     private:
         // System components
         Server *server;               ///< Server details
         Buffer *buffer;               ///< Buffer details
-
-        QList<Call *> calls;
+        QList<Call *> calls;          ///< Calls in system
 
         // Statistics and results
         SystemStatistics *statistics; ///< Statistics that are colected during simulation experiment
 
         // System state
-        int n;                        ///< Number of occupied resourcess by all the classes
-        int old_n;                    ///< Previous number of occupied resourcess by all the classes
-        QVector<int> n_i;             ///< Number of occupied resourcess by given class. Vector length is m
-        QVector<int> t_i;             ///< Numbed od AUs required by single call of coresponding class
-
-        void removeCallFromServer(Call *call);
-        void removeCallFromBuffer(Call *call);
+        struct
+        {
+            int n;                    ///< Number of occupied resourcess by all the classes
+            int old_n;                ///< Previous number of occupied resourcess by all the classes
+            QVector<int> n_i;         ///< Number of occupied resourcess by given class. Vector length is m
+        } state;                      ///< System state
 
     public:
         System(const ModelSyst *system);
         ~System();
-
-        inline const QVector<int> &getClassRequiredResourcess() const { return t_i; }
 
 #define FOLDINGSTART { //Statistics
         void writesResultsOfSingleExperiment(RSingle &singleResults, double simulationTime);
@@ -134,17 +136,20 @@ public:
 
         bool serveNewCall(Call *newCall);                                    ///< this call may be or not accepted to the service
         void endCallService(Call *call);                                     ///< this call was accepted
-
         void finishCall(Call *call, bool acceptedToService);                 ///< this call was accepted or rejected
         void cancellScheduledCall(Call *call) {  engine->removeProcess(call->proc); engine->reuseCall(call); }
 
+    private:
+        void removeCallFromServer(Call *call);
+        void removeCallFromBuffer(Call *call);
         void serveCallsInEque();
     };
+
     class Server
     {
-
         friend void SimulatorAll::System::writesResultsOfSingleExperiment(RSingle&, double simulationTime);
         friend void SimulatorAll::System::statsCollectPre(double time);
+
     public:
         const System  * const system;
         const ServerResourcessScheduler scheduler;    /// Algorithm that is responsible for choosing the group if more then 1
@@ -154,13 +159,15 @@ public:
         const int m;                                  /// Number of traffic classes
 
     private:
-        // Server state
-        int n;                                        /// Server state
-        QVector<int> n_i;                             /// Server microstate (numbers of occupied AS by all the offered classes
-        QVector<int> n_k;                             /// Group state, occupancy state of each od the groups
+        struct
+        {
+            int n;                                    ///< Total number of occupied resourcess
+            QVector<int> n_i;                         ///< Occupied resourcess vs class
+            QVector<int> n_k;                         ///< Occupied resourcess of given group
+            mutable QVector<int> subgroupSequence;    /// Sequence of checking group for new call service
+            mutable QVector<int> subgroupFreeAUs;     /// Number of AS that is now available in given group
+        } state;                                      ///< Server state
 
-        mutable QVector<int> subgroupSequence;        /// Sequence of checking group for new call service
-        mutable QVector<int> subgroupFreeAUs;         /// Number of AS that is now available in given group
 
         ServerStatistics *statistics;
 
@@ -176,13 +183,13 @@ public:
         Server(System *system);
         ~Server();
 
-        inline int get_n() const {return n; }
-        inline const QVector<int> &getMicroStates() const { return n_i; }
-        inline const QVector<int> &getOccupancyOfTheGroups() const { return n_k; }
+        inline int get_n() const {return state.n; }
+        inline const QVector<int> &getMicroStates() const { return state.n_i; }
+        inline const QVector<int> &getOccupancyOfTheGroups() const { return state.n_k; }
 
         void writesResultsOfSingleExperiment(RSingle& singleResults, double simulationTime);
 
-        inline int getNoOfFreeAS() const { return vTotal - n; }
+        inline int getNoOfFreeAS() const { return vTotal - state.n; }
         int getMaxNumberOfAsInSingleGroup();
 
         inline int getV() const {return vTotal;}
@@ -218,31 +225,45 @@ public:
     class Buffer
     {
         friend void SimulatorAll::System::writesResultsOfSingleExperiment(Results::RSingle&, double simulationTime);
-    private:
-        System *system;
-        int V;                                                            ///< Number of Allocated Slots, that the buffer is able to handle
-        int m;
 
-        QStack<Call *> calls;                                             ///< FiFo Qeue with calls
-        Call *firstCall;                                                  ///< Call that is partialy serviced
 
-        QVector<double> occupancyTimes;                                   ///< Wimes of occupancy of every state <0, V>
-        QVector<int> numberOfCalls;                                       ///< Actual number of calls that are awainting in qeue
-        QVector<int> numberOfAS;                                          ///< Actual number of AS occupied by call in qeue
-        QVector<double> avgNumberOfCalls;                                 ///< Number of calls multiplied by the time in qeue
-        QVector<QVector<double> > AStime_ofOccupiedAS_byClassI_inStateN;  ///< Avarage number of resuorcess occupied by class i in state n
 
-    public:
-        int n;                                                            ///< Number of AS that is used by the calls
-        QVector<int> n_i;                                                 ///< Detailed number of AS that is used by given classes
+      public:
 
+        const struct Parameters
+        {
+            System *system;
+            int V;                                                            ///< Number of Allocated Slots, that the buffer is able to handle
+            int m;
+
+            Parameters(System *system): system(system), V(system->par.vk_b), m(system->par.m)
+            {
+            }
+        } par;
+
+        struct State
+        {
+            int n;                                                            ///< Number of AS that is used by the calls
+            Call *firstCall;                                                  ///< Call that is partialy serviced
+
+            QVector<int> n_i;                                                 ///< Detailed number of AS that is used by given classes
+            QStack<Call *> calls;                                             ///< FiFo Qeue with calls
+
+            State(const System *system): n(0), firstCall(nullptr)
+            {
+                n_i.resize(system->par.m);
+            }
+        } state;
+
+      private:
+        BufferStatistics *statistics;
+
+      public:
         Buffer(System *system);
         ~Buffer();
 
-        inline int   getV()                                      { return V; }
-        inline int   getNoOfFreeAS()                             { return V - n;}
-        inline double getAvarageNumberOfCalls(int classIdx)      { return avgNumberOfCalls[classIdx]; }
-        inline double getAvgNoOfASinStateN(int classIdx, int n)  { return AStime_ofOccupiedAS_byClassI_inStateN[classIdx][n]; }
+        inline int   getV()                                      { return par.V; }
+        inline int   getNoOfFreeAS()                             { return par.V - state.n;}
 
 #define FOLDINGSTART { //Statistics
         void statsEnable();
@@ -258,24 +279,23 @@ public:
         void   takeCall(SimulatorAll::Call *call, int noOfAS);
         inline void   removeCall(Call *first);
 
-        inline int get_n() const {return n; }
-        inline const QVector<int> &getMicroStates() const { return n_i; }
-        inline const QVector<int> &getOccupancyOfTheGroups() const { return n_i; }
-
+        inline int get_n() const {return state.n; }
+        inline const QVector<int> &getMicroStates() const { return state.n_i; }
+        inline const QVector<int> &getOccupancyOfTheGroups() const { return state.n_i; }
 
 
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
         void consistencyCheck()
         {
             int tmp = 0;
-            if (firstCall != nullptr)
-                tmp = firstCall->reqAS - firstCall->allocatedAS;
-            foreach (SimulatorAll::Call *tmpCall, calls)
+            if (state.firstCall != nullptr)
+                tmp = state.firstCall->reqAS - state.firstCall->allocatedAS;
+            foreach (SimulatorAll::Call *tmpCall, state.calls)
             {
                 tmp += (tmpCall->reqAS - tmpCall->allocatedAS);
             }
-            if (tmp > n)
-                qFatal("Qeue error: n=%d, sum ad AS = %d", n, tmp);
+            if (tmp > state.n)
+                qFatal("Qeue error: n=%d, sum ad AS = %d", state.n, tmp);
         }
 #endif
         Call   *getNextCall();
@@ -331,7 +351,7 @@ class ProcAll
     friend bool SimulatorAll::System::serveNewCall(SimulatorAll::Call *newCallErlang);
 
 public:
-    enum PROC_STATE
+    enum class ProcState
     {
         USELESS,
         WAITING_FOR_NEW_CALL,
@@ -339,7 +359,7 @@ public:
     };
 
 private:
-    PROC_STATE state;
+    ProcState state;
 
 
     void initializeIndependent(SimulatorAll::Engine *system
@@ -534,7 +554,7 @@ public:
     uint   idx;              /// Index on the binary heap
     SimulatorAll::Call *callData;
 
-    inline void setUseless()                                       { state = USELESS; }
+    inline void setUseless()                                       { state = ProcState::USELESS; }
     inline void removeCallData()                                   { callData = nullptr; }
     inline void setCallData(SimulatorAll::Call *newCallData)       { callData = newCallData; }
     inline bool hasCallData()                                      { return (callData != nullptr); }

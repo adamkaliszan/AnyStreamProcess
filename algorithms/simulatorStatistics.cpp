@@ -331,9 +331,14 @@ void ServerStatistics::clear()
         timesPerGroupsCombinations[combinationNo].fill(GroupCombinationStatistics());
 }
 
-BufferStatistics::BufferStatistics(const ModelSyst * const system)
-{
+BufferStatistics::BufferStatistics(const ModelSyst *system)
+{//TODO
+    eventsPerClass.resize(system->m());
+    eventsPerState.resize(system->vk_b()+1);
+    //QVector<QVector <EvenStatistics> >                eventsPerClassAndState;
 
+    timesPerState.resize(system->vk_b()+1);;
+    //QVector<QVector<TimeStatisticsMicroState> >       timesPerClassAndState;
 }
 
 void BufferStatistics::clear()

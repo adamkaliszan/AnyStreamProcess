@@ -37,7 +37,7 @@ SimulatorAll::Call *SimulatorAll::Engine::_getNewCall()
 void SimulatorAll::Engine::prepareCallToService(SimulatorAll::Call *callThatIsInService)
 {
     callThatIsInService->proc           = agenda->getNewProcess();
-    callThatIsInService->proc->state    = ProcAll::SENDING_DATA;
+    callThatIsInService->proc->state    = ProcAll::ProcState::SENDING_DATA;
     callThatIsInService->proc->execute  = callThatIsInService->trEndedFun;
     callThatIsInService->proc->callData = callThatIsInService;
     callThatIsInService->proc->time     = callThatIsInService->plannedServiceTime;
@@ -58,7 +58,7 @@ void SimulatorAll::Engine::addProcess(ProcAll *proc)
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
     if (proc->time < 0)
         qFatal("Negative time value");
-    if (proc->callData->classIdx > system->systemData->m())
+    if (proc->callData->classIdx > system->par.m)
         qFatal("Wrong class idx");
 #endif
     agenda->addProcess(proc);
@@ -231,21 +231,12 @@ void SimulatorAll::calculateSystem(const ModelSyst *system
 }
 
 SimulatorAll::System::System(const ModelSyst *system)
-    : m(system->m())
-    , vk_sb(system->V())
-    , vk_s(system->vk_s())
-    , vk_b(system->vk_b())
+    : par(system)
 //  , results(system->m(), system->vk_s(), system->vk_b(), noOfSeries)
-    , n(0)
-    , old_n(0)
 {
-    n_i.resize(m);
-    t_i.resize(m);
-    for (int i=0; i<m; i++)
-        t_i[i]=system->getClass(i)->t();
-
-    systemData = system;
-
+    state.n = 0;
+    state.old_n = 0;
+    state.n_i.resize(par.m);
 
     server = new Server(this);
     buffer = new Buffer(this);
@@ -263,9 +254,9 @@ SimulatorAll::System::~System()
 
 void SimulatorAll::Engine::initialize(double a, int sumPropAt, int V)
 {
-    for(int i=0; i<system->systemData->m(); i++)
+    for(int i=0; i<system->par.m; i++)
     {
-        const ModelTrClass *tmpClass = system->systemData->getClass(i);
+        const ModelTrClass *tmpClass = system->par.data->getClass(i);
         ProcAll::initialize(this, tmpClass, i, a, sumPropAt, V);
     }
 }
@@ -341,20 +332,20 @@ void SimulatorAll::System::writesResultsOfSingleExperiment(RSingle& singleResult
     server->writesResultsOfSingleExperiment(singleResults, simulationTime);
 
     int V  = server->getV() + buffer->getV();
-    int m  = systemData->m();
+    const int &m  = par.m;
 
     int max_t = 0;
 
     for (int i=0; i<m; i++)
     {
-        int t = systemData->getClass(i)->t();
+        int t = par.t_i[i];
         max_t = qMax(t, max_t);
     }
 
 /// TypeForClass
     for (int i=0; i<m; i++)
     {
-        int t = systemData->getClass(i)->t();
+        int t = par.t_i[i];
 
     /// BlockingProbability
         double E = 0;
@@ -522,7 +513,7 @@ void SimulatorAll::System::writesResultsOfSingleExperiment(RSingle& singleResult
             }
 
 
-            int t = this->systemData->getClass(i)->t();
+            int t = par.t_i[i];
 
             stateDurationTime = (n-t >= 0) ? statistics->getTimeStatistics(n-t).occupancyTime : 0;
 
@@ -555,8 +546,8 @@ bool SimulatorAll::System::serveNewCall(SimulatorAll::Call *newCall)
         newCall->allocatedAS    = newCall->reqAS;
         server->addCall(newCall, newCall->reqAS, groupNumber, true);
 
-        n += newCall->reqAS;
-        n_i[static_cast<int>(newCall->classIdx)] += newCall->reqAS;
+        state.n += newCall->reqAS;
+        state.n_i[static_cast<int>(newCall->classIdx)] += newCall->reqAS;
 
         return true;
     }
@@ -580,7 +571,7 @@ void SimulatorAll::System::endCallService(SimulatorAll::Call *call)
     removeCallFromServer(call);
     calls.removeAll(call);
 
-    n-=call->reqAS;
+    state.n-=call->reqAS;
     finishCall(call, true);
 }
 
@@ -616,7 +607,6 @@ void SimulatorAll::System::finishCall(SimulatorAll::Call *call, bool acceptedToS
 
 void SimulatorAll::System::serveCallsInEque()
 {
-#if 0
     Call *tmpCall;
     int numberOfAvailableAS;
 
@@ -627,15 +617,15 @@ void SimulatorAll::System::serveCallsInEque()
         buffer->consistencyCheck();
 #endif
         tmpCall = buffer->getNextCall();
-        if (tmpCall == NULL)
+        if (tmpCall == nullptr)
             break;
 
-        if (buffer->scheduler != BufferResourcessScheduler::Continuos && tmpCall->reqAS > numberOfAvailableAS)
-            break;
+//TODO        if (buffer->par.scheduler != BufferResourcessScheduler::Continuos && tmpCall->reqAS > numberOfAvailableAS)
+//            break;
 
         int maxResToAll = tmpCall->reqAS - tmpCall->allocatedAS;
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
-        if (buffer->n < (int)maxResToAll)
+        if (buffer->state.n < (int)maxResToAll)
             qFatal("Wrong number of max ressourcess to allocate");
 #endif
         bool newCall = (tmpCall->allocatedAS == 0);
@@ -644,20 +634,20 @@ void SimulatorAll::System::serveCallsInEque()
 
         double newTime = (tmpCall->DUmessageSize-tmpCall->DUtransfered)/tmpCall->allocatedAS;
 
-        server->addCall(tmpCall, noOfAS_toAllocate, newCall);
+//TODO         server->addCall(tmpCall, noOfAS_toAllocate, newCall);
 
         if (newCall)
         {
-            tmpCall->proc = agenda->getNewProcess();
+            tmpCall->proc = engine->getNewProcess();
             tmpCall->proc->time = newTime;
             tmpCall->proc->callData = tmpCall;
-            tmpCall->proc->state = ProcQeueFifo::SENDING_DATA;
+//TODO            tmpCall->proc->state = ProcAll::PROC_STATE::SENDING_DATA;
             tmpCall->proc->execute = tmpCall->trEndedFun;
-            agenda->addProcess(tmpCall->proc);
+            engine->addProcess(tmpCall->proc);
         }
         else
         {
-            agenda->changeProcessWakeUpTime(tmpCall->proc, newTime);
+//TODO            engine->changeProcessWakeUpTime(tmpCall->proc, newTime);
         }
         buffer->takeCall(tmpCall, noOfAS_toAllocate);
 
@@ -668,23 +658,21 @@ void SimulatorAll::System::serveCallsInEque()
         buffer->consistencyCheck();
 #endif
     }
-#endif
 }
-
 
 
 #define FOLDINGSTART { //Statistics
 
 void SimulatorAll::System::statsCollectPre(double time)
 {
-    old_n = n;
+    state.old_n = state.n;
 
     foreach(Call *tmpCall, calls)
     {
         tmpCall->collectTheStats(time);
     }
 
-    int n_s = server->get_n();
+    int n_s = server->state.n;
     int n_b = buffer->get_n();
 
     const QVector<int> &nMs_s = server->getMicroStates();
@@ -694,17 +682,17 @@ void SimulatorAll::System::statsCollectPre(double time)
     const QVector<int> &nKs_b = buffer->getOccupancyOfTheGroups();
 
 
-    statistics->collectPre(this->systemData, time, n_s, n_b, nMs_s, nMs_b, nKs_s, nKs_b);
+    statistics->collectPre(this->par.data, time, n_s, n_b, nMs_s, nMs_b, nKs_s, nKs_b);
 
-    server->statsColectPre(this->systemData, time);
+    server->statsColectPre(this->par.data, time);
     buffer->statsColectPre(time);
 }
 
 void SimulatorAll::System::statsCollectPost(int classIdx, EventType eventSim)
 {
-    statistics->collectPost(classIdx, old_n, n, SimulatorAll::SimEvent2statEvent(eventSim));
-    server->statsCollectPost(classIdx, old_n, n, eventSim);
-    buffer->statsCollectPost(classIdx, old_n, n);
+    statistics->collectPost(classIdx, state.old_n, state.n, SimulatorAll::SimEvent2statEvent(eventSim));
+    server->statsCollectPost(classIdx, state.old_n, state.n, eventSim);
+    buffer->statsCollectPost(classIdx, state.old_n, state.n);
 }
 
 void SimulatorAll::System::statsClear()
@@ -730,7 +718,7 @@ void SimulatorAll::Server::statsClear()
 
 void SimulatorAll::Server::statsColectPre(const ModelSyst *mSystem, double time)
 {
-    statistics->collectPre(mSystem, time, n, n_i, n_k);
+    statistics->collectPre(mSystem, time, state.n, state.n_i, state.n_k);
 
     statsColectPreGroupsAvailability(time);
 }
@@ -758,7 +746,6 @@ double SimulatorAll::Server::statsGetOccupancyTimeOfState(int state) const
 
 #define FOLDINGEND }
 
-
 bool SimulatorAll::Server::findAS(int noOfAUs, int& groupNo) const
 {
     bool result = false;
@@ -767,11 +754,11 @@ bool SimulatorAll::Server::findAS(int noOfAUs, int& groupNo) const
     switch (scheduler)
     {
     case ServerResourcessScheduler::Random:
-        Utils::UtilsMisc::suffle(subgroupSequence);
-        foreach (groupNoTmp, subgroupSequence)
+        Utils::UtilsMisc::suffle(state.subgroupSequence);
+        foreach (groupNoTmp, state.subgroupSequence)
         {
             groupNo = groupNoTmp;
-            if (subgroupFreeAUs[groupNoTmp] >= noOfAUs)
+            if (state.subgroupFreeAUs[groupNoTmp] >= noOfAUs)
             {
                 result = true;
                 break;
@@ -780,10 +767,10 @@ bool SimulatorAll::Server::findAS(int noOfAUs, int& groupNo) const
         break;
 
     case ServerResourcessScheduler::Sequencial:
-        foreach (groupNoTmp, subgroupSequence)
+        foreach (groupNoTmp, state.subgroupSequence)
         {
             groupNo = groupNoTmp;
-            if (subgroupFreeAUs[groupNoTmp] >= noOfAUs)
+            if (state.subgroupFreeAUs[groupNoTmp] >= noOfAUs)
             {
                 result = true;
                 break;
@@ -794,15 +781,14 @@ bool SimulatorAll::Server::findAS(int noOfAUs, int& groupNo) const
     return result;
 }
 
-
 void SimulatorAll::Server::addCall(Call *call, int noOfAS, int groupNo, bool newCall)
 {
     call->groupIndex = groupNo;
-    n += noOfAS;
-    assert(vTotal >= n);
-    n_i[call->classIdx] += noOfAS;
-    n_k[groupNo] += noOfAS;
-    subgroupFreeAUs[groupNo] -=noOfAS;
+    state.n += noOfAS;
+    assert(vTotal >= state.n);
+    state.n_i[call->classIdx] += noOfAS;
+    state.n_k[groupNo] += noOfAS;
+    state.subgroupFreeAUs[groupNo] -=noOfAS;
 
 
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
@@ -823,11 +809,11 @@ void SimulatorAll::Server::addCall(Call *call, int noOfAS, int groupNo, bool new
 
 void SimulatorAll::Server::removeCall(SimulatorAll::Call *call)
 {
-    this->subgroupFreeAUs[call->groupIndex] +=call->allocatedAS;
+    this->state.subgroupFreeAUs[call->groupIndex] +=call->allocatedAS;
     calls.removeAll(call);
-    n -=call->allocatedAS;
-    n_i[call->classIdx]-= call->allocatedAS;
-    n_k[call->groupIndex]-= call->allocatedAS;
+    state.n -=call->allocatedAS;
+    state.n_i[call->classIdx]-= call->allocatedAS;
+    state.n_k[call->groupIndex]-= call->allocatedAS;
 }
 
 double SimulatorAll::Server::resourceUtilization(int classNumber, int stateNo) const
@@ -842,30 +828,30 @@ double SimulatorAll::Server::getTimeOfState(int stateNo) const
 
 SimulatorAll::Server::Server(System *system)
   : system(system)
-  , scheduler(system->systemData->getGroupsSchedulerAlgorithm())
-  , vTotal(system->systemData->vk_s())
-  , vMax(system->systemData->v_sMax())
-  , k(system->systemData->k_s())
-  , m(system->systemData->m())
-  , n(0)
+  , scheduler(system->par.data->getGroupsSchedulerAlgorithm())
+  , vTotal(system->par.vk_sb)
+  , vMax(system->par.data->v_sMax())
+  , k(system->par.data->k_s())
+  , m(system->par.m)
 {   
-    n_k.resize(k);
-    n_i.resize(m);
+    state.n = 0;
+    state.n_k.resize(k);
+    state.n_i.resize(m);
 
-    subgroupFreeAUs.resize(k);
-    subgroupSequence.resize(k);
+    state.subgroupFreeAUs.resize(k);
+    state.subgroupSequence.resize(k);
     for (int j=0; j<k; j++)
     {
-        subgroupFreeAUs[j] = system->systemData->getConstSyst().vs[j];
-        subgroupSequence[j] = j;
+        state.subgroupFreeAUs[j] = system->par.data->getConstSyst().vs[j];
+        state.subgroupSequence[j] = j;
     }
 
-    statistics = new ServerStatistics(system->systemData);
+    statistics = new ServerStatistics(system->par.data);
 }
 
 SimulatorAll::Server::~Server()
 {
-    n = 0;
+    state.n = 0;
 }
 
 void SimulatorAll::Server::writesResultsOfSingleExperiment(RSingle &singleResults, double simulationTime)
@@ -971,12 +957,11 @@ int SimulatorAll::Server::getMaxNumberOfAsInSingleGroup()
 
     for (int groupNo=0; groupNo<k; groupNo++)
     {
-        int tempAvailability = subgroupFreeAUs[groupNo];
+        int tempAvailability = state.subgroupFreeAUs[groupNo];
         result = (tempAvailability > result) ? tempAvailability : result;
     }
     return result;
 }
-
 
 void ProcAll::initialize(
     SimulatorAll::Engine *engine
@@ -1347,7 +1332,7 @@ void ProcAll::initializeIndependent(
     callData = system->getNewCall(trClass, classIdx, IncE);
     callData->trEndedFun = ProcAll::callServiceEndedIndependent;
 
-    this->state = ProcAll::WAITING_FOR_NEW_CALL;
+    this->state = ProcAll::ProcState::WAITING_FOR_NEW_CALL;
     this->execute = funNewCall;
     this->time = funTimeNewCall(this->callData->sourceE, this->callData->sourceD);
     system->addProcess(this);
@@ -1384,7 +1369,7 @@ void ProcAll::ProcAll::initializeDependent(
     callData = engine->getNewCall(trClass, classIdx, IncE);
     callData->trEndedFun = funEndCall;
 
-    this->state = ProcAll::WAITING_FOR_NEW_CALL;
+    this->state = ProcAll::ProcState::WAITING_FOR_NEW_CALL;
     this->execute = funNewCall;
     this->time = funTimeNewCall(this->callData->sourceE, this->callData->sourceD);
     engine->addProcess(this);
@@ -1401,7 +1386,7 @@ SimulatorAll::EventType ProcAll::newCallIndep(
     SimulatorAll::EventType result;
 
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
-    if (proc->callData->classIdx > system->systemData->m())
+    if (proc->callData->classIdx > system->par.m)
         qFatal("Wrong class idx");
 #endif
     SimulatorAll::Call *callData = proc->callData;
@@ -1416,7 +1401,7 @@ SimulatorAll::EventType ProcAll::newCallIndep(
     ProcAll *newProc = proc;
     newProc->callData = system->engine->getNewCall(proc->callData);
 
-    newProc->state = ProcAll::WAITING_FOR_NEW_CALL;
+    newProc->state = ProcAll::ProcState::WAITING_FOR_NEW_CALL;
     newProc->execute = funNewCall;
     newProc->time = funTimeNewCall(newProc->callData->sourceE, newProc->callData->sourceD);
     system->engine->addProcess(newProc);
@@ -1435,7 +1420,7 @@ SimulatorAll::EventType ProcAll::newCallDepMinus(
     SimulatorAll::EventType result;
 
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
-    if (proc->callData->classIdx > system->systemData->m())
+    if (proc->callData->classIdx > system->par.m)
         qFatal("Wrong class idx");
 #endif
     SimulatorAll::Call *callData = proc->callData;
@@ -1452,10 +1437,10 @@ SimulatorAll::EventType ProcAll::newCallDepMinus(
         newProc->callData = system->engine->getNewCall(callData);
 
     #ifndef DO_NOT_USE_SECUTIRY_CHECKS
-        if (newProc->callData->classIdx > system->systemData->m())
+        if (newProc->callData->classIdx > system->par.m)
             qFatal("Wrong class idx");
     #endif
-        newProc->state = ProcAll::WAITING_FOR_NEW_CALL;
+        newProc->state = ProcAll::ProcState::WAITING_FOR_NEW_CALL;
         newProc->execute = funNewCall;
         newProc->time = funTimeNewCall(newProc->callData->sourceE, newProc->callData->sourceD);
         system->engine->addProcess(newProc);
@@ -1480,7 +1465,7 @@ SimulatorAll::EventType ProcAll::newCallDepPlus(ProcAll *proc
     SimulatorAll::EventType result;
 
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
-    if (proc->callData->classIdx > system->systemData->m())
+    if (proc->callData->classIdx > system->par.m)
         qFatal("Wrong class idx");
 #endif
     SimulatorAll::Call *callData           = proc->callData;
@@ -1502,7 +1487,7 @@ SimulatorAll::EventType ProcAll::newCallDepPlus(ProcAll *proc
         callData->complementaryCall = nullptr;
     }
 
-    procNewCall->state = ProcAll::WAITING_FOR_NEW_CALL;
+    procNewCall->state = ProcAll::ProcState::WAITING_FOR_NEW_CALL;
     procNewCall->execute = funNewCall;
     procNewCall->time = funTimeNewCall(procNewCall->callData->sourceE, procNewCall->callData->sourceD);
     system->engine->addProcess(procNewCall);
@@ -1516,7 +1501,7 @@ SimulatorAll::EventType ProcAll::newCallDepPlus(ProcAll *proc
         callData->complementaryCall = newProc->callData;
         newProc->callData->complementaryCall = callData;
 
-        newProc->state = ProcAll::WAITING_FOR_NEW_CALL;
+        newProc->state = ProcAll::ProcState::WAITING_FOR_NEW_CALL;
         newProc->execute = funNewCall;
         newProc->time = funTimeNewCall(newProc->callData->sourceE, newProc->callData->sourceD);
         system->engine->addProcess(newProc);
@@ -1534,7 +1519,7 @@ SimulatorAll::EventType ProcAll::newCallDepPlus(ProcAll *proc
 SimulatorAll::EventType ProcAll::callServiceEndedIndependent(ProcAll *proc, SimulatorAll::System *system)
 {
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
-    if (proc->callData->classIdx > system->systemData->m())
+    if (proc->callData->classIdx > system->par.m)
         qFatal("Wrong class idx");
 #endif
     system->endCallService(proc->callData);
@@ -1555,7 +1540,7 @@ SimulatorAll::EventType ProcAll::callServiceEndedDependentMinus(ProcAll *proc
     newProc->callData = system->engine->getNewCall(proc->callData);
 
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
-    if (proc->callData->classIdx > system->systemData->m())
+    if (proc->callData->classIdx > system->par.m)
         qFatal("Wrong class idx");
 #endif
     system->endCallService(proc->callData);
@@ -1564,7 +1549,7 @@ SimulatorAll::EventType ProcAll::callServiceEndedDependentMinus(ProcAll *proc
     system->engine->reuseProcess(proc);
 
     //Adding new process with state Waiting for new call
-    newProc->state = ProcAll::WAITING_FOR_NEW_CALL;
+    newProc->state = ProcAll::ProcState::WAITING_FOR_NEW_CALL;
     newProc->execute = funNewCall;
     newProc->time = funTimeNewCall(newProc->callData->sourceE, newProc->callData->sourceD);
     system->engine->addProcess(newProc);
@@ -1579,7 +1564,7 @@ SimulatorAll::EventType ProcAll::callServiceEndedDependentPlus(ProcAll *proc, Si
     if (scheduledCall->complementaryCall != proc->callData)
         qFatal("Wrong relations between Pascal sourcess");
 
-    if (proc->state == PROC_STATE::USELESS)\
+    if (proc->state == ProcState::USELESS)\
         qFatal("Wrong Process state");
     system->endCallService(proc->callData);
 
@@ -1590,7 +1575,6 @@ SimulatorAll::EventType ProcAll::callServiceEndedDependentPlus(ProcAll *proc, Si
 
     return SimulatorAll::EventType::callServiceEnded;
 }
-
 
 void SimulatorAll::Call::fillData(SimulatorAll::Call *src)
 {
@@ -1618,35 +1602,18 @@ void SimulatorAll::Call::collectTheStats(double time)
     timeOnSystem +=time;
     DUtransfered += (time * allocatedAS);
 }
-
-
 #define FOLDINEND }
 
 #define FOLDINGSTART { // buffer
 
-SimulatorAll::Buffer::Buffer(SimulatorAll::System *system) : system(system), V(system->vk_b), m(system->m), firstCall(nullptr), n(0)
+SimulatorAll::Buffer::Buffer(SimulatorAll::System *system) : par(system), state(system)
 {
-    numberOfCalls.resize(m);
-    numberOfAS.resize(m);
-
-    avgNumberOfCalls.resize(m);
-    n_i.resize(m);
-
-
-    occupancyTimes.resize(V+1);
-    numberOfCalls.resize(m);
-    numberOfAS.resize(m);
-    avgNumberOfCalls.resize(m);
-    AStime_ofOccupiedAS_byClassI_inStateN.resize(m);
-    {
-        for (int nb=0; nb<=V; nb++)
-            AStime_ofOccupiedAS_byClassI_inStateN[nb].resize(m);
-    }
+    statistics = new BufferStatistics(system->par.data);
 }
 
 void SimulatorAll::Buffer::statsClear()
 {
-
+    statistics->clear();
 }
 
 void SimulatorAll::Buffer::statsColectPre(double time)
@@ -1661,9 +1628,29 @@ void SimulatorAll::Buffer::statsCollectPost(int classIdx, int old_n, int n)
     (void) n;
 }
 
+void SimulatorAll::Buffer::takeCall(SimulatorAll::Call *call, int noOfAS)
+{
+    //TODO
+}
+
 void SimulatorAll::Buffer::removeCall(SimulatorAll::Call *first)
 {
     (void) first;
+}
+
+SimulatorAll::Call *SimulatorAll::Buffer::getNextCall()
+{
+    return nullptr;//TODO
+}
+
+SimulatorAll::System::Parameters::Parameters(const ModelSyst *data)
+  : m(data->m())
+  , vk_sb(data->V())
+  , vk_s(data->vk_s())
+  , vk_b(data->vk_b())
+  , t_i(data->getConstSyst().t)
+  , data(data)
+{
 }
 
 #define FOLDINEND }
