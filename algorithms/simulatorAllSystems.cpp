@@ -587,6 +587,7 @@ void SimulatorAll::System::endCallService(SimulatorAll::Call *call)
 void SimulatorAll::System::removeCallFromServer(SimulatorAll::Call *call)
 {
     server->removeCall(call);
+    serveCallsInEque();
 }
 
 void SimulatorAll::System::removeCallFromBuffer(SimulatorAll::Call *call)
@@ -608,7 +609,6 @@ void SimulatorAll::System::finishCall(SimulatorAll::Call *call, bool acceptedToS
     else
     {
         engine->notifyServicedCall();
-        serveCallsInEque();
     }
     engine->reuseCall(call);
 

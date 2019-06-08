@@ -10,7 +10,6 @@ Simulator::Simulator(): Investigator()
        <<Results::Type::BlockingProbability
        <<Results::Type::LossProbability
        <<Results::Type::OccupancyDistribution;
-
 }
 
 std::random_device Simulator::rd;
@@ -28,15 +27,6 @@ bool Simulator::isItTheSameSystem(ModelSyst *system)
 double Simulator::distrLambdaED(double Ex, double D)
 {
     (void) D;
-/*
-    std::poisson_distribution<double>tmpDistrib(Ex);
-    double result = 0;
-    do
-    {
-        result = tmpDistrib(simulator::gen);
-    }
-    while (result <=0);
-*/
     double randomNumber;
     do
     randomNumber = static_cast<double>(qrand())/RAND_MAX;
@@ -64,16 +54,6 @@ double Simulator::distrUniformED(double Ex, double D)
     double DeltaT = sqrt(12*D);
 
     double tMin = Ex-0.5*DeltaT;
-
-    //double tMax = Ex+0.5*DeltaT;
-    //std::uniform_real_distribution<double> tmpDistrib(tMin, tMax);
-    //double result = 0;
-    //do
-    //{
-    //    result = tmpDistrib(simulator::gen);
-    //}
-    //while(result<=0);
-
 
     double x = DeltaT * static_cast<double>(qrand())/RAND_MAX;
     return tMin+x;

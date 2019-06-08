@@ -5,7 +5,7 @@
 namespace Algorithms
 {
 
-simulationResults::simulationResults(int m, int Vs, int Vb, int noOfSer): m(m), Vs(Vs), Vb(Vb), noOfSeries(noOfSer), _simulationTime(0)
+SimulationResults::SimulationResults(int m, int Vs, int Vb, int noOfSer): m(m), Vs(Vs), Vb(Vb), noOfSeries(noOfSer), _simulationTime(0)
 {
     __act_yQ                      = new double[m];
     __act_y                       = new double[m];
@@ -166,7 +166,7 @@ simulationResults::simulationResults(int m, int Vs, int Vb, int noOfSer): m(m), 
     }
 }
 
-simulationResults::~simulationResults()
+SimulationResults::~SimulationResults()
 {
     delete []__act_yQ;
     delete []__act_y;
@@ -330,7 +330,7 @@ simulationResults::~simulationResults()
 
 }
 
-void simulationResults::disableStatisticCollection()
+void SimulationResults::disableStatisticCollection()
 {
     act_yQ             = __act_yQ;
     act_y              = __act_y;
@@ -405,7 +405,7 @@ void simulationResults::disableStatisticCollection()
 
 }
 
-void simulationResults::enableStatisticscollection(int serNo)
+void SimulationResults::enableStatisticscollection(int serNo)
 {
     _simulationTime = 0;
 

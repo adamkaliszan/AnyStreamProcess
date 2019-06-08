@@ -299,7 +299,7 @@ public:
 };
 
 
-class simulationResults
+class SimulationResults
 {
 public:
     const int m;
@@ -390,8 +390,8 @@ public:
     unsigned int **noOfCalls, *act_noOfCalls;                              // Liczba zgłoszeń (wszystkich - utraconych i obsłużonych)
     unsigned int **noOfServicedCalls, *act_noOfServicedCalls;              // Średnia liczba obsłużonych zgłoszeń
 
-    simulationResults(int m, int Vs, int Vb, int noOfSer);
-    ~simulationResults();
+    SimulationResults(int m, int Vs, int Vb, int noOfSer);
+    ~SimulationResults();
     void disableStatisticCollection();
     void enableStatisticscollection(int serNo);
 

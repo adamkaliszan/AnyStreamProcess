@@ -42,9 +42,7 @@ SOURCES += main.cpp\
     algorithms/alg_cFIFO_hybrid.cpp \
     algorithms/alg_cFIFO_convGamma.cpp \
     algorithms/alg_noFIFO.cpp \
-    algorithms/simulatorNoQeue.cpp \
     algorithms/alg_FAG_AnyStream.cpp \
-    algorithms/simulatorNoQeueLag.cpp \
     algorithms/trclvector2.cpp \
     algorithms/algorithmConv.cpp \
     algorithms/simulatordatacollection.cpp \
@@ -79,9 +77,7 @@ HEADERS  += mainwindow.h \
     algorithms/alg_cFIFO_hybrid.h \
     algorithms/alg_cFIFO_convGamma.h \
     algorithms/alg_noFIFO.h \
-    algorithms/simulatorNoQeue.h \
     algorithms/alg_FAG_AnyStream.h \
-    algorithms/simulatorNoQeueLag.h \
     algorithms/investigator.h \
     algorithms/trclvector2.h \
     algorithms/algorithmConv.h \

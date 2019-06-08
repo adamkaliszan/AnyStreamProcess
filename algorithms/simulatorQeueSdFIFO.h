@@ -39,7 +39,7 @@ public:
     private:
         QStack<Call *> uselessCalls;
         SimulatorDataCollection<ProcQeueSdFifo> *agenda;
-        simulationResults results;
+        SimulationResults results;
 
         Call *_getNewCall();
         inline void reuseCall(Call *callToReuse);

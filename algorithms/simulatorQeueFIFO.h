@@ -44,7 +44,7 @@ public:
         QStack<Call *> uselessCalls;
         QList<Call *> callsInSystem;
         SimulatorDataCollection<ProcQeueFifo> *agenda;
-        simulationResults results;
+        SimulationResults results;
 
         Call *_getNewCall();
         inline void reuseCall(Call *callToReuse);

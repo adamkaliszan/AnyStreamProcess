@@ -18,9 +18,7 @@
 #include "algorithms/algorithmHybridDiscrDesc.h"
 #include "algorithms/simulatorQeueFIFO.h"
 #include "algorithms/simulatorQeueSdFIFO.h"
-#include "algorithms/simulatorNoQeue.h"
 #include "algorithms/simulatorAllSystems.h"
-#include "algorithms/simulatorNoQeueLag.h"
 #include "algorithms/simulationParameters.h"
 #include "algorithms/algRekLag.h"
 #include "algorithms/algRekLagGS.h"
@@ -245,8 +243,6 @@ void MainWindow::addAlgorithmsAndParams()
 
 //    addTestedAlgorithm(new Algorithms::SimulatorQeueFifo());
 //    addTestedAlgorithm(new Algorithms::SimulatorQeueSdFifo());
-//    addTestedAlgorithm(new Algorithms::simulatorNoQeue());
-//    addTestedAlgorithm(new Algorithms::simulatorNoQeueLag());
     addTestedAlgorithm(new Algorithms::SimulatorAll());
     addTestedAlgorithm(new Algorithms::algRekLagGS());
     addTestedAlgorithm(new Algorithms::algRekLagGS2());
