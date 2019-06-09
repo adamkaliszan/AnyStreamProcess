@@ -9,6 +9,82 @@
 namespace Algorithms
 {
 
+SimulatorAll::SimulatorAll() : Simulator()
+{
+    myQoS_Set << Results::Type::AllSugbrupsInGivenCombinationNotAvailableForCallsOfGivenClass;
+    myQoS_Set << Results::Type::AvailableSubroupDistribution;
+    myQoS_Set << Results::Type::AllSugbrupsInGivenCombinationAvailableForCallsOfGivenClass;
+
+    system = nullptr;
+}
+
+bool SimulatorAll::possible(const ModelSyst *system) const
+{
+    return Simulator::possible(system);
+}
+
+StatisticEventType SimulatorAll::SimEvent2statEvent(SimulatorAll::EventType simEvent)
+{
+    switch (simEvent)
+    {
+    case EventType::callServiceEnded:
+    case EventType::callServiceEndedAndBufferDequeued:
+        return StatisticEventType::callServiceEnded;
+
+    case EventType::newCallAccepted:
+    case EventType::newCallEnqued:
+        return StatisticEventType::newCallAccepted;
+
+    case EventType::newCallRejected:
+        return StatisticEventType::newCallRejected;
+    }
+    return StatisticEventType::newCallRejected;
+}
+
+void SimulatorAll::calculateSystem(const ModelSyst *system
+                                   , double a
+                                   , RInvestigator *results
+                                   , SimulationParameters *simParameters)
+{
+    prepareTemporaryData(system, a);
+
+
+    System *simData = new System(system);
+    Engine *engine = new Engine(simData);
+
+    engine->initialize(a, system->totalAt(), system->vk_s());
+
+    unsigned int seed = 1024;
+
+    int noOfSeries = simParameters->noOfSeries;
+
+    for (int serNo=0; serNo<noOfSeries; serNo++)
+    {
+        seed = static_cast<unsigned int>(qrand());
+        simData->statsDisable();
+        if (serNo == 0)
+        {
+            int noOfLostCalls = simParameters->noOfLostCalls/simParameters->spaceOnStart;
+            int noOfServCalls = simParameters->noOfServicedCalls/simParameters->spaceOnStart;
+            engine->doSimExperiment(noOfLostCalls, seed, noOfServCalls);
+        }
+        else
+        {
+            int noOfLostCalls = simParameters->noOfLostCalls/simParameters->spaceBetweenSeries;
+            int noOfServCalls = simParameters->noOfServicedCalls/simParameters->spaceBetweenSeries;
+            engine->doSimExperiment(noOfLostCalls, seed, noOfServCalls);
+        }
+        simData->statsEnable();
+        double simulationTime = engine->doSimExperiment(simParameters->noOfLostCalls, seed, simParameters->noOfServicedCalls);
+        simData->writesResultsOfSingleExperiment((*results)[serNo], simulationTime);
+        qDebug("universal simulation experiment no %d", serNo+1);
+    }
+    delete simData;
+    delete engine;
+    //emit this->sigCalculationDone();
+}
+
+#define FOLDINGSTART { //Agenda
 SimulatorAll::Engine::Engine(SimulatorAll::System *system): system(system)
 {
     system->engine = this;
@@ -154,90 +230,10 @@ SimulatorAll::Call *SimulatorAll::Engine::getNewCall(
 
     return result;
 }
+#define FOLDINGEND }
 
-SimulatorAll::SimulatorAll() : Simulator()
+SimulatorAll::System::System(const ModelSyst *system) : par(system), state(system)
 {
-    myQoS_Set << Results::Type::AllSugbrupsInGivenCombinationNotAvailableForCallsOfGivenClass;
-    myQoS_Set << Results::Type::AvailableSubroupDistribution;
-    myQoS_Set << Results::Type::AllSugbrupsInGivenCombinationAvailableForCallsOfGivenClass;
-
-    system = nullptr;
-}
-
-bool SimulatorAll::possible(const ModelSyst *system) const
-{
-    return Simulator::possible(system);
-}
-
-StatisticEventType SimulatorAll::SimEvent2statEvent(SimulatorAll::EventType simEvent)
-{
-    switch (simEvent)
-    {
-    case EventType::callServiceEnded:
-    case EventType::callServiceEndedAndBufferDequeued:
-        return StatisticEventType::callServiceEnded;
-
-    case EventType::newCallAccepted:
-    case EventType::newCallEnqued:
-        return StatisticEventType::newCallAccepted;
-
-    case EventType::newCallRejected:
-        return StatisticEventType::newCallRejected;
-    }
-    return StatisticEventType::newCallRejected;
-}
-
-void SimulatorAll::calculateSystem(const ModelSyst *system
-                                   , double a
-                                   , RInvestigator *results
-                                   , SimulationParameters *simParameters)
-{
-    prepareTemporaryData(system, a);
-
-
-    System *simData = new System(system);
-    Engine *engine = new Engine(simData);
-
-    engine->initialize(a, system->totalAt(), system->vk_s());
-
-    unsigned int seed = 1024;
-
-    int noOfSeries = simParameters->noOfSeries;
-
-    for (int serNo=0; serNo<noOfSeries; serNo++)
-    {
-        seed = static_cast<unsigned int>(qrand());
-        simData->statsDisable();
-        if (serNo == 0)
-        {
-            int noOfLostCalls = simParameters->noOfLostCalls/simParameters->spaceOnStart;
-            int noOfServCalls = simParameters->noOfServicedCalls/simParameters->spaceOnStart;
-            engine->doSimExperiment(noOfLostCalls, seed, noOfServCalls);
-        }
-        else
-        {
-            int noOfLostCalls = simParameters->noOfLostCalls/simParameters->spaceBetweenSeries;
-            int noOfServCalls = simParameters->noOfServicedCalls/simParameters->spaceBetweenSeries;
-            engine->doSimExperiment(noOfLostCalls, seed, noOfServCalls);
-        }
-        simData->statsEnable();
-        double simulationTime = engine->doSimExperiment(simParameters->noOfLostCalls, seed, simParameters->noOfServicedCalls);
-        simData->writesResultsOfSingleExperiment((*results)[serNo], simulationTime);
-        qDebug("universal simulation experiment no %d", serNo+1);
-    }
-    delete simData;
-    delete engine;
-    //emit this->sigCalculationDone();
-}
-
-SimulatorAll::System::System(const ModelSyst *system)
-    : par(system)
-//  , results(system->m(), system->vk_s(), system->vk_b(), noOfSeries)
-{
-    state.n = 0;
-    state.old_n = 0;
-    state.n_i.resize(par.m);
-
     server = new Server(this);
     buffer = new Buffer(this);
 

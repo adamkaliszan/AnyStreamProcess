@@ -20,7 +20,7 @@ class ProcAll;
 
 class SimulatorAll: public Simulator
 {
-public:
+  public:
     SimulatorAll();
 
     QString shortName()  const { return "Simulation"; }
@@ -88,39 +88,45 @@ public:
 
     class System
     {
-    public:
+      public:
         Engine *engine;
 
         const struct Parameters
         {
-            Parameters(const ModelSyst *data);
             const int m;              ///< Number of offered traffic classes
             const int vk_sb;          ///< Total system capacity
             const int vk_s;           ///< Total server capacity
             const int vk_b;           ///< Total buffer capacity
             const QVector<int> t_i;   ///< Numbed od AUs required by single call of coresponding class
 
-            const ModelSyst  *data;    ///< Description of investigated system
+            const ModelSyst  *data;   ///< Description of investigated system
+
+            Parameters(const ModelSyst *data);
         } par;                        ///< System Parameters
 
-    private:
-        // System components
+      private:
+      // System components
         Server *server;               ///< Server details
         Buffer *buffer;               ///< Buffer details
         QList<Call *> calls;          ///< Calls in system
 
-        // Statistics and results
-        SystemStatistics *statistics; ///< Statistics that are colected during simulation experiment
-
-        // System state
-        struct
+      // System state
+        struct State
         {
             int n;                    ///< Number of occupied resourcess by all the classes
             int old_n;                ///< Previous number of occupied resourcess by all the classes
             QVector<int> n_i;         ///< Number of occupied resourcess by given class. Vector length is m
+            State(const ModelSyst *system): n(0), old_n(0)
+            {
+                n_i.resize(system->m());
+            }
         } state;                      ///< System state
 
-    public:
+      // System statistics
+        SystemStatistics *statistics; ///< Statistics that are colected during simulation experiment
+
+
+      public:
         System(const ModelSyst *system);
         ~System();
 

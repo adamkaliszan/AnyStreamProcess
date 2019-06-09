@@ -1431,7 +1431,7 @@ void MainWindow::loadLanguage(const QString &rLanguage)
         foreach (BufferResourcessScheduler tmp, tmpOptionsBuffer)
         {
             variant.setValue(tmp);
-            ui->comboBoxBufferSchedulerAlgorithm->addItem(bufferResourcessSchedulerToString(tmp), variant);
+            ui->comboBoxSubBufferSchedulerAlgorithm->addItem(bufferResourcessSchedulerToString(tmp), variant);
         }
     }
 }
@@ -1721,7 +1721,7 @@ void MainWindow::on_comboBoxServerSchedulerAlgorithm_currentIndexChanged(int ind
 void MainWindow::on_comboBoxBufferSchedulerAlgorithm_currentIndexChanged(int index)
 {
     (void) index;
-    system->setBufferSchedulerAlgorithm(ui->comboBoxBufferSchedulerAlgorithm->currentData().value<BufferResourcessScheduler>());
+    system->setBufferSchedulerAlgorithm(ui->comboBoxSubBufferSchedulerAlgorithm->currentData().value<BufferResourcessScheduler>());
     fillSystem();
 }
 
