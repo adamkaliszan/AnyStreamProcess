@@ -20,11 +20,11 @@ public:
 
     QString shortName()  const { return QString("hybr NQ"); }
     int complexity()     const { return 1; }
-    void calculateSystem(const ModelSyst *system
+    void calculateSystem(const ModelCreator *system
             , double a
             , Results::RInvestigator *results, SimulationParameters *simParameters
             );
-    bool possible(const ModelSyst *system) const;
+    bool possible(const ModelCreator *system) const;
 
 private:
     void calculateYSystem(QVector<QVector<double> > ySystem,  const TrClVector &P);

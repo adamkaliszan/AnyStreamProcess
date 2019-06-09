@@ -26,11 +26,11 @@ class SimulatorAll: public Simulator
     QString shortName()  const { return "Simulation"; }
     int complexity()     const { return 100; }
     void calculateSystem(
-        const ModelSyst *system
+        const ModelCreator *system
       , double a
       , Results::RInvestigator *results, SimulationParameters *simParameters
     );
-    bool possible(const ModelSyst *system) const;
+    bool possible(const ModelCreator *system) const;
 
 
     class System;                     ///< Whole system (Serwer, bufffer(optional) and Calls)
@@ -99,9 +99,9 @@ class SimulatorAll: public Simulator
             const int vk_b;           ///< Total buffer capacity
             const QVector<int> t_i;   ///< Numbed od AUs required by single call of coresponding class
 
-            const ModelSyst  *data;   ///< Description of investigated system
+            const ModelCreator  *data;   ///< Description of investigated system
 
-            Parameters(const ModelSyst *data);
+            Parameters(const ModelCreator *data);
         } par;                        ///< System Parameters
 
       private:
@@ -116,7 +116,7 @@ class SimulatorAll: public Simulator
             int n;                    ///< Number of occupied resourcess by all the classes
             int old_n;                ///< Previous number of occupied resourcess by all the classes
             QVector<int> n_i;         ///< Number of occupied resourcess by given class. Vector length is m
-            State(const ModelSyst *system): n(0), old_n(0)
+            State(const ModelCreator *system): n(0), old_n(0)
             {
                 n_i.resize(system->m());
             }
@@ -127,7 +127,7 @@ class SimulatorAll: public Simulator
 
 
       public:
-        System(const ModelSyst *system);
+        System(const ModelCreator *system);
         ~System();
 
 #define FOLDINGSTART { //Statistics
@@ -158,7 +158,7 @@ class SimulatorAll: public Simulator
 
     public:
         const System  * const system;
-        const ServerResourcessScheduler scheduler;    /// Algorithm that is responsible for choosing the group if more then 1
+        const ResourcessScheduler scheduler;    /// Algorithm that is responsible for choosing the group if more then 1
         const int vTotal;                             /// Server capacity
         const int vMax;                               /// Max number of AU in a single group
         const int k;                                  /// Number of groups
@@ -208,7 +208,7 @@ class SimulatorAll: public Simulator
         void statsDisable();
         void statsClear();
 
-        void statsColectPre(const ModelSyst *mSystem, double time);
+        void statsColectPre(const ModelCreator *mSystem, double time);
 
 
         void statsCollectPost(int classIdx, int old_n, int n, EventType simEvent);
@@ -346,7 +346,7 @@ class SimulatorAll: public Simulator
 
 
 private:
-    bool isItTheSameSystem(ModelSyst *system);
+    bool isItTheSameSystem(ModelCreator *system);
 
 };
 

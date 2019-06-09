@@ -16,7 +16,7 @@ AlgorithmHybridNoFifo::AlgorithmHybridNoFifo() : Investigator()
 }
 
 
-void AlgorithmHybridNoFifo::calculateSystem(const ModelSyst *system
+void AlgorithmHybridNoFifo::calculateSystem(const ModelCreator *system
         , double a
         , RInvestigator *results
         , SimulationParameters *simParameters
@@ -140,7 +140,7 @@ void AlgorithmHybridNoFifo::calculateYServer(
             yServerVsVb[i][n] = P.getY(n, i);
 }
 
-bool AlgorithmHybridNoFifo::possible(const ModelSyst *system) const
+bool AlgorithmHybridNoFifo::possible(const ModelCreator *system) const
 {
     if (system->vk_b() > 0)
         return false;

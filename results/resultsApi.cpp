@@ -280,7 +280,7 @@ bool SettingsTypeForClass::getSinglePlot(QLineSeries *outPlot, QPair<double, dou
     return result;
 }
 
-QList<ParametersSet> SettingsTypeForClass::getParametersList(const ModelSyst *system, const QList<decimal> &aOfPerAU) const
+QList<ParametersSet> SettingsTypeForClass::getParametersList(const ModelCreator *system, const QList<decimal> &aOfPerAU) const
 {
     QList<ParametersSet> result;
     int i;
@@ -449,7 +449,7 @@ bool SettingsTypeForSystemState::getSinglePlot(QVector<double> &outPlot, RSystem
     return result;
 }
 
-QList<ParametersSet> SettingsTypeForSystemState::getParametersList(const ModelSyst *system, const QList<decimal> &aOfPerAU) const
+QList<ParametersSet> SettingsTypeForSystemState::getParametersList(const ModelCreator *system, const QList<decimal> &aOfPerAU) const
 {
     QList<ParametersSet> result;
     int n;
@@ -576,7 +576,7 @@ bool SettingsTypeForServerState::getSinglePlot(QVector<double> &outPlot, RSystem
     return result;
 }
 
-QList<ParametersSet> SettingsTypeForServerState::getParametersList(const ModelSyst *system, const QList<decimal> &aOfPerAU) const
+QList<ParametersSet> SettingsTypeForServerState::getParametersList(const ModelCreator *system, const QList<decimal> &aOfPerAU) const
 {
     QList<ParametersSet> result;
     int n;
@@ -706,7 +706,7 @@ bool SettingsTypeForBufferState::getSinglePlot(QVector<double> &outPlot, RSystem
     return result;
 }
 
-QList<ParametersSet> SettingsTypeForBufferState::getParametersList(const ModelSyst *system, const QList<decimal> &aOfPerAU) const
+QList<ParametersSet> SettingsTypeForBufferState::getParametersList(const ModelCreator *system, const QList<decimal> &aOfPerAU) const
 {
     QList<ParametersSet> result;
     int n;
@@ -867,7 +867,7 @@ bool SettingsTypeForClassAndSystemState::getSinglePlot(QVector<double> &outPlot,
     return result;
 }
 
-QList<ParametersSet> SettingsTypeForClassAndSystemState::getParametersList(const ModelSyst *system, const QList<decimal> &aOfPerAU) const
+QList<ParametersSet> SettingsTypeForClassAndSystemState::getParametersList(const ModelCreator *system, const QList<decimal> &aOfPerAU) const
 {
     QList<ParametersSet> result;
     int i;
@@ -1051,7 +1051,7 @@ bool SettingsTypeForClassAndServerState::getSinglePlot(QVector<double> &outPlot,
     return result;
 }
 
-QList<ParametersSet> SettingsTypeForClassAndServerState::getParametersList(const ModelSyst *system, const QList<decimal> &aOfPerAU) const
+QList<ParametersSet> SettingsTypeForClassAndServerState::getParametersList(const ModelCreator *system, const QList<decimal> &aOfPerAU) const
 {
     QList<ParametersSet> result;
 
@@ -1240,7 +1240,7 @@ bool SettingsTypeForClassAndBufferState::getSinglePlot(QVector<double> &outPlot,
     return result;
 }
 
-QList<ParametersSet> SettingsTypeForClassAndBufferState::getParametersList(const ModelSyst *system, const QList<decimal> &aOfPerAU) const
+QList<ParametersSet> SettingsTypeForClassAndBufferState::getParametersList(const ModelCreator *system, const QList<decimal> &aOfPerAU) const
 {
     QList<ParametersSet> result;
     int i;
@@ -1458,7 +1458,7 @@ bool SettingsForClassAndServerGroupsCombination::getSinglePlot(QVector<double> &
     return result;
 }
 
-QList<ParametersSet> SettingsForClassAndServerGroupsCombination::getParametersList(const ModelSyst *system, const QList<decimal> &aOfPerAU) const
+QList<ParametersSet> SettingsForClassAndServerGroupsCombination::getParametersList(const ModelCreator *system, const QList<decimal> &aOfPerAU) const
 {
     QList<ParametersSet> result;
 
@@ -1478,7 +1478,7 @@ QList<ParametersSet> SettingsForClassAndServerGroupsCombination::getParametersLi
         {
             for (combNo=0; combNo < noOfCOmbinations; combNo++)
             {
-                if ((system->getGroupsSchedulerAlgorithm() == ServerResourcessScheduler::Random) && combinations[combNo].length() == lstNoOfGroupInCombination)
+                if ((system->getGroupsSchedulerAlgorithm() == ResourcessScheduler::Random) && combinations[combNo].length() == lstNoOfGroupInCombination)
                     continue;
                 lstNoOfGroupInCombination = combinations[combNo].length();
 
@@ -1494,7 +1494,7 @@ QList<ParametersSet> SettingsForClassAndServerGroupsCombination::getParametersLi
         {
             for (combNo=0; combNo < noOfCOmbinations; combNo++)
             {
-                if ((system->getGroupsSchedulerAlgorithm() == ServerResourcessScheduler::Random) && combinations[combNo].length() == lstNoOfGroupInCombination)
+                if ((system->getGroupsSchedulerAlgorithm() == ResourcessScheduler::Random) && combinations[combNo].length() == lstNoOfGroupInCombination)
                     continue;
                 lstNoOfGroupInCombination = combinations[combNo].length();
 
@@ -1670,7 +1670,7 @@ bool SettingsAvailableSubroupDistribution::getSinglePlot(QVector<double> &outPlo
     return result;
 }
 
-QList<ParametersSet> SettingsAvailableSubroupDistribution::getParametersList(const ModelSyst *system, const QList<decimal> &aOfPerAU) const
+QList<ParametersSet> SettingsAvailableSubroupDistribution::getParametersList(const ModelCreator *system, const QList<decimal> &aOfPerAU) const
 {
     QList<ParametersSet> result;
     int k;
@@ -1815,7 +1815,7 @@ double Settings::getXmax(RSystem &rSystem) const
     return result;
 }
 
-QString Settings::updateParameters(ParametersSet &outParameters, const QVariant &variant, ParameterType paramType, const ModelSyst *system, RSystem *resultsForSystem)
+QString Settings::updateParameters(ParametersSet &outParameters, const QVariant &variant, ParameterType paramType, const ModelCreator *system, RSystem *resultsForSystem)
 {
     QString result;
 
@@ -1861,7 +1861,7 @@ QString Settings::updateParameters(ParametersSet &outParameters, const QVariant 
     return result;
 }
 
-void Settings::fillListWithParameters(QList<QVariant> &list, ParameterType paramType, const ModelSyst *system, QList<decimal> offeredTraffic)
+void Settings::fillListWithParameters(QList<QVariant> &list, ParameterType paramType, const ModelCreator *system, QList<decimal> offeredTraffic)
 {
     list.clear();
     QVariant tmpVariant;
@@ -1927,7 +1927,7 @@ void Settings::fillListWithParameters(QList<QVariant> &list, ParameterType param
 
 }
 
-QString Settings::getTypeValue(const ParametersSet &params, ParameterType type, const ModelSyst *system)
+QString Settings::getTypeValue(const ParametersSet &params, ParameterType type, const ModelCreator *system)
 {
     QString result;
     QTextStream str;
@@ -1970,7 +1970,7 @@ QString Settings::getTypeValue(const ParametersSet &params, ParameterType type, 
     return result;
 }
 
-QString Settings::getParameterDescription(const ParametersSet &params, const ModelSyst *system)
+QString Settings::getParameterDescription(const ParametersSet &params, const ModelCreator *system)
 {
     QString result;
     QTextStream str;
@@ -1986,7 +1986,7 @@ QString Settings::getParameterDescription(const ParametersSet &params, const Mod
     return result;
 }
 
-QString Settings::getParameterDescription(const ParametersSet &params, const ModelSyst *system, const QList<ParameterType> dontDescribeMe)
+QString Settings::getParameterDescription(const ParametersSet &params, const ModelCreator *system, const QList<ParameterType> dontDescribeMe)
 {
     QString result;
     QTextStream str;

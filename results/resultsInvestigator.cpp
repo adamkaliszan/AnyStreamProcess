@@ -5,7 +5,7 @@
 namespace Results
 {
 
-RInvestigator::RInvestigator(const ModelSyst *model)
+RInvestigator::RInvestigator(const ModelCreator *model)
     :  model(model)
     , areStatisticsUpToDate(false)
 {

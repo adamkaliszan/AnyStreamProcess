@@ -19,14 +19,14 @@ QString SimulatorQeueFifo::shortName() const
 
 int SimulatorQeueFifo::complexity() const {return 100;}
 
-bool SimulatorQeueFifo::possible(const ModelSyst *system) const
+bool SimulatorQeueFifo::possible(const ModelCreator *system) const
 {
     if (system->vk_b() <= 0)
         return false;
     return Simulator::possible(system);
 }
 
-void SimulatorQeueFifo::calculateSystem(const ModelSyst *system
+void SimulatorQeueFifo::calculateSystem(const ModelCreator *system
         , double a
         , RInvestigator *results
         , SimulationParameters *simParameters)
@@ -64,7 +64,7 @@ void SimulatorQeueFifo::calculateSystem(const ModelSyst *system
     //emit sigCalculationDone();
 }
 
-SimulatorQeueFifo::System::System(const ModelSyst *system
+SimulatorQeueFifo::System::System(const ModelCreator *system
         , int noOfSeries
         ):
     m(system->m())
@@ -231,7 +231,7 @@ void SimulatorQeueFifo::System::writesResultsOfSingleExperiment(Results::RSingle
             {
                 tmp=getOccupancyTimeOfState(n_server, n_Buffer);
 
-                if (this->buffer->scheduler == BufferResourcessScheduler::dFIFO_Seq || (this->buffer->scheduler == BufferResourcessScheduler::qFIFO_Seq))
+                if (this->buffer->scheduler == BufferPolicy::dFIFO_Seq || (this->buffer->scheduler == BufferPolicy::qFIFO_Seq))
                     E += tmp;
                 else if (n_server + n_Buffer + t > Vs + Vb)
                     E += tmp;
@@ -346,8 +346,8 @@ bool SimulatorQeueFifo::System::serveNewCall(SimulatorQeueFifo::Call *newCall)
 
     int serverFreeAS = server->getNoOfFreeAS();
     int bufferFreeAS = buffer->getNoOfFreeAS();
-    if (((this->buffer->scheduler==BufferResourcessScheduler::Continuos || this->buffer->scheduler==BufferResourcessScheduler::qFIFO_Seq) && serverFreeAS >= newCall->reqAS)
-            || (this->buffer->scheduler==BufferResourcessScheduler::dFIFO_Seq  && serverFreeAS >= newCall->reqAS && buffer->n == 0))
+    if (((this->buffer->scheduler==BufferPolicy::Continuos || this->buffer->scheduler==BufferPolicy::qFIFO_Seq) && serverFreeAS >= newCall->reqAS)
+            || (this->buffer->scheduler==BufferPolicy::dFIFO_Seq  && serverFreeAS >= newCall->reqAS && buffer->n == 0))
     {
         callsInSystem.append(newCall);
 
@@ -370,7 +370,7 @@ bool SimulatorQeueFifo::System::serveNewCall(SimulatorQeueFifo::Call *newCall)
         callsInSystem.append(newCall);
         buffer->addCall(newCall);
 
-        if (buffer->scheduler==BufferResourcessScheduler::Continuos && serverFreeAS > 0)
+        if (buffer->scheduler==BufferPolicy::Continuos && serverFreeAS > 0)
             serveCallsInEque();
         n += newCall->reqAS;
         return true;
@@ -587,7 +587,7 @@ void SimulatorQeueFifo::System::serveCallsInEque()
         if (tmpCall == NULL)
             break;
 
-        if (buffer->scheduler != BufferResourcessScheduler::Continuos && tmpCall->reqAS > numberOfAvailableAS)
+        if (buffer->scheduler != BufferPolicy::Continuos && tmpCall->reqAS > numberOfAvailableAS)
             break;
 
         int maxResToAll = tmpCall->reqAS - tmpCall->allocatedAS;
@@ -1471,7 +1471,7 @@ SimulatorQeueFifo::Call *SimulatorQeueFifo::Buffer::getNextCall()
     return firstCall;
 }
 
-SimulatorQeueFifo::Buffer::Buffer(int V, SimulatorQeueFifo::System *system, BufferResourcessScheduler bufferScheduler):
+SimulatorQeueFifo::Buffer::Buffer(int V, SimulatorQeueFifo::System *system, BufferPolicy bufferScheduler):
     system(system), scheduler(bufferScheduler)
 {
     firstCall = nullptr;

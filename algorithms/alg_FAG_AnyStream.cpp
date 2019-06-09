@@ -12,7 +12,7 @@ AlgorithmAnyStreamFAG::AlgorithmAnyStreamFAG(): Investigator()
        <<Results::Type::OccupancyDistribution;
 }
 
-void AlgorithmAnyStreamFAG::calculateSystem(const ModelSyst *system
+void AlgorithmAnyStreamFAG::calculateSystem(const ModelCreator *system
       , double a
       , RInvestigator *results
       , SimulationParameters *simParameters
@@ -131,7 +131,7 @@ void AlgorithmAnyStreamFAG::calculateSystem(const ModelSyst *system
     //emit this->sigCalculationDone();
 }
 
-bool AlgorithmAnyStreamFAG::possible(const ModelSyst *system) const
+bool AlgorithmAnyStreamFAG::possible(const ModelCreator *system) const
 {
     if (system->vk_b() > 0)
         return false;

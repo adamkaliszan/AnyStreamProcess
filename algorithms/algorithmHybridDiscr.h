@@ -26,10 +26,10 @@ public:
     QString shortName() {return "hybr discr ?"; }
     virtual int complexity() {return 1; }
 
-    void calculateSystem(const ModelSyst *system
+    void calculateSystem(const ModelCreator *system
             , double a
             , Results::RInvestigator *results, SimulationParameters *simParameters);
-    bool possible(ModelSyst *system);
+    bool possible(ModelCreator *system);
 };
 
 } // namespace Algorithms

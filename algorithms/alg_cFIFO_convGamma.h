@@ -19,11 +19,11 @@ public:
 
     QString shortName()      const {return "conv gamma"; }
     virtual int complexity() const {return 1; }
-    void calculateSystem(const ModelSyst *system
+    void calculateSystem(const ModelCreator *system
           , double a
           , Results::RInvestigator *results, SimulationParameters *simParameters
           );
-    bool possible(const ModelSyst *system) const;
+    bool possible(const ModelCreator *system) const;
 
 protected:
     class VectQEUE
@@ -61,7 +61,7 @@ private:
 
 public:
     void deleteTemporaryData();
-    void prepareTemporaryData(const ModelSyst *system, double a);
+    void prepareTemporaryData(const ModelCreator *system, double a);
 };
 
 } // namespace Algorithms

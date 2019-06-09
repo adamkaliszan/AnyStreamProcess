@@ -164,7 +164,7 @@ private slots:
     void on_actionConfigure_triggered();
 
 private:
-    QVector<ModelSyst*>  vectPredefinedSystems;
+    QVector<ModelCreator*>  vectPredefinedSystems;
 
     int getNoOfPoints(double aMin, double aMax, double aDelta) const;
 
@@ -184,7 +184,7 @@ private:
     DialogAbout    *dlgAbout;
     DialogConfig   *dlgConfig;
 
-    ModelSyst      *system;
+    ModelCreator      *system;
     GnuplotScript  *scrGnuplot;
 
     QGraphicsScene *sceneSysModel;

@@ -20,11 +20,11 @@ public:
 
     QString shortName()      const;
     virtual int complexity() const {return 1; }
-    void calculateSystem(const ModelSyst *system
+    void calculateSystem(const ModelCreator *system
                , double a
                , Results::RInvestigator *results, SimulationParameters *simParameters
                );
-    bool possible(const ModelSyst *system) const;
+    bool possible(const ModelCreator *system) const;
 
     QVector<QVector<double> > ySystemFAG;
 
@@ -48,7 +48,7 @@ protected:
 
 public:
 
-    void calculateYSystem(QVector<QVector<double> > &ySYSTEM_V, QVector<QVector<double> > yFAG, const ModelSyst *system, TrClVector *PwithoutI, TrClVector *pI);
+    void calculateYSystem(QVector<QVector<double> > &ySYSTEM_V, QVector<QVector<double> > yFAG, const ModelCreator *system, TrClVector *PwithoutI, TrClVector *pI);
     void calculateYQeue(QVector<QVector<double> >   &yQeueVsVb, QVector<QVector<double> > ySystemFAG, double *Q);
     void calculateYServer(QVector<QVector<double> > &ySeverVsVb, QVector<QVector<double> > ySystemFAG, double *Q);
 

@@ -17,11 +17,11 @@ public:
 
     QString shortName()      const {return "hybr dFIFO"; }
     virtual int complexity() const {return 1; }
-    virtual void calculateSystem(const ModelSyst *system
+    virtual void calculateSystem(const ModelCreator *system
             , double a
             , Results::RInvestigator *results, SimulationParameters *simParameters
             );
-    bool possible(const ModelSyst *system) const;
+    bool possible(const ModelCreator *system) const;
 
 protected:
     TrClVector *P_without_i;

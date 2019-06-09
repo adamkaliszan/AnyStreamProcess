@@ -13,7 +13,7 @@ AlgRekGeneral::AlgRekGeneral(): Investigator()
        <<Results::Type::OccupancyDistribution;
 }
 
-bool AlgRekGeneral::possible(const ModelSyst *system) const
+bool AlgRekGeneral::possible(const ModelCreator *system) const
 {
     if (
             !Investigator::possible(system) //Sprawdzanie czy w systemie jest odpowiednia kolejka
@@ -26,7 +26,7 @@ bool AlgRekGeneral::possible(const ModelSyst *system) const
 }
 
 void AlgRekGeneral::calculateSystem(
-          const ModelSyst *system
+          const ModelCreator *system
         , double a
         , Results::RInvestigator *results
         , SimulationParameters *simParameters)
@@ -91,7 +91,7 @@ double AlgRekGeneral::getSigma(int classNumber, int state)
 }
 
 
-void AlgRekGeneral::prepareTemporaryData(const ModelSyst *system, double a)
+void AlgRekGeneral::prepareTemporaryData(const ModelCreator *system, double a)
 {
     Investigator::prepareTemporaryData(system, a);
     states.resize(system->V()+1);

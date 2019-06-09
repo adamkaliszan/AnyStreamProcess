@@ -7,14 +7,14 @@ namespace Algorithms
 
 SimulatorQeueSdFifo::SimulatorQeueSdFifo(): Simulator() { }
 
-bool SimulatorQeueSdFifo::possible(const ModelSyst *system) const
+bool SimulatorQeueSdFifo::possible(const ModelCreator *system) const
 {
     if (system->vk_b() == 0)
         return false;
     return Investigator::possible(system);
 }
 
-QSet<Results::Type> SimulatorQeueSdFifo::getQoS_Set(const ModelSyst *system) const
+QSet<Results::Type> SimulatorQeueSdFifo::getQoS_Set(const ModelCreator *system) const
 {
     (void) system;
     QSet<Results::Type> result;
@@ -27,7 +27,7 @@ QSet<Results::Type> SimulatorQeueSdFifo::getQoS_Set(const ModelSyst *system) con
 
 
 
-void SimulatorQeueSdFifo::calculateSystem(const ModelSyst *system
+void SimulatorQeueSdFifo::calculateSystem(const ModelCreator *system
       , double a
       , RInvestigator *results
       , SimulationParameters *simParameters
@@ -68,7 +68,7 @@ void SimulatorQeueSdFifo::calculateSystem(const ModelSyst *system
     //emit this->sigCalculationDone();
 }
 
-SimulatorQeueSdFifo::System::System(const ModelSyst *system, int noOfSeries)
+SimulatorQeueSdFifo::System::System(const ModelCreator *system, int noOfSeries)
     : results(system->m(), system->vk_s(), system->vk_b(), noOfSeries)
     , systemData(system)
 {

@@ -18,7 +18,7 @@ SimulatorAll::SimulatorAll() : Simulator()
     system = nullptr;
 }
 
-bool SimulatorAll::possible(const ModelSyst *system) const
+bool SimulatorAll::possible(const ModelCreator *system) const
 {
     return Simulator::possible(system);
 }
@@ -41,7 +41,7 @@ StatisticEventType SimulatorAll::SimEvent2statEvent(SimulatorAll::EventType simE
     return StatisticEventType::newCallRejected;
 }
 
-void SimulatorAll::calculateSystem(const ModelSyst *system
+void SimulatorAll::calculateSystem(const ModelCreator *system
                                    , double a
                                    , RInvestigator *results
                                    , SimulationParameters *simParameters)
@@ -232,7 +232,7 @@ SimulatorAll::Call *SimulatorAll::Engine::getNewCall(
 }
 #define FOLDINGEND }
 
-SimulatorAll::System::System(const ModelSyst *system) : par(system), state(system)
+SimulatorAll::System::System(const ModelCreator *system) : par(system), state(system)
 {
     server = new Server(this);
     buffer = new Buffer(this);
@@ -712,7 +712,7 @@ void SimulatorAll::Server::statsClear()
     statistics->clear();
 }
 
-void SimulatorAll::Server::statsColectPre(const ModelSyst *mSystem, double time)
+void SimulatorAll::Server::statsColectPre(const ModelCreator *mSystem, double time)
 {
     statistics->collectPre(mSystem, time, state.n, state.n_i, state.n_k);
 
@@ -749,7 +749,7 @@ bool SimulatorAll::Server::findAS(int noOfAUs, int& groupNo) const
 
     switch (scheduler)
     {
-    case ServerResourcessScheduler::Random:
+    case ResourcessScheduler::Random:
         Utils::UtilsMisc::suffle(state.subgroupSequence);
         foreach (groupNoTmp, state.subgroupSequence)
         {
@@ -762,7 +762,7 @@ bool SimulatorAll::Server::findAS(int noOfAUs, int& groupNo) const
         }
         break;
 
-    case ServerResourcessScheduler::Sequencial:
+    case ResourcessScheduler::Sequencial:
         foreach (groupNoTmp, state.subgroupSequence)
         {
             groupNo = groupNoTmp;
@@ -1639,7 +1639,7 @@ SimulatorAll::Call *SimulatorAll::Buffer::getNextCall()
     return nullptr;//TODO
 }
 
-SimulatorAll::System::Parameters::Parameters(const ModelSyst *data)
+SimulatorAll::System::Parameters::Parameters(const ModelCreator *data)
   : m(data->m())
   , vk_sb(data->V())
   , vk_s(data->vk_s())

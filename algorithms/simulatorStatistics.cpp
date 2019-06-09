@@ -4,7 +4,7 @@
 namespace Algorithms
 {
 
-SystemStatistics::SystemStatistics(const ModelSyst * const system)
+SystemStatistics::SystemStatistics(const ModelCreator * const system)
 {
     int vk_sb = system->V();
     int vk_s = system->vk_s();
@@ -87,7 +87,7 @@ void SystemStatistics::clear()
                 timesPerClassAndServerAndBufferState[i][n][l].statsClear();
 }
 
-void SystemStatistics::collectPre(const ModelSyst *mSystem, double time, int n_s, int n_b
+void SystemStatistics::collectPre(const ModelCreator *mSystem, double time, int n_s, int n_b
   , const QVector<int> &n_si, const QVector<int> &n_bi, const QVector<int> &n_sk, const QVector<int> &n_bk)
 {
     for (int i=0; i<mSystem->m(); i++)
@@ -150,7 +150,7 @@ void SystemStatistics::collectPost(int classIdx, int old_n, int n, StatisticEven
     }
 }
 
-ServerStatistics::ServerStatistics(const ModelSyst * const system)
+ServerStatistics::ServerStatistics(const ModelCreator * const system)
 {
     combinationList = Utils::UtilsLAG::getPossibleCombinationsFinal(system->k_s());
 
@@ -192,7 +192,7 @@ ServerStatistics::ServerStatistics(const ModelSyst * const system)
     }
 }
 
-void ServerStatistics::collectPre(const ModelSyst *mSystem, double time, int n, const QVector<int> &n_i, const QVector<int> &n_k)
+void ServerStatistics::collectPre(const ModelCreator *mSystem, double time, int n, const QVector<int> &n_i, const QVector<int> &n_k)
 {
 //timesPerState
     timesPerState[n].occupancyTime+= time;
@@ -331,7 +331,7 @@ void ServerStatistics::clear()
         timesPerGroupsCombinations[combinationNo].fill(GroupCombinationStatistics());
 }
 
-BufferStatistics::BufferStatistics(const ModelSyst *system)
+BufferStatistics::BufferStatistics(const ModelCreator *system)
 {//TODO
     eventsPerClass.resize(system->m());
     eventsPerState.resize(system->vk_b()+1);

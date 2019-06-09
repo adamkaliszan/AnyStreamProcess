@@ -12,7 +12,7 @@ namespace Results
 
 RSingle::RSingle(): m(0), vMax(0), V(0), Vs(0) { }
 
-void RSingle::init(const ModelSyst *system)
+void RSingle::init(const ModelCreator *system)
 {
     m = system->m();
     vMax = system->v_sMax();

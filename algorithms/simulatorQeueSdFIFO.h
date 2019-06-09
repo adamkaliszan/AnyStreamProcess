@@ -21,13 +21,13 @@ public:
 
     QString shortName() const { return "Sim. sdFIFO"; }
     int complexity()    const { return 100; }
-    virtual void calculateSystem(const ModelSyst *system
+    virtual void calculateSystem(const ModelCreator *system
             , double a
             , Results::RInvestigator *results, SimulationParameters *simParameters
             );
-    bool possible(const ModelSyst *system) const;
+    bool possible(const ModelCreator *system) const;
 
-    QSet<Results::Type> getQoS_Set(const ModelSyst *system) const;
+    QSet<Results::Type> getQoS_Set(const ModelCreator *system) const;
 
 public:
     class System;
@@ -48,9 +48,9 @@ public:
         Server *server;
         int totalNumberOfLostCalls;
         int totalNumberOfServicedCalls;
-        const ModelSyst *systemData;
+        const ModelCreator *systemData;
 
-        System(const ModelSyst *system, int noOfSeries);
+        System(const ModelCreator *system, int noOfSeries);
 
         void initialize(double a, int sumPropAt, int V);
         void doSimExperiment(int numberOfLostCall, int seed, int numberOfServicedCalls);

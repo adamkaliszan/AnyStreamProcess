@@ -16,7 +16,7 @@ algRekLagGS::algRekLagGS()
      << Results::Type::AvailableSubroupDistribution;
 }
 
-void algRekLagGS::calculateSystem(const ModelSyst *system, double a, RInvestigator *results, SimulationParameters *simParameters)
+void algRekLagGS::calculateSystem(const ModelCreator *system, double a, RInvestigator *results, SimulationParameters *simParameters)
 {
     (void) simParameters;
 
@@ -181,7 +181,7 @@ void algRekLagGS::calculateSystem(const ModelSyst *system, double a, RInvestigat
     //emit this->sigCalculationDone();
 }
 
-bool algRekLagGS::possible(const ModelSyst *system) const
+bool algRekLagGS::possible(const ModelCreator *system) const
 {
     if ((system->vk_s() == 0) || (system->k_sType() > 1) || (system->vk_b() > 0))
         return false;
@@ -218,7 +218,7 @@ algRekLagGS2::algRekLagGS2()
     ;
 }
 
-void algRekLagGS2::calculateSystem(const ModelSyst *system, double a, RInvestigator *results, SimulationParameters *simParameters)
+void algRekLagGS2::calculateSystem(const ModelCreator *system, double a, RInvestigator *results, SimulationParameters *simParameters)
 {
     (void) simParameters;
 
@@ -281,7 +281,7 @@ void algRekLagGS2::calculateSystem(const ModelSyst *system, double a, RInvestiga
     //emit this->sigCalculationDone();
 }
 
-bool algRekLagGS2::possible(const ModelSyst *system) const
+bool algRekLagGS2::possible(const ModelCreator *system) const
 {
     if ((system->vk_s() == 0) || (system->k_sType() > 1) || (system->vk_b() > 0))
         return false;

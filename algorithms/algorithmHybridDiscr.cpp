@@ -11,14 +11,14 @@ AlgorithmHybridDiscr::AlgorithmHybridDiscr(): Investigator()
        <<Results::Type::OccupancyDistribution;
 }
 
-bool AlgorithmHybridDiscr::possible(ModelSyst *system)
+bool AlgorithmHybridDiscr::possible(ModelCreator *system)
 {
     if (system->vk_b() == 0)
         return false;
     return Investigator::possible(system);
 }
 
-void AlgorithmHybridDiscr::calculateSystem(const ModelSyst *system
+void AlgorithmHybridDiscr::calculateSystem(const ModelCreator *system
         , double a
         , RInvestigator *results
         , SimulationParameters *simParameters

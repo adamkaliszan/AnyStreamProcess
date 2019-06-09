@@ -52,10 +52,10 @@ public:
     QString shortName() {return "conv gamma 3"; }
     virtual int complexity() {return 1; }
 
-    void calculateSystem(const ModelSyst &system, double a, Results::RInvestigator *results, SimulationParameters *simParameters);
+    void calculateSystem(const ModelCreator &system, double a, Results::RInvestigator *results, SimulationParameters *simParameters);
 
-    void prepareTemporaryData(const ModelSyst *system, double a);
-    bool possible(ModelSyst *system);
+    void prepareTemporaryData(const ModelCreator *system, double a);
+    bool possible(ModelCreator *system);
 };
 
 }

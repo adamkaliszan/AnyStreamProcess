@@ -20,11 +20,11 @@ public:    SimulatorQeueFifo();
     QString shortName()   const;
     int complexity()      const;
 
-    void calculateSystem(const ModelSyst *system
+    void calculateSystem(const ModelCreator *system
                 , double a
                 , Results::RInvestigator *results, SimulationParameters *simParameters
                 );
-    bool possible(const ModelSyst *system) const;
+    bool possible(const ModelCreator *system) const;
 
 public:
 
@@ -65,7 +65,7 @@ public:
     public:
         int       totalNumberOfServicedCalls;
         int       totalNumberOfLostCalls;
-        const ModelSyst  *systemData;
+        const ModelCreator  *systemData;
         double     *yTime_ClassI;
         double     *servTr_ClassI;
 
@@ -73,7 +73,7 @@ public:
         double     **qeueAStime_ofOccupiedAS_byClassI_inStateN;
         double     **serverAStime_ofOccupiedAS_byClassI_inStateN;
 
-        System(const ModelSyst *system, int noOfSeries);
+        System(const ModelCreator *system, int noOfSeries);
         ~System();
 
         void initialize(double a, int sumPropAt, int V);
@@ -161,7 +161,7 @@ public:
 
     public:
         const System *system;
-        const BufferResourcessScheduler scheduler;
+        const BufferPolicy scheduler;
 
     private:
 
@@ -182,7 +182,7 @@ public:
     public:
 
         int n;                          /// Number of AS that is used by the calls //TODO makeprivate
-        Buffer(int V, System *system, BufferResourcessScheduler bufferScheduler);
+        Buffer(int V, System *system, BufferPolicy bufferScheduler);
         ~Buffer();
 
         inline int   getV()                                      { return V; }
@@ -256,7 +256,7 @@ public:
 private:
     System *systemSimulator;
 
-    bool isItTheSameSystem(ModelSyst *system);
+    bool isItTheSameSystem(ModelCreator *system);
 };
 
 class ProcQeueFifo

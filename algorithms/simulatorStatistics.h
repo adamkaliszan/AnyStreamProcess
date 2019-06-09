@@ -90,7 +90,7 @@ private:
     QVector<QVector<QVector<TimeStatisticsMicroStateDetail> > >  timesPerClassAndServerAndBufferState;
 
 public:
-    SystemStatistics(const ModelSyst * const system);
+    SystemStatistics(const ModelCreator * const system);
     void clear();
 
     inline const TimeStatisticsMacroState& getTimeStatistics(int systemState)                                         const { return timesPerSystemState[systemState]; }
@@ -105,7 +105,7 @@ public:
     inline const EvenStatistics& getEventStatisticsSC(int classNo, int serverState, int bufferState)                  const { return eventsPerClassAndServerStateAndSystem[classNo][serverState][bufferState] ;}
 
 
-    void collectPre(const ModelSyst *mSystem, double time, int n_s, int n_b, const QVector<int> &n_si, const QVector<int> &n_bi, const QVector<int> &n_sk, const QVector<int> &n_bk);
+    void collectPre(const ModelCreator *mSystem, double time, int n_s, int n_b, const QVector<int> &n_si, const QVector<int> &n_bi, const QVector<int> &n_sk, const QVector<int> &n_bk);
     void collectPost(int classIdx, int old_n, int n, StatisticEventType event);
 };
 
@@ -165,7 +165,7 @@ public:
 
 
 
-    ServerStatistics(const ModelSyst * const system);
+    ServerStatistics(const ModelCreator * const system);
 
     inline const EvenStatistics& getEventStatistics(int state)                              const { return eventsPerState[state]; }
     inline const EvenStatistics& getEventStatisticsSC(int classNo)                          const { return eventsPerClass[classNo]; }
@@ -177,7 +177,7 @@ public:
     inline const GroupCombinationStatistics& getTimeGroupComb(int combinationNo, int state) const { return timesPerGroupsCombinations[combinationNo][state]; }
 
 
-    void collectPre(const ModelSyst *mSystem, double time, int n, const QVector<int> &n_i,  const QVector<int> &n_k);
+    void collectPre(const ModelCreator *mSystem, double time, int n, const QVector<int> &n_i,  const QVector<int> &n_k);
     void collectPost(int classIdx, int old_n, int n, StatisticEventType event);
 
     inline const QVector<int>& getSet(int combinationNo)                                    const { return combinationList[combinationNo]; }
@@ -197,7 +197,7 @@ private:
     QVector<QVector<TimeStatisticsMicroState> >       timesPerClassAndState;
 
 public:
-    BufferStatistics(const ModelSyst * system);
+    BufferStatistics(const ModelCreator * system);
 
     inline const EvenStatistics& getEventStatistics(int state)                              const { return eventsPerState[state]; }
     inline const EvenStatistics& getEventStatisticsSC(int classNo)                          const { return eventsPerClass[classNo]; }

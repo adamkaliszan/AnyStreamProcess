@@ -15,7 +15,7 @@ public:
 
     Simulator();
 
-    bool isItTheSameSystem(ModelSyst *system);
+    bool isItTheSameSystem(ModelCreator *system);
 
     static double distrLambdaED(double Ex, double D = 0);
     static double distrNormalED(double Ex, double D);

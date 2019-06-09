@@ -14,7 +14,7 @@ namespace Results
 class RSystem
 {
 public:
-    RSystem(const ModelSyst& model);
+    RSystem(const ModelCreator& model);
 
     RInvestigator& createNewInvestigation(Investigator *algorithm, decimal aPerAU, unsigned noOfSeries = 1);
     RInvestigator *getInvestigationResults(Investigator *algorithm, decimal aPerAU);
@@ -24,7 +24,7 @@ public:
 
     int getNumberOrCalculatedAlgorithms() const;
 
-    const ModelSyst& getModel() const {return model;}
+    const ModelCreator& getModel() const {return model;}
 
     double getMinAperAU() const;
     double getMaxAperAU() const;
@@ -34,7 +34,7 @@ public:
     QString getGroupCombinationStr(int combinationNo);
 
 private:
-    const ModelSyst& model;
+    const ModelCreator& model;
     QList<decimal> _aPerAU;
     QList<Investigator*> _algorithms;
 

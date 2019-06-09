@@ -40,7 +40,7 @@ MainWindow::MainWindow(QWidget *parent) :
     isDbWorking   = false;
     dlgAbout      = new DialogAbout();
     dlgConfig     = new DialogConfig();
-    system        = new ModelSyst();
+    system        = new ModelCreator();
     scrGnuplot    = new GnuplotScript();
 
     resultsForSystem = new Results::RSystem(*system);
@@ -88,7 +88,7 @@ MainWindow::~MainWindow()
 
     foreach (QListWidgetItem *item, ui->listWidgetWiazki->findItems(QString("*"), Qt::MatchWrap | Qt::MatchWildcard) + ui->listWidgetKolejki->findItems(QString("*"), Qt::MatchWrap | Qt::MatchWildcard))
     {
-        ModelResourcess *rsc = item->data(Qt::UserRole).value<ModelResourcess *>();
+        ModelSubResourcess *rsc = item->data(Qt::UserRole).value<ModelSubResourcess *>();
         delete rsc;
     }
 
@@ -112,7 +112,7 @@ MainWindow::~MainWindow()
 void MainWindow::addServer(int k, int v)
 {
     QVariant variant;
-    variant.setValue(new ModelResourcess(k, v));
+    variant.setValue(new ModelSubResourcess(k, v));
 
     QListWidgetItem *newItem = new QListWidgetItem();
 
@@ -127,7 +127,7 @@ void MainWindow::addServer(int k, int v)
 void MainWindow::addBuffer(int k, int v)
 {
     QVariant variant;
-    variant.setValue(new ModelResourcess(k, v));
+    variant.setValue(new ModelSubResourcess(k, v));
 
     QListWidgetItem *newItem = new QListWidgetItem();
 
@@ -316,7 +316,7 @@ void MainWindow::on_pushButton_wiazkiZmien_clicked()
     for (int idx=0; idx<ui->listWidgetWiazki->selectedItems().length(); idx++)
     {
         QListWidgetItem *toModify = ui->listWidgetWiazki->selectedItems()[idx];
-        ModelResourcess *group = toModify->data(Qt::UserRole).value<ModelResourcess*>();
+        ModelSubResourcess *group = toModify->data(Qt::UserRole).value<ModelSubResourcess*>();
         group->set_k(k);
         group->set_v(v);
         QString modifiedItemStr;
@@ -334,7 +334,7 @@ void MainWindow::on_listWidgetWiazki_currentItemChanged(QListWidgetItem *current
 
     if (current != nullptr)
     {
-        ModelResourcess *group = current->data(Qt::UserRole).value<ModelResourcess*>();
+        ModelSubResourcess *group = current->data(Qt::UserRole).value<ModelSubResourcess*>();
         ui->spinBoxPodgrupaLiczba->   setValue(static_cast<int>(group->k()));
         ui->spinBoxPodgrupaPojemnosc->setValue(static_cast<int>(group->v()));
     }
@@ -358,7 +358,7 @@ void MainWindow::on_pushButton_kolejkiUsun_clicked()
     if (ui->listWidgetKolejki->selectedItems().length() > 0)
     {
         QListWidgetItem *toDelete = ui->listWidgetKolejki->selectedItems()[0];
-        ModelResourcess *queue = toDelete->data(Qt::UserRole).value<ModelResourcess*>();
+        ModelSubResourcess *queue = toDelete->data(Qt::UserRole).value<ModelSubResourcess*>();
         delete queue;
         ui->listWidgetKolejki->removeItemWidget(toDelete);
         delete toDelete;
@@ -375,7 +375,7 @@ void MainWindow::on_pushButton_kolejkiZmien_clicked()
     for (int idx=0; idx<ui->listWidgetKolejki->selectedItems().length(); idx++)
     {
         QListWidgetItem *toModify = ui->listWidgetKolejki->selectedItems()[idx];
-        ModelResourcess *queue = toModify->data(Qt::UserRole).value<ModelResourcess*>();
+        ModelSubResourcess *queue = toModify->data(Qt::UserRole).value<ModelSubResourcess*>();
         queue->set_k(k);
         queue->set_v(v);
         QString modifiedItemStr;
@@ -394,7 +394,7 @@ void MainWindow::on_listWidgetKolejki_currentItemChanged(QListWidgetItem *curren
 
     if (current != nullptr)
     {
-        ModelResourcess *queue = current->data(Qt::UserRole).value<ModelResourcess*>();
+        ModelSubResourcess *queue = current->data(Qt::UserRole).value<ModelSubResourcess*>();
         ui->spinBoxKolejkaLiczba->   setValue(static_cast<int>(queue->k()));
         ui->spinBoxKolejkaPojemnosc->setValue(static_cast<int>(queue->v()));
     }
@@ -515,7 +515,7 @@ void MainWindow::updateGroupWidgets(void)
 
     if (tmp != nullptr)
     {
-        ModelResourcess *group = tmp->data(Qt::UserRole).value<ModelResourcess*>();
+        ModelSubResourcess *group = tmp->data(Qt::UserRole).value<ModelSubResourcess*>();
         if (group->k() != static_cast<int>(ui->spinBoxPodgrupaLiczba->value())
                 || group->v() != static_cast<int>(ui->spinBoxPodgrupaPojemnosc->value()))
             ui->pushButton_wiazkiZmien->setEnabled(true);
@@ -532,7 +532,7 @@ void MainWindow::updateQeueWidgets(void)
     ui->pushButton_kolejkiUsun->setEnabled(tmp);
     if (tmp != nullptr)
     {
-        ModelResourcess *qeue = tmp->data(Qt::UserRole).value<ModelResourcess*>();
+        ModelSubResourcess *qeue = tmp->data(Qt::UserRole).value<ModelSubResourcess*>();
         if (qeue->k() != static_cast<int>(ui->spinBoxKolejkaLiczba->value())
                 || qeue->v() != static_cast<int>(ui->spinBoxKolejkaPojemnosc->value()))
             ui->pushButton_kolejkiZmien->setEnabled(true);
@@ -775,11 +775,11 @@ void MainWindow::readDataBase()
     ui->horizontalLayoutPredefinedSystems->setEnabled(isDbWorking);
 
     dbReadSystems();
-    foreach (ModelSyst *tmpSyst, vectPredefinedSystems)
+    foreach (ModelCreator *tmpSyst, vectPredefinedSystems)
     {
         QVariant tmpVar;
 
-        tmpVar.setValue<ModelSyst*>(tmpSyst);
+        tmpVar.setValue<ModelCreator*>(tmpSyst);
         QString tmpStr;
         QTextStream tmpStream(&tmpStr);
 //      tmpStream.setString(tmpStr);
@@ -911,7 +911,7 @@ bool MainWindow::fillSystem()
 
     foreach (QListWidgetItem *tmpItem, ui->listWidgetWiazki->findItems(QString("*"), Qt::MatchWrap | Qt::MatchWildcard))
     {
-        ModelResourcess tmpGroup = *tmpItem->data(Qt::UserRole).value<ModelResourcess*>();
+        ModelSubResourcess tmpGroup = *tmpItem->data(Qt::UserRole).value<ModelSubResourcess*>();
         system->addGroups(tmpGroup);
         if (progress > 0)
             progress++;
@@ -919,7 +919,7 @@ bool MainWindow::fillSystem()
 
     foreach (QListWidgetItem *tmpItem, ui->listWidgetKolejki->findItems(QString("*"), Qt::MatchWrap | Qt::MatchWildcard))
     {
-        ModelResourcess tmpGroup = *tmpItem->data(Qt::UserRole).value<ModelResourcess*>();
+        ModelSubResourcess tmpGroup = *tmpItem->data(Qt::UserRole).value<ModelSubResourcess*>();
         system->addQeues(tmpGroup);
     }
 
@@ -945,7 +945,7 @@ bool MainWindow::dbReadSystems()
 
     while (dbSystems.next())
     {   
-        ModelSyst *tmpSyst = new ModelSyst();
+        ModelCreator *tmpSyst = new ModelCreator();
         int id = dbSystems.value("Id").toInt();
 
         int idClassSet = dbSystems.value("IdClassSet").toInt();
@@ -994,7 +994,7 @@ bool MainWindow::dbReadSystems()
             {
                 int k = singleSystem.value("k").toInt();
                 int v = singleSystem.value("v").toInt();
-                ModelResourcess tmpGroup(k, v);
+                ModelSubResourcess tmpGroup(k, v);
                 tmpSyst->addGroups(tmpGroup);
             }
         }
@@ -1006,7 +1006,7 @@ bool MainWindow::dbReadSystems()
             {
                 int k = singleSystem.value("k").toInt();
                 int v = singleSystem.value("v").toInt();
-                ModelResourcess tmpGroup(k, v);
+                ModelSubResourcess tmpGroup(k, v);
                 tmpSyst->addQeues(tmpGroup);
             }
         }
@@ -1415,20 +1415,20 @@ void MainWindow::loadLanguage(const QString &rLanguage)
         variant.setValue(ModelTrClass::StreamType::Pareto);
         ui->comboBox_CallServStrType->addItem("Pareto", variant);
 
-        QVector<ServerResourcessScheduler> tmpOptions = { ServerResourcessScheduler::Random, ServerResourcessScheduler::Sequencial };
-        foreach (ServerResourcessScheduler tmp, tmpOptions)
+        QVector<ResourcessScheduler> tmpOptions = { ResourcessScheduler::Random, ResourcessScheduler::Sequencial };
+        foreach (ResourcessScheduler tmp, tmpOptions)
         {
             variant.setValue(tmp);
             ui->comboBoxServerSchedulerAlgorithm->addItem(serverResourcessSchedulerToString(tmp), variant);
         }
 
-        QVector<BufferResourcessScheduler> tmpOptionsBuffer = {
-            BufferResourcessScheduler::dFIFO_Seq,
-            BufferResourcessScheduler::Continuos,
-            BufferResourcessScheduler::qFIFO_Seq,
-            BufferResourcessScheduler::SD_FIFO
+        QVector<BufferPolicy> tmpOptionsBuffer = {
+            BufferPolicy::dFIFO_Seq,
+            BufferPolicy::Continuos,
+            BufferPolicy::qFIFO_Seq,
+            BufferPolicy::SD_FIFO
         };
-        foreach (BufferResourcessScheduler tmp, tmpOptionsBuffer)
+        foreach (BufferPolicy tmp, tmpOptionsBuffer)
         {
             variant.setValue(tmp);
             ui->comboBoxSubBufferSchedulerAlgorithm->addItem(bufferResourcessSchedulerToString(tmp), variant);
@@ -1529,7 +1529,7 @@ void MainWindow::drawSystemModel()
 
     //sceneSysModel->addText("Hello, world!");
 
-    ModelSyst *sys = new ModelSyst();
+    ModelCreator *sys = new ModelCreator();
 
     foreach (QListWidgetItem *tmpItem, ui->listWidgetKlasy->findItems(QString("*"), Qt::MatchWrap | Qt::MatchWildcard))
     {
@@ -1539,13 +1539,13 @@ void MainWindow::drawSystemModel()
 
     foreach (QListWidgetItem *tmpItem, ui->listWidgetWiazki->findItems(QString("*"), Qt::MatchWrap | Qt::MatchWildcard))
     {
-        ModelResourcess tmpGroup = *tmpItem->data(Qt::UserRole).value<ModelResourcess*>();
+        ModelSubResourcess tmpGroup = *tmpItem->data(Qt::UserRole).value<ModelSubResourcess*>();
         sys->addGroups(tmpGroup);
     }
 
     foreach (QListWidgetItem *tmpItem, ui->listWidgetKolejki->findItems(QString("*"), Qt::MatchWrap | Qt::MatchWildcard))
     {
-        ModelResourcess tmpGroup = *tmpItem->data(Qt::UserRole).value<ModelResourcess*>();
+        ModelSubResourcess tmpGroup = *tmpItem->data(Qt::UserRole).value<ModelSubResourcess*>();
         sys->addQeues(tmpGroup);
     }
 
@@ -1617,7 +1617,7 @@ void MainWindow::drawSystemModel()
 void MainWindow::on_comboBoxPredefinedSystems_currentIndexChanged(int index)
 {
     (void) index;
-    ModelSyst *system =ui->comboBoxPredefinedSystems->currentData().value<ModelSyst *>();
+    ModelCreator *system =ui->comboBoxPredefinedSystems->currentData().value<ModelCreator *>();
 
     this->system->id = system->id;
 
@@ -1714,14 +1714,14 @@ void MainWindow::on_comboBox_CallServStrType_currentIndexChanged(int index)
 void MainWindow::on_comboBoxServerSchedulerAlgorithm_currentIndexChanged(int index)
 {
     (void) index;
-    system->setServerSchedulerAlgorithm(ui->comboBoxServerSchedulerAlgorithm->currentData().value<ServerResourcessScheduler>());
+    system->setServerSchedulerAlgorithm(ui->comboBoxServerSchedulerAlgorithm->currentData().value<ResourcessScheduler>());
     fillSystem();
 }
 
 void MainWindow::on_comboBoxBufferSchedulerAlgorithm_currentIndexChanged(int index)
 {
     (void) index;
-    system->setBufferSchedulerAlgorithm(ui->comboBoxSubBufferSchedulerAlgorithm->currentData().value<BufferResourcessScheduler>());
+    system->setBufferSchedulerAlgorithm(ui->comboBoxSubBufferSchedulerAlgorithm->currentData().value<BufferPolicy>());
     fillSystem();
 }
 

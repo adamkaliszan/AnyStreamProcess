@@ -5,7 +5,7 @@
 namespace Results
 {
 
-RSystem::RSystem(const ModelSyst &model)
+RSystem::RSystem(const ModelCreator &model)
     : model(model)
 {
     _aPerAU.clear();

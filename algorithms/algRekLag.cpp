@@ -13,7 +13,7 @@ algRekLAG::algRekLAG()
        <<Results::Type::OccupancyDistribution;
 }
 
-bool algRekLAG::possible(const ModelSyst *system) const
+bool algRekLAG::possible(const ModelCreator *system) const
 {
     if ((system->vk_s() == 0) || (system->k_sType() > 1) || (system->vk_b() > 0))
         return false;

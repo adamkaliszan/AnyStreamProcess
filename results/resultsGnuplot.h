@@ -42,7 +42,7 @@ public:
     void setFontSize(int size)           { this->fontSize = size; }
     int getFontSize() const              { return fontSize; }
 
-    void WriteDataAndScript(QString baseFileName, const ModelSyst *system, Settings *setting, Type qosType);
+    void WriteDataAndScript(QString baseFileName, const ModelCreator *system, Settings *setting, Type qosType);
 };
 
 #endif // RESULTSGNUPLOT_H

@@ -14,41 +14,65 @@
 /*
  * Server
  */
-enum class ServerResourcessScheduler
+enum class ResourcessScheduler
 {
     Random,
     Sequencial
 };
 
-QString serverResourcessSchedulerToString(ServerResourcessScheduler value);
+QString serverResourcessSchedulerToString(ResourcessScheduler value);
 
-enum class BufferResourcessScheduler
+enum class BufferPolicy
 {
-    Continuos,     //Call can be splited between server and buffers resourcess
-    SD_FIFO,       //All calls are being served. If there is no room in server, the service time is increased
-    dFIFO_Seq,     //Dyskretna fifo, zgłoszenie trafia do bufora jeśli bufor jest zajęty
-    qFIFO_Seq,     //Zgłoszenie może trafić do serwera, jeśli jest tam miejsce, a w buforze są inne zgłoszenia
-    Disabled   //Brak kolejki
+    Continuos,     ///< Call can be splited between server and buffers resourcess. Calls goes to the buffer first
+    SD_FIFO,       ///< All calls are being served. If there is no room in server, the service time is increased and calls occypy server and budder
+    dFIFO_Seq,     ///< Calls are discrette ang goes to the buffer first. If the buffer is empty, the calls are accepted by the server
+    qFIFO_Seq,     ///< Calls are discrette and goes to server and next to the buffer
+    Disabled       ///< Buffer is disabled
 };
 
-QString bufferResourcessSchedulerToString(BufferResourcessScheduler value);
+QString bufferResourcessSchedulerToString(BufferPolicy value);
 
 
-class ModelResourcess
+class ModelSubResourcess
 {
 private:
     int _k;  ///Number of the grous
     int _v;  ///single group capacity
 
 public:
-    ModelResourcess(int k, int v);
-    ModelResourcess(): _k(0), _v(0) {}
+    ModelSubResourcess(int k, int v);
+    ModelSubResourcess(): _k(0), _v(0) {}
 
     void set_v(int v);
     void set_k(int k);
     int v();
     int k();
     int V();
+};
+
+
+class ModelResourcess
+{
+public:
+    const ResourcessScheduler schedulerAlg;
+
+private:
+    const QList<ModelSubResourcess> _listSubRes;
+    int _k;  ///Number of the grous
+    int _V;  ///single group capacity
+
+public:
+    ModelResourcess(QList<ModelSubResourcess> listSubRes, ResourcessScheduler schedulerAlg):schedulerAlg(schedulerAlg), _listSubRes(listSubRes)
+    {
+
+    }
+    int V() {return 0;}
+    int V(int groupNo) {return 0;}
+    int V(int groupClassNo, int groupNo) {return 0;}
+
+    int k() {return 0;}
+    int k(int groupClassNo) {return 0;}
 };
 
 class ModelTrClass
@@ -416,12 +440,20 @@ public:
     CLASS_SIMULATOR_DEP_PLUS(P, P, NewCallPareto, ServEndPareto)
 };
 
-class ModelSyst
+
+
+class ModelCreator
 {
     class ConstSyst
     {
     public:
         int m;
+
+       // class
+       // {
+       //     const int V;
+       //     const int k;
+       // } server;
         int Vs;
         int Vb;
 
@@ -436,23 +468,24 @@ class ModelSyst
         bool isInBlockingState(int classNo, const QVector<int> &serverGroupsState, const QVector<int> bufferGroupsState) const;
     };
 
-    friend QTextStream& operator<<(QTextStream &stream, const ModelSyst &model);
-    friend QDebug&      operator<<(QDebug &stream, const ModelSyst &model);
+    friend QTextStream& operator<<(QTextStream &stream, const ModelCreator &model);
+    friend QDebug&      operator<<(QDebug &stream, const ModelCreator &model);
 
 private:
     int _noOfTrClasses;
     ModelTrClass **_trClasses;
     int _capacityTrClasses;
 
-    ServerResourcessScheduler _serverSchedulerAlgorithm;
-    ModelResourcess *_servers;
+    ResourcessScheduler _serverSchedulerAlgorithm;
+    ModelSubResourcess *_servers;
     int _noOfTypesOfGroups;    // 1 for LAG of FAG, >1 for GLAG
     int _totalGroupsCapacity;  // Pojemność wszystkich wiązek
     int _totalNumberOfGroups;  // Liczba wszystkich wiązek
     int _capacityTypeOfGroups; // Array length TODO use QVector<>
 
-    BufferResourcessScheduler _bufferSchedulerAlgorithm;
-    ModelResourcess *_bufers;
+    BufferPolicy _bufferPolicy;
+    ResourcessScheduler _bufferSchedulerAlgorithm;
+    ModelSubResourcess *_bufers;
     int _noOfTypesOfBuffers;
     int _totalBufferCapacity;  // Pojemność wszystkich kolejek
     int _totalNumberOfBuffers; // Liczba wszystkich kolejek
@@ -464,8 +497,8 @@ private:
     mutable ConstSyst constSyst;
 
 public:
-    ModelSyst();
-    ~ModelSyst();
+    ModelCreator();
+    ~ModelCreator();
 
     void getServerGroupDescription(int32_t **k
             , int32_t **v
@@ -484,12 +517,12 @@ public:
     ModelTrClass *getClassClone(int idx) const;
     const ConstSyst &getConstSyst() const;
 
-    ServerResourcessScheduler getGroupsSchedulerAlgorithm() const;
+    ResourcessScheduler getGroupsSchedulerAlgorithm() const;
 
-    bool operator ==(const ModelSyst& rho) const;
-    bool operator !=(const ModelSyst& rho) const;
-    bool operator >(const ModelSyst& rho) const;
-    bool operator <(const ModelSyst& rho) const;
+    bool operator ==(const ModelCreator& rho) const;
+    bool operator !=(const ModelCreator& rho) const;
+    bool operator >(const ModelCreator& rho) const;
+    bool operator <(const ModelCreator& rho) const;
 
 
     int totalAt(void)  const {return _totalAt;}
@@ -515,14 +548,14 @@ public:
     int id;
 
     void addClass(ModelTrClass *newClass);                                 ///< Creates a copy. The copy is added to the system
-    void addGroups(ModelResourcess newGroup, bool optimize = true);        ///< Add groups to the system. Previous types of group are checked before
-    void addQeues(ModelResourcess qeue, bool optimize = true);             ///< Add qeues to the system
+    void addGroups(ModelSubResourcess newGroup, bool optimize = true);        ///< Add groups to the system. Previous types of group are checked before
+    void addQeues(ModelSubResourcess qeue, bool optimize = true);             ///< Add qeues to the system
 
-    void setServerSchedulerAlgorithm(ServerResourcessScheduler algorithm);
-    void setBufferSchedulerAlgorithm(BufferResourcessScheduler algorithm);
+    void setServerSchedulerAlgorithm(ResourcessScheduler algorithm);
+    void setBufferSchedulerAlgorithm(BufferPolicy algorithm);
 
-    inline BufferResourcessScheduler getBufferScheduler() const {return _bufferSchedulerAlgorithm; }
-    inline ServerResourcessScheduler getServerScheduler() const {return _serverSchedulerAlgorithm; }
+    inline BufferPolicy getBufferScheduler() const {return _bufferPolicy; }
+    inline ResourcessScheduler getServerScheduler() const {return _serverSchedulerAlgorithm; }
 
     void updateConstSyst() const;
 
@@ -531,22 +564,23 @@ public:
     QString getGnuplotDescription() const;
 };
 
-QTextStream &operator<<(QTextStream &stream, const ModelSyst &model);
+QTextStream &operator<<(QTextStream &stream, const ModelCreator &model);
 QTextStream &operator<<(QTextStream &stream, const ModelTrClass &trClass);
 
-QDebug &operator<<(QDebug &stream, const ModelSyst &model);
+QDebug &operator<<(QDebug &stream, const ModelCreator &model);
 QDebug &operator<<(QDebug &stream, const ModelTrClass &trClass);
 
 
 
+Q_DECLARE_METATYPE(ModelSubResourcess*)
 Q_DECLARE_METATYPE(ModelResourcess*)
 Q_DECLARE_METATYPE(ModelTrClass*)
 Q_DECLARE_METATYPE(const ModelTrClass*)
-Q_DECLARE_METATYPE(ModelSyst*)
+Q_DECLARE_METATYPE(ModelCreator*)
 Q_DECLARE_METATYPE(ModelTrClass::SourceType)
 Q_DECLARE_METATYPE(ModelTrClass::StreamType)
-Q_DECLARE_METATYPE(ServerResourcessScheduler)
-Q_DECLARE_METATYPE(BufferResourcessScheduler)
+Q_DECLARE_METATYPE(ResourcessScheduler)
+Q_DECLARE_METATYPE(BufferPolicy)
 
 
 #endif // MODEL_H

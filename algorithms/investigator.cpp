@@ -8,12 +8,12 @@ Investigator::Investigator():
     isSelected = false;
 }
 
-bool Investigator::possible(const ModelSyst *system) const
+bool Investigator::possible(const ModelCreator *system) const
 {
     return possibleAlternative(system);
 }
 
-bool Investigator::possibleAlternative(const ModelSyst *system) const
+bool Investigator::possibleAlternative(const ModelCreator *system) const
 {
     if (system->m() == 0)
         return false;
@@ -36,7 +36,7 @@ QSet<Type> Investigator::getQoS_Set() const
 
 
 
-bool Investigator::correctSystemParameters(ModelSyst *system, double a)
+bool Investigator::correctSystemParameters(ModelCreator *system, double a)
 {
     qDebug("a = %lf", a);
     for (int i=0; i<system->m(); i++)
@@ -67,7 +67,7 @@ bool Investigator::correctSystemParameters(ModelSyst *system, double a)
     return true;
 }
 
-void Investigator::prepareTemporaryData(const ModelSyst *system, double a)
+void Investigator::prepareTemporaryData(const ModelCreator *system, double a)
 {
     this->system = system;
     classes.resize(system->m());

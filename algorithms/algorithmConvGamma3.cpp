@@ -11,14 +11,14 @@ convolutionAlgorithmGamma3::convolutionAlgorithmGamma3(): Investigator()
        <<Results::Type::OccupancyDistribution;
 }
 
-bool convolutionAlgorithmGamma3::possible(ModelSyst *system)
+bool convolutionAlgorithmGamma3::possible(ModelCreator *system)
 {
     if (system->vk_b() == 0)
         return false;
     return Investigator::possible(system);
 }
 
-void convolutionAlgorithmGamma3::calculateSystem(const ModelSyst& system
+void convolutionAlgorithmGamma3::calculateSystem(const ModelCreator& system
         , double a
         , RInvestigator *results
         , SimulationParameters *simParameters
@@ -131,7 +131,7 @@ void convolutionAlgorithmGamma3::calculateSystem(const ModelSyst& system
     deleteTemporaryData();
 }
 
-void convolutionAlgorithmGamma3::prepareTemporaryData(const ModelSyst *system, double a)
+void convolutionAlgorithmGamma3::prepareTemporaryData(const ModelCreator *system, double a)
 {
     Investigator::prepareTemporaryData(system, a);
     this->p_single = new VectQEUE*[system->m()];

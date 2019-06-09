@@ -13,12 +13,12 @@ public:
 
     virtual QString shortName() const {return QString("LAG GS 1"); }
 
-    virtual void calculateSystem(const ModelSyst *system
+    virtual void calculateSystem(const ModelCreator *system
             , double a
             , Results::RInvestigator *results, SimulationParameters *simParameters
             );
 
-    virtual bool possible(const ModelSyst *system) const;
+    virtual bool possible(const ModelCreator *system) const;
     virtual double getSigma(int classNumber, int state);
 };
 
@@ -30,13 +30,13 @@ public:
 
     virtual QString shortName() const {return QString("LAG GS 2"); }
 
-    virtual void calculateSystem(const ModelSyst *system
+    virtual void calculateSystem(const ModelCreator *system
             , double a
             , Results::RInvestigator *results
             , SimulationParameters *simParameters
             );
 
-    virtual bool possible(const ModelSyst *system) const;
+    virtual bool possible(const ModelCreator *system) const;
     virtual double getSigma(int classNumber, int state);
 };
 

@@ -12,14 +12,14 @@ convolutionAlgorithmGamma::convolutionAlgorithmGamma(): Investigator()
        <<Results::Type::OccupancyDistribution;
 }
 
-bool convolutionAlgorithmGamma::possible(const ModelSyst *system) const
+bool convolutionAlgorithmGamma::possible(const ModelCreator *system) const
 {
     if (system->vk_b() == 0)
         return false;
     return Investigator::possible(system);
 }
 
-void convolutionAlgorithmGamma::calculateSystem(const ModelSyst *system
+void convolutionAlgorithmGamma::calculateSystem(const ModelCreator *system
       , double a
       , RInvestigator *results
       , SimulationParameters *simParameters
@@ -182,7 +182,7 @@ void convolutionAlgorithmGamma::calculateSystem(const ModelSyst *system
     //emit this->sigCalculationDone();
 }
 
-void convolutionAlgorithmGamma::prepareTemporaryData(const ModelSyst *system, double a)
+void convolutionAlgorithmGamma::prepareTemporaryData(const ModelCreator *system, double a)
 {
     Investigator::prepareTemporaryData(system, a);
     this->p_single.fill(NULL, system->m());

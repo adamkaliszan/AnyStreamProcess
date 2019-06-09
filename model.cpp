@@ -7,43 +7,43 @@
 #include "model.h"
 #include "utils/probDistributions.h"
 
-QString serverResourcessSchedulerToString(ServerResourcessScheduler value)
+QString serverResourcessSchedulerToString(ResourcessScheduler value)
 {
     QString result;
     switch (value)
     {
-    case ServerResourcessScheduler::Random:
+    case ResourcessScheduler::Random:
         result = "Random";
         break;
-    case ServerResourcessScheduler::Sequencial:
+    case ResourcessScheduler::Sequencial:
         result = "Sequencial";
         break;
     }
     return result;
 }
 
-QString bufferResourcessSchedulerToString(BufferResourcessScheduler value)
+QString bufferResourcessSchedulerToString(BufferPolicy value)
 {
     QString result;
     switch (value)
     {
-    case BufferResourcessScheduler::Continuos:
+    case BufferPolicy::Continuos:
         result = "Continuos";
         break;
 
-    case BufferResourcessScheduler::dFIFO_Seq:
+    case BufferPolicy::dFIFO_Seq:
         result = "Discrette";
         break;
 
-    case BufferResourcessScheduler::qFIFO_Seq:
+    case BufferPolicy::qFIFO_Seq:
         result = "Discrette qFIFO";
         break;
 
-    case BufferResourcessScheduler::SD_FIFO:
+    case BufferPolicy::SD_FIFO:
         result = "State dependent";
         break;
 
-    case BufferResourcessScheduler::Disabled:
+    case BufferPolicy::Disabled:
         result = "No buffer";
         break;
 
@@ -100,33 +100,33 @@ void ModelTrClass::setCallServStrType(ModelTrClass::StreamType strType)
     _callServStr = strType;
 }
 
-ModelResourcess::ModelResourcess(int k, int v)
+ModelSubResourcess::ModelSubResourcess(int k, int v)
 {
     _k = k;
     _v = v;
 }
 
-void ModelResourcess::set_k(int k)
+void ModelSubResourcess::set_k(int k)
 {
     _k = k;
 }
 
-void ModelResourcess::set_v(int v)
+void ModelSubResourcess::set_v(int v)
 {
     _v = v;
 }
 
-int ModelResourcess::v()
+int ModelSubResourcess::v()
 {
     return _v;
 }
 
-int ModelResourcess::k()
+int ModelSubResourcess::k()
 {
     return _k;
 }
 
-int ModelResourcess::V()
+int ModelSubResourcess::V()
 {
     return _v * _k;
 }
@@ -845,13 +845,13 @@ double ModelTrClass::intensityNewCallForY(double lambdaZero, double y) const
     return -1;
 }
 
-ModelSyst::ModelSyst():
+ModelCreator::ModelCreator():
     _noOfTrClasses(0)
-  , _serverSchedulerAlgorithm(ServerResourcessScheduler::Sequencial)
+  , _serverSchedulerAlgorithm(ResourcessScheduler::Sequencial)
   , _noOfTypesOfGroups(0)
   , _totalGroupsCapacity(0)
   , _totalNumberOfGroups(0)
-  , _bufferSchedulerAlgorithm(BufferResourcessScheduler::Disabled)
+  , _bufferPolicy(BufferPolicy::Disabled)
   , _noOfTypesOfBuffers(0)
   , _totalBufferCapacity(0)
   , _totalNumberOfBuffers(0)
@@ -863,13 +863,13 @@ ModelSyst::ModelSyst():
     _trClasses = new ModelTrClass*[_capacityTrClasses];
 
     _capacityTypeOfGroups = 2;
-    _servers = new ModelResourcess[_capacityTypeOfGroups];
+    _servers = new ModelSubResourcess[_capacityTypeOfGroups];
 
     _capacityTypeOfQeues = 2;
-    _bufers = new ModelResourcess[_capacityTypeOfQeues];
+    _bufers = new ModelSubResourcess[_capacityTypeOfQeues];
 }
 
-ModelSyst::~ModelSyst()
+ModelCreator::~ModelCreator()
 {
     for  (int i=0; i<_noOfTrClasses; i++)
         delete _trClasses[i];
@@ -879,7 +879,7 @@ ModelSyst::~ModelSyst()
     delete []_bufers;
 }
 
-void ModelSyst::getServerGroupDescription(int32_t **k
+void ModelCreator::getServerGroupDescription(int32_t **k
   , int32_t **v
   , int32_t *numberOfTypes
 ) const
@@ -895,7 +895,7 @@ void ModelSyst::getServerGroupDescription(int32_t **k
     }
 }
 
-void ModelSyst::getBufferGroupDescription(
+void ModelCreator::getBufferGroupDescription(
           int32_t **k
         , int32_t **v
         , int32_t *numberOfTypes
@@ -912,14 +912,14 @@ void ModelSyst::getBufferGroupDescription(
     }
 }
 
-const QVector<int> &ModelSyst::getServerGroupCapacityVector() const
+const QVector<int> &ModelCreator::getServerGroupCapacityVector() const
 {
     if (_parWasChanged)
         updateConstSyst();
     return constSyst.vs;
 }
 
-const QVector<int> &ModelSyst::getBufferCapacityVector() const
+const QVector<int> &ModelCreator::getBufferCapacityVector() const
 {
     if (_parWasChanged)
         updateConstSyst();
@@ -927,7 +927,7 @@ const QVector<int> &ModelSyst::getBufferCapacityVector() const
 }
 
 
-void ModelSyst::updateConstSyst() const
+void ModelCreator::updateConstSyst() const
 {
     int index = 0;
 
@@ -961,7 +961,7 @@ void ModelSyst::updateConstSyst() const
 }
 
 
-void ModelSyst::addClass(ModelTrClass *newClass)
+void ModelCreator::addClass(ModelTrClass *newClass)
 {
     _parWasChanged = true;
     if (_noOfTrClasses == _capacityTrClasses)
@@ -979,7 +979,7 @@ void ModelSyst::addClass(ModelTrClass *newClass)
     _totalAt += newClass->propAt();
 }
 
-void ModelSyst::addGroups(ModelResourcess newGroup, bool optimize)
+void ModelCreator::addGroups(ModelSubResourcess newGroup, bool optimize)
 {
     _parWasChanged = true;
     _totalNumberOfGroups += newGroup.k();
@@ -999,8 +999,8 @@ void ModelSyst::addGroups(ModelResourcess newGroup, bool optimize)
 
     if (_noOfTypesOfGroups == _capacityTypeOfGroups)
     {
-        ModelResourcess *newRes = new ModelResourcess[2*_capacityTypeOfGroups];
-        memcpy(newRes, _servers, static_cast<size_t>(_capacityTypeOfGroups) * sizeof(ModelResourcess));
+        ModelSubResourcess *newRes = new ModelSubResourcess[2*_capacityTypeOfGroups];
+        memcpy(newRes, _servers, static_cast<size_t>(_capacityTypeOfGroups) * sizeof(ModelSubResourcess));
         delete _servers;
         _servers = newRes;
         _capacityTypeOfGroups *=2;
@@ -1009,7 +1009,7 @@ void ModelSyst::addGroups(ModelResourcess newGroup, bool optimize)
     _noOfTypesOfGroups++;
 }
 
-void ModelSyst::addQeues(ModelResourcess qeue, bool optimize)
+void ModelCreator::addQeues(ModelSubResourcess qeue, bool optimize)
 {
     _parWasChanged = true;
     _totalNumberOfBuffers += qeue.k();
@@ -1030,8 +1030,8 @@ void ModelSyst::addQeues(ModelResourcess qeue, bool optimize)
 
     if (_noOfTypesOfBuffers == _capacityTypeOfQeues)
     {
-        ModelResourcess *newQue = new ModelResourcess[2*_capacityTypeOfQeues];
-        memcpy(newQue, _bufers, static_cast<size_t>(_capacityTypeOfQeues) * sizeof(ModelResourcess));
+        ModelSubResourcess *newQue = new ModelSubResourcess[2*_capacityTypeOfQeues];
+        memcpy(newQue, _bufers, static_cast<size_t>(_capacityTypeOfQeues) * sizeof(ModelSubResourcess));
         delete _bufers;
         _bufers = newQue;
         _capacityTypeOfQeues *=2;
@@ -1040,17 +1040,17 @@ void ModelSyst::addQeues(ModelResourcess qeue, bool optimize)
     _noOfTypesOfBuffers++;
 }
 
-void ModelSyst::setServerSchedulerAlgorithm(ServerResourcessScheduler algorithm)
+void ModelCreator::setServerSchedulerAlgorithm(ResourcessScheduler algorithm)
 {
     this->_serverSchedulerAlgorithm = algorithm;
 }
 
-void ModelSyst::setBufferSchedulerAlgorithm(BufferResourcessScheduler algorithm)
+void ModelCreator::setBufferSchedulerAlgorithm(BufferPolicy algorithm)
 {
-    this->_bufferSchedulerAlgorithm = algorithm;
+    this->_bufferPolicy = algorithm;
 }
 
-void ModelSyst::clearAll()
+void ModelCreator::clearAll()
 {
     _parWasChanged = true;
     for (int i=0; i<_noOfTrClasses; i++)
@@ -1067,7 +1067,7 @@ void ModelSyst::clearAll()
     _totalNumberOfBuffers = 0;
 }
 
-QString ModelSyst::getGnuplotDescription() const
+QString ModelCreator::getGnuplotDescription() const
 {
     QString result;
     QTextStream str;
@@ -1079,10 +1079,10 @@ QString ModelSyst::getGnuplotDescription() const
         str<<"(";
         switch (_serverSchedulerAlgorithm)
         {
-        case ServerResourcessScheduler::Random:
+        case ResourcessScheduler::Random:
             str<<"R";
             break;
-        case ServerResourcessScheduler::Sequencial:
+        case ResourcessScheduler::Sequencial:
             str<<"S";
             break;
         }
@@ -1106,14 +1106,14 @@ QString ModelSyst::getGnuplotDescription() const
     return result;
 }
 
-const ModelTrClass *ModelSyst::getClass(int idx) const
+const ModelTrClass *ModelCreator::getClass(int idx) const
 {
     if (idx < _noOfTrClasses)
         return _trClasses[idx];
     return nullptr;
 }
 
-ModelTrClass *ModelSyst::getClassClone(int idx) const
+ModelTrClass *ModelCreator::getClassClone(int idx) const
 {
     ModelTrClass *result = nullptr;
     if (idx < _noOfTrClasses)
@@ -1122,19 +1122,19 @@ ModelTrClass *ModelSyst::getClassClone(int idx) const
     return result;
 }
 
-const ModelSyst::ConstSyst &ModelSyst::getConstSyst() const
+const ModelCreator::ConstSyst &ModelCreator::getConstSyst() const
 {
     if (_parWasChanged)
         updateConstSyst();
     return constSyst;
 }
 
-ServerResourcessScheduler ModelSyst::getGroupsSchedulerAlgorithm() const
+ResourcessScheduler ModelCreator::getGroupsSchedulerAlgorithm() const
 {
     return _serverSchedulerAlgorithm;
 }
 
-bool ModelSyst::operator==(const ModelSyst &rho) const
+bool ModelCreator::operator==(const ModelCreator &rho) const
 {
     if (
             m()   != rho.m()
@@ -1193,7 +1193,7 @@ bool ModelSyst::operator==(const ModelSyst &rho) const
                 break;
             }
         }
-    if ((cA > 0) && (_bufferSchedulerAlgorithm != rho._bufferSchedulerAlgorithm))
+    if ((cA > 0) && (_bufferPolicy != rho._bufferPolicy))
         return false;
 
     delete []vA;
@@ -1204,12 +1204,12 @@ bool ModelSyst::operator==(const ModelSyst &rho) const
     return result;
 }
 
-bool ModelSyst::operator !=(const ModelSyst &rho) const
+bool ModelCreator::operator !=(const ModelCreator &rho) const
 {
     return !(*this == rho);
 }
 
-bool ModelSyst::operator >(const ModelSyst &rho) const
+bool ModelCreator::operator >(const ModelCreator &rho) const
 {
     if (V() > rho.V())
         return true;
@@ -1259,7 +1259,7 @@ bool ModelSyst::operator >(const ModelSyst &rho) const
     return result;
 }
 
-bool ModelSyst::operator <(const ModelSyst &rho) const
+bool ModelCreator::operator <(const ModelCreator &rho) const
 {
     if (V() < rho.V())
         return true;
@@ -1309,7 +1309,7 @@ bool ModelSyst::operator <(const ModelSyst &rho) const
     return result;
 }
 
-int ModelSyst::v_sMax() const
+int ModelCreator::v_sMax() const
 {
     int result=0;
     for (int grType=0; grType<_noOfTypesOfGroups; grType++)
@@ -1318,42 +1318,42 @@ int ModelSyst::v_sMax() const
     return result;
 }
 
-int ModelSyst::v_s(int groupClNo) const
+int ModelCreator::v_s(int groupClNo) const
 {
     if (groupClNo < _noOfTypesOfGroups)
         return _servers[groupClNo].v();
     return -1;
 }
 
-int ModelSyst::vk_s(int groupClNo) const
+int ModelCreator::vk_s(int groupClNo) const
 {
     if (groupClNo < _noOfTypesOfGroups)
         return _servers[groupClNo].V();
     return -1;
 }
 
-int ModelSyst::k_s(int groupClNo) const
+int ModelCreator::k_s(int groupClNo) const
 {
     if (groupClNo < _noOfTypesOfGroups)
         return _servers[groupClNo].k();
     return -1;
 }
 
-int ModelSyst::v_b(int bufferClNo) const
+int ModelCreator::v_b(int bufferClNo) const
 {
     if (bufferClNo < _noOfTypesOfBuffers)
         return _bufers[bufferClNo].v();
     return -1;
 }
 
-int ModelSyst::vk_b(int bufferClNo) const
+int ModelCreator::vk_b(int bufferClNo) const
 {
     if (bufferClNo < _noOfTypesOfBuffers)
         return _bufers[bufferClNo].v() * _bufers[bufferClNo].k();
     return -1;
 }
 
-int ModelSyst::k_b(int i) const
+int ModelCreator::k_b(int i) const
 {
     if (i < _noOfTypesOfBuffers)
         return _bufers[i].k();
@@ -1361,7 +1361,7 @@ int ModelSyst::k_b(int i) const
 }
 
 
-QTextStream& operator<<(QTextStream &stream, const ModelSyst &model)
+QTextStream& operator<<(QTextStream &stream, const ModelCreator &model)
 {
     stream<<"S"<<model.vk_s();
     if (model.k_s() > 1)
@@ -1369,10 +1369,10 @@ QTextStream& operator<<(QTextStream &stream, const ModelSyst &model)
         stream<<"(";
         switch (model._serverSchedulerAlgorithm)
         {
-        case ServerResourcessScheduler::Random:
+        case ResourcessScheduler::Random:
             stream<<"R";
             break;
-        case ServerResourcessScheduler::Sequencial:
+        case ResourcessScheduler::Sequencial:
             stream<<"S";
             break;
         }
@@ -1440,7 +1440,7 @@ QTextStream& operator<<(QTextStream &stream2, const ModelTrClass &trClass)
 }
 
 
-QDebug &operator<<(QDebug &stream, const ModelSyst &model)
+QDebug &operator<<(QDebug &stream, const ModelCreator &model)
 {
     QDebug stream2 = stream.nospace();
     stream2<<"S"<<model.vk_s();
@@ -1449,10 +1449,10 @@ QDebug &operator<<(QDebug &stream, const ModelSyst &model)
         stream<<"(";
         switch (model._serverSchedulerAlgorithm)
         {
-        case ServerResourcessScheduler::Random:
+        case ResourcessScheduler::Random:
             stream<<"R";
             break;
-        case ServerResourcessScheduler::Sequencial:
+        case ResourcessScheduler::Sequencial:
             stream<<"S";
             break;
         }
@@ -2042,7 +2042,7 @@ bool ModelTrClass::SimulatorProcess_DepPlus##X##Y::endOfCallService(SimulatorSin
 
 
 
-bool ModelSyst::ConstSyst::isInBlockingState(int classNo, const QVector<int> &serverGroupsState, const QVector<int> bufferGroupsState) const
+bool ModelCreator::ConstSyst::isInBlockingState(int classNo, const QVector<int> &serverGroupsState, const QVector<int> bufferGroupsState) const
 {
     bool result = true;
     for (int x=0; x < vs.length(); x++)

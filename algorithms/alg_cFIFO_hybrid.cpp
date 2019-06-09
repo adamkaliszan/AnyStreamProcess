@@ -77,7 +77,7 @@ QString AlgorithmHybrid::shortName() const
 }
 
 
-void AlgorithmHybrid::calculateSystem(const ModelSyst *system
+void AlgorithmHybrid::calculateSystem(const ModelCreator *system
         , double a
         , RInvestigator *results
         , SimulationParameters *simParameters
@@ -354,7 +354,7 @@ void AlgorithmHybrid::calculateSystem(const ModelSyst *system
 
 void AlgorithmHybrid::calculateYSystem(QVector<QVector<double> > &ySYSTEM_VsVb
         , QVector<QVector<double> > yFAG
-        , const ModelSyst *system
+        , const ModelCreator *system
         , TrClVector *PwithoutI
         , TrClVector *pI)
 {
@@ -441,7 +441,7 @@ void AlgorithmHybrid::calculateYServer(QVector<QVector<double> > &ySeverVsVb
     }
 }
 
-bool AlgorithmHybrid::possible(const ModelSyst *system) const
+bool AlgorithmHybrid::possible(const ModelCreator *system) const
 {
     if (system->vk_b() == 0)
         return false;

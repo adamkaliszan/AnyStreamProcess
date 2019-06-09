@@ -15,7 +15,7 @@ Simulator::Simulator(): Investigator()
 std::random_device Simulator::rd;
 std::mt19937 Simulator::gen = std::mt19937(Simulator::rd());
 
-bool Simulator::isItTheSameSystem(ModelSyst *system)
+bool Simulator::isItTheSameSystem(ModelCreator *system)
 {
     if (system == this->system)
         return true;

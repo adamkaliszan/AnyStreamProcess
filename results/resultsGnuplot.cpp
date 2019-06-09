@@ -1,7 +1,7 @@
 #include <cmath>
 #include "results/resultsGnuplot.h"
 
-void GnuplotScript::WriteDataAndScript(QString baseFileNameWithPath, const ModelSyst *system, Results::Settings *setting, Results::Type qosType)
+void GnuplotScript::WriteDataAndScript(QString baseFileNameWithPath, const ModelCreator *system, Results::Settings *setting, Results::Type qosType)
 {
     int logScale = 1;
     struct Results::ParametersSet parameters;
