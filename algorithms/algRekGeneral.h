@@ -17,16 +17,16 @@ public:
 
     virtual QString shortName() const {return QString("Kaufman-Roberts"); }
     virtual int complexity()    const {return 1; }
-    virtual void calculateSystem(const ModelCreator *system
+    virtual void calculateSystem(const ModelSystem &system
             , double a
             , RInvestigator *results
             , SimulationParameters *simParameters
             );
-    virtual bool possible(const ModelCreator *system) const;
+    virtual bool possible(const ModelSystem &system) const;
 
 
 
-    virtual void prepareTemporaryData(const ModelCreator *system, double a);
+    virtual void prepareTemporaryData(const ModelSystem &system, double a);
     virtual void deleteTemporaryData();
 
     ~AlgRekGeneral();

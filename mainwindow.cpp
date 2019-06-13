@@ -1154,13 +1154,13 @@ void MainWindow::on_pushButtonStart_clicked()
                 investigatorResults.init((tmpAlg->hasConfIntervall()) ? currentSimulationParameter->noOfSeries : 0);
 
                 progress += tmpAlg->complexity();
-                if (!tmpAlg->correctSystemParameters(system, a))
+                if (!tmpAlg->correctSystemParameters(system->getConstSyst(), a))
                 {
                     qDebug("Incorrect input data... skiping");
                     continue;
                 }
 
-                tmpAlg->calculateSystem(system, a, &investigatorResults, currentSimulationParameter);
+                tmpAlg->calculateSystem(system->getConstSyst(), a, &investigatorResults, currentSimulationParameter);
                 int valProgBar = static_cast<int>((100.0*progress/(total * noOfpoints)));
                 ui->progressBar->setValue(valProgBar);
             }

@@ -26,7 +26,7 @@ class SimulatorAll: public Simulator
     QString shortName()  const { return "Simulation"; }
     int complexity()     const { return 100; }
     void calculateSystem(
-        const ModelCreator *system
+        const ModelSystem &system
       , double a
       , Results::RInvestigator *results, SimulationParameters *simParameters
     );

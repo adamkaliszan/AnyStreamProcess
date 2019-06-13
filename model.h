@@ -46,9 +46,15 @@ public:
 
     void set_v(int v);
     void set_k(int k);
-    int v();
-    int k();
-    int V();
+    int v() const;
+    int k() const;
+    int V() const;
+
+
+    bool operator== (const ModelSubResourcess &rho) const;
+    bool operator!= (const ModelSubResourcess &rho) const;
+    bool operator> (const ModelSubResourcess &rho) const;
+    bool operator< (const ModelSubResourcess &rho) const;
 };
 
 
@@ -59,20 +65,26 @@ public:
 
 private:
     const QList<ModelSubResourcess> _listSubRes;
-    int _k;  ///Number of the grous
-    int _V;  ///single group capacity
+    const int _k;  ///< Number of the grous
+    int _V;        ///< Total group capacity
+    int _vMax;     ///< Maximum subgroup capacity
 
+    QVector<int> _subgrpCapacity;
 public:
-    ModelResourcess(QList<ModelSubResourcess> listSubRes, ResourcessScheduler schedulerAlg):schedulerAlg(schedulerAlg), _listSubRes(listSubRes)
-    {
+    ModelResourcess(QList<ModelSubResourcess> listSubRes, ResourcessScheduler schedulerAlg);
 
-    }
-    int V() {return 0;}
-    int V(int groupNo) {return 0;}
-    int V(int groupClassNo, int groupNo) {return 0;}
+    bool operator==(const ModelResourcess &rho) const;
+    bool operator!=(const ModelResourcess &rho) const;
 
-    int k() {return 0;}
-    int k(int groupClassNo) {return 0;}
+    inline int V() const;
+    inline int V(int groupNo) const;
+    inline int V(int groupClassNo, int groupNo) const;
+
+    inline int k() const;
+    inline int k(int groupClassNo) const;
+
+    inline int kTypes() const { return _listSubRes.length();}
+    inline int vMax() const { return _vMax; }
 };
 
 class ModelTrClass
@@ -440,82 +452,86 @@ public:
     CLASS_SIMULATOR_DEP_PLUS(P, P, NewCallPareto, ServEndPareto)
 };
 
+class ModelSystem
+{
+private:
+    const QVector<ModelTrClass> _trClasses;
+    const ModelResourcess       _server;
+    const ModelResourcess       _buffer;
+    const BufferPolicy          _bufferPolicy;
 
+    int _totalAt;
+    int _V;
+
+public:
+    ModelSystem(const ModelSystem &system);
+    ModelSystem(const QVector<ModelTrClass> &trClasses, const ModelResourcess &server, const ModelResourcess &buffer, BufferPolicy bufferPolicy);
+
+    bool operator==(const ModelSystem &rho) const;
+
+    inline const ModelTrClass& getTrClass(int index) const {return _trClasses[index];}
+    inline const QVector<ModelTrClass>& getTrClasses() const {return _trClasses;}
+    inline const ModelResourcess& getServer() const {return _server;}
+    inline const ModelResourcess& getBuffer() const {return _buffer;}
+    inline BufferPolicy getBufferPolicy() const {return _bufferPolicy;}
+
+    bool isInBlockingState(int classNo, const QVector<int> &serverGroupsState, const QVector<int> bufferGroupsState) const;
+    bool isServerAvailable(int classNo, const QVector<int> &serverGroupsState) const;
+    bool isBufferAvailable(int classNo, const QVector<int> &bufferGroupsState) const;
+
+    int getTotalAt() const {return _totalAt;}
+    int m() const {return _trClasses.length();}
+    int V() const {return _V;}
+    int t(int classIdx) const {return _trClasses[classIdx].t();}
+};
+
+class MCRsc
+{
+public:
+    QList<ModelSubResourcess> resourcess;
+    ResourcessScheduler       scheduler;
+
+    bool operator>(const MCRsc &rho) const;
+    bool operator<(const MCRsc &rho) const;
+};
+
+class MCTrCl
+{
+public:
+    QVector<ModelTrClass> trClasses;
+    int totalAt() const
+    {
+        int result = 0;
+        foreach(ModelTrClass tmp, trClasses)
+            result+= tmp.propAt();
+        return result;
+    }                                             ///< Sum of all traffic proportions
+
+    bool operator>(const MCTrCl &rho) const;
+    bool operator<(const MCTrCl &rho) const;
+};
 
 class ModelCreator
 {
-    class ConstSyst
-    {
-    public:
-        int m;
 
-       // class
-       // {
-       //     const int V;
-       //     const int k;
-       // } server;
-        int Vs;
-        int Vb;
-
-        int ks;
-        int kb;
-
-        QVector<int> t;
-        QVector<int> vs;
-        QVector<int> vb;
-
-
-        bool isInBlockingState(int classNo, const QVector<int> &serverGroupsState, const QVector<int> bufferGroupsState) const;
-    };
 
     friend QTextStream& operator<<(QTextStream &stream, const ModelCreator &model);
     friend QDebug&      operator<<(QDebug &stream, const ModelCreator &model);
 
 private:
-    int _noOfTrClasses;
-    ModelTrClass **_trClasses;
-    int _capacityTrClasses;
-
-    ResourcessScheduler _serverSchedulerAlgorithm;
-    ModelSubResourcess *_servers;
-    int _noOfTypesOfGroups;    // 1 for LAG of FAG, >1 for GLAG
-    int _totalGroupsCapacity;  // Pojemność wszystkich wiązek
-    int _totalNumberOfGroups;  // Liczba wszystkich wiązek
-    int _capacityTypeOfGroups; // Array length TODO use QVector<>
+    MCTrCl _traffic;
+    MCRsc _server;
+    MCRsc _buffer;
 
     BufferPolicy _bufferPolicy;
-    ResourcessScheduler _bufferSchedulerAlgorithm;
-    ModelSubResourcess *_bufers;
-    int _noOfTypesOfBuffers;
-    int _totalBufferCapacity;  // Pojemność wszystkich kolejek
-    int _totalNumberOfBuffers; // Liczba wszystkich kolejek
-    int _capacityTypeOfQeues;  // Array length TODO use QVector<>
-
-    int _totalAt;              ///< Sum of all traffic proportions
-
-    mutable bool _parWasChanged;        ///< System parameters ware changed. Recalculate system vectors
-    mutable ConstSyst constSyst;
 
 public:
     ModelCreator();
     ~ModelCreator();
 
-    void getServerGroupDescription(int32_t **k
-            , int32_t **v
-            , int32_t *numberOfTypes
-            ) const;
-    void getBufferGroupDescription(int32_t **k
-            , int32_t **v
-            , int32_t *numberOfTypes
-            ) const;
-
-    const QVector<int> &getServerGroupCapacityVector() const;
-    const QVector<int> &getBufferCapacityVector() const;
-
-
-    const ModelTrClass *getClass(int idx) const;
+    const ModelTrClass &getClass(int idx) const;
     ModelTrClass *getClassClone(int idx) const;
-    const ConstSyst &getConstSyst() const;
+    const ModelSystem getConstSyst() const;
 
     ResourcessScheduler getGroupsSchedulerAlgorithm() const;
 
@@ -525,39 +541,37 @@ public:
     bool operator <(const ModelCreator& rho) const;
 
 
-    int totalAt(void)  const {return _totalAt;}
-    int m(void)        const {return _noOfTrClasses;}
-    int V(void)              const {return _totalGroupsCapacity + _totalBufferCapacity;}
+    int totalAt(void)  const {return _traffic.totalAt();}
+    int m(void)        const {return _traffic.trClasses.length();}
+    int V(void)              const;
 
     int v_s(int groupClNo)   const;                                        ///< Single server group capacity
-    int vk_s(void)           const {return _totalGroupsCapacity; }         ///< Server capacity
+    int vk_s(void)           const;                                        ///< Server capacity
     int vk_s(int groupClNo)  const;                                        ///< Capacity of givens class of server's groups
     int v_sMax(void)         const;                                        ///< Capacity of the biggest group in the server
-    int k_s(void)            const {return _totalNumberOfGroups; }         ///< Total number of server groups
+    int k_s(void)            const;                                        ///< Total number of server groups
     int k_s(int groupClNo)   const;                                        ///< Number of servers group of given class (GLAG model)
-    int k_sType(void)        const {return _noOfTypesOfGroups; }           ///< Total number of servers group classes (1 for FAG and LAG, >1 for GLAG)
+    int k_sType(void)        const;                                        ///< Total number of servers group classes (1 for FAG and LAG, >1 for GLAG)
 
     int v_b(int bufferClNo)  const;                                        ///< Single buffer group capacity
-    int vk_b(void)           const {return _totalBufferCapacity; }         ///< Buffer capacity
+    int vk_b(void)           const;                                        ///< Buffer capacity
     int vk_b(int bufferClNo) const;                                        ///< Capacity of givens class of buffers's groups
     int v_bMax(void)         const;                                        ///< Capacity of the biggest group in the buffer
-    int k_b(void)            const {return _totalNumberOfBuffers; }        ///< Total number of buffer groups
+    int k_b(void)            const;                                        ///< Total number of buffer groups
     int k_b(int bufferClNo)  const;                                        ///< Number of buffers group of given class
-    int k_bType(void)        const {return _noOfTypesOfBuffers; }          ///< Total number of buffers group classes
+    int k_bType(void)        const;                                        ///< Total number of buffers group classes
 
     int id;
 
     void addClass(ModelTrClass *newClass);                                 ///< Creates a copy. The copy is added to the system
-    void addGroups(ModelSubResourcess newGroup, bool optimize = true);        ///< Add groups to the system. Previous types of group are checked before
-    void addQeues(ModelSubResourcess qeue, bool optimize = true);             ///< Add qeues to the system
+    void addGroups(ModelSubResourcess newGroup, bool optimize = true);     ///< Add groups to the system. Previous types of group are checked before
+    void addQeues(ModelSubResourcess qeue, bool optimize = true);          ///< Add qeues to the system
 
     void setServerSchedulerAlgorithm(ResourcessScheduler algorithm);
     void setBufferSchedulerAlgorithm(BufferPolicy algorithm);
 
-    inline BufferPolicy getBufferScheduler() const {return _bufferPolicy; }
-    inline ResourcessScheduler getServerScheduler() const {return _serverSchedulerAlgorithm; }
-
-    void updateConstSyst() const;
+    inline ResourcessScheduler getBufferScheduler() const {return _buffer.scheduler; }
+    inline ResourcessScheduler getServerScheduler() const {return _server.scheduler; }
 
     void clearAll();
 

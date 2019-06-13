@@ -7,9 +7,9 @@ namespace Algorithms
 
 SimulatorQeueSdFifo::SimulatorQeueSdFifo(): Simulator() { }
 
-bool SimulatorQeueSdFifo::possible(const ModelCreator *system) const
+bool SimulatorQeueSdFifo::possible(const ModelSystem &system) const
 {
-    if (system->vk_b() == 0)
+    if (system.getBuffer().V() == 0)
         return false;
     return Investigator::possible(system);
 }
@@ -27,7 +27,8 @@ QSet<Results::Type> SimulatorQeueSdFifo::getQoS_Set(const ModelCreator *system) 
 
 
 
-void SimulatorQeueSdFifo::calculateSystem(const ModelCreator *system
+void SimulatorQeueSdFifo::calculateSystem(
+        const ModelSystem &system
       , double a
       , RInvestigator *results
       , SimulationParameters *simParameters
@@ -36,9 +37,9 @@ void SimulatorQeueSdFifo::calculateSystem(const ModelCreator *system
     //if (this->isItTheSameSystem(system))
     //    return;
 
-    this->system = system;
+    this->system = &system;
     System *simData = new System(system, simParameters->noOfSeries);
-    simData->initialize(a, system->totalAt(), system->vk_s());
+    simData->initialize(a, system.getTotalAt(), system.getServer().V());
 
     int seed = 1024;
 
@@ -68,19 +69,19 @@ void SimulatorQeueSdFifo::calculateSystem(const ModelCreator *system
     //emit this->sigCalculationDone();
 }
 
-SimulatorQeueSdFifo::System::System(const ModelCreator *system, int noOfSeries)
-    : results(system->m(), system->vk_s(), system->vk_b(), noOfSeries)
-    , systemData(system)
+SimulatorQeueSdFifo::System::System(const ModelSystem &system, int noOfSeries)
+    : results(system.m(), system.getServer().V(), system.getBuffer().V(), noOfSeries)
+    , systemData(&system)
 {
     this->agenda = new SimulatorDataCollection<ProcQeueSdFifo>();
-    server = new Server(system->vk_s(), system->vk_b(), this);
+    server = new Server(system.getServer().V(), system.getBuffer().V(), this);
 }
 
 void SimulatorQeueSdFifo::System::initialize(double a, int sumPropAt, int V)
 {
     for(int i=0; i<systemData->m(); i++)
     {
-        const ModelTrClass *tmpClass = systemData->getClass(i);
+        const ModelTrClass *tmpClass = &systemData->getTrClass(i);
         ProcQeueSdFifo::initialize(this, tmpClass, i, a, sumPropAt, V);
     }
 }
@@ -165,7 +166,7 @@ void SimulatorQeueSdFifo::System::writesResultsOfSingleExperiment(Results::RSing
     {
         double E=0;
         results.act_E[i] = 0;
-        for (int n=server->getV()+server->getVc() - systemData->getClass(i)->t() + 1; n<=server->getV() + server->getVc(); n++)
+        for (int n=server->getV()+server->getVc() - systemData->getTrClass(i).t() + 1; n<=server->getV() + server->getVc(); n++)
             E+= server->getOccupancyTimeOfState(n);
         E/= results._simulationTime;
         results.act_E[i] = E;
@@ -782,7 +783,7 @@ void ProcQeueSdFifo::transmisionEnded(ProcQeueSdFifo *proc, SimulatorQeueSdFifo:
     if (compressionChaned)
         system->changeServiceTimeOfAllTheCalls();
 
-    proc->callData = NULL;
+    proc->callData = nullptr;
     system->reuseProcess(proc);
 }
 

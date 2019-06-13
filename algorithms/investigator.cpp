@@ -1,23 +1,23 @@
 #include "algorithms/investigator.h"
 
 Investigator::Investigator():
-    classes(0)
+    system(nullptr)
 {
     calculationDone = false;
     _hasConfIntervall = false;
     isSelected = false;
 }
 
-bool Investigator::possible(const ModelCreator *system) const
+bool Investigator::possible(const ModelSystem &system) const
 {
     return possibleAlternative(system);
 }
 
-bool Investigator::possibleAlternative(const ModelCreator *system) const
+bool Investigator::possibleAlternative(const ModelSystem &system) const
 {
-    if (system->m() == 0)
+    if (system.m() == 0)
         return false;
-    if (system->vk_s() == 0)
+    if (system.getServer().V() == 0)
         return false;
 
     return true;
@@ -36,26 +36,29 @@ QSet<Type> Investigator::getQoS_Set() const
 
 
 
-bool Investigator::correctSystemParameters(ModelCreator *system, double a)
+bool Investigator::correctSystemParameters(const ModelSystem &system, double a)
 {
+    size_t V = static_cast<size_t>(system.getServer().V());
     qDebug("a = %lf", a);
-    for (int i=0; i<system->m(); i++)
+    for (int i=0; i<system.m(); i++)
     {
-        double A = system->getClass(i)->intensityNewCallTotal(a, static_cast<size_t>(system->vk_s()), system->totalAt()) /system->getClass(i)->getMu();
-        if (system->getClass(i)->srcType()==ModelTrClass::SourceType::DependentMinus)
-            if (A>=system->getClass(i)->s())
+        double lambda = system.getTrClass(i).intensityNewCallTotal(a, V, system.getTotalAt());
+        double A = lambda/system.getTrClass(i).getMu();
+
+        if (system.getTrClass(i).srcType()==ModelTrClass::SourceType::DependentMinus)
+            if (A>=system.getTrClass(i).s())
             {
                 qDebug("Dep-: A >= s");
                 return false;
             }
         double A_cor = A;
-        switch (system->getClass(i)->srcType())
+        switch (system.getTrClass(i).srcType())
         {
         case ModelTrClass::SourceType::DependentMinus:
-            A_cor = A*system->getClass(i)->s()/(system->getClass(i)->s() - A);
+            A_cor = A*system.getTrClass(i).s()/(system.getTrClass(i).s() - A);
             break;
         case ModelTrClass::SourceType::DependentPlus:
-            A_cor = A*system->getClass(i)->s()/(system->getClass(i)->s() + A);
+            A_cor = A*system.getTrClass(i).s()/(system.getTrClass(i).s() + A);
             break;
         case ModelTrClass::SourceType::Independent:
             A_cor = A;
@@ -67,32 +70,32 @@ bool Investigator::correctSystemParameters(ModelCreator *system, double a)
     return true;
 }
 
-void Investigator::prepareTemporaryData(const ModelCreator *system, double a)
+void Investigator::prepareTemporaryData(const ModelSystem &system, double a)
 {
-    this->system = system;
-    classes.resize(system->m());
+    this->system = new ModelSystem(system);
+    classes.resize(system.m());
 
-    for (int i=0; i<system->m(); i++)
+    for (int i=0; i<system.m(); i++)
     {
-        classes[i].A = system->getClass(i)->intensityNewCallTotal(a, static_cast<size_t>(system->vk_s()), system->totalAt()) /system->getClass(i)->getMu();
-        classes[i].mu = system->getClass(i)->getMu();
+        classes[i].A = system.getTrClass(i).intensityNewCallTotal(a, static_cast<size_t>(system.getServer().V()), system.getTotalAt()) /system.getTrClass(i).getMu();
+        classes[i].mu = system.getTrClass(i).getMu();
         classes[i].lambda = classes[i].A*classes[i].mu;
-        classes[i].t = system->getClass(i)->t();
+        classes[i].t = system.t(i);
     }
 
-    yQEUE_Vb.resize(system->m());
-    yQEUE_VsVb.resize(system->m());
-    ySERVER_Vs.resize(system->m());
-    ySERVER_V.resize(system->m());
-    ySYSTEM_V.resize(system->m());
+    yQEUE_Vb.resize(system.m());
+    yQEUE_VsVb.resize(system.m());
+    ySERVER_Vs.resize(system.m());
+    ySERVER_V.resize(system.m());
+    ySYSTEM_V.resize(system.m());
 
-    for (int i=0; i<system->m(); i++)
+    for (int i=0; i<system.m(); i++)
     {
-        yQEUE_Vb[i].resize(system->vk_b()+1);      yQEUE_Vb[i].fill(0);
-        yQEUE_VsVb[i].resize(system->V()  + 1);    yQEUE_VsVb[i].fill(0);
-        ySERVER_Vs[i].resize(system->vk_s() + 1);  ySERVER_Vs[i].fill(0);
-        ySERVER_V[i].resize(system->V() + 1);      ySERVER_V[i].fill(0);
-        ySYSTEM_V[i].resize(system->V() + 1);      ySYSTEM_V[i].fill(0);
+        yQEUE_Vb[i].resize(system.getBuffer().V()+1);       yQEUE_Vb[i].fill(0);
+        yQEUE_VsVb[i].resize(system.V()  + 1);              yQEUE_VsVb[i].fill(0);
+        ySERVER_Vs[i].resize(system.getServer().V() + 1);   ySERVER_Vs[i].fill(0);
+        ySERVER_V[i].resize(system.V() + 1);                ySERVER_V[i].fill(0);
+        ySYSTEM_V[i].resize(system.V() + 1);                ySYSTEM_V[i].fill(0);
     }
 }
 

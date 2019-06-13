@@ -20,11 +20,12 @@ public:    SimulatorQeueFifo();
     QString shortName()   const;
     int complexity()      const;
 
-    void calculateSystem(const ModelCreator *system
-                , double a
-                , Results::RInvestigator *results, SimulationParameters *simParameters
-                );
-    bool possible(const ModelCreator *system) const;
+    void calculateSystem(
+            const ModelSystem &system
+          , double a
+          , Results::RInvestigator *results, SimulationParameters *simParameters
+        );
+    bool possible(const ModelSystem &system) const;
 
 public:
 
@@ -65,7 +66,7 @@ public:
     public:
         int       totalNumberOfServicedCalls;
         int       totalNumberOfLostCalls;
-        const ModelCreator  *systemData;
+        const ModelSystem  *systemData;
         double     *yTime_ClassI;
         double     *servTr_ClassI;
 
@@ -73,7 +74,7 @@ public:
         double     **qeueAStime_ofOccupiedAS_byClassI_inStateN;
         double     **serverAStime_ofOccupiedAS_byClassI_inStateN;
 
-        System(const ModelCreator *system, int noOfSeries);
+        System(const ModelSystem &system, int noOfSeries);
         ~System();
 
         void initialize(double a, int sumPropAt, int V);

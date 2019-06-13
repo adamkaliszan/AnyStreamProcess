@@ -15,7 +15,7 @@ public:
 
     virtual double getSigma(int classNumber, int state);
 
-    bool possible(const ModelCreator *system) const;
+    bool possible(const ModelSystem &system) const;
 };
 
 } //namespace Algorithms

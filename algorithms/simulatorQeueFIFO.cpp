@@ -19,21 +19,22 @@ QString SimulatorQeueFifo::shortName() const
 
 int SimulatorQeueFifo::complexity() const {return 100;}
 
-bool SimulatorQeueFifo::possible(const ModelCreator *system) const
+bool SimulatorQeueFifo::possible(const ModelSystem &system) const
 {
-    if (system->vk_b() <= 0)
+    if (system.getBuffer().V() <= 0)
         return false;
     return Simulator::possible(system);
 }
 
-void SimulatorQeueFifo::calculateSystem(const ModelCreator *system
-        , double a
-        , RInvestigator *results
-        , SimulationParameters *simParameters)
+void SimulatorQeueFifo::calculateSystem(
+        const ModelSystem &system
+      , double a
+      , RInvestigator *results
+      , SimulationParameters *simParameters)
 {
-    this->system = system;
+    this->system = &system;
     System *simData = new System(system, simParameters->noOfSeries);
-    simData->initialize(a, system->totalAt(), system->vk_s());
+    simData->initialize(a, system.getTotalAt(), system.getServer().V());
 
     int seed = 1024;
 
@@ -64,49 +65,50 @@ void SimulatorQeueFifo::calculateSystem(const ModelCreator *system
     //emit sigCalculationDone();
 }
 
-SimulatorQeueFifo::System::System(const ModelCreator *system
+SimulatorQeueFifo::System::System(const ModelSystem &system
         , int noOfSeries
         ):
-    m(system->m())
+    m(system.m())
   , n(0)
   , old_n(0)
-  , results(system->m(), system->vk_s(), system->vk_b(), noOfSeries)
+  , results(system.m(), system.getServer().V(), system.getBuffer().V(), noOfSeries)
 {
-    systemData = system;
+    systemData = &system;
 
     agenda = new SimulatorDataCollection<ProcQeueFifo>();
-    server = new Server(system->vk_s(), this);
-    buffer   = new Buffer(system->vk_b(), this, system->getBufferScheduler());
+    server = new Server(system.getServer().V(), this);
+    buffer   = new Buffer(system.getBuffer().V(), this, system.getBufferPolicy());
 
-    yTime_ClassI                                = new double[system->m()];
-    servTr_ClassI                               = new double[system->m()];
-    AStime_ofOccupiedAS_byClassI_inStateN       = new double*[system->m()];
-    qeueAStime_ofOccupiedAS_byClassI_inStateN   = new double*[system->m()];
-    serverAStime_ofOccupiedAS_byClassI_inStateN = new double*[system->m()];
-    occupancyTimes                              = new double[system->vk_s()+system->vk_b()+1];
+    yTime_ClassI                                = new double[system.m()];
+    servTr_ClassI                               = new double[system.m()];
+    AStime_ofOccupiedAS_byClassI_inStateN       = new double*[system.m()];
+    qeueAStime_ofOccupiedAS_byClassI_inStateN   = new double*[system.m()];
+    serverAStime_ofOccupiedAS_byClassI_inStateN = new double*[system.m()];
+    occupancyTimes                              = new double[system.V()+1];
 
-    outNew                                      = new int[system->vk_s()+system->vk_b()+1];
-    outEnd                                      = new int[system->vk_s()+system->vk_b()+1];
+    outNew                                      = new int[system.V()+1];
+    outEnd                                      = new int[system.V()+1];
 
-    outNewSCof                                  = new int*[system->m()];
-    outEndSCof                                  = new int*[system->m()];
-    outNewSCserv                                = new int*[system->m()];
-    outEndSCserv                                = new int*[system->m()];
+    outNewSCof                                  = new int*[system.m()];
+    outEndSCof                                  = new int*[system.m()];
+    outNewSCserv                                = new int*[system.m()];
+    outEndSCserv                                = new int*[system.m()];
 
 
-    occupancyTimesDtl                           = new double*[system->vk_s()+1];
-    for (int n=0; n<=system->vk_s(); n++)
-        occupancyTimesDtl[n] = new double[system->vk_b()+1];
+    occupancyTimesDtl                           = new double*[system.getServer().V()+1];
+    for (int n=0; n<=system.getServer().V(); n++)
+        occupancyTimesDtl[n] = new double[system.getBuffer().V()+1];
 
     for (int i=0; i<m; i++)
     {
-        AStime_ofOccupiedAS_byClassI_inStateN[i]       = new double[system->vk_s()+system->vk_b()+1];
-        qeueAStime_ofOccupiedAS_byClassI_inStateN[i]   = new double[system->vk_s()+system->vk_b()+1];
-        serverAStime_ofOccupiedAS_byClassI_inStateN[i] = new double[system->vk_s()+system->vk_b()+1];
-        outNewSCof[i]                                    = new int[system->vk_s()+system->vk_b()+1];
-        outEndSCof[i]                                    = new int[system->vk_s()+system->vk_b()+1];
-        outNewSCserv[i]                                  = new int[system->vk_s()+system->vk_b()+1];
-        outEndSCserv[i]                                  = new int[system->vk_s()+system->vk_b()+1];    }
+        AStime_ofOccupiedAS_byClassI_inStateN[i]       = new double[system.V()+1];
+        qeueAStime_ofOccupiedAS_byClassI_inStateN[i]   = new double[system.V()+1];
+        serverAStime_ofOccupiedAS_byClassI_inStateN[i] = new double[system.V()+1];
+        outNewSCof[i]                                  = new int[system.V()+1];
+        outEndSCof[i]                                  = new int[system.V()+1];
+        outNewSCserv[i]                                = new int[system.V()+1];
+        outEndSCserv[i]                                = new int[system.V()+1];
+    }
 }
 
 SimulatorQeueFifo::System::~System()
@@ -160,7 +162,7 @@ void SimulatorQeueFifo::System::initialize(double a, int sumPropAt, int V)
 {
     for(int i=0; i<systemData->m(); i++)
     {
-        const ModelTrClass *tmpClass = systemData->getClass(i);
+        const ModelTrClass *tmpClass = &systemData->getTrClass(i);
         ProcQeueFifo::initialize(this, tmpClass, i, a, sumPropAt, V);
     }
 }
@@ -215,13 +217,13 @@ void SimulatorQeueFifo::System::writesResultsOfSingleExperiment(Results::RSingle
 
     for (int i=0; i<m; i++)
     {
-        int t = systemData->getClass(i)->t();
+        int t = systemData->t(i);
         max_t = qMax(t, max_t);
     }
 
     for (int i=0; i<m; i++)
     {
-        int t = systemData->getClass(i)->t();
+        int t = systemData->t(i);
 
         double tmp = 0;
         double E = 0;
@@ -311,7 +313,7 @@ void SimulatorQeueFifo::System::writesResultsOfSingleExperiment(Results::RSingle
         results.act_intInEnd[n]  = 0;
         for (int i=0; i<m; i++)
         {
-            int t = systemData->getClass(i)->t();
+            int t = systemData->t(i);
 
             if (n>=(int)t)
                 results.act_intInNew[n]  += results.act_intInNewSC[i][n-t];
@@ -676,7 +678,7 @@ void SimulatorQeueFifo::System::collectTheStatPost(double time)
 
 void SimulatorQeueFifo::System::enableStatisticscollection(int serNo)
 {
-    int VsVb = systemData->vk_s() + systemData->vk_b();
+    int VsVb = systemData->V();
     bzero(yTime_ClassI, systemData->m() * sizeof(double));
     bzero(servTr_ClassI, systemData->m() * sizeof(double));
     bzero(occupancyTimes, (VsVb+1)*sizeof(double));
@@ -684,8 +686,8 @@ void SimulatorQeueFifo::System::enableStatisticscollection(int serNo)
     bzero(outNew, (VsVb+1)*sizeof(int));
     bzero(outEnd, (VsVb+1)*sizeof(int));
 
-    for (int n=0; n<=systemData->vk_s(); n++)
-        bzero(occupancyTimesDtl[n], (systemData->vk_b()+1)*sizeof(double));
+    for (int n=0; n<=systemData->getServer().V(); n++)
+        bzero(occupancyTimesDtl[n], (systemData->getBuffer().V()+1)*sizeof(double));
 
     for (int i=0; i<m; i++)
     {

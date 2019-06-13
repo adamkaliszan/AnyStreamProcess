@@ -11,30 +11,31 @@ convolutionAlgorithmGamma3::convolutionAlgorithmGamma3(): Investigator()
        <<Results::Type::OccupancyDistribution;
 }
 
-bool convolutionAlgorithmGamma3::possible(ModelCreator *system)
+bool convolutionAlgorithmGamma3::possible(ModelSystem &system)
 {
-    if (system->vk_b() == 0)
+    if (system.getBuffer().V() == 0)
         return false;
     return Investigator::possible(system);
 }
 
-void convolutionAlgorithmGamma3::calculateSystem(const ModelCreator& system
-        , double a
-        , RInvestigator *results
-        , SimulationParameters *simParameters
-        )
+void convolutionAlgorithmGamma3::calculateSystem(
+        const ModelSystem& system
+      , double a
+      , RInvestigator *results
+      , SimulationParameters *simParameters
+    )
 {
-    prepareTemporaryData(&system, a);
+    prepareTemporaryData(system, a);
     (void) simParameters;
     int m = system.m();
-    int Vs = system.vk_s();
-    int Vb = system.vk_b();
+    int Vs = system.getServer().V();
+    int Vb = system.getBuffer().V();
     int VsVb = Vs + Vb;
 
 
 
     for (int i=0; i<m; i++)
-        p_single[i] = new VectQEUE(Vs, Vb, 1, i, system.getClass(i), classes[i].A);
+        p_single[i] = new VectQEUE(Vs, Vb, 1, i, system.getTrClass(i), classes[i].A);
 
     VectQEUE *FD = new VectQEUE();
 
@@ -67,7 +68,7 @@ void convolutionAlgorithmGamma3::calculateSystem(const ModelCreator& system
         double B_d = 0;
         for (int n=0; n<=VsVb; n++)
         {
-            double x = system.getClass(i)->intensityNewCallForState(1, (int)(FD->get_y(i, n)));
+            double x = system.getTrClass(i).intensityNewCallForState(1, static_cast<int>(FD->get_y(i, n)));
             if (n > VsVb-classes[i].t)
                 B_n+=(x*FD->getState(n));
             B_d +=(x*FD->getState(n));
@@ -131,10 +132,10 @@ void convolutionAlgorithmGamma3::calculateSystem(const ModelCreator& system
     deleteTemporaryData();
 }
 
-void convolutionAlgorithmGamma3::prepareTemporaryData(const ModelCreator *system, double a)
+void convolutionAlgorithmGamma3::prepareTemporaryData(const ModelSystem &system, double a)
 {
     Investigator::prepareTemporaryData(system, a);
-    this->p_single = new VectQEUE*[system->m()];
+    this->p_single = new VectQEUE*[system.m()];
 }
 
 void convolutionAlgorithmGamma3::deleteTemporaryData()
@@ -147,23 +148,23 @@ void convolutionAlgorithmGamma3::deleteTemporaryData()
 }
 
 
-convolutionAlgorithmGamma3::VectQEUE::VectQEUE(int Vs, int Vb, int m, int i, const ModelTrClass *trClass, double A): Vs(Vs), Vb(Vb), VsVb(Vs+Vb), m(m), loc2globIdx(NULL), ySYSTEM(NULL)
+convolutionAlgorithmGamma3::VectQEUE::VectQEUE(int Vs, int Vb, int m, int i, const ModelTrClass &trClass, double A): Vs(Vs), Vb(Vb), VsVb(Vs+Vb), m(m), loc2globIdx(nullptr), ySYSTEM(nullptr)
 {
     (void) A;
     loc2globIdx = new int[1];
     loc2globIdx[0] = i;
     trClasses = new const ModelTrClass*[1];
-    trClasses[0] = trClass;
+    trClasses[0] = &trClass;
 
     states = new double[Vs+Vb+1];
-    qFatal("Update to nwe libraries");
+    qFatal("Update to new libraries");
     //memcpy(states, trClass->trDistributionSimEna(A, Vs, Vb).constData(), sizeof(double)*(Vs+Vb+1));
     ySYSTEM = new double*[1];
 
     ySYSTEM[0] = new double[VsVb+1];
-    bzero(ySYSTEM[0], (VsVb+1) * sizeof(double));
-    for (int n=0; n<=VsVb; n+=trClass->t())
-        ySYSTEM[0][n] = (double)(n)/(double)(trClass->t());
+    bzero(ySYSTEM[0], sizeof(double) * (VsVb+1));
+    for (int n=0; n<=VsVb; n+=trClass.t())
+        ySYSTEM[0][n] = static_cast<double>(n)/trClass.t();
 }
 
 convolutionAlgorithmGamma3::VectQEUE::~VectQEUE()

@@ -41,19 +41,19 @@ public:
     virtual QString shortName() const = 0;
     virtual int complexity()    const = 0;
     virtual void  calculateSystem(
-              const ModelCreator *system
+              const ModelSystem &system
             , double a
             , RInvestigator *results
             , SimulationParameters *simParameters
             ) = 0;
-    virtual bool possible(const ModelCreator *system) const;
-    virtual bool possibleAlternative(const ModelCreator *system) const;
+    virtual bool possible(const ModelSystem &system) const;
+    virtual bool possibleAlternative(const ModelSystem &system) const;
 
     QSet<Results::Type> getQoS_Set() const;
 
     bool hasConfIntervall() const { return _hasConfIntervall; }
 
-    bool correctSystemParameters(ModelCreator *system, double a);
+    bool correctSystemParameters(const ModelSystem &system, double a);
 
 
     bool isSelected;
@@ -61,14 +61,15 @@ public:
     bool show;
 
 protected:
-    virtual void prepareTemporaryData(const ModelCreator *system, double a);
+    virtual void prepareTemporaryData(const ModelSystem &system, double a);
     virtual void deleteTemporaryData();
 
-    const ModelCreator* system;
+    const ModelSystem *system;
+    QVector<ClassParameters> classes;
+
+
 
     bool _hasConfIntervall;
-
-    QVector<ClassParameters> classes;
 
     QVector<QVector<double> > ySERVER_Vs;    ///< Avarage number of calls of class i in server vs number of occupied AS in server
     QVector<QVector<double> > ySERVER_V;     ///< Avarage number of calls of class i in server vs number of occupied AS in system

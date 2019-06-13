@@ -12,14 +12,14 @@ convolutionAlgorithmGamma::convolutionAlgorithmGamma(): Investigator()
        <<Results::Type::OccupancyDistribution;
 }
 
-bool convolutionAlgorithmGamma::possible(const ModelCreator *system) const
+bool convolutionAlgorithmGamma::possible(const ModelSystem &system) const
 {
-    if (system->vk_b() == 0)
+    if (system.getBuffer().V() == 0)
         return false;
     return Investigator::possible(system);
 }
 
-void convolutionAlgorithmGamma::calculateSystem(const ModelCreator *system
+void convolutionAlgorithmGamma::calculateSystem(const ModelSystem &system
       , double a
       , RInvestigator *results
       , SimulationParameters *simParameters
@@ -29,16 +29,16 @@ void convolutionAlgorithmGamma::calculateSystem(const ModelCreator *system
 
     prepareTemporaryData(system, a);
 
-    for (int i=0; i<system->m(); i++)
+    for (int i=0; i<system.m(); i++)
     {
-        p_single[i] = new VectQEUE(system->vk_s(), system->vk_b(), 1, i, system->getClass(i));
-        TrClVector tmp = system->getClass(i)->trDistribution(i, classes[i].A, system->vk_s(), system->vk_b());
+        p_single[i] = new VectQEUE(system.getServer().V(), system.getBuffer().V(), 1, i, system.getTrClass(i));
+        TrClVector tmp = system.getTrClass(i).trDistribution(i, classes[i].A, system.getServer().V(), system.getBuffer().V());
 
         p_single[i]->setStates(tmp);
     }
     VectQEUE *FD = new VectQEUE();
 
-    for (int i=0; i<system->m(); i++)
+    for (int i=0; i<system.m(); i++)
     {
         VectQEUE *FD2 = new VectQEUE();
         FD2->agregate(FD, p_single[i]);
@@ -47,17 +47,17 @@ void convolutionAlgorithmGamma::calculateSystem(const ModelCreator *system
     }
 
     QString msgTmp = "Final distribution: ";
-    for (int n=0; n <= system->V(); n++)
+    for (int n=0; n <= system.V(); n++)
         msgTmp.append(QString(" %1").arg(FD->getState(n)));
 
     qDebug()<<msgTmp;
 
 
-    for (int i=0; i < system->m(); i++)
+    for (int i=0; i < system.m(); i++)
     {
         //Prawdopodobieństwo blokady
         double E = 0;
-        for (int n=system->V() + 1 - classes[i].t; n <= system->V(); n++)
+        for (int n=system.V() + 1 - classes[i].t; n <= system.V(); n++)
         {
             E+=FD->getState(n);
         }
@@ -67,10 +67,10 @@ void convolutionAlgorithmGamma::calculateSystem(const ModelCreator *system
         //Prawdopodobieństwo strat
         double B_n = 0;
         double B_d = 0;
-        for (int n=0; n <= system->V(); n++)
+        for (int n=0; n <= system.V(); n++)
         {
-            double x = system->getClass(i)->intensityNewCallForState(1, (int)(FD->get_y(i, n)));
-            if (n > system->V() - classes[i].t)
+            double x = system.getTrClass(i).intensityNewCallForState(1, static_cast<int>(FD->get_y(i, n)));
+            if (n > system.V() - classes[i].t)
                 B_n+=(x*FD->getState(n));
             B_d +=(x*FD->getState(n));
         }
@@ -79,31 +79,31 @@ void convolutionAlgorithmGamma::calculateSystem(const ModelCreator *system
         //Obsługiwany ruch
         double yS = 0;
 
-        for (int n=0; n <= system->vk_s(); n++)
+        for (int n=0; n <= system.getServer().V(); n++)
         {
             yS+=(FD->getState(n) * FD->get_y(i, n));
         }
-        for (int n=system->vk_s() + 1; n <= system->V(); n++)
+        for (int n=system.getServer().V() + 1; n <= system.V(); n++)
         {
             double tmp = FD->getState(n) * FD->get_y(i, n);
-            yS+=((tmp * system->vk_s())/n);
+            yS+=(tmp * system.getServer().V()/n);
         }
         //TODO algResults->set_ServTraffic(system->getClass(i), a, yS * classes[i].t);
 
         //Średnia liczba zgłoszeń w kolejce
         double lQeue = 0;
-        for (int n=system->vk_s() + 1; n<=system->V(); n++)
+        for (int n=system.getServer().V() + 1; n<=system.V(); n++)
         {
-            double tmp = (double)(n - system->vk_s()) / (double)(n);
+            double tmp = static_cast<double>(n - system.getServer().V()) / static_cast<double>(n);
             lQeue+=(FD->getState(n) * FD->get_y(i, n) * tmp);
         }
         //TODO algResults->set_lQ(system->getClass(i), a, lQeue);
 
         //Średnia liczba zajętych zasobów w kolejce
         double ltQeue = 0;
-        for (int n = system->vk_s() + 1; n <= system->V(); n++)
+        for (int n = system.getServer().V() + 1; n <= system.V(); n++)
         {
-            double tmp = (double)(n - system->vk_s()) / (double)(n);
+            double tmp = (double)(n - system.getServer().V()) / static_cast<double>(n);
             ltQeue+=(FD->getState(n) * FD->get_y(i, n) * tmp * classes[i].t);
         }
         //TODO algResults->set_ltQ(system->getClass(i), a, ltQeue);
@@ -111,7 +111,7 @@ void convolutionAlgorithmGamma::calculateSystem(const ModelCreator *system
 
         //Średnia liczba obsługiwanych zgłoszeń
         double y = 0;
-        for (int n=0; n <= system->V(); n++)
+        for (int n=0; n <= system.V(); n++)
         {
             y+=(FD->getState(n) * FD->get_y(i, n));
         }
@@ -119,13 +119,13 @@ void convolutionAlgorithmGamma::calculateSystem(const ModelCreator *system
 
         //Średni czas obsługi
         double avgToS = 0;
-        for (int n=0; n <= system->vk_s(); n++)
+        for (int n=0; n <= system.getServer().V(); n++)
         {
-            avgToS += FD->getState(n) * FD->get_y(i, n) / system->getClass(i)->getMu();
+            avgToS += FD->getState(n) * FD->get_y(i, n) / classes[i].mu;
         }
-        for (int n = system->vk_s() + 1; n <= system->V(); n++)
+        for (int n = system.getServer().V() + 1; n <= system.V(); n++)
         {
-            avgToS += FD->getState(n) * FD->get_y(i, n) / system->getClass(i)->getMu() * (n - (double) (classes[i].t-1) / 2.0) / system->vk_s();
+            avgToS += FD->getState(n) * FD->get_y(i, n) / classes[i].mu * (n - (double) (classes[i].t-1) / 2.0) / system.getServer().V();
         }
         avgToS /= y;
         //TODO algResults->set_tService(system->getClass(i), a, avgToS);
@@ -137,55 +137,54 @@ void convolutionAlgorithmGamma::calculateSystem(const ModelCreator *system
     }
     //Średnia długość kolejki
     double AvgLen = 0;
-    for (int n = system->vk_s() + 1; n <= system->V(); n++)
-        AvgLen += ((n-system->vk_s())*FD->getState(n));
+    for (int n = system.getServer().V() + 1; n <= system.V(); n++)
+        AvgLen += ((n-system.getServer().V())*FD->getState(n));
     //TODO algResults->set_Qlen(a, AvgLen);
 
-    for (int i=0; i < system->m(); i++)
+    for (int i=0; i < system.m(); i++)
     {
-        const ModelTrClass *tmpClass = system->getClass(i);
-        for (int n=0; n<=system->V(); n++)
-            (*results)->write(TypeForClassAndSystemState::UsageForSystem, FD->get_y(i, n) * tmpClass->t(), i, n);
+        for (int n=0; n<=system.V(); n++)
+            (*results)->write(TypeForClassAndSystemState::UsageForSystem, FD->get_y(i, n) * classes[i].t, i, n);
 
 //TODO        for (int n=0; n <= system->V_b(); n++)
 //            (*results)->write(TypeForClassAndQueueState, FD->get_y(i, n) * tmpClass->t(), i, n);
 //            algResults->resultsAS->setVal(resultsType::qeueYt_vs_q_n, a, system->getClass(i), n, classes[i].t * (FD->get_y(i, n) * n/(system->V_s() + n)), 0);
 
-        for (int n=0; n <= system->vk_s(); n++)
-            (*results)->write(TypeForClassAndServerState::Usage, FD->get_y(i, n) * tmpClass->t(), i, n);
+        for (int n=0; n <= system.getServer().V(); n++)
+            (*results)->write(TypeForClassAndServerState::Usage, FD->get_y(i, n) * classes[i].t, i, n);
 
-        for (int n=0; n <= system->V(); n++)
+        for (int n=0; n <= system.V(); n++)
         {
-            if (n > system->vk_s())
-                (*results)->write(TypeForClassAndSystemState::UsageForBuffer, classes[i].t * (FD->get_y(i, n) *(n-system->vk_s())/n), i, n);
+            if (n > system.getServer().V())
+                (*results)->write(TypeForClassAndSystemState::UsageForBuffer, classes[i].t * (FD->get_y(i, n) *(n-system.getServer().V())/n), i, n);
             else
                 (*results)->write(TypeForClassAndSystemState::UsageForBuffer, 0, i, n);
 
             (*results)->write(TypeForClassAndSystemState::UsageForSystem, classes[i].t * (FD->get_y(i, n)), i, n);
 
 
-            if (n <= system->vk_s())
+            if (n <= system.getServer().V())
             {
                 (*results)->write(TypeForClassAndSystemState::UsageForServer, FD->get_y(i, n) * classes[i].t, i, n);
             }
             else
             {
-                (*results)->write(TypeForClassAndSystemState::UsageForServer, FD->get_y(i, n) * classes[i].t * system->vk_s()/n, i, n);
+                (*results)->write(TypeForClassAndSystemState::UsageForServer, FD->get_y(i, n) * classes[i].t * system.getServer().V()/n, i, n);
             }
         }
     }
 
-    for (int n=0; n <= system->V(); n++)
+    for (int n=0; n <= system.V(); n++)
         (*results)->write(TypeForSystemState::StateProbability, FD->getState(n), n);
 
     deleteTemporaryData();
     //emit this->sigCalculationDone();
 }
 
-void convolutionAlgorithmGamma::prepareTemporaryData(const ModelCreator *system, double a)
+void convolutionAlgorithmGamma::prepareTemporaryData(const ModelSystem &system, double a)
 {
     Investigator::prepareTemporaryData(system, a);
-    this->p_single.fill(NULL, system->m());
+    this->p_single.fill(nullptr, system.m());
 }
 
 void convolutionAlgorithmGamma::deleteTemporaryData()
@@ -205,7 +204,7 @@ convolutionAlgorithmGamma::VectQEUE::VectQEUE(): Vs(0), Vb(0), VsVb(0), m(0)
     states.fill(1, 1);
 }
 
-convolutionAlgorithmGamma::VectQEUE::VectQEUE(int Vs, int Vb, int m, int i, const ModelTrClass *trClass): Vs(Vs), Vb(Vb), VsVb(Vs+Vb), m(m)
+convolutionAlgorithmGamma::VectQEUE::VectQEUE(int Vs, int Vb, int m, int i, const ModelTrClass &trClass): Vs(Vs), Vb(Vb), VsVb(Vs+Vb), m(m)
 {
     loc2globIdx.fill(0, 1);
     loc2globIdx[0] = i;
@@ -219,8 +218,8 @@ convolutionAlgorithmGamma::VectQEUE::VectQEUE(int Vs, int Vb, int m, int i, cons
     ySYSTEM.fill(QVector<double>(), 1);
     ySYSTEM[0].fill(0, VsVb+1);
 
-    for (int n=0; n<=VsVb; n+=trClass->t())
-        ySYSTEM[0][n] = (double)(n)/(double)(trClass->t());
+    for (int n=0; n<=VsVb; n+=trClass.t())
+        ySYSTEM[0][n] = static_cast<double>(n)/static_cast<double>(trClass.t());
 }
 
 convolutionAlgorithmGamma::VectQEUE::~VectQEUE()
@@ -279,7 +278,7 @@ void convolutionAlgorithmGamma::VectQEUE::fillGamma(double **gamma, double **gam
         QString yStr = QString();
         for (int n=0; n<=VsVb; n++)
             yStr.append(QString(" %1").arg(ySYSTEM[i][n], 3, 'g', 2));
-        qDebug()<<"\tClass"<<loc2globIdx[i]<<"t ="<<trClasses2[i]->t()<<"\t"<<yStr;
+        qDebug()<<"\tClass"<<loc2globIdx[i]<<"t ="<<trClasses2[i].t()<<"\t"<<yStr;
     }
 
     QString msgTmp = QString("Gamma (%1) = 1").arg(rowNo);
@@ -292,8 +291,7 @@ void convolutionAlgorithmGamma::VectQEUE::fillGamma(double **gamma, double **gam
 
         for (int i=0; i<m; i++)
         {
-            const ModelTrClass *tmpClass = trClasses2[i];
-            int t = tmpClass->t();
+            int t = trClasses2[i].t();
 
             if (t > l)
                 continue;
@@ -302,10 +300,10 @@ void convolutionAlgorithmGamma::VectQEUE::fillGamma(double **gamma, double **gam
             int prevLd = rowNo-l;
             int prev_n = rowNo - t;
 
-            double prevGamma =  (double)(prevLc * gamma[prev_n][prevLc] + prevLd * gammaOther[prev_n][prevLd])/(double)prev_n;
+            double prevGamma =  static_cast<double>(prevLc * gamma[prev_n][prevLc] + prevLd * gammaOther[prev_n][prevLd])/static_cast<double>(prev_n);
 
-            double sigmaN = qMax((double)1, (double)(rowNo)/Vs);
-            double sigmaD = qMax((double)1, (double)(l)/Vs);
+            double sigmaN = qMax(1.0, static_cast<double>(rowNo)/Vs);
+            double sigmaD = qMax(1.0, static_cast<double>(l)/Vs);
 
             double y = ySYSTEM[i][l];
 
@@ -352,7 +350,6 @@ void convolutionAlgorithmGamma::VectQEUE::agregate(const VectQEUE *A, const conv
     VsVb = Vs+Vb;
 
     loc2globIdx.fill(0, m);
-    trClasses2.fill(NULL, m);
 
     for (int i=0; i<A->m; i++)
     {
@@ -465,7 +462,7 @@ void convolutionAlgorithmGamma::VectQEUE::agregate(const VectQEUE *A, const conv
 
                 for (int l=0; l<=n; l++)
                 {
-                    double gamma = (double)(l*gammaA[n][l] + (n-l)*gammaB[n][n-l])/(n);
+                    double gamma = static_cast<double>(l*gammaA[n][l] + (n-l)*gammaB[n][n-l])/(n);
                     strGamma.append(QString(" %L1").arg(gamma, 3, 'g', 2));
                 }
                 qDebug()<<strGamma<<"\n";
@@ -477,7 +474,7 @@ void convolutionAlgorithmGamma::VectQEUE::agregate(const VectQEUE *A, const conv
                 {
                     double y = A->get_y(classGlobIdx, l) + B->get_y(classGlobIdx, n-l);
 
-                    double gamma = (double)(l*gammaA[n][l] + (n-l)*gammaB[n][n-l])/(n);
+                    double gamma = static_cast<double>(l*gammaA[n][l] + (n-l)*gammaB[n][n-l])/(n);
                     sum += gamma * y * A->states[l] * B->states[n-l];
 
                     QString iterData = QString("y = %1 gamma = %2, A = %3 B=%4 sum = %5").arg(y).arg(gamma).arg(A->states[l]).arg(B->states[n-l]).arg(sum);

@@ -192,30 +192,30 @@ ServerStatistics::ServerStatistics(const ModelCreator * const system)
     }
 }
 
-void ServerStatistics::collectPre(const ModelCreator *mSystem, double time, int n, const QVector<int> &n_i, const QVector<int> &n_k)
+void ServerStatistics::collectPre(const ModelSystem &mSystem, double time, int n, const QVector<int> &n_i, const QVector<int> &n_k)
 {
 //timesPerState
     timesPerState[n].occupancyTime+= time;
 
 //timesPerClassAndState
-    for (int i=0; i< mSystem->getConstSyst().m; i++)
+    for (int i=0; i< mSystem.m(); i++)
     {
         timesPerClassAndState[i][n].occupancyUtilizationServer = time * n_i[i];
     }
 //timesPerGroupSets
     QVector<int> availability;
-    availability.fill(0, mSystem->getConstSyst().ks+1);
+    availability.fill(0, mSystem.getServer().k()+1);
 
     availability[0] = 0;
-    for (int k=0; k < mSystem->getConstSyst().ks; k++)
+    for (int k=0; k < mSystem.getServer().k(); k++)
     {
-        availability[k+1] = mSystem->getConstSyst().vs[k] - n_k[k];
+        availability[k+1] = mSystem.getServer().V(k) - n_k[k];
     }
     qSort(availability);
     std::reverse(availability.begin(), availability.end());//, std::back_inserter( availability ));
     timesPerGroupSets[0][0].allInSetAvailable+= time;
     timesPerGroupSets[0][0].allInSetAvailableAllOutsideSetUnavailable+= time;
-    for (int k=1; k <= mSystem->getConstSyst().ks; k++)
+    for (int k=1; k <= mSystem.getServer().k(); k++)
     {
         for (int n=availability[k]+1; n <= availability[k-1]; n++)
             timesPerGroupSets[k][n].allInSetAvailableAllOutsideSetUnavailable+= time;
@@ -223,7 +223,7 @@ void ServerStatistics::collectPre(const ModelCreator *mSystem, double time, int 
         for (int n=0; n <= availability[k-1]; n++)
             timesPerGroupSets[k][n].allInSetAvailable+= time;
 
-        for (int n=availability[0]+1; n <= mSystem->v_sMax(); n++)
+        for (int n=availability[0]+1; n <= mSystem.getServer().vMax(); n++)
             timesPerGroupSets[k][n].allUnavailable+= time;
     }
 
@@ -233,11 +233,11 @@ void ServerStatistics::collectPre(const ModelCreator *mSystem, double time, int 
         int k = combinationList[combinationNo].length();
         availability.resize(k);
 
-        int min = mSystem->v_sMax();
+        int min = mSystem.getServer().vMax();
         int max = 0;
         for (int groupNo=0; groupNo < k; groupNo++)
         {
-            availability[groupNo] = mSystem->getConstSyst().vs[groupNo] - n_k[groupNo];
+            availability[groupNo] = mSystem.getServer().V(groupNo) - n_k[groupNo];
             if (availability[groupNo] > max)
                 max = availability[groupNo];
             if (availability[groupNo] < min)
@@ -249,7 +249,7 @@ void ServerStatistics::collectPre(const ModelCreator *mSystem, double time, int 
         for (int n=0; n<=min; n++)
             timesPerGroupsCombinations[combinationNo][n].allInCombinationAvailable+= time;
 
-        for (int n=max+1; n<=mSystem->v_sMax(); n++)
+        for (int n=max+1; n<=mSystem.getServer().vMax(); n++)
             timesPerGroupsCombinations[combinationNo][n].allInCombinationUnavailable+= time;
     }
 }

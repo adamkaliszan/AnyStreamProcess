@@ -16,7 +16,7 @@ AlgorithmHybridNoFifo::AlgorithmHybridNoFifo() : Investigator()
 }
 
 
-void AlgorithmHybridNoFifo::calculateSystem(const ModelCreator *system
+void AlgorithmHybridNoFifo::calculateSystem(const ModelSystem &system
         , double a
         , RInvestigator *results
         , SimulationParameters *simParameters
@@ -25,32 +25,32 @@ void AlgorithmHybridNoFifo::calculateSystem(const ModelCreator *system
     (void) simParameters;
 
     prepareTemporaryData(system, a);
-    p_single = new TrClVector[system->m()];
+    p_single = new TrClVector[system.m()];
 
-    for (int i=0; i<system->m(); i++)
+    for (int i=0; i<system.m(); i++)
     {
-        p_single[i] = system->getClass(i)->trDistribution(i, classes[i].A, system->V(), 0);
+        p_single[i] = system.getTrClass(i).trDistribution(i, classes[i].A, system.V(), 0);
     }
-    TrClVector P(system->V());
+    TrClVector P(system.V());
 
-    P = TrClVector(system->V());
-    for (int i=0; i < system->m(); i++)
+    P = TrClVector(system.V());
+    for (int i=0; i < system.m(); i++)
     {
-        P = TrClVector::convFAG(P, p_single[i], true, system->V());
+        P = TrClVector::convFAG(P, p_single[i], true, system.V());
     }
 
-    for (int i=0; i < system->m(); i++)
+    for (int i=0; i < system.m(); i++)
     {
         //Prawdopodobieństwo blokady i strat
         double E = 0;
         double B_n = 0;
         double B_d = 0;
-        for (int n = system->V() + 1 - classes[i].t; n <= system->V(); n++)
+        for (int n = system.V() + 1 - classes[i].t; n <= system.V(); n++)
         {
             E+=P[n];
             B_n+=(P[n] * P.getIntOutNew(n, i));
         }
-        for (int n=0; n <= system->V(); n++)
+        for (int n=0; n <= system.V(); n++)
         {
             B_d+=(P[n] * P.getIntOutNew(n, i));
         }
@@ -66,7 +66,7 @@ void AlgorithmHybridNoFifo::calculateSystem(const ModelCreator *system
         //Obsługiwany ruch
         double yS = 0;
 
-        for (int n=0; n <= system->V(); n++)
+        for (int n=0; n <= system.V(); n++)
         {
             yS+=(P[n] * P.getY(n, i));
         }
@@ -76,19 +76,19 @@ void AlgorithmHybridNoFifo::calculateSystem(const ModelCreator *system
         //Średni czas obsługi
         //algRes->set_tService(system->getClass(i), a, lQeue / A[i] * system->getClass(i)->getMu());
         double avgToS = 0;
-        for (int n=0; n<=system->vk_s(); n++)
+        for (int n=0; n<=system.getServer().V(); n++)
         {
             avgToS += P[n] / P.getIntOutEnd(n, i);
         }
         //TODO algResults->set_tService(system->getClass(i), a, avgToS);
 
 
-        for (int n=0; n<=system->vk_s(); n++)
+        for (int n=0; n<=system.getServer().V(); n++)
         {
             (*results)->write(TypeForClassAndServerState::Usage, P.getY(n, i)*classes[i].t, i, n);
         }
 
-        for (int n=0; n <= system->V(); n++)
+        for (int n=0; n <= system.V(); n++)
         {
             (*results)->write(TypeForClassAndSystemState::UsageForSystem, P.getY(n, i)*classes[i].t, i, n);
 
@@ -100,7 +100,7 @@ void AlgorithmHybridNoFifo::calculateSystem(const ModelCreator *system
         }
     }
 
-    for (int n=0; n <= system->V(); n++)
+    for (int n=0; n <= system.V(); n++)
     {
         //Rozkład zajętości
         (*results)->write(TypeForSystemState::StateProbability, P[n], n);
@@ -140,12 +140,12 @@ void AlgorithmHybridNoFifo::calculateYServer(
             yServerVsVb[i][n] = P.getY(n, i);
 }
 
-bool AlgorithmHybridNoFifo::possible(const ModelCreator *system) const
+bool AlgorithmHybridNoFifo::possible(const ModelSystem &system) const
 {
-    if (system->vk_b() > 0)
+    if (system.getBuffer().V() > 0)
         return false;
 
-    if (system->k_s() > 1)
+    if (system.getServer().k() > 1)
         return false;
 
     return Investigator::possible(system);

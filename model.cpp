@@ -116,19 +116,55 @@ void ModelSubResourcess::set_v(int v)
     _v = v;
 }
 
-int ModelSubResourcess::v()
+int ModelSubResourcess::v() const
 {
     return _v;
 }
 
-int ModelSubResourcess::k()
+int ModelSubResourcess::k() const
 {
     return _k;
 }
 
-int ModelSubResourcess::V()
+int ModelSubResourcess::V() const
 {
     return _v * _k;
+}
+
+bool ModelSubResourcess::operator==(const ModelSubResourcess &rho) const
+{
+    if (_v != rho._v)
+        return false;
+    if (_k != rho._k)
+        return false;
+    return true;
+}
+
+bool ModelSubResourcess::operator!=(const ModelSubResourcess &rho) const
+{
+    if (_v != rho._v)
+        return true;
+    if (_k != rho._k)
+        return true;
+    return false;
+}
+
+bool ModelSubResourcess::operator>(const ModelSubResourcess &rho) const
+{
+    if (_v*_k > rho._v * rho._k)
+        return true;
+    if (_v > rho._v)
+        return true;
+    return false;
+}
+
+bool ModelSubResourcess::operator<(const ModelSubResourcess &rho) const
+{
+    if (_v*_k < rho._v * rho._k)
+        return true;
+    if (_v < rho._v)
+        return true;
+    return false;
 }
 
 ModelTrClass::ModelTrClass(const ModelTrClass& rho):
@@ -845,204 +881,79 @@ double ModelTrClass::intensityNewCallForY(double lambdaZero, double y) const
     return -1;
 }
 
+bool MCRsc::operator>(const MCRsc &rho) const
+{
+    if (resourcess > rho.resourcess)
+        return true;
+
+    if (scheduler > rho.scheduler)
+        return true;
+
+    return false;
+}
+
+bool MCRsc::operator<(const MCRsc &rho) const
+{
+    if (resourcess < rho.resourcess)
+        return true;
+
+    if (scheduler < rho.scheduler)
+        return true;
+
+    return false;
+}
+
+
 ModelCreator::ModelCreator():
-    _noOfTrClasses(0)
-  , _serverSchedulerAlgorithm(ResourcessScheduler::Sequencial)
-  , _noOfTypesOfGroups(0)
-  , _totalGroupsCapacity(0)
-  , _totalNumberOfGroups(0)
-  , _bufferPolicy(BufferPolicy::Disabled)
-  , _noOfTypesOfBuffers(0)
-  , _totalBufferCapacity(0)
-  , _totalNumberOfBuffers(0)
-  , _totalAt(0)
-  , _parWasChanged(true)
+    _bufferPolicy(BufferPolicy::Disabled)
   , id(0)
 {
-    _capacityTrClasses = 4;
-    _trClasses = new ModelTrClass*[_capacityTrClasses];
-
-    _capacityTypeOfGroups = 2;
-    _servers = new ModelSubResourcess[_capacityTypeOfGroups];
-
-    _capacityTypeOfQeues = 2;
-    _bufers = new ModelSubResourcess[_capacityTypeOfQeues];
 }
 
 ModelCreator::~ModelCreator()
 {
-    for  (int i=0; i<_noOfTrClasses; i++)
-        delete _trClasses[i];
-    delete []_trClasses;
-
-    delete []_servers;
-    delete []_bufers;
 }
-
-void ModelCreator::getServerGroupDescription(int32_t **k
-  , int32_t **v
-  , int32_t *numberOfTypes
-) const
-{
-    *numberOfTypes = this->_noOfTypesOfGroups;
-    *k = new int32_t[this->_noOfTypesOfGroups];
-    *v = new int32_t[this->_noOfTypesOfGroups];
-
-    for (int32_t i=0; i<*numberOfTypes; i++)
-    {
-        *k[i] = this->_servers[i].k();
-        *v[i] = this->_servers[i].v();
-    }
-}
-
-void ModelCreator::getBufferGroupDescription(
-          int32_t **k
-        , int32_t **v
-        , int32_t *numberOfTypes
-        ) const
-{
-    *numberOfTypes = this->_noOfTypesOfBuffers;
-    *k = new int32_t[this->_noOfTypesOfBuffers];
-    *v = new int32_t[this->_noOfTypesOfBuffers];
-
-    for (int32_t i=0; i<*numberOfTypes; i++)
-    {
-        *k[i] = this->_bufers[i].k();
-        *v[i] = this->_bufers[i].v();
-    }
-}
-
-const QVector<int> &ModelCreator::getServerGroupCapacityVector() const
-{
-    if (_parWasChanged)
-        updateConstSyst();
-    return constSyst.vs;
-}
-
-const QVector<int> &ModelCreator::getBufferCapacityVector() const
-{
-    if (_parWasChanged)
-        updateConstSyst();
-    return constSyst.vb;
-}
-
-
-void ModelCreator::updateConstSyst() const
-{
-    int index = 0;
-
-    constSyst.m = m();
-    constSyst.Vs = vk_s();
-    constSyst.Vb = vk_b();
-
-    constSyst.ks = k_s();
-    constSyst.kb = k_b();
-
-    constSyst.vs.resize(k_s());
-    index = 0;
-    for (int j=0; j < _noOfTypesOfGroups; j++)
-        for (int j2=0; j2<this->k_s(j); j2++)
-            constSyst.vs[index++] = this->v_s(j);
-
-    constSyst.vb.resize(k_b());
-    index = 0;
-    for (int j=0; j < _noOfTypesOfBuffers; j++)
-        for (int j2=0; j2<this->k_b(j); j2++)
-            constSyst.vb[index++] = this->v_b(j);
-
-    constSyst.t.resize(m());
-    index = 0;
-    for (int i=0; i < m(); i++)
-    {
-        constSyst.t[i] = getClass(i)->t();
-    }
-
-    _parWasChanged = false;
-}
-
 
 void ModelCreator::addClass(ModelTrClass *newClass)
 {
-    _parWasChanged = true;
-    if (_noOfTrClasses == _capacityTrClasses)
-    {
-        ModelTrClass **newTrClasses = new ModelTrClass*[2*_capacityTrClasses];
-        memcpy(newTrClasses, _trClasses, static_cast<size_t>(_capacityTrClasses) * sizeof(ModelTrClass *));
-        delete _trClasses;
-        _trClasses = newTrClasses;
-        _capacityTrClasses *=2;
-    }
-    _trClasses[_noOfTrClasses] = new ModelTrClass();
-    *_trClasses[_noOfTrClasses] = *newClass;
-    _noOfTrClasses++;
-
-    _totalAt += newClass->propAt();
+    _traffic.trClasses.push_back(*newClass);
 }
 
 void ModelCreator::addGroups(ModelSubResourcess newGroup, bool optimize)
 {
-    _parWasChanged = true;
-    _totalNumberOfGroups += newGroup.k();
-    _totalGroupsCapacity += newGroup.V();
     if (optimize)
     {
-        for (int idx=0; idx < _noOfTypesOfGroups; idx++)
+        foreach(ModelSubResourcess tmp, _server.resourcess)
         {
-            if (_servers[idx].v() == newGroup.v())
+            if (tmp.v() == newGroup.v())
             {
-                int k = _servers[idx].k();
-                _servers[idx].set_k(k + newGroup.k());
-                    return;
-            }
-        }
-    }
-
-    if (_noOfTypesOfGroups == _capacityTypeOfGroups)
-    {
-        ModelSubResourcess *newRes = new ModelSubResourcess[2*_capacityTypeOfGroups];
-        memcpy(newRes, _servers, static_cast<size_t>(_capacityTypeOfGroups) * sizeof(ModelSubResourcess));
-        delete _servers;
-        _servers = newRes;
-        _capacityTypeOfGroups *=2;
-    }
-    _servers[_noOfTypesOfGroups] = newGroup;
-    _noOfTypesOfGroups++;
-}
-
-void ModelCreator::addQeues(ModelSubResourcess qeue, bool optimize)
-{
-    _parWasChanged = true;
-    _totalNumberOfBuffers += qeue.k();
-    _totalBufferCapacity += qeue.V();
-
-    if (optimize)
-    {
-        for (int idx=0; idx < _noOfTypesOfBuffers; idx++)
-        {
-            if (_bufers[idx].v() == qeue.v())
-            {
-                int k = _bufers[idx].k();
-                _bufers[idx].set_k(k + qeue.k());
+                tmp.set_k(tmp.k() + newGroup.k());
                 return;
             }
         }
     }
+    _server.resourcess.push_back(newGroup);
+}
 
-    if (_noOfTypesOfBuffers == _capacityTypeOfQeues)
+void ModelCreator::addQeues(ModelSubResourcess qeue, bool optimize)
+{
+    if (optimize)
     {
-        ModelSubResourcess *newQue = new ModelSubResourcess[2*_capacityTypeOfQeues];
-        memcpy(newQue, _bufers, static_cast<size_t>(_capacityTypeOfQeues) * sizeof(ModelSubResourcess));
-        delete _bufers;
-        _bufers = newQue;
-        _capacityTypeOfQeues *=2;
+        foreach(ModelSubResourcess tmp, _buffer.resourcess)
+        {
+            if (tmp.v() == qeue.v())
+            {
+                tmp.set_k(tmp.k() + qeue.k());
+                return;
+            }
+        }
     }
-    _bufers[_noOfTypesOfBuffers] = qeue;
-    _noOfTypesOfBuffers++;
+    _server.resourcess.push_back(qeue);
 }
 
 void ModelCreator::setServerSchedulerAlgorithm(ResourcessScheduler algorithm)
 {
-    this->_serverSchedulerAlgorithm = algorithm;
+    this->_server.scheduler = algorithm;
 }
 
 void ModelCreator::setBufferSchedulerAlgorithm(BufferPolicy algorithm)
@@ -1052,19 +963,9 @@ void ModelCreator::setBufferSchedulerAlgorithm(BufferPolicy algorithm)
 
 void ModelCreator::clearAll()
 {
-    _parWasChanged = true;
-    for (int i=0; i<_noOfTrClasses; i++)
-        delete _trClasses[i];
-    _noOfTrClasses = 0;
-    _totalAt = 0;
-
-    _totalNumberOfGroups = 0;
-    _totalGroupsCapacity = 0;
-    _noOfTypesOfGroups=0;
-
-    _totalBufferCapacity = 0;
-    _noOfTypesOfBuffers = 0;
-    _totalNumberOfBuffers = 0;
+    _traffic.trClasses.clear();
+    _server.resourcess.clear();
+    _buffer.resourcess.clear();
 }
 
 QString ModelCreator::getGnuplotDescription() const
@@ -1077,7 +978,7 @@ QString ModelCreator::getGnuplotDescription() const
     if (k_s() > 1)
     {
         str<<"(";
-        switch (_serverSchedulerAlgorithm)
+        switch (_server.scheduler)
         {
         case ResourcessScheduler::Random:
             str<<"R";
@@ -1098,40 +999,30 @@ QString ModelCreator::getGnuplotDescription() const
         {
             if (i > 0)
                 str<<" ";
-            const ModelTrClass *tmp = getClass(i);
-            str<<*tmp;
+            const ModelTrClass tmp = getClass(i);
+            str<<tmp;
         }
         str<<")";
     }
     return result;
 }
 
-const ModelTrClass *ModelCreator::getClass(int idx) const
+const ModelTrClass& ModelCreator::getClass(int idx) const
 {
-    if (idx < _noOfTrClasses)
-        return _trClasses[idx];
-    return nullptr;
+    return _traffic.trClasses[idx];
 }
 
-ModelTrClass *ModelCreator::getClassClone(int idx) const
+const ModelSystem ModelCreator::getConstSyst() const
 {
-    ModelTrClass *result = nullptr;
-    if (idx < _noOfTrClasses)
-        result = new ModelTrClass(*_trClasses[idx]);
-
+    ModelResourcess server(_server.resourcess, _server.scheduler);
+    ModelResourcess buffer(_buffer.resourcess, _buffer.scheduler);
+    ModelSystem result(_traffic.trClasses, server, buffer, _bufferPolicy);
     return result;
-}
-
-const ModelCreator::ConstSyst &ModelCreator::getConstSyst() const
-{
-    if (_parWasChanged)
-        updateConstSyst();
-    return constSyst;
 }
 
 ResourcessScheduler ModelCreator::getGroupsSchedulerAlgorithm() const
 {
-    return _serverSchedulerAlgorithm;
+    return _server.scheduler;
 }
 
 bool ModelCreator::operator==(const ModelCreator &rho) const
@@ -1147,59 +1038,10 @@ bool ModelCreator::operator==(const ModelCreator &rho) const
     bool result = true;
 
     //TODO dopisać operator == dla klas
-    for(int classIdx=0; classIdx<m(); classIdx++)
-    {
-        if (*getClass(classIdx) != *rho.getClass(classIdx))
-            return false;
-    }
 
-
-    int32_t *vA, *vB, *kA, *kB, cA, cB;
-
-    getServerGroupDescription(&kA, &vA, &cA);
-    rho.getServerGroupDescription(&kB, &vB, &cB);
-
-    if (cA != cB)
-        result = false;
-    else
-        for (int32_t idx=0; idx<cA; idx++)
-        {
-            if ((vA[idx] != vB[idx])||(kA[idx] != kB[idx]))
-            {
-                result = false;
-                break;
-            }
-        }
-
-    if (this->_serverSchedulerAlgorithm != rho._serverSchedulerAlgorithm)
+    if (_traffic.trClasses != rho._traffic.trClasses)
         return false;
 
-    delete []vA;
-    delete []vB;
-    delete []kA;
-    delete []kB;
-
-    getBufferGroupDescription(&kA, &vA, &cA);
-    rho.getBufferGroupDescription(&kB, &vB, &cB);
-
-    if (cA != cB)
-        result = false;
-    else
-        for (int32_t idx=0; idx<cA; idx++)
-        {
-            if ((vA[idx] != vB[idx])||(kA[idx] != kB[idx]))
-            {
-                result = false;
-                break;
-            }
-        }
-    if ((cA > 0) && (_bufferPolicy != rho._bufferPolicy))
-        return false;
-
-    delete []vA;
-    delete []vB;
-    delete []kA;
-    delete []kB;
 
     return result;
 }
@@ -1223,40 +1065,19 @@ bool ModelCreator::operator >(const ModelCreator &rho) const
     if (vk_b() > rho.vk_b())
         return true;
 
-    for(int classIdx=0; classIdx<m(); classIdx++)
-        if (*(getClass(classIdx)) > *(rho.getClass(classIdx)))
-                return true;
+    if (_traffic > rho._traffic)
+        return true;
 
-    bool result = true;
-    int32_t *vA, *vB, *kA, *kB, cA, cB;
+    if (_server > rho._server)
+        return true;
 
-    getServerGroupDescription(&kA, &vA, &cA);
-    rho.getServerGroupDescription(&kB, &vB, &cB);
+    if (_buffer > rho._buffer)
+        return true;
 
-    if (cA != cB)
-        result = (cA > cB);
-    else
-    {
-        for (int32_t idx=0; idx<cA; idx++)
-        {
-            if (vA[idx] != vB[idx])
-            {
-                result = (vA[idx] > vB[idx]);
-                break;
-            }
-            if (kA[idx] != kB[idx])
-            {
-                result = (kA[idx] > kB[idx]);
-                break;
-            }
-        }
-    }
+    if (_bufferPolicy > rho._bufferPolicy)
+        return true;
 
-    delete []vA;
-    delete []vB;
-    delete []kA;
-    delete []kB;
-    return result;
+    return false;
 }
 
 bool ModelCreator::operator <(const ModelCreator &rho) const
@@ -1273,93 +1094,122 @@ bool ModelCreator::operator <(const ModelCreator &rho) const
     if (vk_b() < rho.vk_b())
         return true;
 
-    for(int classIdx=0; classIdx<m(); classIdx++)
-        if (*(getClass(classIdx)) < *(rho.getClass(classIdx)))
-                return true;
+    if (_traffic < rho._traffic)
+        return true;
 
-    bool result = true;
-    int32_t *vA, *vB, *kA, *kB, cA, cB;
+    if (_server < rho._server)
+        return true;
 
-    getServerGroupDescription(&kA, &vA, &cA);
-    rho.getServerGroupDescription(&kB, &vB, &cB);
+    if (_buffer < rho._buffer)
+        return true;
 
-    if (cA != cB)
-        result = (cA < cB);
-    else
-    {
-        for (int32_t idx=0; idx<cA; idx++)
-        {
-            if (vA[idx] != vB[idx])
-            {
-                result = (vA[idx] < vB[idx]);
-                break;
-            }
-            if (kA[idx] != kB[idx])
-            {
-                result = (kA[idx] < kB[idx]);
-                break;
-            }
-        }
-    }
+    if (_bufferPolicy < rho._bufferPolicy)
+        return true;
 
-    delete []vA;
-    delete []vB;
-    delete []kA;
-    delete []kB;
+    return false;
+}
+
+int ModelCreator::V() const
+{
+    int result = vk_s() + vk_b();
     return result;
 }
 
 int ModelCreator::v_sMax() const
 {
     int result=0;
-    for (int grType=0; grType<_noOfTypesOfGroups; grType++)
-        if (result < _servers[grType].v())
-            result = _servers[grType].v();
+    for (int grType=0; grType< _server.resourcess.length(); grType++)
+        if (result < _server.resourcess[grType].v())
+            result = _server.resourcess[grType].v();
+    return result;
+}
+
+int ModelCreator::k_s() const
+{
+    int result = 0;
+
+    foreach (ModelSubResourcess tmp, _server.resourcess)
+        result+= tmp.k();
+
     return result;
 }
 
 int ModelCreator::v_s(int groupClNo) const
 {
-    if (groupClNo < _noOfTypesOfGroups)
-        return _servers[groupClNo].v();
+    if (groupClNo < _server.resourcess.length())
+        return _server.resourcess[groupClNo].v();
     return -1;
+}
+
+int ModelCreator::vk_s() const
+{
+    int result = 0;
+    foreach (ModelSubResourcess tmp, _server.resourcess)
+        result+= tmp.V();
+    return result;
 }
 
 int ModelCreator::vk_s(int groupClNo) const
 {
-    if (groupClNo < _noOfTypesOfGroups)
-        return _servers[groupClNo].V();
+    if (groupClNo < _server.resourcess.length())
+        return _server.resourcess[groupClNo].V();
     return -1;
 }
 
 int ModelCreator::k_s(int groupClNo) const
 {
-    if (groupClNo < _noOfTypesOfGroups)
-        return _servers[groupClNo].k();
+    if (groupClNo < _server.resourcess.length())
+        return _server.resourcess[groupClNo].k();
     return -1;
+}
+
+int ModelCreator::k_sType() const
+{
+    return _server.resourcess.length();
 }
 
 int ModelCreator::v_b(int bufferClNo) const
 {
-    if (bufferClNo < _noOfTypesOfBuffers)
-        return _bufers[bufferClNo].v();
+    if (bufferClNo < _buffer.resourcess.length())
+        return _buffer.resourcess[bufferClNo].v();
     return -1;
+}
+
+int ModelCreator::vk_b() const
+{
+    int result = 0;
+    foreach (ModelSubResourcess tmp, _buffer.resourcess)
+        result+= tmp.V();
+
+    return result;
 }
 
 int ModelCreator::vk_b(int bufferClNo) const
 {
-    if (bufferClNo < _noOfTypesOfBuffers)
-        return _bufers[bufferClNo].v() * _bufers[bufferClNo].k();
+    if (bufferClNo < _buffer.resourcess.length())
+        return _buffer.resourcess[bufferClNo].v();
     return -1;
+}
+
+int ModelCreator::k_b() const
+{
+    int result = 0;
+    foreach (ModelSubResourcess tmp, _buffer.resourcess)
+        result+= tmp.k();
+    return result;
 }
 
 int ModelCreator::k_b(int i) const
 {
-    if (i < _noOfTypesOfBuffers)
-        return _bufers[i].k();
+    if (i < _buffer.resourcess.length())
+        return _buffer.resourcess[i].k();
     return -1;
 }
 
+int ModelCreator::k_bType() const
+{
+    return _buffer.resourcess.length();
+}
 
 QTextStream& operator<<(QTextStream &stream, const ModelCreator &model)
 {
@@ -1367,7 +1217,7 @@ QTextStream& operator<<(QTextStream &stream, const ModelCreator &model)
     if (model.k_s() > 1)
     {
         stream<<"(";
-        switch (model._serverSchedulerAlgorithm)
+        switch (model._server.scheduler)
         {
         case ResourcessScheduler::Random:
             stream<<"R";
@@ -1383,13 +1233,14 @@ QTextStream& operator<<(QTextStream &stream, const ModelCreator &model)
     stream<<"_m"<<model.m();
     if (model.m()>0)
     {
+        bool first = true;
         stream<<"(";
-        for(int i=0; i<model.m(); i++)
+        foreach(ModelTrClass tmp, model._traffic.trClasses)
         {
-            if (i > 0)
+            if (!first)
                 stream<<"_";
-            const ModelTrClass *tmp = model.getClass(i);
-            stream<<*tmp;
+            first = false;
+            stream<<tmp;
         }
         stream<<")";
     }
@@ -1447,7 +1298,7 @@ QDebug &operator<<(QDebug &stream, const ModelCreator &model)
     if (model.k_s() > 1)
     {
         stream<<"(";
-        switch (model._serverSchedulerAlgorithm)
+        switch (model._server.scheduler)
         {
         case ResourcessScheduler::Random:
             stream<<"R";
@@ -1463,12 +1314,13 @@ QDebug &operator<<(QDebug &stream, const ModelCreator &model)
     if (model.m()>0)
     {
         stream2<<"(";
-        for(int i=0; i<model.m(); i++)
+        bool first = true;
+        foreach(ModelTrClass tmp, model._traffic.trClasses)
         {
-            if (i > 0)
+            if (!first)
                 stream2<<"_";
-            const ModelTrClass *tmp = model.getClass(i);
-            stream2<<*tmp;
+            first = false;
+            stream2<<tmp;
         }
         stream2<<")";
     }
@@ -2040,24 +1892,79 @@ bool ModelTrClass::SimulatorProcess_DepPlus##X##Y::endOfCallService(SimulatorSin
 }
 
 
+ModelSystem::ModelSystem(const ModelSystem &system)
+  : _trClasses(system._trClasses)
+  , _server(system._server)
+  , _buffer(system._buffer)
+  , _bufferPolicy(system._bufferPolicy)
+  , _totalAt(system._totalAt)
+  , _V(system._V)
+{
 
+}
 
-bool ModelCreator::ConstSyst::isInBlockingState(int classNo, const QVector<int> &serverGroupsState, const QVector<int> bufferGroupsState) const
+ModelSystem::ModelSystem(const QVector<ModelTrClass> &trClasses, const ModelResourcess &server, const ModelResourcess &buffer, BufferPolicy bufferPolicy)
+  : _trClasses(trClasses)
+  , _server(server)
+  , _buffer(buffer)
+  , _bufferPolicy(bufferPolicy)
+{
+    _totalAt = 0;
+    foreach(ModelTrClass tmp, trClasses)
+        _totalAt+= tmp.propAt();
+    _V = _server.V() + _buffer.V();
+}
+
+bool ModelSystem::operator==(const ModelSystem &rho) const
+{
+    if (_trClasses != rho._trClasses)
+        return false;
+
+    if (_server != rho._server)
+        return false;
+
+    if (_buffer != rho._buffer)
+        return false;
+
+    if (_bufferPolicy != rho._bufferPolicy)
+        return false;
+}
+
+bool ModelSystem::isInBlockingState(int classNo, const QVector<int> &serverGroupsState, const QVector<int> bufferGroupsState) const
 {
     bool result = true;
-    for (int x=0; x < vs.length(); x++)
+
+    int groupTypeNo = 0;
+    int localSubgroupNo = 0;
+
+    for (int subgroupNo=0; subgroupNo<this->_server.k(); subgroupNo++)
     {
-        if (serverGroupsState[x] + t[classNo] <= vs[x])
+        if (localSubgroupNo > _server.k(groupTypeNo))
+        {
+            localSubgroupNo = 0;
+            groupTypeNo++;
+        }
+        if (serverGroupsState[subgroupNo] + t(classNo) <= _server.V(groupTypeNo, localSubgroupNo))
         {
             result = false;
             break;
         }
     }
+
+
+    groupTypeNo = 0;
+    localSubgroupNo = 0;
+
     if (result)
     {
-        for (int x=0; x < vb.length(); x++)
+        for (int subgroupNo=0; subgroupNo<this->_buffer.k(); subgroupNo++)
         {
-            if (bufferGroupsState[x] + t[classNo] <= vb[x])
+            if (localSubgroupNo > _buffer.k(groupTypeNo))
+            {
+                localSubgroupNo = 0;
+                groupTypeNo++;
+            }
+            if (bufferGroupsState[subgroupNo] + t(classNo) <= _buffer.V(groupTypeNo, localSubgroupNo))
             {
                 result = false;
                 break;
@@ -2065,6 +1972,86 @@ bool ModelCreator::ConstSyst::isInBlockingState(int classNo, const QVector<int> 
         }
     }
     return result;
+}
+
+bool ModelSystem::isServerAvailable(int classNo, const QVector<int> &serverGroupsState) const
+{
+    return false; //TODO
+}
+
+bool ModelSystem::isBufferAvailable(int classNo, const QVector<int> &bufferGroupsState) const
+{
+    return false; //TODO
+}
+
+ModelResourcess::ModelResourcess(QList<ModelSubResourcess> listSubRes, ResourcessScheduler schedulerAlg)
+    : schedulerAlg(schedulerAlg)
+    , _listSubRes(listSubRes)
+    , _k(listSubRes.length())
+{
+    _V = 0;
+    _vMax = 0;
+    foreach(ModelSubResourcess tmp, listSubRes)
+    {
+        _V+= tmp.V();
+        if (tmp.v() > _vMax)
+            _vMax = tmp.v();
+
+        for (int i=0; i<tmp.k(); i++)
+            _subgrpCapacity.append(tmp.v());
+    }
+}
+
+bool ModelResourcess::operator==(const ModelResourcess &rho) const
+{
+    if (_listSubRes != rho._listSubRes)
+        return false;
+    return true;
+}
+
+bool ModelResourcess::operator!=(const ModelResourcess &rho) const
+{
+    if (_listSubRes != rho._listSubRes)
+        return true;
+}
+
+inline int ModelResourcess::V() const
+{
+    return _V;
+}
+
+int ModelResourcess::V(int groupNo) const
+{
+    return ((groupNo < _subgrpCapacity.length()) && groupNo >=0) ? _subgrpCapacity[groupNo] : 0;
+}
+
+int ModelResourcess::V(int groupClassNo, int groupNo) const
+{
+    return ((groupClassNo>=0) && (groupClassNo < _listSubRes.length())) ?
+                ((groupNo>=0) && (groupNo < _listSubRes[groupClassNo].k())) ? _listSubRes[groupClassNo].v() : 0
+    : 0;
+}
+
+int ModelResourcess::k() const
+{
+    return _k;
+}
+
+int ModelResourcess::k(int groupClassNo) const
+{
+    return ((groupClassNo>=0) && (groupClassNo < _listSubRes.length())) ? _listSubRes[groupClassNo].k() : 0;
+}
+
+
+
+bool MCTrCl::operator>(const MCTrCl &rho) const
+{
+    return trClasses > rho.trClasses;
+}
+
+bool MCTrCl::operator<(const MCTrCl &rho) const
+{
+    return trClasses < rho.trClasses;
 }
 
 CLASS_SIMULATOR_INDEP_CPP(M, M, NewCallExp, ServEndExp)

@@ -23,14 +23,15 @@ protected:
         int m;
 
         int *loc2globIdx;
-        const ModelTrClass **trClasses;
 
         double *states;
         double **ySYSTEM;
 
+        const ModelTrClass** trClasses;
+
     public:
-        VectQEUE(): Vs(0), Vb(0), VsVb(0), m(0), loc2globIdx(NULL), trClasses(NULL), states(NULL), ySYSTEM(NULL) {}
-        VectQEUE(int Vs, int Vb, int m, int i, const ModelTrClass *trClass, double A);
+        VectQEUE(): Vs(0), Vb(0), VsVb(0), m(0), loc2globIdx(nullptr), states(nullptr), ySYSTEM(nullptr) {}
+        VectQEUE(int Vs, int Vb, int m, int i, const ModelTrClass &trClass, double A);
         ~VectQEUE();
 
         double get_y(int globIdx, int n) const;
@@ -44,6 +45,7 @@ protected:
 private:
     VectQEUE **p_single;
 
+
 public:
     convolutionAlgorithmGamma3();
 
@@ -52,10 +54,10 @@ public:
     QString shortName() {return "conv gamma 3"; }
     virtual int complexity() {return 1; }
 
-    void calculateSystem(const ModelCreator &system, double a, Results::RInvestigator *results, SimulationParameters *simParameters);
+    void calculateSystem(const ModelSystem &system, double a, Results::RInvestigator *results, SimulationParameters *simParameters);
 
-    void prepareTemporaryData(const ModelCreator *system, double a);
-    bool possible(ModelCreator *system);
+    void prepareTemporaryData(const ModelSystem &system, double a);
+    bool possible(ModelSystem &system);
 };
 
 }

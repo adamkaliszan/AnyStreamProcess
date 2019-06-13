@@ -41,10 +41,11 @@ StatisticEventType SimulatorAll::SimEvent2statEvent(SimulatorAll::EventType simE
     return StatisticEventType::newCallRejected;
 }
 
-void SimulatorAll::calculateSystem(const ModelCreator *system
-                                   , double a
-                                   , RInvestigator *results
-                                   , SimulationParameters *simParameters)
+void SimulatorAll::calculateSystem(
+        const ModelSystem &system
+      , double a
+      , RInvestigator *results
+      , SimulationParameters *simParameters)
 {
     prepareTemporaryData(system, a);
 

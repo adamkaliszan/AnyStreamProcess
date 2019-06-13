@@ -20,11 +20,11 @@ public:
 
     QString shortName() const { return QString("AnyStream"); }
     int complexity()    const { return 1; }
-    void calculateSystem(const ModelCreator *system
+    void calculateSystem(const ModelSystem &system
           , double a
           , Results::RInvestigator *results, SimulationParameters *simParameters
           );
-    bool possible(const ModelCreator *system) const;
+    bool possible(const ModelSystem &system) const;
 };
 
 } //namespace Algorithms

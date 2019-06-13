@@ -177,7 +177,7 @@ public:
     inline const GroupCombinationStatistics& getTimeGroupComb(int combinationNo, int state) const { return timesPerGroupsCombinations[combinationNo][state]; }
 
 
-    void collectPre(const ModelCreator *mSystem, double time, int n, const QVector<int> &n_i,  const QVector<int> &n_k);
+    void collectPre(const ModelSystem &mSystem, double time, int n, const QVector<int> &n_i,  const QVector<int> &n_k);
     void collectPost(int classIdx, int old_n, int n, StatisticEventType event);
 
     inline const QVector<int>& getSet(int combinationNo)                                    const { return combinationList[combinationNo]; }

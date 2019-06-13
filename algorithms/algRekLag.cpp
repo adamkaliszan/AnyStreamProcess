@@ -13,9 +13,12 @@ algRekLAG::algRekLAG()
        <<Results::Type::OccupancyDistribution;
 }
 
-bool algRekLAG::possible(const ModelCreator *system) const
+bool algRekLAG::possible(const ModelSystem &system) const
 {
-    if ((system->vk_s() == 0) || (system->k_sType() > 1) || (system->vk_b() > 0))
+    if ((system.getServer().V() == 0)
+     || (system.getServer().kTypes() > 1)
+     || (system.getBuffer().V() > 0)
+        )
         return false;
 
     return Investigator::possible(system);
@@ -25,9 +28,9 @@ double algRekLAG::getSigma(int classNumber, int state)
 {
     double result = 1;
     uint x = static_cast<uint>(system->V() - state);
-    uint t = static_cast<uint>(system->getClass(classNumber)->t());
-    uint k = static_cast<uint>(system->k_s());
-    uint f = static_cast<uint>(system->v_s(0));
+    uint t = static_cast<uint>(system->getTrClass(classNumber).t());
+    uint k = static_cast<uint>(system->getServer().k());
+    uint f = static_cast<uint>(system->getServer().V(0));
 
     if (x <= (t-1) * k)
     {

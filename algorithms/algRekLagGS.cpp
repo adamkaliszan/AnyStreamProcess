@@ -16,15 +16,15 @@ algRekLagGS::algRekLagGS()
      << Results::Type::AvailableSubroupDistribution;
 }
 
-void algRekLagGS::calculateSystem(const ModelCreator *system, double a, RInvestigator *results, SimulationParameters *simParameters)
+void algRekLagGS::calculateSystem(const ModelSystem &system, double a, RInvestigator *results, SimulationParameters *simParameters)
 {
     (void) simParameters;
 
     Utils::UtilsLAG lag;
-    int f = system->v_s(0);
-    int k = system->k_s(0);
-    int V = system->vk_s();
-    int m = system->m();
+    int f = system.getServer().V(0);
+    int k = system.getServer().k(0);
+    int V = system.getServer().V();
+    int m = system.m();
 
     prepareTemporaryData(system, a);
 
@@ -181,9 +181,12 @@ void algRekLagGS::calculateSystem(const ModelCreator *system, double a, RInvesti
     //emit this->sigCalculationDone();
 }
 
-bool algRekLagGS::possible(const ModelCreator *system) const
+bool algRekLagGS::possible(const ModelSystem &system) const
 {
-    if ((system->vk_s() == 0) || (system->k_sType() > 1) || (system->vk_b() > 0))
+    if ((system.getServer().V() == 0)
+     || (system.getServer().kTypes() > 1)
+     || (system.getBuffer().V() > 0)
+        )
         return false;
 
     return Investigator::possible(system);
@@ -194,9 +197,9 @@ double algRekLagGS::getSigma(int classNumber, int state)
     Utils::UtilsLAG lag;
     double result = 1;
     int x = system->V() - state;
-    int t = system->getClass(classNumber)->t();
-    int k = system->k_s();
-    int f = system->v_s(0);
+    int t = system->getTrClass(classNumber).t();
+    int k = system->getServer().k();
+    int f = system->getServer().V(0);
 
     if (x <= (t-1) * k)
     {
@@ -218,24 +221,24 @@ algRekLagGS2::algRekLagGS2()
     ;
 }
 
-void algRekLagGS2::calculateSystem(const ModelCreator *system, double a, RInvestigator *results, SimulationParameters *simParameters)
+void algRekLagGS2::calculateSystem(const ModelSystem &system, double a, RInvestigator *results, SimulationParameters *simParameters)
 {
     (void) simParameters;
 
     Utils::UtilsLAG utilsLag;
 
-    int f = system->v_s(0);
-    int k = system->k_s(0);
-    int V = system->V();
-    int m = system->m();
+    int f = system.getServer().V(0);
+    int k = system.getServer().k(0);
+    int V = system.getServer().V();
+    int m = system.m();
 
     prepareTemporaryData(system, a);
 
     states[0] = 1;
-    for (int n=1; n<=system->V(); n++)
+    for (int n=1; n<=system.V(); n++)
     {
         states[n] = 0;
-        for (int i=0; i<system->m(); i++)
+        for (int i=0; i<system.m(); i++)
         {
             int t = classes[i].t;
             if (t <= n)
@@ -281,9 +284,12 @@ void algRekLagGS2::calculateSystem(const ModelCreator *system, double a, RInvest
     //emit this->sigCalculationDone();
 }
 
-bool algRekLagGS2::possible(const ModelCreator *system) const
+bool algRekLagGS2::possible(const ModelSystem &system) const
 {
-    if ((system->vk_s() == 0) || (system->k_sType() > 1) || (system->vk_b() > 0))
+    if ((system.getServer().V() == 0)
+     || (system.getServer().kTypes() > 1)
+     || (system.getBuffer().V() > 0)
+        )
         return false;
 
     return Investigator::possible(system);
@@ -294,9 +300,9 @@ double algRekLagGS2::getSigma(int classNumber, int state)
     Utils::UtilsLAG lag;
     double result = 1;
     uint x = static_cast<uint>(system->V() - state);
-    int t = system->getClass(classNumber)->t();
-    uint k = static_cast<uint>(system->k_s());
-    uint f = static_cast<uint>(system->v_s(0));
+    int t = system->t(classNumber);
+    uint k = static_cast<uint>(system->getServer().k());
+    uint f = static_cast<uint>(system->getServer().V(0));
 
     if (x <= static_cast<uint>(t-1) * k)
     {

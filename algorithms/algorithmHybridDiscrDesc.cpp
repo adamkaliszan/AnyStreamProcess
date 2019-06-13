@@ -11,25 +11,35 @@ AlgorithmHybridDiscrDesc::AlgorithmHybridDiscrDesc(): Investigator()
        <<Results::Type::OccupancyDistribution;
 }
 
-bool AlgorithmHybridDiscrDesc::possible(const ModelCreator *system) const
+bool AlgorithmHybridDiscrDesc::possible(const ModelSystem &system) const
 {
-    if (system->vk_b() == 0)
+    if (system.getBuffer().V() == 0)
         return false;
+
+    if (system.getBufferPolicy() != BufferPolicy::dFIFO_Seq)
+        return false;
+
     return Investigator::possible(system);
 }
 
-void AlgorithmHybridDiscrDesc::calculateSystem(const ModelCreator *system
-        , double a
-        , RInvestigator *results
-        , SimulationParameters *simParameters
-        )
+void AlgorithmHybridDiscrDesc::calculateSystem(
+        const ModelSystem &system
+      , double a
+      , RInvestigator *results
+      , SimulationParameters *simParameters
+    )
 {
+
+
     (void) simParameters;
     prepareTemporaryData(system, a);
-    int m = system->m();
-    int Vs = system->vk_s();
-    int Vb = system->vk_b();
+    int m = system.m();
+    int Vs = system.getServer().V();
+    int Vb = system.getBuffer().V();
     int VsVb = Vs + Vb;
+
+    ClassParameters *clParameters = new ClassParameters[m];
+
 
     p_single = new TrClVector[m];             /// FAG traffic distribution
     P_without_i = new TrClVector[m];          /// FAG traffic distribution
@@ -43,12 +53,10 @@ void AlgorithmHybridDiscrDesc::calculateSystem(const ModelCreator *system
     double **Q_X = new double*[VsVb+1];       /// 2d distribution
 
     int t_max = 0;
-    int *t = new int[m];
     for (int i=0; i<m; i++)
     {
-        p_single[i] = system->getClass(i)->trDistribution(i, classes[i].A, VsVb, 0);
-        t[i] = system->getClass(i)->t();
-        t_max = qMax(t_max, t[i]);
+        p_single[i] = system.getTrClass(i).trDistribution(i, classes[i].A, VsVb, 0);
+        t_max = qMax(t_max, classes[i].t);
     }
 
     for (int n=0; n<=VsVb; n++)
@@ -85,10 +93,10 @@ void AlgorithmHybridDiscrDesc::calculateSystem(const ModelCreator *system
         {
             double nominator = 0;
             double denumerator = 0;
-            for (int l=0; l<=n; l+= t[i])
+            for (int l=0; l<=n; l+= classes[i].t)
             {
                 double pP = p_single[i][l] * P_without_i[i][n-l];
-                nominator += ((double)(l)/(double)(t[i]) * pP);
+                nominator += ((double)(l)/(double)(classes[i].t) * pP);
                 denumerator += pP;
             }
             ySYSTEM_V[i][n]=nominator/denumerator;
@@ -108,7 +116,7 @@ void AlgorithmHybridDiscrDesc::calculateSystem(const ModelCreator *system
 
             for (int i=0; i<m; i++)
             {
-                if (x>=t[i])
+                if (x>=classes[i].t)
                     continue;
                 X[n][x]+=ySYSTEM_V[i][n];
 
@@ -137,7 +145,7 @@ void AlgorithmHybridDiscrDesc::calculateSystem(const ModelCreator *system
             {
                 delta_X[n][x] = 0;
                 for (int i=0; i<m; i++)
-                    delta_X[n][x] += (delta_X[n-t[i]][x]*ySYSTEM_V[i][n] * t[i]);
+                    delta_X[n][x] += (delta_X[n-classes[i].t][x]*ySYSTEM_V[i][n] * classes[i].t);
 
                 delta_X[n][x] /=(Vs-x);
             }
@@ -164,15 +172,15 @@ void AlgorithmHybridDiscrDesc::calculateSystem(const ModelCreator *system
             Q_X[n][x] /= sumQ;
     }
 
-    for (int i=0; i<system->m(); i++)
+    for (int i=0; i<m; i++)
     {
         //Prawdopodobieństwo blokady
         double E = 0;
-        for (int n=VsVb-(t[i]-1)-(t_max-1); n<=VsVb; n++)
+        for (int n=VsVb-(classes[i].t-1)-(t_max-1); n<=VsVb; n++)
         {
-            for (int x=0; x<qMin(t_max, t[i]); x++)
+            for (int x=0; x<qMin(t_max, classes[i].t); x++)
             {
-                if (x+n+t[i]>VsVb)
+                if (x+n+classes[i].t>VsVb)
                     E+=Q_X[n][x];
             }
         }
@@ -183,10 +191,10 @@ void AlgorithmHybridDiscrDesc::calculateSystem(const ModelCreator *system
         double B_d = 0;
         for (int n=0; n<=VsVb; n++)
         {
-            double intensity = system->getClass(i)->intensityNewCallForState(1, (int)(ySYSTEM_V[i][n]));
-            for (int x=0; x<qMin(t_max, t[i]); x++)
+            double intensity = system.getTrClass(i).intensityNewCallForState(1, (int)(ySYSTEM_V[i][n]));
+            for (int x=0; x<qMin(t_max, classes[i].t); x++)
             {
-                if (x+n+t[i]>VsVb)
+                if (x+n+classes[i].t>VsVb)
                     B_n+=(intensity*Q_X[n][x]);
                 B_d +=(intensity*Q_X[n][x]);
             }
@@ -207,7 +215,7 @@ void AlgorithmHybridDiscrDesc::calculateSystem(const ModelCreator *system
         for (int n=Vs+1; n<=VsVb; n++)
         {
             for (int x=0; x<t_max; x++)
-                ytQ+=(Q_X[n][x] * t[i] * (ySYSTEM_V[i][n] - ySYSTEM_V[i][Vs]));
+                ytQ+=(Q_X[n][x] * classes[i].t * (ySYSTEM_V[i][n] - ySYSTEM_V[i][Vs]));
         }
         //TODO algRes->set_ltQ(system->getClass(i), a, ytQ);
 
@@ -221,28 +229,28 @@ void AlgorithmHybridDiscrDesc::calculateSystem(const ModelCreator *system
         //TODO algRes->set_lSys(system->getClass(i), a, y);
 
         for (int n=0; n<=Vb; n++)
-            (*results)->write(TypeForClassAndBufferState::Usage, (ySYSTEM_V[i][Vs+n] - ySYSTEM_V[i][Vs]) * t[i] / n, i, n);
+            (*results)->write(TypeForClassAndBufferState::Usage, (ySYSTEM_V[i][Vs+n] - ySYSTEM_V[i][Vs]) * classes[i].t / n, i, n);
 
         for (int n=0; n<=Vs; n++)
-            (*results)->write(TypeForClassAndServerState::Usage, ySYSTEM_V[i][n] *t[i] / n, i, n);
+            (*results)->write(TypeForClassAndServerState::Usage, ySYSTEM_V[i][n] * classes[i].t / n, i, n);
 
         for (int n=0; n<=VsVb; n++)
         {
             if (n > Vs)
-                (*results)->write(TypeForClassAndSystemState::UsageForBuffer, (ySYSTEM_V[i][n] - ySYSTEM_V[i][Vs]) *t[i] / n, i, n);
+                (*results)->write(TypeForClassAndSystemState::UsageForBuffer, (ySYSTEM_V[i][n] - ySYSTEM_V[i][Vs]) * classes[i].t / n, i, n);
             else
                 (*results)->write(TypeForClassAndSystemState::UsageForBuffer, 0, i, n);
 
 
-            (*results)->write(TypeForClassAndSystemState::UsageForSystem, ySYSTEM_V[i][n]*t[i]/n, i, n);
+            (*results)->write(TypeForClassAndSystemState::UsageForSystem, ySYSTEM_V[i][n]*classes[i].t/n, i, n);
 
             if (n <= Vs)
             {
-                (*results)->write(TypeForClassAndSystemState::UsageForServer, ySYSTEM_V[i][n]*t[i]/n, i, n);
+                (*results)->write(TypeForClassAndSystemState::UsageForServer, ySYSTEM_V[i][n]*classes[i].t/n, i, n);
             }
             else
             {
-                (*results)->write(TypeForClassAndSystemState::UsageForServer, ySYSTEM_V[i][Vs]*t[i]/n, i, n);
+                (*results)->write(TypeForClassAndSystemState::UsageForServer, ySYSTEM_V[i][Vs]*classes[i].t/n, i, n);
             }
         }
 
@@ -259,10 +267,9 @@ void AlgorithmHybridDiscrDesc::calculateSystem(const ModelCreator *system
 
     for (int i=0; i<m; i++)
     {
-        const ModelTrClass *tmpClass = system->getClass(i);
         for (int n=0; n<=VsVb; n++)
         {
-            (*results)->write(TypeForClassAndSystemState::UsageForSystem, ySYSTEM_V[i][n] * tmpClass->t(), i, n);
+            (*results)->write(TypeForClassAndSystemState::UsageForSystem, ySYSTEM_V[i][n] * classes[i].t, i, n);
         }
     }
 
