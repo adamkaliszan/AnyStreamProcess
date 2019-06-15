@@ -18,7 +18,7 @@ SimulatorAll::SimulatorAll() : Simulator()
     system = nullptr;
 }
 
-bool SimulatorAll::possible(const ModelCreator *system) const
+bool SimulatorAll::possible(const ModelSystem &system) const
 {
     return Simulator::possible(system);
 }
@@ -53,7 +53,7 @@ void SimulatorAll::calculateSystem(
     System *simData = new System(system);
     Engine *engine = new Engine(simData);
 
-    engine->initialize(a, system->totalAt(), system->vk_s());
+    engine->initialize(a, system.getTotalAt(), system.getServer().V());
 
     unsigned int seed = 1024;
 
@@ -135,7 +135,7 @@ void SimulatorAll::Engine::addProcess(ProcAll *proc)
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
     if (proc->time < 0)
         qFatal("Negative time value");
-    if (proc->callData->classIdx > system->par.m)
+    if (proc->callData->classIdx > system->par.m())
         qFatal("Wrong class idx");
 #endif
     agenda->addProcess(proc);
@@ -233,7 +233,7 @@ SimulatorAll::Call *SimulatorAll::Engine::getNewCall(
 }
 #define FOLDINGEND }
 
-SimulatorAll::System::System(const ModelCreator *system) : par(system), state(system)
+SimulatorAll::System::System(const ModelSystem &system) : par(system), state(system)
 {
     server = new Server(this);
     buffer = new Buffer(this);
@@ -251,10 +251,10 @@ SimulatorAll::System::~System()
 
 void SimulatorAll::Engine::initialize(double a, int sumPropAt, int V)
 {
-    for(int i=0; i<system->par.m; i++)
+    for(int i=0; i<system->par.m(); i++)
     {
-        const ModelTrClass *tmpClass = system->par.data->getClass(i);
-        ProcAll::initialize(this, tmpClass, i, a, sumPropAt, V);
+        const ModelTrClass &tmpClass = system->par.getTrClass(i);
+        ProcAll::initialize(this, &tmpClass, i, a, sumPropAt, V);
     }
 }
 
@@ -329,20 +329,20 @@ void SimulatorAll::System::writesResultsOfSingleExperiment(RSingle& singleResult
     server->writesResultsOfSingleExperiment(singleResults, simulationTime);
 
     int V  = server->getV() + buffer->getV();
-    const int &m  = par.m;
+    const int &m  = par.m();
 
     int max_t = 0;
 
     for (int i=0; i<m; i++)
     {
-        int t = par.t_i[i];
+        int t = par.t(i);
         max_t = qMax(t, max_t);
     }
 
 /// TypeForClass
     for (int i=0; i<m; i++)
     {
-        int t = par.t_i[i];
+        int t = par.t(i);
 
     /// BlockingProbability
         double E = 0;
@@ -509,8 +509,7 @@ void SimulatorAll::System::writesResultsOfSingleExperiment(RSingle& singleResult
 
             }
 
-
-            int t = par.t_i[i];
+            int t = par.t(i);
 
             stateDurationTime = (n-t >= 0) ? statistics->getTimeStatistics(n-t).occupancyTime : 0;
 
@@ -679,9 +678,9 @@ void SimulatorAll::System::statsCollectPre(double time)
     const QVector<int> &nKs_b = buffer->getOccupancyOfTheGroups();
 
 
-    statistics->collectPre(this->par.data, time, n_s, n_b, nMs_s, nMs_b, nKs_s, nKs_b);
+    statistics->collectPre(this->par, time, n_s, n_b, nMs_s, nMs_b, nKs_s, nKs_b);
 
-    server->statsColectPre(this->par.data, time);
+    server->statsColectPre(this->par, time);
     buffer->statsColectPre(time);
 }
 
@@ -713,9 +712,9 @@ void SimulatorAll::Server::statsClear()
     statistics->clear();
 }
 
-void SimulatorAll::Server::statsColectPre(const ModelCreator *mSystem, double time)
+void SimulatorAll::Server::statsColectPre(const ModelSystem &system, double time)
 {
-    statistics->collectPre(mSystem, time, state.n, state.n_i, state.n_k);
+    statistics->collectPre(system, time, state.n, state.n_i, state.n_k);
 
     statsColectPreGroupsAvailability(time);
 }
@@ -825,11 +824,11 @@ double SimulatorAll::Server::getTimeOfState(int stateNo) const
 
 SimulatorAll::Server::Server(System *system)
   : system(system)
-  , scheduler(system->par.data->getGroupsSchedulerAlgorithm())
-  , vTotal(system->par.vk_sb)
-  , vMax(system->par.data->v_sMax())
-  , k(system->par.data->k_s())
-  , m(system->par.m)
+  , scheduler(system->par.getServer().schedulerAlg)
+  , vTotal(system->par.getServer().V())
+  , vMax(system->par.getServer().vMax())
+  , k(system->par.getServer().k())
+  , m(system->par.m())
 {   
     state.n = 0;
     state.n_k.resize(k);
@@ -839,11 +838,11 @@ SimulatorAll::Server::Server(System *system)
     state.subgroupSequence.resize(k);
     for (int j=0; j<k; j++)
     {
-        state.subgroupFreeAUs[j] = system->par.data->getConstSyst().vs[j];
+        state.subgroupFreeAUs[j] = system->par.getServer().V(j);
         state.subgroupSequence[j] = j;
     }
 
-    statistics = new ServerStatistics(system->par.data);
+    statistics = new ServerStatistics(system->par);
 }
 
 SimulatorAll::Server::~Server()
@@ -865,7 +864,7 @@ void SimulatorAll::Server::writesResultsOfSingleExperiment(RSingle &singleResult
         if (stateTime > 0)
         {
             result = statistics->getEventStatistics(n).outNewOffered/stateTime;
-            singleResults.write(TypeForServerState::IntensityNewCallOut, result, n);
+            singleResults.write(TypeForServerState::IntensityNewCallOutOffered, result, n);
 
             result = statistics->getEventStatistics(n).inNew/stateTime;
             singleResults.write(TypeForServerState::IntensityNewCallIn, result, n);
@@ -1383,7 +1382,7 @@ SimulatorAll::EventType ProcAll::newCallIndep(
     SimulatorAll::EventType result;
 
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
-    if (proc->callData->classIdx > system->par.m)
+    if (proc->callData->classIdx > system->par.m())
         qFatal("Wrong class idx");
 #endif
     SimulatorAll::Call *callData = proc->callData;
@@ -1417,7 +1416,7 @@ SimulatorAll::EventType ProcAll::newCallDepMinus(
     SimulatorAll::EventType result;
 
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
-    if (proc->callData->classIdx > system->par.m)
+    if (proc->callData->classIdx > system->par.m())
         qFatal("Wrong class idx");
 #endif
     SimulatorAll::Call *callData = proc->callData;
@@ -1434,7 +1433,7 @@ SimulatorAll::EventType ProcAll::newCallDepMinus(
         newProc->callData = system->engine->getNewCall(callData);
 
     #ifndef DO_NOT_USE_SECUTIRY_CHECKS
-        if (newProc->callData->classIdx > system->par.m)
+        if (newProc->callData->classIdx > system->par.m())
             qFatal("Wrong class idx");
     #endif
         newProc->state = ProcAll::ProcState::WAITING_FOR_NEW_CALL;
@@ -1462,7 +1461,7 @@ SimulatorAll::EventType ProcAll::newCallDepPlus(ProcAll *proc
     SimulatorAll::EventType result;
 
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
-    if (proc->callData->classIdx > system->par.m)
+    if (proc->callData->classIdx > system->par.m())
         qFatal("Wrong class idx");
 #endif
     SimulatorAll::Call *callData           = proc->callData;
@@ -1516,7 +1515,7 @@ SimulatorAll::EventType ProcAll::newCallDepPlus(ProcAll *proc
 SimulatorAll::EventType ProcAll::callServiceEndedIndependent(ProcAll *proc, SimulatorAll::System *system)
 {
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
-    if (proc->callData->classIdx > system->par.m)
+    if (proc->callData->classIdx > system->par.m())
         qFatal("Wrong class idx");
 #endif
     system->endCallService(proc->callData);
@@ -1537,7 +1536,7 @@ SimulatorAll::EventType ProcAll::callServiceEndedDependentMinus(ProcAll *proc
     newProc->callData = system->engine->getNewCall(proc->callData);
 
 #ifndef DO_NOT_USE_SECUTIRY_CHECKS
-    if (proc->callData->classIdx > system->par.m)
+    if (proc->callData->classIdx > system->par.m())
         qFatal("Wrong class idx");
 #endif
     system->endCallService(proc->callData);
@@ -1603,9 +1602,9 @@ void SimulatorAll::Call::collectTheStats(double time)
 
 #define FOLDINGSTART { // buffer
 
-SimulatorAll::Buffer::Buffer(SimulatorAll::System *system) : par(system), state(system)
+SimulatorAll::Buffer::Buffer(SimulatorAll::System *system) : par(system->par.getBuffer()), state(system->par.getBuffer())
 {
-    statistics = new BufferStatistics(system->par.data);
+    statistics = new BufferStatistics(system->par);
 }
 
 void SimulatorAll::Buffer::statsClear()
@@ -1638,16 +1637,6 @@ void SimulatorAll::Buffer::removeCall(SimulatorAll::Call *first)
 SimulatorAll::Call *SimulatorAll::Buffer::getNextCall()
 {
     return nullptr;//TODO
-}
-
-SimulatorAll::System::Parameters::Parameters(const ModelCreator *data)
-  : m(data->m())
-  , vk_sb(data->V())
-  , vk_s(data->vk_s())
-  , vk_b(data->vk_b())
-  , t_i(data->getConstSyst().t)
-  , data(data)
-{
 }
 
 #define FOLDINEND }

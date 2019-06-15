@@ -12,12 +12,12 @@ namespace Results
 
 RSingle::RSingle(): m(0), vMax(0), V(0), Vs(0) { }
 
-void RSingle::init(const ModelCreator *system)
+void RSingle::init(const ModelSystem &system)
 {
-    m = system->m();
-    vMax = system->v_sMax();
-    V = system->V();
-    Vs = system->vk_s();
+    m = system.m();
+    vMax = system.getServer().vMax();
+    V = system.V();
+    Vs = system.getServer().V();
 
     dataGeneral.clear();
     dataPerClasses.fill(DataForClasses(), m);
@@ -30,8 +30,8 @@ void RSingle::init(const ModelCreator *system)
     dataPerClassAndSystemStateForSystem.fill(DataForClassesAndState(), (V+1)*m);
     dataPerClassAndSystemStateForServer.fill(DataForClassesAndState(), (V+1)*m);
     dataPerClassAndSystemStateForBuffer.fill(DataForClassesAndState(), (V+1)*m);
-    dataPerGroupCombination.fill(DataPerGroups(vMax+1, m), ::Utils::UtilsLAG::getPossibleCombinations(system->k_s()).length());
-    dataPerExactGroupNumber.fill(DataPerGroups(vMax+1, m), (system->k_s())+1);
+    dataPerGroupCombination.fill(DataPerGroups(vMax+1, m), ::Utils::UtilsLAG::getPossibleCombinations(system.getServer().k()).length());
+    dataPerExactGroupNumber.fill(DataPerGroups(vMax+1, m), (system.getServer().k()+1));
 }
 
 RSingle &RSingle::write(TypeGeneral type, double value)
@@ -168,20 +168,24 @@ RSingle &RSingle::write(TypeForSystemState type, double value, int systemState)
         dataPerSystemState[systemState].probability = value;
         break;
 
+    case TypeForSystemState::IntensityNewCallOutOffered:
+        dataPerSystemState[systemState].newCallOutIntensityOffered = value;
+        break;
+
+    case TypeForSystemState::IntensityNewCallOutAccepted:
+        dataPerSystemState[systemState].newCallOutIntensityAccepted = value;
+        break;
+
+    case TypeForSystemState::IntensityEndCallOut:
+        dataPerSystemState[systemState].endCallOutIntensity = value;
+        break;
+
     case TypeForSystemState::IntensityNewCallIn:
         dataPerSystemState[systemState].newCallInIntensity = value;
         break;
 
     case TypeForSystemState::IntensityEndCallIn:
         dataPerSystemState[systemState].endCallInIntensity = value;
-        break;
-
-    case TypeForSystemState::IntensityNewCallOutOffered:
-        dataPerSystemState[systemState].newCallOutIntensity = value;
-        break;
-
-    case TypeForSystemState::IntensityEndCallOut:
-        dataPerSystemState[systemState].endCallOutIntensity = value;
         break;
     }
     return *this;
@@ -195,6 +199,15 @@ bool RSingle::read(double &result, TypeForSystemState type, int systemState) con
         result = dataPerSystemState[systemState].probability;
         break;
 
+
+    case TypeForSystemState::IntensityNewCallOutOffered:
+        result = dataPerSystemState[systemState].newCallOutIntensityOffered;
+        break;
+
+    case TypeForSystemState::IntensityNewCallOutAccepted:
+        result = dataPerSystemState[systemState].newCallOutIntensityAccepted;
+        break;
+
     case TypeForSystemState::IntensityNewCallIn:
         result = dataPerSystemState[systemState].newCallInIntensity;
         break;
@@ -203,9 +216,6 @@ bool RSingle::read(double &result, TypeForSystemState type, int systemState) con
         result = dataPerSystemState[systemState].endCallInIntensity;
         break;
 
-    case TypeForSystemState::IntensityNewCallOutOffered:
-        result = dataPerSystemState[systemState].newCallOutIntensity;
-        break;
 
     case TypeForSystemState::IntensityEndCallOut:
         result = dataPerSystemState[systemState].endCallOutIntensity;
@@ -222,16 +232,20 @@ RSingle &RSingle::write(TypeForServerState type, double value, int serverState)
         dataPerServerState[serverState].probability = value;
         break;
 
+    case TypeForServerState::IntensityNewCallOutOffered:
+        dataPerSystemState[serverState].newCallOutIntensityOffered = value;
+        break;
+
+    case TypeForServerState::IntensityNewCallOutAccepted:
+        dataPerSystemState[serverState].newCallOutIntensityAccepted = value;
+        break;
+
     case TypeForServerState::IntensityNewCallIn:
         dataPerSystemState[serverState].newCallInIntensity = value;
         break;
 
     case TypeForServerState::IntensityEndCallIn:
         dataPerSystemState[serverState].endCallInIntensity = value;
-        break;
-
-    case TypeForServerState::IntensityNewCallOut:
-        dataPerSystemState[serverState].newCallOutIntensity = value;
         break;
 
     case TypeForServerState::IntensityEndCallOut:
@@ -249,16 +263,20 @@ bool RSingle::read(double &result, TypeForServerState type, int serverState) con
         result = dataPerServerState[serverState].probability;
         break;
 
+    case TypeForServerState::IntensityNewCallOutOffered:
+        result = dataPerSystemState[serverState].newCallOutIntensityOffered;
+        break;
+
+    case TypeForServerState::IntensityNewCallOutAccepted:
+        result = dataPerSystemState[serverState].newCallOutIntensityAccepted;
+        break;
+
     case TypeForServerState::IntensityNewCallIn:
         result = dataPerSystemState[serverState].newCallInIntensity;
         break;
 
     case TypeForServerState::IntensityEndCallIn:
         result = dataPerSystemState[serverState].endCallInIntensity;
-        break;
-
-    case TypeForServerState::IntensityNewCallOut:
-        result = dataPerSystemState[serverState].newCallOutIntensity;
         break;
 
     case TypeForServerState::IntensityEndCallOut:
@@ -276,16 +294,20 @@ RSingle &RSingle::write(TypeForBufferState type, double value, int queueState)
         dataPerBufferState[queueState].probability = value;
         break;
 
+    case TypeForBufferState::IntensityNewCallOutOffered:
+        dataPerSystemState[queueState].newCallOutIntensityOffered = value;
+        break;
+
+    case TypeForBufferState::IntensityNewCallOutAccepted:
+        dataPerSystemState[queueState].newCallOutIntensityAccepted = value;
+        break;
+
     case TypeForBufferState::IntensityNewCallIn:
         dataPerSystemState[queueState].newCallInIntensity = value;
         break;
 
     case TypeForBufferState::IntensityEndCallIn:
         dataPerSystemState[queueState].endCallInIntensity = value;
-        break;
-
-    case TypeForBufferState::IntensityNewCallOut:
-        dataPerSystemState[queueState].newCallOutIntensity = value;
         break;
 
     case TypeForBufferState::IntensityEndCallOut:
@@ -303,16 +325,20 @@ bool RSingle::read(double &result, TypeForBufferState type, int queueState) cons
         result = dataPerBufferState[queueState].probability;
         break;
 
+    case TypeForBufferState::IntensityNewCallOutOffered:
+        result = dataPerSystemState[queueState].newCallOutIntensityOffered;
+        break;
+
+    case TypeForBufferState::IntensityNewCallOutAccepted:
+        result = dataPerSystemState[queueState].newCallOutIntensityAccepted;
+        break;
+
     case TypeForBufferState::IntensityNewCallIn:
         result = dataPerSystemState[queueState].newCallInIntensity;
         break;
 
     case TypeForBufferState::IntensityEndCallIn:
         result = dataPerSystemState[queueState].endCallInIntensity;
-        break;
-
-    case TypeForBufferState::IntensityNewCallOut:
-        result = dataPerSystemState[queueState].newCallOutIntensity;
         break;
 
     case TypeForBufferState::IntensityEndCallOut:
@@ -1082,9 +1108,10 @@ void RSingle::DataForClasses::clear()
 RSingle::DataForStates &RSingle::DataForStates::operator+=(const RSingle::DataForStates &rho)
 {
     probability         +=rho.probability;
+    newCallOutIntensityOffered +=rho.newCallOutIntensityOffered;
+    newCallOutIntensityAccepted +=rho.newCallOutIntensityAccepted;
     newCallInIntensity  +=rho.newCallInIntensity;
     endCallInIntensity  +=rho.endCallInIntensity;
-    newCallOutIntensity +=rho.newCallOutIntensity;
     endCallOutIntensity +=rho.endCallOutIntensity;
 
     return *this;
@@ -1095,9 +1122,10 @@ RSingle::DataForStates RSingle::DataForStates::operator-(const RSingle::DataForS
     RSingle::DataForStates result;
 
     result.probability         = probability         -rho.probability;
+    result.newCallOutIntensityOffered = newCallOutIntensityOffered -rho.newCallOutIntensityOffered;
+    result.newCallOutIntensityAccepted = newCallOutIntensityAccepted -rho.newCallOutIntensityAccepted;
     result.newCallInIntensity  = newCallInIntensity  -rho.newCallInIntensity;
     result.endCallInIntensity  = endCallInIntensity  -rho.endCallInIntensity;
-    result.newCallOutIntensity = newCallOutIntensity -rho.newCallOutIntensity;
     result.endCallOutIntensity = endCallOutIntensity -rho.endCallOutIntensity;
 
     return result;
@@ -1108,9 +1136,10 @@ RSingle::DataForStates RSingle::DataForStates::operator^(double rho) const
     RSingle::DataForStates result;
 
     result.probability         = qPow(this->probability        , rho);
+    result.newCallOutIntensityOffered = qPow(this->newCallOutIntensityOffered, rho);
+    result.newCallOutIntensityAccepted = qPow(this->newCallOutIntensityAccepted, rho);
     result.newCallInIntensity  = qPow(this->newCallInIntensity , rho);
     result.endCallInIntensity  = qPow(this->endCallInIntensity , rho);
-    result.newCallOutIntensity = qPow(this->newCallOutIntensity, rho);
     result.endCallOutIntensity = qPow(this->endCallOutIntensity, rho);
 
     return result;
@@ -1121,9 +1150,10 @@ RSingle::DataForStates RSingle::DataForStates::operator*(const RSingle::DataForS
     RSingle::DataForStates result;
 
     result.probability         = this->probability         * rho.probability;
+    result.newCallOutIntensityOffered = this->newCallOutIntensityOffered * rho.newCallOutIntensityOffered;
+    result.newCallOutIntensityAccepted = this->newCallOutIntensityAccepted * rho.newCallOutIntensityAccepted;
     result.newCallInIntensity  = this->newCallInIntensity  * rho.newCallInIntensity;
     result.endCallInIntensity  = this->endCallInIntensity  * rho.endCallInIntensity;
-    result.newCallOutIntensity = this->newCallOutIntensity * rho.newCallOutIntensity;
     result.endCallOutIntensity = this->endCallOutIntensity * rho.endCallOutIntensity;
 
     return result;
@@ -1132,9 +1162,10 @@ RSingle::DataForStates RSingle::DataForStates::operator*(const RSingle::DataForS
 RSingle::DataForStates &RSingle::DataForStates::operator/=(double rho)
 {
     probability         /= rho;
+    newCallOutIntensityOffered /= rho;
+    newCallOutIntensityAccepted /= rho;
     newCallInIntensity  /= rho;
     endCallInIntensity  /= rho;
-    newCallOutIntensity /= rho;
     endCallOutIntensity /= rho;
 
     return *this;
@@ -1143,9 +1174,10 @@ RSingle::DataForStates &RSingle::DataForStates::operator/=(double rho)
 RSingle::DataForStates &RSingle::DataForStates::operator*=(double rho)
 {
     probability         *= rho;
+    newCallOutIntensityOffered *= rho;
+    newCallOutIntensityAccepted *= rho;
     newCallInIntensity  *= rho;
     endCallInIntensity  *= rho;
-    newCallOutIntensity *= rho;
     endCallOutIntensity *= rho;
 
     return *this;
@@ -1154,9 +1186,10 @@ RSingle::DataForStates &RSingle::DataForStates::operator*=(double rho)
 RSingle::DataForStates& RSingle::DataForStates::sqrt()
 {
     probability         = qSqrt(probability);
+    newCallOutIntensityOffered = qSqrt(newCallOutIntensityOffered);
+    newCallOutIntensityAccepted = qSqrt(newCallOutIntensityAccepted);
     newCallInIntensity  = qSqrt(newCallInIntensity);
     endCallInIntensity  = qSqrt(endCallInIntensity);
-    newCallOutIntensity = qSqrt(newCallOutIntensity);
     endCallOutIntensity = qSqrt(endCallOutIntensity);
 
     return *this;
@@ -1166,22 +1199,24 @@ RSingle::DataForStates RSingle::DataForStates::pow(double rho) const
 {
     RSingle::DataForStates result;
 
-    result.probability         = qPow(probability,         rho);
-    result.newCallInIntensity  = qPow(newCallInIntensity,  rho);
-    result.endCallInIntensity  = qPow(endCallInIntensity,  rho);
-    result.newCallOutIntensity = qPow(newCallOutIntensity, rho);
-    result.endCallOutIntensity = qPow(endCallOutIntensity, rho);
+    result.probability                 = qPow(probability,                 rho);
+    result.newCallOutIntensityOffered  = qPow(newCallOutIntensityOffered,  rho);
+    result.newCallOutIntensityAccepted = qPow(newCallOutIntensityAccepted, rho);
+    result.newCallInIntensity          = qPow(newCallInIntensity,          rho);
+    result.endCallInIntensity          = qPow(endCallInIntensity,          rho);
+    result.endCallOutIntensity         = qPow(endCallOutIntensity,         rho);
 
     return result;
 }
 
 void RSingle::DataForStates::clear()
 {
-    probability         = 0;
-    newCallInIntensity  = 0;
-    endCallInIntensity  = 0;
-    newCallOutIntensity = 0;
-    endCallOutIntensity = 0;
+    probability                 = 0;
+    newCallOutIntensityOffered  = 0;
+    newCallOutIntensityAccepted = 0;
+    newCallInIntensity          = 0;
+    endCallInIntensity          = 0;
+    endCallOutIntensity         = 0;
 }
 
 RSingle::DataPerGroups &RSingle::DataPerGroups::operator+=(const RSingle::DataPerGroups &rho)

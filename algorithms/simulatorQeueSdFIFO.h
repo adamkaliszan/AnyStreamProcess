@@ -27,7 +27,7 @@ public:
             );
     bool possible(const ModelSystem &system) const;
 
-    QSet<Results::Type> getQoS_Set(const ModelCreator *system) const;
+    QSet<Results::Type> getQoS_Set(const ModelSystem &system) const;
 
 public:
     class System;

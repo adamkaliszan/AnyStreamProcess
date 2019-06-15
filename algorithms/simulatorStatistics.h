@@ -90,7 +90,7 @@ private:
     QVector<QVector<QVector<TimeStatisticsMicroStateDetail> > >  timesPerClassAndServerAndBufferState;
 
 public:
-    SystemStatistics(const ModelCreator * const system);
+    SystemStatistics(const ModelSystem &system);
     void clear();
 
     inline const TimeStatisticsMacroState& getTimeStatistics(int systemState)                                         const { return timesPerSystemState[systemState]; }
@@ -105,7 +105,7 @@ public:
     inline const EvenStatistics& getEventStatisticsSC(int classNo, int serverState, int bufferState)                  const { return eventsPerClassAndServerStateAndSystem[classNo][serverState][bufferState] ;}
 
 
-    void collectPre(const ModelCreator *mSystem, double time, int n_s, int n_b, const QVector<int> &n_si, const QVector<int> &n_bi, const QVector<int> &n_sk, const QVector<int> &n_bk);
+    void collectPre(const ModelSystem &mSystem, double time, int n_s, int n_b, const QVector<int> &n_si, const QVector<int> &n_bi, const QVector<int> &n_sk, const QVector<int> &n_bk);
     void collectPost(int classIdx, int old_n, int n, StatisticEventType event);
 };
 
@@ -165,7 +165,7 @@ public:
 
 
 
-    ServerStatistics(const ModelCreator * const system);
+    ServerStatistics(const ModelSystem &system);
 
     inline const EvenStatistics& getEventStatistics(int state)                              const { return eventsPerState[state]; }
     inline const EvenStatistics& getEventStatisticsSC(int classNo)                          const { return eventsPerClass[classNo]; }
@@ -197,7 +197,7 @@ private:
     QVector<QVector<TimeStatisticsMicroState> >       timesPerClassAndState;
 
 public:
-    BufferStatistics(const ModelCreator * system);
+    BufferStatistics(const ModelSystem &system);
 
     inline const EvenStatistics& getEventStatistics(int state)                              const { return eventsPerState[state]; }
     inline const EvenStatistics& getEventStatisticsSC(int classNo)                          const { return eventsPerClass[classNo]; }

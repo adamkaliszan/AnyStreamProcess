@@ -112,7 +112,7 @@ QMap<ParametersSet, QVector<double>> TypesAndSettings::getPlotsY(RSystem &rSyste
 {
     Settings *qosSettings = _myMap[qos];
     qosSettings->setFunctionalParameter(functionalParameter);
-    QList<ParametersSet> sysParams = qosSettings->getParametersList(&rSystem.getModel(), rSystem.getAvailableAperAU());
+    QList<ParametersSet> sysParams = qosSettings->getParametersList(rSystem.getModel(), rSystem.getAvailableAperAU());
 
     QMap<ParametersSet, QVector<double>> result;
 
@@ -129,7 +129,7 @@ const QVector<decimal> TypesAndSettings::getPlotsX(RSystem &rSystem, ParameterTy
 {
     QVector<decimal> result;
 
-    int noOfComb = Utils::UtilsLAG::getPossibleCombinations(rSystem.getModel().k_s()).length();
+    int noOfComb = Utils::UtilsLAG::getPossibleCombinations(rSystem.getModel().getServer().k()).length();
     switch (functionalParameter)
     {
     case ParameterType::OfferedTrafficPerAS:
@@ -148,17 +148,17 @@ const QVector<decimal> TypesAndSettings::getPlotsX(RSystem &rSystem, ParameterTy
         break;
 
     case ParameterType::ServerState:
-        for (int n=0; n <= rSystem.getModel().vk_s(); n++)
+        for (int n=0; n <= rSystem.getModel().getServer().V(); n++)
             result.append(n);
         break;
 
     case ParameterType::BufferState:
-        for (int n=0; n <= rSystem.getModel().vk_b(); n++)
+        for (int n=0; n <= rSystem.getModel().getBuffer().V(); n++)
             result.append(n);
         break;
 
     case ParameterType::NumberOfGroups:
-        for (int n=0; n <= rSystem.getModel().k_s(); n++)
+        for (int n=0; n <= rSystem.getModel().getServer().k(); n++)
             result.append(n);
         break;
 
@@ -280,7 +280,7 @@ bool SettingsTypeForClass::getSinglePlot(QLineSeries *outPlot, QPair<double, dou
     return result;
 }
 
-QList<ParametersSet> SettingsTypeForClass::getParametersList(const ModelCreator *system, const QList<decimal> &aOfPerAU) const
+QList<ParametersSet> SettingsTypeForClass::getParametersList(const ModelSystem &system, const QList<decimal> &aOfPerAU) const
 {
     QList<ParametersSet> result;
     int i;
@@ -288,7 +288,7 @@ QList<ParametersSet> SettingsTypeForClass::getParametersList(const ModelCreator 
     switch (functionalParameter)
     {
     case ParameterType::OfferedTrafficPerAS:
-        for (i=0; i<system->m(); i++)
+        for (i=0; i<system.m(); i++)
         {
             ParametersSet item;
             item.classIndex = i;
@@ -449,7 +449,7 @@ bool SettingsTypeForSystemState::getSinglePlot(QVector<double> &outPlot, RSystem
     return result;
 }
 
-QList<ParametersSet> SettingsTypeForSystemState::getParametersList(const ModelCreator *system, const QList<decimal> &aOfPerAU) const
+QList<ParametersSet> SettingsTypeForSystemState::getParametersList(const ModelSystem &system, const QList<decimal> &aOfPerAU) const
 {
     QList<ParametersSet> result;
     int n;
@@ -457,7 +457,7 @@ QList<ParametersSet> SettingsTypeForSystemState::getParametersList(const ModelCr
     switch (functionalParameter)
     {
     case ParameterType::OfferedTrafficPerAS:
-        for (n=0; n <= system->V(); n++)
+        for (n=0; n <= system.V(); n++)
         {
             ParametersSet item;
             item.systemState = n;
@@ -518,7 +518,7 @@ bool SettingsTypeForServerState::getSinglePlot(QLineSeries *outPlot, QPair<doubl
     if (functionalParameter == ParameterType::ServerState)
     {
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
-        for (int n=0; n<=rSystem.getModel().vk_s(); n++)
+        for (int n=0; n<=rSystem.getModel().getServer().V(); n++)
         {
             double y=0;
 
@@ -561,7 +561,7 @@ bool SettingsTypeForServerState::getSinglePlot(QVector<double> &outPlot, RSystem
     if (functionalParameter == ParameterType::ServerState)
     {
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
-        for (int n=0; n<=rSystem.getModel().vk_s(); n++)
+        for (int n=0; n<=rSystem.getModel().getServer().V(); n++)
         {
             double y=0;
 
@@ -576,7 +576,7 @@ bool SettingsTypeForServerState::getSinglePlot(QVector<double> &outPlot, RSystem
     return result;
 }
 
-QList<ParametersSet> SettingsTypeForServerState::getParametersList(const ModelCreator *system, const QList<decimal> &aOfPerAU) const
+QList<ParametersSet> SettingsTypeForServerState::getParametersList(const ModelSystem &system, const QList<decimal> &aOfPerAU) const
 {
     QList<ParametersSet> result;
     int n;
@@ -585,7 +585,7 @@ QList<ParametersSet> SettingsTypeForServerState::getParametersList(const ModelCr
     switch (functionalParameter)
     {
     case ParameterType::OfferedTrafficPerAS:
-        for (n=0; n <= system->vk_s(); n++)
+        for (n=0; n <= system.getServer().V(); n++)
         {
             ParametersSet item;
             item.serverState = n;
@@ -648,7 +648,7 @@ bool SettingsTypeForBufferState::getSinglePlot(QLineSeries *outPlot, QPair<doubl
     if (functionalParameter == ParameterType::BufferState)
     {
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
-        for (int n=0; n<=rSystem.getModel().vk_b(); n++)
+        for (int n=0; n<=rSystem.getModel().getBuffer().V(); n++)
         {
             double y=0;
 
@@ -691,7 +691,7 @@ bool SettingsTypeForBufferState::getSinglePlot(QVector<double> &outPlot, RSystem
     if (functionalParameter == ParameterType::BufferState)
     {
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
-        for (int n=0; n<=rSystem.getModel().vk_b(); n++)
+        for (int n=0; n<=rSystem.getModel().getBuffer().V(); n++)
         {
             double y=0;
 
@@ -706,7 +706,7 @@ bool SettingsTypeForBufferState::getSinglePlot(QVector<double> &outPlot, RSystem
     return result;
 }
 
-QList<ParametersSet> SettingsTypeForBufferState::getParametersList(const ModelCreator *system, const QList<decimal> &aOfPerAU) const
+QList<ParametersSet> SettingsTypeForBufferState::getParametersList(const ModelSystem &system, const QList<decimal> &aOfPerAU) const
 {
     QList<ParametersSet> result;
     int n;
@@ -715,7 +715,7 @@ QList<ParametersSet> SettingsTypeForBufferState::getParametersList(const ModelCr
     switch(functionalParameter)
     {
     case ParameterType::OfferedTrafficPerAS:
-        for (n=0; n <= system->vk_b(); n++)
+        for (n=0; n <= system.getBuffer().V(); n++)
         {
             ParametersSet item;
             item.bufferState = n;
@@ -867,7 +867,7 @@ bool SettingsTypeForClassAndSystemState::getSinglePlot(QVector<double> &outPlot,
     return result;
 }
 
-QList<ParametersSet> SettingsTypeForClassAndSystemState::getParametersList(const ModelCreator *system, const QList<decimal> &aOfPerAU) const
+QList<ParametersSet> SettingsTypeForClassAndSystemState::getParametersList(const ModelSystem &system, const QList<decimal> &aOfPerAU) const
 {
     QList<ParametersSet> result;
     int i;
@@ -875,9 +875,9 @@ QList<ParametersSet> SettingsTypeForClassAndSystemState::getParametersList(const
     switch (functionalParameter)
     {
     case ParameterType::OfferedTrafficPerAS:
-        for (i=0; i < system->m(); i++)
+        for (i=0; i < system.m(); i++)
         {
-            for (n=0; n <= system->V(); n++)
+            for (n=0; n <= system.V(); n++)
             {
                 ParametersSet item;
                 item.systemState = n;
@@ -889,7 +889,7 @@ QList<ParametersSet> SettingsTypeForClassAndSystemState::getParametersList(const
     case ParameterType::SystemState:
         foreach (decimal a, aOfPerAU)
         {
-            for (i=0; i < system->m(); i++)
+            for (i=0; i < system.m(); i++)
             {
                 ParametersSet item;
                 item.systemState = -1;
@@ -902,7 +902,7 @@ QList<ParametersSet> SettingsTypeForClassAndSystemState::getParametersList(const
     case ParameterType::TrafficClass:
         foreach (decimal a, aOfPerAU)
         {
-            for (n=0; n <= system->V(); n++)
+            for (n=0; n <= system.V(); n++)
             {
                 ParametersSet item;
                 item.classIndex = -1;
@@ -957,7 +957,7 @@ bool SettingsTypeForClassAndServerState::getSinglePlot(QLineSeries *outPlot, QPa
     if (functionalParameter == ParameterType::SystemState)
     {
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
-        for (int n=0; n<=rSystem.getModel().vk_s(); n++)
+        for (int n=0; n<=rSystem.getModel().getServer().V(); n++)
         {
             double y=0;
 
@@ -1020,7 +1020,7 @@ bool SettingsTypeForClassAndServerState::getSinglePlot(QVector<double> &outPlot,
     if (functionalParameter == ParameterType::SystemState)
     {
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
-        for (int n=0; n<=rSystem.getModel().vk_s(); n++)
+        for (int n=0; n<=rSystem.getModel().getServer().V(); n++)
         {
             double y=0;
 
@@ -1051,7 +1051,7 @@ bool SettingsTypeForClassAndServerState::getSinglePlot(QVector<double> &outPlot,
     return result;
 }
 
-QList<ParametersSet> SettingsTypeForClassAndServerState::getParametersList(const ModelCreator *system, const QList<decimal> &aOfPerAU) const
+QList<ParametersSet> SettingsTypeForClassAndServerState::getParametersList(const ModelSystem &system, const QList<decimal> &aOfPerAU) const
 {
     QList<ParametersSet> result;
 
@@ -1061,9 +1061,9 @@ QList<ParametersSet> SettingsTypeForClassAndServerState::getParametersList(const
     switch (functionalParameter)
     {
     case ParameterType::OfferedTrafficPerAS:
-        for (i=0; i < system->m(); i++)
+        for (i=0; i < system.m(); i++)
         {
-            for (n=0; n <= system->vk_s(); n++)
+            for (n=0; n <= system.getServer().V(); n++)
             {
                 ParametersSet item;
                 item.serverState = n;
@@ -1076,7 +1076,7 @@ QList<ParametersSet> SettingsTypeForClassAndServerState::getParametersList(const
     case ParameterType::TrafficClass:
         foreach (a, aOfPerAU)
         {
-            for (n=0; n <= system->vk_s(); n++)
+            for (n=0; n <= system.getServer().V(); n++)
             {
                 ParametersSet item;
                 item.serverState = n;
@@ -1090,7 +1090,7 @@ QList<ParametersSet> SettingsTypeForClassAndServerState::getParametersList(const
     case ParameterType::ServerState:
         foreach (a, aOfPerAU)
         {
-            for (i=0; i < system->m(); i++)
+            for (i=0; i < system.m(); i++)
             {
                 ParametersSet item;
                 item.serverState = -1;
@@ -1146,7 +1146,7 @@ bool SettingsTypeForClassAndBufferState::getSinglePlot(QLineSeries *outPlot, QPa
     if (functionalParameter == ParameterType::SystemState)
     {
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
-        for (int n=0; n<=rSystem.getModel().vk_b(); n++)
+        for (int n=0; n<=rSystem.getModel().getBuffer().V(); n++)
         {
             double y=0;
 
@@ -1209,7 +1209,7 @@ bool SettingsTypeForClassAndBufferState::getSinglePlot(QVector<double> &outPlot,
     if (functionalParameter == ParameterType::SystemState)
     {
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
-        for (int n=0; n<=rSystem.getModel().vk_b(); n++)
+        for (int n=0; n<=rSystem.getModel().getBuffer().V(); n++)
         {
             double y=0;
 
@@ -1240,7 +1240,7 @@ bool SettingsTypeForClassAndBufferState::getSinglePlot(QVector<double> &outPlot,
     return result;
 }
 
-QList<ParametersSet> SettingsTypeForClassAndBufferState::getParametersList(const ModelCreator *system, const QList<decimal> &aOfPerAU) const
+QList<ParametersSet> SettingsTypeForClassAndBufferState::getParametersList(const ModelSystem &system, const QList<decimal> &aOfPerAU) const
 {
     QList<ParametersSet> result;
     int i;
@@ -1250,9 +1250,9 @@ QList<ParametersSet> SettingsTypeForClassAndBufferState::getParametersList(const
     switch(functionalParameter)
     {
     case ParameterType::OfferedTrafficPerAS:
-        for (i=0; i < system->m(); i++)
+        for (i=0; i < system.m(); i++)
         {
-            for (n=0; n <= system->vk_b(); n++)
+            for (n=0; n <= system.getBuffer().V(); n++)
             {
                 ParametersSet item;
                 item.bufferState = n;
@@ -1264,7 +1264,7 @@ QList<ParametersSet> SettingsTypeForClassAndBufferState::getParametersList(const
     case ParameterType::TrafficClass:
         foreach (a, aOfPerAU)
         {
-            for (n=0; n <= system->vk_b(); n++)
+            for (n=0; n <= system.getBuffer().V(); n++)
             {
                 ParametersSet item;
                 item.bufferState = n;
@@ -1279,7 +1279,7 @@ QList<ParametersSet> SettingsTypeForClassAndBufferState::getParametersList(const
     case ParameterType::BufferState:
         foreach (a, aOfPerAU)
         {
-            for (i=0; i < system->m(); i++)
+            for (i=0; i < system.m(); i++)
             {
                 ParametersSet item;
                 item.bufferState = -1;
@@ -1335,7 +1335,7 @@ bool SettingsForClassAndServerGroupsCombination::getSinglePlot(QLineSeries *outP
             const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
             double x = static_cast<double>(a);
             double y=0;
-            int t = rSystem.getModel().getClass(parametersSet.classIndex)->t();
+            int t = rSystem.getModel().t(parametersSet.classIndex);
 
             if ((*singlePoint)->read(y, typeToRead, t, parametersSet.combinationNumber))
             {
@@ -1358,7 +1358,7 @@ bool SettingsForClassAndServerGroupsCombination::getSinglePlot(QLineSeries *outP
         for (int n=0; n <= noOfCombinations; n++)
         {
             double y=0;
-            int t = rSystem.getModel().getClass(parametersSet.classIndex)->t();
+            int t = rSystem.getModel().t(parametersSet.classIndex);
 
             if ((*singlePoint)->read(y, typeToRead, t, n))
             {
@@ -1379,7 +1379,7 @@ bool SettingsForClassAndServerGroupsCombination::getSinglePlot(QLineSeries *outP
         for (int i=0; i < rSystem.getModel().m(); i++)
         {
             double y=0;
-            int t = rSystem.getModel().getClass(i)->t();
+            int t = rSystem.getModel().t(i);
 
             if ((*singlePoint)->read(y, typeToRead, t, parametersSet.combinationNumber))
             {
@@ -1408,7 +1408,7 @@ bool SettingsForClassAndServerGroupsCombination::getSinglePlot(QVector<double> &
         {
             const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
             double y=0;
-            int t = rSystem.getModel().getClass(parametersSet.classIndex)->t();
+            int t = rSystem.getModel().t(parametersSet.classIndex);
 
             if ((*singlePoint)->read(y, TypeResourcess_VsServerGroupsCombination::InavailabilityInAllTheGroups, t, parametersSet.combinationNumber))
             {
@@ -1422,7 +1422,7 @@ bool SettingsForClassAndServerGroupsCombination::getSinglePlot(QVector<double> &
     if (functionalParameter == ParameterType::NumberOfGroups)
     {
         int noOfCombinations = rSystem.getNoOfGroupsCombinations();
-        int t = rSystem.getModel().getClass(parametersSet.classIndex)->t();
+        int t = rSystem.getModel().t(parametersSet.classIndex);
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
 
         for (int n=0; n <= noOfCombinations; n++)
@@ -1444,7 +1444,7 @@ bool SettingsForClassAndServerGroupsCombination::getSinglePlot(QVector<double> &
         for (int i=0; i < rSystem.getModel().m(); i++)
         {
             double y=0;
-            int t = rSystem.getModel().getClass(i)->t();
+            int t = rSystem.getModel().t(i);
 
             if ((*singlePoint)->read(y, TypeResourcess_VsServerGroupsCombination::AvailabilityInAllTheGroups, t, parametersSet.combinationNumber))
             {
@@ -1458,11 +1458,11 @@ bool SettingsForClassAndServerGroupsCombination::getSinglePlot(QVector<double> &
     return result;
 }
 
-QList<ParametersSet> SettingsForClassAndServerGroupsCombination::getParametersList(const ModelCreator *system, const QList<decimal> &aOfPerAU) const
+QList<ParametersSet> SettingsForClassAndServerGroupsCombination::getParametersList(const ModelSystem &system, const QList<decimal> &aOfPerAU) const
 {
     QList<ParametersSet> result;
 
-    QVector<QVector<int>> combinations = Utils::UtilsLAG::getPossibleCombinationsFinal(system->k_s());
+    QVector<QVector<int>> combinations = Utils::UtilsLAG::getPossibleCombinationsFinal(system.getServer().V());
 
     int noOfCOmbinations = combinations.length();
     int lstNoOfGroupInCombination = -1;
@@ -1474,11 +1474,11 @@ QList<ParametersSet> SettingsForClassAndServerGroupsCombination::getParametersLi
     switch (functionalParameter)
     {
     case ParameterType::OfferedTrafficPerAS:
-        for (i=0; i < system->m(); i++)
+        for (i=0; i < system.m(); i++)
         {
             for (combNo=0; combNo < noOfCOmbinations; combNo++)
             {
-                if ((system->getGroupsSchedulerAlgorithm() == ResourcessScheduler::Random) && combinations[combNo].length() == lstNoOfGroupInCombination)
+                if ((system.getServer().schedulerAlg == ResourcessScheduler::Random) && combinations[combNo].length() == lstNoOfGroupInCombination)
                     continue;
                 lstNoOfGroupInCombination = combinations[combNo].length();
 
@@ -1494,7 +1494,7 @@ QList<ParametersSet> SettingsForClassAndServerGroupsCombination::getParametersLi
         {
             for (combNo=0; combNo < noOfCOmbinations; combNo++)
             {
-                if ((system->getGroupsSchedulerAlgorithm() == ResourcessScheduler::Random) && combinations[combNo].length() == lstNoOfGroupInCombination)
+                if ((system.getServer().schedulerAlg == ResourcessScheduler::Random) && combinations[combNo].length() == lstNoOfGroupInCombination)
                     continue;
                 lstNoOfGroupInCombination = combinations[combNo].length();
 
@@ -1510,7 +1510,7 @@ QList<ParametersSet> SettingsForClassAndServerGroupsCombination::getParametersLi
     case ParameterType::CombinationNumber:
         foreach (a, aOfPerAU)
         {
-            for (i=0; i < system->m(); i++)
+            for (i=0; i < system.m(); i++)
             {
                 ParametersSet item;
                 item.combinationNumber = -1;
@@ -1546,7 +1546,7 @@ bool SettingsAvailableSubroupDistribution::getSinglePlot(QLineSeries *outPlot, Q
     outPlot->clear();
     if (functionalParameter == ParameterType::OfferedTrafficPerAS)
     {
-        int t = rSystem.getModel().getClass(parametersSet.classIndex)->t();
+        int t = rSystem.getModel().t(parametersSet.classIndex);
         foreach(decimal a, rSystem.getAvailableAperAU())
         {
             const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
@@ -1570,8 +1570,8 @@ bool SettingsAvailableSubroupDistribution::getSinglePlot(QLineSeries *outPlot, Q
     if (functionalParameter == ParameterType::NumberOfGroups)
     {
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
-        int t = rSystem.getModel().getClass(parametersSet.classIndex)->t();
-        for (int k=0; k <= rSystem.getModel().k_s(); k++)
+        int t = rSystem.getModel().t(parametersSet.classIndex);
+        for (int k=0; k <= rSystem.getModel().getServer().V(); k++)
         {
             double y=0;
 
@@ -1594,7 +1594,7 @@ bool SettingsAvailableSubroupDistribution::getSinglePlot(QLineSeries *outPlot, Q
         for (int i=0; i < rSystem.getModel().m(); i++)
         {
             double y=0;
-            int t = rSystem.getModel().getClass(i)->t();
+            int t = rSystem.getModel().t(i);
 
             if ((*singlePoint)->read(y, TypeForResourcessAndNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, t, parametersSet.numberOfGroups))
             {
@@ -1618,7 +1618,7 @@ bool SettingsAvailableSubroupDistribution::getSinglePlot(QVector<double> &outPlo
     outPlot.clear();
     if (functionalParameter == ParameterType::OfferedTrafficPerAS)
     {
-        int t = rSystem.getModel().getClass(parametersSet.classIndex)->t();
+        int t = rSystem.getModel().t(parametersSet.classIndex);
         foreach(decimal a, rSystem.getAvailableAperAU())
         {
             const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
@@ -1636,8 +1636,8 @@ bool SettingsAvailableSubroupDistribution::getSinglePlot(QVector<double> &outPlo
     if (functionalParameter == ParameterType::NumberOfGroups)
     {
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
-        int t = rSystem.getModel().getClass(parametersSet.classIndex)->t();
-        for (int k=0; k <= rSystem.getModel().k_s(); k++)
+        int t = rSystem.getModel().t(parametersSet.classIndex);
+        for (int k=0; k <= rSystem.getModel().getServer().k(); k++)
         {
             double y=0;
 
@@ -1656,7 +1656,7 @@ bool SettingsAvailableSubroupDistribution::getSinglePlot(QVector<double> &outPlo
         for (int i=0; i < rSystem.getModel().m(); i++)
         {
             double y=0;
-            int t = rSystem.getModel().getClass(i)->t();
+            int t = rSystem.getModel().t(i);
 
             if ((*singlePoint)->read(y, TypeForResourcessAndNumberOfServerGroups::AvailabilityOnlyInAllTheGroups, t, parametersSet.numberOfGroups))
             {
@@ -1670,7 +1670,7 @@ bool SettingsAvailableSubroupDistribution::getSinglePlot(QVector<double> &outPlo
     return result;
 }
 
-QList<ParametersSet> SettingsAvailableSubroupDistribution::getParametersList(const ModelCreator *system, const QList<decimal> &aOfPerAU) const
+QList<ParametersSet> SettingsAvailableSubroupDistribution::getParametersList(const ModelSystem &system, const QList<decimal> &aOfPerAU) const
 {
     QList<ParametersSet> result;
     int k;
@@ -1680,9 +1680,9 @@ QList<ParametersSet> SettingsAvailableSubroupDistribution::getParametersList(con
     switch (functionalParameter)
     {
     case ParameterType::OfferedTrafficPerAS:
-        for (k=0; k <= system->k_s(); k++)
+        for (k=0; k <= system.getServer().V(); k++)
         {
-            for (i=0; i < system->m(); i++)
+            for (i=0; i < system.m(); i++)
             {
                 ParametersSet item;
                 item.numberOfGroups = k;
@@ -1694,7 +1694,7 @@ QList<ParametersSet> SettingsAvailableSubroupDistribution::getParametersList(con
     case ParameterType::NumberOfGroups:
         foreach (a, aOfPerAU)
         {
-            for (i=0; i < system->m(); i++)
+            for (i=0; i < system.m(); i++)
             {
                 ParametersSet item;
                 item.numberOfGroups = -1;
@@ -1708,7 +1708,7 @@ QList<ParametersSet> SettingsAvailableSubroupDistribution::getParametersList(con
     case ParameterType::TrafficClass:
         foreach (a, aOfPerAU)
         {
-            for (k=0; k <= system->k_s(); k++)
+            for (k=0; k <= system.getServer().V(); k++)
             {
                 ParametersSet item;
                 item.numberOfGroups = k;
@@ -1790,7 +1790,7 @@ double Settings::getXmax(RSystem &rSystem) const
         break;
 
     case ParameterType::NumberOfGroups:
-        result = rSystem.getModel().k_s();
+        result = rSystem.getModel().getServer().k();
         break;
 
     case ParameterType::CombinationNumber:
@@ -1802,11 +1802,11 @@ double Settings::getXmax(RSystem &rSystem) const
         break;
 
     case ParameterType::ServerState:
-        result = rSystem.getModel().vk_s();
+        result = rSystem.getModel().getServer().k();
         break;
 
     case ParameterType::BufferState:
-        result = rSystem.getModel().vk_b();
+        result = rSystem.getModel().getBuffer().V();
         break;
 
     case ParameterType::None:
@@ -1815,7 +1815,7 @@ double Settings::getXmax(RSystem &rSystem) const
     return result;
 }
 
-QString Settings::updateParameters(ParametersSet &outParameters, const QVariant &variant, ParameterType paramType, const ModelCreator *system, RSystem *resultsForSystem)
+QString Settings::updateParameters(ParametersSet &outParameters, const QVariant &variant, ParameterType paramType, const ModelSystem &system, RSystem *resultsForSystem)
 {
     QString result;
 
@@ -1828,7 +1828,7 @@ QString Settings::updateParameters(ParametersSet &outParameters, const QVariant 
 
     case Results::ParameterType::TrafficClass:
         outParameters.classIndex = variant.value<int>();
-        result = QString("%1").arg(system->getClass(outParameters.classIndex)->shortName());
+        result = QString("%1").arg(system.getTrClass(outParameters.classIndex).shortName());
         break;
 
     case Results::ParameterType::SystemState:
@@ -1861,7 +1861,7 @@ QString Settings::updateParameters(ParametersSet &outParameters, const QVariant 
     return result;
 }
 
-void Settings::fillListWithParameters(QList<QVariant> &list, ParameterType paramType, const ModelCreator *system, QList<decimal> offeredTraffic)
+void Settings::fillListWithParameters(QList<QVariant> &list, ParameterType paramType, const ModelSystem &system, QList<decimal> offeredTraffic)
 {
     list.clear();
     QVariant tmpVariant;
@@ -1871,7 +1871,7 @@ void Settings::fillListWithParameters(QList<QVariant> &list, ParameterType param
     case ParameterType::None:
         break;
     case ParameterType::TrafficClass:
-        for (i=0; i<system->m(); i++)
+        for (i=0; i<system.m(); i++)
         {
             tmpVariant.setValue<int>(i);
             list.append(tmpVariant);
@@ -1885,14 +1885,14 @@ void Settings::fillListWithParameters(QList<QVariant> &list, ParameterType param
         }
         break;
     case ParameterType::SystemState:
-        for (i=0; i<=system->V(); i++)
+        for (i=0; i<=system.V(); i++)
         {
             tmpVariant.setValue<int>(i);
             list.append(tmpVariant);
         }
         break;
     case ParameterType::ServerState:
-        for (i=0; i<=system->vk_s(); i++)
+        for (i=0; i<=system.getServer().V(); i++)
         {
             tmpVariant.setValue<int>(i);
             list.append(tmpVariant);
@@ -1900,7 +1900,7 @@ void Settings::fillListWithParameters(QList<QVariant> &list, ParameterType param
         break;
 
     case ParameterType::BufferState:
-        for (i=0; i<=system->vk_b(); i++)
+        for (i=0; i<=system.getBuffer().V(); i++)
         {
             tmpVariant.setValue<int>(i);
             list.append(tmpVariant);
@@ -1908,7 +1908,7 @@ void Settings::fillListWithParameters(QList<QVariant> &list, ParameterType param
         break;
 
     case ParameterType::NumberOfGroups:
-        for (i=0; i<=system->k_s(); i++)
+        for (i=0; i<=system.getServer().k(); i++)
         {
             tmpVariant.setValue<int>(i);
             list.append(tmpVariant);
@@ -1916,7 +1916,7 @@ void Settings::fillListWithParameters(QList<QVariant> &list, ParameterType param
         break;
 
     case ParameterType::CombinationNumber:
-        int noOfComb = Utils::UtilsLAG::getPossibleCombinations(system->k_s()).length();
+        int noOfComb = Utils::UtilsLAG::getPossibleCombinations(system.getServer().k()).length();
         for (i=0; i < noOfComb; i++)
         {
             tmpVariant.setValue<int>(i);
@@ -1927,7 +1927,7 @@ void Settings::fillListWithParameters(QList<QVariant> &list, ParameterType param
 
 }
 
-QString Settings::getTypeValue(const ParametersSet &params, ParameterType type, const ModelCreator *system)
+QString Settings::getTypeValue(const ParametersSet &params, ParameterType type, const ModelSystem &system)
 {
     QString result;
     QTextStream str;
@@ -1936,7 +1936,7 @@ QString Settings::getTypeValue(const ParametersSet &params, ParameterType type, 
     switch (type)
     {
     case Results::ParameterType::TrafficClass:
-        str<<system->getClass(params.classIndex)->shortName();
+        str<<system.getTrClass(params.classIndex).shortName();
         break;
 
     case Results::ParameterType::SystemState:
@@ -1952,7 +1952,7 @@ QString Settings::getTypeValue(const ParametersSet &params, ParameterType type, 
         break;
 
     case Results::ParameterType::CombinationNumber:
-        str<<Utils::UtilsLAG::getCombinationString(Utils::UtilsLAG::getPossibleCombinationsFinal(system->k_s())[params.combinationNumber]);
+        str<<Utils::UtilsLAG::getCombinationString(Utils::UtilsLAG::getPossibleCombinationsFinal(system.getServer().k())[params.combinationNumber]);
         break;
 
     case Results::ParameterType::NumberOfGroups:
@@ -1970,7 +1970,7 @@ QString Settings::getTypeValue(const ParametersSet &params, ParameterType type, 
     return result;
 }
 
-QString Settings::getParameterDescription(const ParametersSet &params, const ModelCreator *system)
+QString Settings::getParameterDescription(const ParametersSet &params, const ModelSystem &system)
 {
     QString result;
     QTextStream str;
@@ -1986,7 +1986,7 @@ QString Settings::getParameterDescription(const ParametersSet &params, const Mod
     return result;
 }
 
-QString Settings::getParameterDescription(const ParametersSet &params, const ModelCreator *system, const QList<ParameterType> dontDescribeMe)
+QString Settings::getParameterDescription(const ParametersSet &params, const ModelSystem &system, const QList<ParameterType> dontDescribeMe)
 {
     QString result;
     QTextStream str;

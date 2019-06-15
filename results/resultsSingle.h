@@ -22,7 +22,7 @@ class RSingle
 public:
     RSingle();
 
-    void init(const ModelCreator *system);
+    void init(const ModelSystem &system);
 
     RSingle& write(TypeGeneral type, double value);
     bool read(double &result, TypeGeneral type) const;
@@ -151,12 +151,13 @@ private:
     struct DataForStates
     {
         double probability;
+        double newCallOutIntensityOffered;
+        double newCallOutIntensityAccepted;
         double newCallInIntensity;
         double endCallInIntensity;
-        double newCallOutIntensity;
         double endCallOutIntensity;
 
-        DataForStates(): probability(0), newCallInIntensity(0), endCallInIntensity(0), newCallOutIntensity(0),  endCallOutIntensity(0) {}
+        DataForStates(): probability(0), newCallOutIntensityOffered(0), newCallOutIntensityAccepted(0), newCallInIntensity(0), endCallInIntensity(0),   endCallOutIntensity(0) {}
 
         DataForStates &operator+=(const DataForStates& rho);
         DataForStates operator-(const DataForStates& rho) const;

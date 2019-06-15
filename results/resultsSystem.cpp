@@ -5,7 +5,7 @@
 namespace Results
 {
 
-RSystem::RSystem(const ModelCreator &model)
+RSystem::RSystem(const ModelSystem &model)
     : model(model)
 {
     _aPerAU.clear();
@@ -21,7 +21,7 @@ RInvestigator& RSystem::createNewInvestigation(Investigator *algorithm, decimal 
 
     if (!resultsForInvestigatorsAndOfferedTraffic[algorithm].contains(aPerAU))
     {
-        resultsForInvestigatorsAndOfferedTraffic[algorithm].insert(aPerAU, RInvestigator(&model));
+        resultsForInvestigatorsAndOfferedTraffic[algorithm].insert(aPerAU, RInvestigator(model));
         resultsForInvestigatorsAndOfferedTraffic[algorithm].find(aPerAU)->init(noOfSeries);
     }
     return *(resultsForInvestigatorsAndOfferedTraffic[algorithm].find(aPerAU));
@@ -96,7 +96,7 @@ double RSystem::getMaxAperAU() const
 int RSystem::getNoOfGroupsCombinations() const
 {
     if (groupCombinations.length() == 0)
-        groupCombinations = Utils::UtilsLAG::getPossibleCombinations(model.k_s());
+        groupCombinations = Utils::UtilsLAG::getPossibleCombinations(model.getServer().k());
 
     return groupCombinations.length();
 }
@@ -104,7 +104,7 @@ int RSystem::getNoOfGroupsCombinations() const
 QVector<int> RSystem::getGroupCombination(int combinationNo)
 {
     if (groupCombinations.length() == 0)
-        groupCombinations = Utils::UtilsLAG::getPossibleCombinations(model.k_s());
+        groupCombinations = Utils::UtilsLAG::getPossibleCombinations(model.getServer().k());
 
     return groupCombinations[combinationNo].first;
 }

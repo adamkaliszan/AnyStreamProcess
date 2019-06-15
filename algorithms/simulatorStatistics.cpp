@@ -4,12 +4,12 @@
 namespace Algorithms
 {
 
-SystemStatistics::SystemStatistics(const ModelCreator * const system)
+SystemStatistics::SystemStatistics(const ModelSystem &system)
 {
-    int vk_sb = system->V();
-    int vk_s = system->vk_s();
-    int vk_b = system->vk_b();
-    int m = system->m();
+    int vk_sb = system.V();
+    int vk_s = system.getServer().V();
+    int vk_b = system.getBuffer().V();
+    int m = system.m();
 
     timesPerClasses.resize(m);
     timesPerSystemState.resize(vk_sb + 1);
@@ -87,12 +87,12 @@ void SystemStatistics::clear()
                 timesPerClassAndServerAndBufferState[i][n][l].statsClear();
 }
 
-void SystemStatistics::collectPre(const ModelCreator *mSystem, double time, int n_s, int n_b
+void SystemStatistics::collectPre(const ModelSystem &mSystem, double time, int n_s, int n_b
   , const QVector<int> &n_si, const QVector<int> &n_bi, const QVector<int> &n_sk, const QVector<int> &n_bk)
 {
-    for (int i=0; i<mSystem->m(); i++)
+    for (int i=0; i<mSystem.m(); i++)
     {
-        if (mSystem->getConstSyst().isInBlockingState(i, n_sk, n_bk))
+        if (mSystem.isInBlockingState(i, n_sk, n_bk))
             timesPerClasses[i].blockingTime+= time;
     }
 
@@ -100,7 +100,7 @@ void SystemStatistics::collectPre(const ModelCreator *mSystem, double time, int 
 
     timesPerServerAndBufferState[n_s][n_b].occupancyTime+= time;
 
-    for (int i=0; i< mSystem->m(); i++)
+    for (int i=0; i< mSystem.m(); i++)
     {
         timesPerClassAndSystemState[i][n_s+n_b].occupancyUtilization += (time*(n_si[i] + n_bi[i]));
         timesPerClassAndServerAndBufferState[i][n_s][n_b].occupancyUtilizationServer += (time*(n_si[i]));
@@ -150,72 +150,72 @@ void SystemStatistics::collectPost(int classIdx, int old_n, int n, StatisticEven
     }
 }
 
-ServerStatistics::ServerStatistics(const ModelCreator * const system)
+ServerStatistics::ServerStatistics(const ModelSystem &system)
 {
-    combinationList = Utils::UtilsLAG::getPossibleCombinationsFinal(system->k_s());
+    combinationList = Utils::UtilsLAG::getPossibleCombinationsFinal(system.getServer().k());
 
-    eventsPerClass.resize(system->m());
+    eventsPerClass.resize(system.m());
     eventsPerClass.fill(EvenStatistics());
 
-    eventsPerState.resize(system->V()+1);
+    eventsPerState.resize(system.V()+1);
     eventsPerState.fill(EvenStatistics());
 
-    eventsPerClassAndState.resize(system->m());
-    for (int classIdx=0; classIdx<system->m(); classIdx++)
+    eventsPerClassAndState.resize(system.m());
+    for (int classIdx=0; classIdx<system.m(); classIdx++)
     {
-        eventsPerClassAndState[classIdx].resize(system->V()+1);
+        eventsPerClassAndState[classIdx].resize(system.V()+1);
         eventsPerClassAndState[classIdx].fill(EvenStatistics());
     }
 
-    timesPerState.resize(system->V()+1);
+    timesPerState.resize(system.V()+1);
     timesPerState.fill(TimeStatisticsMacroState());
 
-    timesPerClassAndState.resize(system->m());
-    for (int classIdx=0; classIdx<system->m(); classIdx++)
+    timesPerClassAndState.resize(system.m());
+    for (int classIdx=0; classIdx<system.m(); classIdx++)
     {
-        timesPerClassAndState[classIdx].resize(system->V()+1);
+        timesPerClassAndState[classIdx].resize(system.V()+1);
         timesPerClassAndState[classIdx].fill(TimeStatisticsMicroState());
     }
 
-    timesPerGroupSets.resize(system->k_s()+1);
+    timesPerGroupSets.resize(system.getServer().k()+1);
 
-    for (int noOfNotConsideredGroups=0; noOfNotConsideredGroups <= system->k_s(); noOfNotConsideredGroups++)
+    for (int noOfNotConsideredGroups=0; noOfNotConsideredGroups <= system.getServer().k(); noOfNotConsideredGroups++)
     {
-        timesPerGroupSets[noOfNotConsideredGroups].resize(system->v_sMax()+1);
-        timesPerGroupSets[noOfNotConsideredGroups].fill(GroupSetStatistics(), system->v_sMax()+1);
+        timesPerGroupSets[noOfNotConsideredGroups].resize(system.getServer().vMax()+1);
+        timesPerGroupSets[noOfNotConsideredGroups].fill(GroupSetStatistics(), system.getServer().vMax()+1);
     }
 
     timesPerGroupsCombinations.resize(combinationList.length());
     for (int combinationNo=0; combinationNo<combinationList.length(); combinationNo++)
     {
-        timesPerGroupsCombinations[combinationNo].resize(system->v_sMax()+1);
+        timesPerGroupsCombinations[combinationNo].resize(system.getServer().vMax()+1);
     }
 }
 
-void ServerStatistics::collectPre(const ModelSystem &mSystem, double time, int n, const QVector<int> &n_i, const QVector<int> &n_k)
+void ServerStatistics::collectPre(const ModelSystem &system, double time, int n, const QVector<int> &n_i, const QVector<int> &n_k)
 {
 //timesPerState
     timesPerState[n].occupancyTime+= time;
 
 //timesPerClassAndState
-    for (int i=0; i< mSystem.m(); i++)
+    for (int i=0; i< system.m(); i++)
     {
         timesPerClassAndState[i][n].occupancyUtilizationServer = time * n_i[i];
     }
 //timesPerGroupSets
     QVector<int> availability;
-    availability.fill(0, mSystem.getServer().k()+1);
+    availability.fill(0, system.getServer().k()+1);
 
     availability[0] = 0;
-    for (int k=0; k < mSystem.getServer().k(); k++)
+    for (int k=0; k < system.getServer().k(); k++)
     {
-        availability[k+1] = mSystem.getServer().V(k) - n_k[k];
+        availability[k+1] = system.getServer().V(k) - n_k[k];
     }
     qSort(availability);
     std::reverse(availability.begin(), availability.end());//, std::back_inserter( availability ));
     timesPerGroupSets[0][0].allInSetAvailable+= time;
     timesPerGroupSets[0][0].allInSetAvailableAllOutsideSetUnavailable+= time;
-    for (int k=1; k <= mSystem.getServer().k(); k++)
+    for (int k=1; k <= system.getServer().k(); k++)
     {
         for (int n=availability[k]+1; n <= availability[k-1]; n++)
             timesPerGroupSets[k][n].allInSetAvailableAllOutsideSetUnavailable+= time;
@@ -223,7 +223,7 @@ void ServerStatistics::collectPre(const ModelSystem &mSystem, double time, int n
         for (int n=0; n <= availability[k-1]; n++)
             timesPerGroupSets[k][n].allInSetAvailable+= time;
 
-        for (int n=availability[0]+1; n <= mSystem.getServer().vMax(); n++)
+        for (int n=availability[0]+1; n <= system.getServer().vMax(); n++)
             timesPerGroupSets[k][n].allUnavailable+= time;
     }
 
@@ -233,11 +233,11 @@ void ServerStatistics::collectPre(const ModelSystem &mSystem, double time, int n
         int k = combinationList[combinationNo].length();
         availability.resize(k);
 
-        int min = mSystem.getServer().vMax();
+        int min = system.getServer().vMax();
         int max = 0;
         for (int groupNo=0; groupNo < k; groupNo++)
         {
-            availability[groupNo] = mSystem.getServer().V(groupNo) - n_k[groupNo];
+            availability[groupNo] = system.getServer().V(groupNo) - n_k[groupNo];
             if (availability[groupNo] > max)
                 max = availability[groupNo];
             if (availability[groupNo] < min)
@@ -249,7 +249,7 @@ void ServerStatistics::collectPre(const ModelSystem &mSystem, double time, int n
         for (int n=0; n<=min; n++)
             timesPerGroupsCombinations[combinationNo][n].allInCombinationAvailable+= time;
 
-        for (int n=max+1; n<=mSystem.getServer().vMax(); n++)
+        for (int n=max+1; n<=system.getServer().vMax(); n++)
             timesPerGroupsCombinations[combinationNo][n].allInCombinationUnavailable+= time;
     }
 }
@@ -331,13 +331,13 @@ void ServerStatistics::clear()
         timesPerGroupsCombinations[combinationNo].fill(GroupCombinationStatistics());
 }
 
-BufferStatistics::BufferStatistics(const ModelCreator *system)
+BufferStatistics::BufferStatistics(const ModelSystem &system)
 {//TODO
-    eventsPerClass.resize(system->m());
-    eventsPerState.resize(system->vk_b()+1);
+    eventsPerClass.resize(system.m());
+    eventsPerState.resize(system.getBuffer().V()+1);
     //QVector<QVector <EvenStatistics> >                eventsPerClassAndState;
 
-    timesPerState.resize(system->vk_b()+1);;
+    timesPerState.resize(system.getBuffer().V()+1);
     //QVector<QVector<TimeStatisticsMicroState> >       timesPerClassAndState;
 }
 

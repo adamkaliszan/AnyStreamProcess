@@ -1,3 +1,4 @@
+#include "model.h"
 #include "algorithms/algRekLag.h"
 #include "utils/lag.h"
 

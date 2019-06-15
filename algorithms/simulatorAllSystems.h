@@ -30,7 +30,7 @@ class SimulatorAll: public Simulator
       , double a
       , Results::RInvestigator *results, SimulationParameters *simParameters
     );
-    bool possible(const ModelCreator *system) const;
+    bool possible(const ModelSystem &system) const;
 
 
     class System;                     ///< Whole system (Serwer, bufffer(optional) and Calls)
@@ -91,18 +91,7 @@ class SimulatorAll: public Simulator
       public:
         Engine *engine;
 
-        const struct Parameters
-        {
-            const int m;              ///< Number of offered traffic classes
-            const int vk_sb;          ///< Total system capacity
-            const int vk_s;           ///< Total server capacity
-            const int vk_b;           ///< Total buffer capacity
-            const QVector<int> t_i;   ///< Numbed od AUs required by single call of coresponding class
-
-            const ModelCreator  *data;   ///< Description of investigated system
-
-            Parameters(const ModelCreator *data);
-        } par;                        ///< System Parameters
+        const ModelSystem &par;
 
       private:
       // System components
@@ -116,9 +105,9 @@ class SimulatorAll: public Simulator
             int n;                    ///< Number of occupied resourcess by all the classes
             int old_n;                ///< Previous number of occupied resourcess by all the classes
             QVector<int> n_i;         ///< Number of occupied resourcess by given class. Vector length is m
-            State(const ModelCreator *system): n(0), old_n(0)
+            State(const ModelSystem &system): n(0), old_n(0)
             {
-                n_i.resize(system->m());
+                n_i.resize(system.m());
             }
         } state;                      ///< System state
 
@@ -127,7 +116,7 @@ class SimulatorAll: public Simulator
 
 
       public:
-        System(const ModelCreator *system);
+        System(const ModelSystem &system);
         ~System();
 
 #define FOLDINGSTART { //Statistics
@@ -208,7 +197,7 @@ class SimulatorAll: public Simulator
         void statsDisable();
         void statsClear();
 
-        void statsColectPre(const ModelCreator *mSystem, double time);
+        void statsColectPre(const ModelSystem &system, double time);
 
 
         void statsCollectPost(int classIdx, int old_n, int n, EventType simEvent);
@@ -236,16 +225,7 @@ class SimulatorAll: public Simulator
 
       public:
 
-        const struct Parameters
-        {
-            System *system;
-            int V;                                                            ///< Number of Allocated Slots, that the buffer is able to handle
-            int m;
-
-            Parameters(System *system): system(system), V(system->par.vk_b), m(system->par.m)
-            {
-            }
-        } par;
+        const ModelResourcess &par;
 
         struct State
         {
@@ -255,9 +235,9 @@ class SimulatorAll: public Simulator
             QVector<int> n_i;                                                 ///< Detailed number of AS that is used by given classes
             QStack<Call *> calls;                                             ///< FiFo Qeue with calls
 
-            State(const System *system): n(0), firstCall(nullptr)
+            State(const ModelResourcess &par): n(0), firstCall(nullptr)
             {
-                n_i.resize(system->par.m);
+                n_i.resize(par.V());
             }
         } state;
 
@@ -268,8 +248,8 @@ class SimulatorAll: public Simulator
         Buffer(System *system);
         ~Buffer();
 
-        inline int   getV()                                      { return par.V; }
-        inline int   getNoOfFreeAS()                             { return par.V - state.n;}
+        inline int   getV()                                      { return par.V(); }
+        inline int   getNoOfFreeAS()                             { return par.V() - state.n;}
 
 #define FOLDINGSTART { //Statistics
         void statsEnable();
@@ -346,7 +326,7 @@ class SimulatorAll: public Simulator
 
 
 private:
-    bool isItTheSameSystem(ModelCreator *system);
+    bool isItTheSameSystem(ModelCreator &system);
 
 };
 

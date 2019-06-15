@@ -30,7 +30,8 @@ enum class TypeForClass: unsigned
 enum class TypeForServerState: unsigned
 {
     StateProbability,
-    IntensityNewCallOut,
+    IntensityNewCallOutOffered,
+    IntensityNewCallOutAccepted,
     IntensityEndCallOut,
     IntensityNewCallIn,
     IntensityEndCallIn
@@ -39,7 +40,8 @@ enum class TypeForServerState: unsigned
 enum class TypeForBufferState: unsigned
 {
     StateProbability,
-    IntensityNewCallOut,
+    IntensityNewCallOutOffered,
+    IntensityNewCallOutAccepted,
     IntensityEndCallOut,
     IntensityNewCallIn,
     IntensityEndCallIn

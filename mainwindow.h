@@ -164,7 +164,7 @@ private slots:
     void on_actionConfigure_triggered();
 
 private:
-    QVector<ModelCreator*>  vectPredefinedSystems;
+    QVector<ModelCreator *>  vectPredefinedSystems;
 
     int getNoOfPoints(double aMin, double aMax, double aDelta) const;
 

@@ -43,7 +43,7 @@ MainWindow::MainWindow(QWidget *parent) :
     system        = new ModelCreator();
     scrGnuplot    = new GnuplotScript();
 
-    resultsForSystem = new Results::RSystem(*system);
+    resultsForSystem = new Results::RSystem(system->getConstSyst());
 
     ui->setupUi(this);
 
@@ -779,11 +779,11 @@ void MainWindow::readDataBase()
     {
         QVariant tmpVar;
 
-        tmpVar.setValue<ModelCreator*>(tmpSyst);
+        tmpVar.setValue<ModelCreator *>(tmpSyst);
         QString tmpStr;
         QTextStream tmpStream(&tmpStr);
 //      tmpStream.setString(tmpStr);
-        tmpStream<<(*tmpSyst);
+        tmpStream<<tmpSyst;
         ui->comboBoxPredefinedSystems->addItem(tmpStr, tmpVar);
     }
     updateAlgorithmsList();
@@ -825,9 +825,9 @@ void MainWindow::updateAlgorithmsList()
     ui->listWidgetAlgorithmsAlternative->clear();
     foreach (Investigator *alg, this->algorithms)
     {
-        if (alg->possible(this->system))
+        if (alg->possible(system->getConstSyst()))
              addAlgorithmForCurentSystem(alg);
-        else if (alg->possibleAlternative(this->system))
+        else if (alg->possibleAlternative(this->system->getConstSyst()))
              addAlternativeAlgorithmForCurentSystem(alg);
     }
 
@@ -842,7 +842,7 @@ QSet<Results::Type> MainWindow::getPossibleQoS_Types()
     QSet<Results::Type> possibleQoS_Types;
     foreach (Investigator *alg, this->algorithms)
     {
-        if (alg->possible(this->system) && alg->calculationDone && alg->isSelected)
+        if (alg->possible(this->system->getConstSyst()) && alg->calculationDone && alg->isSelected)
             possibleQoS_Types += alg->getQoS_Set();
     }
     return possibleQoS_Types;
@@ -937,9 +937,6 @@ int MainWindow::getNoOfPoints(double aMin, double aMax, double aDelta) const
 
 bool MainWindow::dbReadSystems()
 {
-    const int noOfTypes = 3;
-
-
     QSqlQuery dbSystems;
     dbSystems.exec("SELECT * FROM Systems");
 
@@ -1576,7 +1573,7 @@ void MainWindow::drawSystemModel()
         /*QGraphicsLineItem *line1 = */sceneSysModel->addLine(xClasses+0.9*wClasses, y, xClasses+0.9*wClasses - 5, y - 5, blackPen);
         /*QGraphicsLineItem *line2 = */sceneSysModel->addLine(xClasses+0.9*wClasses, y, xClasses+0.9*wClasses - 5, y + 5, blackPen);
 
-        QGraphicsTextItem  *text = sceneSysModel->addText(sys->getClass(i)->shortName(), QFont("Arial", 12));
+        QGraphicsTextItem  *text = sceneSysModel->addText(sys->getClass(i).shortName(), QFont("Arial", 12));
         text->setPos(QPoint(static_cast<int>(xClasses), static_cast<int>(y-22)));
     }
 
@@ -1759,7 +1756,7 @@ void MainWindow::fillListWidgetWithParams(QListWidget *outList, QLabel *outLabel
         for(int i = 0; i < resultsForSystem->getModel().m(); i++)
         {
             tmpVariant.setValue(i);
-            tmpItem = new QListWidgetItem(resultsForSystem->getModel().getClass(i)->shortName());
+            tmpItem = new QListWidgetItem(resultsForSystem->getModel().getTrClass(i).shortName());
             tmpItem->setData(Qt::UserRole, tmpVariant);
 
             outList->addItem(tmpItem);
@@ -1778,7 +1775,7 @@ void MainWindow::fillListWidgetWithParams(QListWidget *outList, QLabel *outLabel
         break;
 
     case Results::ParameterType::ServerState:
-        for(int n = 0; n <= resultsForSystem->getModel().vk_s(); n++)
+        for(int n = 0; n <= resultsForSystem->getModel().getServer().V(); n++)
         {
             tmpVariant.setValue(n);
             tmpItem = new QListWidgetItem(QString::number(n));
@@ -1789,7 +1786,7 @@ void MainWindow::fillListWidgetWithParams(QListWidget *outList, QLabel *outLabel
         break;
 
     case Results::ParameterType::BufferState:
-        for(int n = 0; n <= resultsForSystem->getModel().vk_b(); n++)
+        for(int n = 0; n <= resultsForSystem->getModel().getBuffer().V(); n++)
         {
             tmpVariant.setValue(n);
             tmpItem = new QListWidgetItem(QString::number(n));
@@ -1813,7 +1810,7 @@ void MainWindow::fillListWidgetWithParams(QListWidget *outList, QLabel *outLabel
         break;
 
     case Results::ParameterType::NumberOfGroups:
-        for (int k = 0; k<=resultsForSystem->getModel().k_s(); k++)
+        for (int k = 0; k<=resultsForSystem->getModel().getServer().k(); k++)
         {
             tmpVariant.setValue(k);
             tmpItem = new QListWidgetItem(QString::number(k));
@@ -1934,13 +1931,13 @@ void MainWindow::on_ResultsQtChartRefresh()
         {
             foreach (const QListWidgetItem *tmpItem1, ui->listWidgetResultsQtAdditionalParameters1->selectedItems())
             {
-                QString name = Settings::updateParameters(parameters, tmpItem1->data(Qt::UserRole), setting->getAdditionalParameter1(), system, resultsForSystem);
+                QString name = Settings::updateParameters(parameters, tmpItem1->data(Qt::UserRole), setting->getAdditionalParameter1(), system->getConstSyst(), resultsForSystem);
                 if (setting->getAdditionalParameter2() != Results::ParameterType::None)
                 {
                     int par2LwIdx = 0;
                     foreach (const QListWidgetItem *tmpItem2, ui->listWidgetResultsQtAdditionalParameters2->selectedItems())
                     {
-                        QString name2 = Settings::updateParameters(parameters, tmpItem2->data(Qt::UserRole), setting->getAdditionalParameter2(), system, resultsForSystem);
+                        QString name2 = Settings::updateParameters(parameters, tmpItem2->data(Qt::UserRole), setting->getAdditionalParameter2(), system->getConstSyst(), resultsForSystem);
                         QLineSeries *series = new QLineSeries();
                         setting->getSinglePlot(series, yMinAndMax, *resultsForSystem, algorithm, parameters, !ui->checkBoxResultsQtLogScaleOnAxisY->isChecked());
 

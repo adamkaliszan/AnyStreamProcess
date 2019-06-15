@@ -257,7 +257,7 @@ public:
 private:
     System *systemSimulator;
 
-    bool isItTheSameSystem(ModelCreator *system);
+    bool isItTheSameSystem(ModelSystem &system);
 };
 
 class ProcQeueFifo

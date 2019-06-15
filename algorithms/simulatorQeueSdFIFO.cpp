@@ -14,7 +14,7 @@ bool SimulatorQeueSdFifo::possible(const ModelSystem &system) const
     return Investigator::possible(system);
 }
 
-QSet<Results::Type> SimulatorQeueSdFifo::getQoS_Set(const ModelCreator *system) const
+QSet<Results::Type> SimulatorQeueSdFifo::getQoS_Set(const ModelSystem &system) const
 {
     (void) system;
     QSet<Results::Type> result;

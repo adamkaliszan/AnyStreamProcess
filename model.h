@@ -76,15 +76,15 @@ public:
     bool operator==(const ModelResourcess &rho) const;
     bool operator!=(const ModelResourcess &rho) const;
 
-    inline int V() const;
-    inline int V(int groupNo) const;
-    inline int V(int groupClassNo, int groupNo) const;
+    inline int V() const                    { return _V; }
+    inline int V(int groupNo) const         { return ((groupNo < _subgrpCapacity.length()) && groupNo >=0) ? _subgrpCapacity[groupNo] : 0;}
+    int V(int groupClassNo, int groupNo) const;
 
-    inline int k() const;
-    inline int k(int groupClassNo) const;
+    inline int k() const                    { return _k; }
+    inline int k(int groupClassNo) const    { return ((groupClassNo>=0) && (groupClassNo < _listSubRes.length())) ? _listSubRes[groupClassNo].k() : 0; }
 
-    inline int kTypes() const { return _listSubRes.length();}
-    inline int vMax() const { return _vMax; }
+    inline int kTypes() const               { return _listSubRes.length();}
+    inline int vMax() const                 { return _vMax; }
 };
 
 class ModelTrClass
@@ -168,6 +168,7 @@ public:
     bool operator >(const ModelTrClass& rho) const;
     bool operator <=(const ModelTrClass& rho) const;
     bool operator >=(const ModelTrClass& rho) const;
+
 
 
     void doSimExpUnlimitedSoNo(
@@ -452,6 +453,9 @@ public:
     CLASS_SIMULATOR_DEP_PLUS(P, P, NewCallPareto, ServEndPareto)
 };
 
+QDebug& operator<<(QDebug &stream, const ModelTrClass &trClass);
+
+
 class ModelSystem
 {
 private:
@@ -579,9 +583,11 @@ public:
 };
 
 QTextStream &operator<<(QTextStream &stream, const ModelCreator &model);
+QTextStream &operator<<(QTextStream &stream, const ModelSystem &model);
 QTextStream &operator<<(QTextStream &stream, const ModelTrClass &trClass);
 
 QDebug &operator<<(QDebug &stream, const ModelCreator &model);
+QDebug &operator<<(QDebug &stream, const ModelSystem &model);
 QDebug &operator<<(QDebug &stream, const ModelTrClass &trClass);
 
 

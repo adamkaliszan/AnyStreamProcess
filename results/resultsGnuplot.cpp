@@ -114,7 +114,7 @@ void GnuplotScript::WriteDataAndScript(QString baseFileNameWithPath, const Model
 
         foreach(ParametersSet param, yVals.keys())
         {
-            dataStream<<"\t"<<setting->getParameterDescription(param, system);
+            dataStream<<"\t"<<setting->getParameterDescription(param, system->getConstSyst());
 
             if (algorithm->hasConfIntervall())
             {
@@ -128,7 +128,7 @@ void GnuplotScript::WriteDataAndScript(QString baseFileNameWithPath, const Model
                 else
                     scriptStream<<"  , ";
 
-                scriptStream<<"\""<<dataFileName<<"\" using 1:"<<colNo<<" with lines dt "<<dt<<" lw "<<lw<<" lc "<<lc<<" title '"<<algorithm->shortName()<<" "<<setting->getParameterDescription(param, system)<<"' \\\r\n";
+                scriptStream<<"\""<<dataFileName<<"\" using 1:"<<colNo<<" with lines dt "<<dt<<" lw "<<lw<<" lc "<<lc<<" title '"<<algorithm->shortName()<<" "<<setting->getParameterDescription(param, system->getConstSyst())<<"' \\\r\n";
                 scriptStream<<"  , \""<<dataFileName<<"\" using 1:"<<colNo<<":"<<colNo+1<<" with yerrorbars pt 1 lc "<<lc<<" notitle \\\r\n";
 
 
@@ -142,8 +142,12 @@ void GnuplotScript::WriteDataAndScript(QString baseFileNameWithPath, const Model
                     else
                         scriptStreamTrClass[param.classIndex]<<"  , ";
 
-                    scriptStreamTrClass[param.classIndex]<<"\""<<dataFileName<<"\" using 1:"<<colNo<<" with lines dt "<<dtTrClass[param.classIndex]<<" lw "<<lwTrClass[param.classIndex]<<" lc "<<lc<<" title '"<<algorithm->shortName()<<" "<<setting->getParameterDescription(param, system, noDescList)<<"' \\\r\n";
-                    scriptStreamTrClass[param.classIndex]<<"  , \""<<dataFileName<<"\" using 1:"<<colNo<<":"<<colNo+1<<" with yerrorbars pt 1 lc "<<lc<<" notitle \\\r\n";
+                    scriptStreamTrClass[param.classIndex]
+                           <<"\""<<dataFileName<<"\" using 1:"<<colNo<<" with lines dt "<<dtTrClass[param.classIndex]
+                           <<" lw "<<lwTrClass[param.classIndex]<<" lc "<<lc<<" title '"
+                           <<algorithm->shortName()<<" "<<setting->getParameterDescription(param, system->getConstSyst(), noDescList)<<"' \\\r\n";
+                    scriptStreamTrClass[param.classIndex]
+                           <<"  , \""<<dataFileName<<"\" using 1:"<<colNo<<":"<<colNo+1<<" with yerrorbars pt 1 lc "<<lc<<" notitle \\\r\n";
                 }
 
                 colNo++;
@@ -157,7 +161,8 @@ void GnuplotScript::WriteDataAndScript(QString baseFileNameWithPath, const Model
                 }
                 else
                     scriptStream<<"  , ";
-                scriptStream<<"\""<<dataFileName<<"\" using 1:"<<colNo<<" with lines dt "<<dt<<" lw "<<lw<<" lc "<<lc<<" title '"<<algorithm->shortName()<<" "<<setting->getParameterDescription(param, system)<<"' \\\r\n";
+                scriptStream<<"\""<<dataFileName<<"\" using 1:"<<colNo<<" with lines dt "<<dt<<" lw "<<lw<<" lc "<<lc<<" title '"<<algorithm->shortName()<<" "
+                           <<setting->getParameterDescription(param, system->getConstSyst())<<"' \\\r\n";
 
                 if (param.classIndex >= 0)
                 {
@@ -168,7 +173,10 @@ void GnuplotScript::WriteDataAndScript(QString baseFileNameWithPath, const Model
                     }
                     else
                         scriptStreamTrClass[param.classIndex]<<"  , ";
-                    scriptStreamTrClass[param.classIndex]<<"\""<<dataFileName<<"\" using 1:"<<colNo<<" with lines dt "<<dtTrClass[param.classIndex]<<" lw "<<lwTrClass[param.classIndex]<<" lc "<<lc<<" title '"<<algorithm->shortName()<<" "<<setting->getParameterDescription(param, system, noDescList)<<"' \\\r\n";
+                    scriptStreamTrClass[param.classIndex]
+                           <<"\""<<dataFileName<<"\" using 1:"<<colNo<<" with lines dt "
+                           <<dtTrClass[param.classIndex]<<" lw "<<lwTrClass[param.classIndex]<<" lc "<<lc<<" title '"<<algorithm->shortName()<<" "
+                           <<setting->getParameterDescription(param, system->getConstSyst(), noDescList)<<"' \\\r\n";
                 }
             }
             colNo++;

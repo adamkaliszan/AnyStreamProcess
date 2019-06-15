@@ -1012,6 +1012,12 @@ const ModelTrClass& ModelCreator::getClass(int idx) const
     return _traffic.trClasses[idx];
 }
 
+ModelTrClass *ModelCreator::getClassClone(int idx) const
+{
+    ModelTrClass *result = new ModelTrClass(getClass(idx));
+    return result;
+}
+
 const ModelSystem ModelCreator::getConstSyst() const
 {
     ModelResourcess server(_server.resourcess, _server.scheduler);
@@ -1247,6 +1253,42 @@ QTextStream& operator<<(QTextStream &stream, const ModelCreator &model)
     return stream;
 }
 
+QTextStream& operator<<(QTextStream &stream, const ModelSystem &model)
+{
+    stream<<"S"<<model.getServer().V();
+    if (model.getServer().k() > 1)
+    {
+        stream<<"(";
+        switch (model.getServer().schedulerAlg)
+        {
+        case ResourcessScheduler::Random:
+            stream<<"R";
+            break;
+        case ResourcessScheduler::Sequencial:
+            stream<<"S";
+            break;
+        }
+        stream<<model.getServer().k()<<")";
+    }
+    if (model.getBuffer().V() > 0)
+        stream<<"_B"<<model.getBuffer().V();
+    stream<<"_m"<<model.m();
+    if (model.m()>0)
+    {
+        bool first = true;
+        stream<<"(";
+        foreach(ModelTrClass tmp, model.getTrClasses())
+        {
+            if (!first)
+                stream<<"_";
+            first = false;
+            stream<<tmp;
+        }
+        stream<<")";
+    }
+    return stream;
+}
+
 QTextStream& operator<<(QTextStream &stream2, const ModelTrClass &trClass)
 {
     stream2<<qSetRealNumberPrecision(2);
@@ -1290,7 +1332,6 @@ QTextStream& operator<<(QTextStream &stream2, const ModelTrClass &trClass)
     return stream2;
 }
 
-
 QDebug &operator<<(QDebug &stream, const ModelCreator &model)
 {
     QDebug stream2 = stream.nospace();
@@ -1320,13 +1361,12 @@ QDebug &operator<<(QDebug &stream, const ModelCreator &model)
             if (!first)
                 stream2<<"_";
             first = false;
-            stream2<<tmp;
+            stream2<<tmp.shortName(); //TODO Adam: naprawić operator <<
         }
         stream2<<")";
     }
     return stream;
 }
-
 
 QDebug &operator<<(QDebug &stream, const ModelTrClass &trClass)
 {
@@ -1928,7 +1968,46 @@ bool ModelSystem::operator==(const ModelSystem &rho) const
 
     if (_bufferPolicy != rho._bufferPolicy)
         return false;
+
+    return true;
 }
+
+QDebug &operator<<(QDebug &stream, const ModelSystem &model)
+{
+    QDebug stream2 = stream.nospace();
+    stream2<<"S"<<model.getServer().V();
+    if (model.getServer().k() > 1)
+    {
+        stream<<"(";
+        switch (model.getServer().schedulerAlg)
+        {
+        case ResourcessScheduler::Random:
+            stream<<"R";
+            break;
+        case ResourcessScheduler::Sequencial:
+            stream<<"S";
+            break;
+        }
+        stream<<model.getServer().k()<<")";
+    }
+    stream2<<"_B"<<model.getBuffer().V();
+    stream2<<"_m"<<model.m();
+    if (model.m()>0)
+    {
+        stream2<<"(";
+        bool first = true;
+        foreach(ModelTrClass tmp, model.getTrClasses())
+        {
+            if (!first)
+                stream2<<"_";
+            first = false;
+            stream2<<tmp.shortName(); //TODO Adam: Naprawić <<
+        }
+        stream2<<")";
+    }
+    return stream;
+}
+
 
 bool ModelSystem::isInBlockingState(int classNo, const QVector<int> &serverGroupsState, const QVector<int> bufferGroupsState) const
 {
@@ -1976,12 +2055,18 @@ bool ModelSystem::isInBlockingState(int classNo, const QVector<int> &serverGroup
 
 bool ModelSystem::isServerAvailable(int classNo, const QVector<int> &serverGroupsState) const
 {
-    return false; //TODO
+    for (int sgrNo=0; sgrNo<getServer().k(); sgrNo++)
+        if(getServer().V(sgrNo) - t(classNo) - serverGroupsState[classNo] >= 0)
+            return true;
+    return false;
 }
 
 bool ModelSystem::isBufferAvailable(int classNo, const QVector<int> &bufferGroupsState) const
 {
-    return false; //TODO
+    for (int sgrNo=0; sgrNo<getBuffer().k(); sgrNo++)
+        if(getBuffer().V(sgrNo) - t(classNo) - bufferGroupsState[classNo] >= 0)
+            return true;
+    return false;
 }
 
 ModelResourcess::ModelResourcess(QList<ModelSubResourcess> listSubRes, ResourcessScheduler schedulerAlg)
@@ -2013,16 +2098,8 @@ bool ModelResourcess::operator!=(const ModelResourcess &rho) const
 {
     if (_listSubRes != rho._listSubRes)
         return true;
-}
 
-inline int ModelResourcess::V() const
-{
-    return _V;
-}
-
-int ModelResourcess::V(int groupNo) const
-{
-    return ((groupNo < _subgrpCapacity.length()) && groupNo >=0) ? _subgrpCapacity[groupNo] : 0;
+    return false;
 }
 
 int ModelResourcess::V(int groupClassNo, int groupNo) const
@@ -2031,18 +2108,6 @@ int ModelResourcess::V(int groupClassNo, int groupNo) const
                 ((groupNo>=0) && (groupNo < _listSubRes[groupClassNo].k())) ? _listSubRes[groupClassNo].v() : 0
     : 0;
 }
-
-int ModelResourcess::k() const
-{
-    return _k;
-}
-
-int ModelResourcess::k(int groupClassNo) const
-{
-    return ((groupClassNo>=0) && (groupClassNo < _listSubRes.length())) ? _listSubRes[groupClassNo].k() : 0;
-}
-
-
 
 bool MCTrCl::operator>(const MCTrCl &rho) const
 {

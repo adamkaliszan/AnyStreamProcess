@@ -38,8 +38,6 @@ void AlgorithmHybridDiscrDesc::calculateSystem(
     int Vb = system.getBuffer().V();
     int VsVb = Vs + Vb;
 
-    ClassParameters *clParameters = new ClassParameters[m];
-
 
     p_single = new TrClVector[m];             /// FAG traffic distribution
     P_without_i = new TrClVector[m];          /// FAG traffic distribution

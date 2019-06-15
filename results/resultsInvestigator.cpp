@@ -5,7 +5,7 @@
 namespace Results
 {
 
-RInvestigator::RInvestigator(const ModelCreator *model)
+RInvestigator::RInvestigator(const ModelSystem &model)
     :  model(model)
     , areStatisticsUpToDate(false)
 {
@@ -72,6 +72,16 @@ RSingle &RInvestigator::operator[](int serialNumber)
 
     this->areStatisticsUpToDate = false;
     return series[serialNumber];
+}
+
+RInvestigator& RInvestigator::operator=(const RInvestigator &rho)
+{
+    //this->model = rho.model; TODO: rozwiązać ten problem
+    this->series = rho.series;
+    this->avarage = rho.avarage;
+    this->confidencyIntervalls = rho.confidencyIntervalls;
+    this->areStatisticsUpToDate = rho.areStatisticsUpToDate;
+    return *this;
 }
 
 RSingle &RInvestigator::operator[](int serialNumber) const

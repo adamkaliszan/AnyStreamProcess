@@ -28,7 +28,7 @@ enum class ConfidencyIntervall
 class RInvestigator
 {
 public:
-    RInvestigator(const ModelCreator *model);
+    RInvestigator(const ModelSystem &model);
     RInvestigator(const RInvestigator& rho);
 
     void init(int noOfseries = 0);
@@ -41,8 +41,10 @@ public:
     RSingle& operator[](int serialNumber) const;
     RSingle& operator[](int serialNumber);
 
+    RInvestigator& operator=(const RInvestigator &rho);
+
 private:
-    const ModelCreator *model;
+    const ModelSystem &model;
 
     mutable bool areStatisticsUpToDate;
     mutable ConfidencyIntervall lastTrust;
