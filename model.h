@@ -454,7 +454,7 @@ public:
 };
 
 QDebug& operator<<(QDebug &stream, const ModelTrClass &trClass);
-
+QDebug& operator<<(QDebug &stream, ModelTrClass &trClass);
 
 class ModelSystem
 {
@@ -513,6 +513,8 @@ public:
 
     bool operator>(const MCTrCl &rho) const;
     bool operator<(const MCTrCl &rho) const;
+    bool operator==(const MCTrCl &rho) const;
+    bool operator!=(const MCTrCl &rho) const;
 };
 
 class ModelCreator

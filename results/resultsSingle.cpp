@@ -12,12 +12,14 @@ namespace Results
 
 RSingle::RSingle(): m(0), vMax(0), V(0), Vs(0) { }
 
-void RSingle::init(const ModelSystem &system)
+void RSingle::init(const ModelSystem *system)
 {
-    m = system.m();
-    vMax = system.getServer().vMax();
-    V = system.V();
-    Vs = system.getServer().V();
+    m = system->m();
+    vMax = system->getServer().vMax();
+    V = system->V();
+    Vs = system->getServer().V();
+
+    assert(V>0 && Vs>0 && m>0);
 
     dataGeneral.clear();
     dataPerClasses.fill(DataForClasses(), m);
@@ -30,8 +32,8 @@ void RSingle::init(const ModelSystem &system)
     dataPerClassAndSystemStateForSystem.fill(DataForClassesAndState(), (V+1)*m);
     dataPerClassAndSystemStateForServer.fill(DataForClassesAndState(), (V+1)*m);
     dataPerClassAndSystemStateForBuffer.fill(DataForClassesAndState(), (V+1)*m);
-    dataPerGroupCombination.fill(DataPerGroups(vMax+1, m), ::Utils::UtilsLAG::getPossibleCombinations(system.getServer().k()).length());
-    dataPerExactGroupNumber.fill(DataPerGroups(vMax+1, m), (system.getServer().k()+1));
+    dataPerGroupCombination.fill(DataPerGroups(vMax+1, m), ::Utils::UtilsLAG::getPossibleCombinations(system->getServer().k()).length());
+    dataPerExactGroupNumber.fill(DataPerGroups(vMax+1, m), (system->getServer().k()+1));
 }
 
 RSingle &RSingle::write(TypeGeneral type, double value)

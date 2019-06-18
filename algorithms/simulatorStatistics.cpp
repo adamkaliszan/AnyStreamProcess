@@ -332,7 +332,7 @@ void ServerStatistics::clear()
 }
 
 BufferStatistics::BufferStatistics(const ModelSystem &system)
-{//TODO
+{
     eventsPerClass.resize(system.m());
     eventsPerState.resize(system.getBuffer().V()+1);
     //QVector<QVector <EvenStatistics> >                eventsPerClassAndState;

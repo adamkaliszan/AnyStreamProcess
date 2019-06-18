@@ -1043,9 +1043,8 @@ bool ModelCreator::operator==(const ModelCreator &rho) const
 
     bool result = true;
 
-    //TODO dopisać operator == dla klas
 
-    if (_traffic.trClasses != rho._traffic.trClasses)
+    if (_traffic != rho._traffic)
         return false;
 
 
@@ -1361,7 +1360,7 @@ QDebug &operator<<(QDebug &stream, const ModelCreator &model)
             if (!first)
                 stream2<<"_";
             first = false;
-            stream2<<tmp.shortName(); //TODO Adam: naprawić operator <<
+            stream2<<tmp;
         }
         stream2<<")";
     }
@@ -1409,6 +1408,49 @@ QDebug &operator<<(QDebug &stream, const ModelTrClass &trClass)
         stream2<<"-"<<trClass.getMu();
     return stream;
 }
+
+QDebug &operator<<(QDebug &stream, ModelTrClass &trClass)
+{
+    QDebug stream2 = stream.nospace();
+    stream2<<qSetRealNumberPrecision(2);
+    if ((trClass.newCallStr()==ModelTrClass::StreamType::Poisson) && (trClass.callServStr()==ModelTrClass::StreamType::Poisson))
+    {
+        if (trClass.srcType()==ModelTrClass::SourceType::Independent)
+            stream2<<"Er-"<<trClass.t();
+        if (trClass.srcType()==ModelTrClass::SourceType::DependentMinus)
+            stream2<<"En-"<<trClass.t()<<"("<<trClass.s()<<")";
+        if (trClass.srcType()==ModelTrClass::SourceType::DependentPlus)
+            stream2<<"Pa-"<<trClass.t()<<"("<<trClass.s()<<")";
+    }
+    else
+    {
+        if (trClass.srcType()==ModelTrClass::SourceType::Independent)
+            stream2<<"Ind";
+        if (trClass.srcType()==ModelTrClass::SourceType::DependentMinus)
+            stream2<<"Dep-";
+        if (trClass.srcType()==ModelTrClass::SourceType::DependentPlus)
+            stream2<<"Dep+";
+
+        stream2<<ModelTrClass::streamTypeToShortString(trClass.newCallStr());
+        if (trClass.newCallStr()!=ModelTrClass::StreamType::Poisson)
+            stream2<<trClass.getIncommingExPerDx();
+        stream2<<ModelTrClass::streamTypeToShortString(trClass.callServStr());
+        if (trClass.callServStr()!=ModelTrClass::StreamType::Poisson)
+            stream2<<trClass.getServiceExPerDx();
+
+        if (trClass.srcType()==ModelTrClass::SourceType::Independent)
+            stream2<<"-"<<trClass.t();
+        else
+            stream2<<"-"<<trClass.t()<<"("<<trClass.s()<<")";
+    }
+
+    if ( !qFuzzyCompare(trClass.getMu(), 1) || (trClass.propAt() != 1))
+            stream2<<"-"<<trClass.propAt();
+    if ( !qFuzzyCompare(trClass.getMu(), 1))
+        stream2<<"-"<<trClass.getMu();
+    return stream;
+}
+
 
 template <class P>  void ModelTrClass::SimulatorProcess_Indep::initializeT(double timeOfNewCall)
 {
@@ -1730,9 +1772,8 @@ void ModelTrClass::SimulatorSingleServiceSystem::doSimExperiment(int noOfEvents,
         }
         if (n_total == oldState)
         {
-            //TODO makesure that always n_total = Vs+Vb
 #ifdef QT_DEBUG
-            if (n_total + t < this->Vs+Vb)
+            if (n_total + t < Vs+Vb)
                 qFatal("Wimulation error, wrong assumptions");
 #endif
             states.getState(oldState).tIntOutNew++;
@@ -2001,8 +2042,7 @@ QDebug &operator<<(QDebug &stream, const ModelSystem &model)
             if (!first)
                 stream2<<"_";
             first = false;
-            stream2<<tmp.shortName(); //TODO Adam: Naprawić <<
-        }
+            stream2<<tmp;        }
         stream2<<")";
     }
     return stream;
@@ -2117,6 +2157,37 @@ bool MCTrCl::operator>(const MCTrCl &rho) const
 bool MCTrCl::operator<(const MCTrCl &rho) const
 {
     return trClasses < rho.trClasses;
+}
+
+bool MCTrCl::operator==(const MCTrCl &rho) const
+{
+    if (this->trClasses.length() != rho.trClasses.length())
+        return false;
+    if (totalAt() != rho.totalAt())
+        return false;
+
+    for(int clNo = 0; clNo < trClasses.length(); clNo++)
+    {
+        if (trClasses[clNo] != rho.trClasses[clNo])
+                return false;
+    }
+
+    return true;
+}
+
+bool MCTrCl::operator!=(const MCTrCl &rho) const
+{
+    if (this->trClasses.length() != rho.trClasses.length())
+        return true;
+    if (totalAt() != rho.totalAt())
+        return true;
+
+    for(int clNo = 0; clNo < trClasses.length(); clNo++)
+    {
+        if (trClasses[clNo] != rho.trClasses[clNo])
+                return true;
+    }
+    return false;
 }
 
 CLASS_SIMULATOR_INDEP_CPP(M, M, NewCallExp, ServEndExp)

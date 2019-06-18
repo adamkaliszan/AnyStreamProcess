@@ -5,9 +5,7 @@
 namespace Results
 {
 
-RInvestigator::RInvestigator(const ModelSystem &model)
-    :  model(model)
-    , areStatisticsUpToDate(false)
+RInvestigator::RInvestigator() : areStatisticsUpToDate(false)
 {
 
 }
@@ -22,8 +20,9 @@ RInvestigator::RInvestigator(const RInvestigator &rho)
 
 }
 
-void RInvestigator::init(int noOfseries)
+void RInvestigator::init(const ModelSystem *model, int noOfseries)
 {
+    this->model = model;
     avarage.init(model);
 
     if (noOfseries > 0)
@@ -76,7 +75,7 @@ RSingle &RInvestigator::operator[](int serialNumber)
 
 RInvestigator& RInvestigator::operator=(const RInvestigator &rho)
 {
-    //this->model = rho.model; TODO: rozwiązać ten problem
+    this->model = rho.model;
     this->series = rho.series;
     this->avarage = rho.avarage;
     this->confidencyIntervalls = rho.confidencyIntervalls;

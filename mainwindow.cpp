@@ -43,8 +43,6 @@ MainWindow::MainWindow(QWidget *parent) :
     system        = new ModelCreator();
     scrGnuplot    = new GnuplotScript();
 
-    resultsForSystem = new Results::RSystem(system->getConstSyst());
-
     ui->setupUi(this);
 
     ui->graphicsView->setScene(sceneSysModel);
@@ -1100,6 +1098,9 @@ bool MainWindow::dbReadSystems()
 
 void MainWindow::on_pushButtonStart_clicked()
 {
+    resultsForSystem = new Results::RSystem(system->getConstSyst());
+
+    const ModelSystem model = system->getConstSyst();
     foreach (QListWidgetItem *tmpItem, ui->listWidgetAlgorithms->findItems(QString("*"), Qt::MatchWrap | Qt::MatchWildcard))
     {
         Investigator *tmpAlg = tmpItem->data(Qt::UserRole).value<Investigator *>();
@@ -1148,7 +1149,7 @@ void MainWindow::on_pushButtonStart_clicked()
 
                 Results::RInvestigator& investigatorResults = resultsForSystem->createNewInvestigation(tmpAlg, a);
 
-                investigatorResults.init((tmpAlg->hasConfIntervall()) ? currentSimulationParameter->noOfSeries : 0);
+                investigatorResults.init(&model, (tmpAlg->hasConfIntervall()) ? currentSimulationParameter->noOfSeries : 0);
 
                 progress += tmpAlg->complexity();
                 if (!tmpAlg->correctSystemParameters(system->getConstSyst(), a))

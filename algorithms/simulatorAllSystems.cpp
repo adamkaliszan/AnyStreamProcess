@@ -609,9 +609,6 @@ void SimulatorAll::System::serveCallsInEque()
     numberOfAvailableAS = server->getNoOfFreeAS();
     while(numberOfAvailableAS > 0)
     {
-#ifndef DO_NOT_USE_SECUTIRY_CHECKS
-        buffer->consistencyCheck();
-#endif
         tmpCall = buffer->getNextCall();
         if (tmpCall == nullptr)
             break;
@@ -650,9 +647,6 @@ void SimulatorAll::System::serveCallsInEque()
 
         numberOfAvailableAS = server->getNoOfFreeAS();
 
-#ifndef DO_NOT_USE_SECUTIRY_CHECKS
-        buffer->consistencyCheck();
-#endif
     }
 }
 
@@ -1602,8 +1596,18 @@ void SimulatorAll::Call::collectTheStats(double time)
 
 #define FOLDINGSTART { // buffer
 
-SimulatorAll::Buffer::Buffer(SimulatorAll::System *system) : par(system->par.getBuffer()), state(system->par.getBuffer())
+SimulatorAll::Buffer::Buffer(SimulatorAll::System *system)
+  : k(system->par.getBuffer().k())
+  , m(system->par.m())
+  , par(system->par.getBuffer())
 {
+    state.n = 0;
+    state.n_k.resize(k);
+    state.n_i.resize(m);
+
+    state.subgroupFreeAUs.resize(k);
+    state.subgroupSequence.resize(k);
+
     statistics = new BufferStatistics(system->par);
 }
 

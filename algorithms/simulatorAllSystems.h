@@ -224,21 +224,18 @@ class SimulatorAll: public Simulator
 
 
       public:
+        const int k;                                  /// Number of groups
+        const int m;                                  /// Number of traffic classes
 
         const ModelResourcess &par;
 
-        struct State
+        struct
         {
-            int n;                                                            ///< Number of AS that is used by the calls
-            Call *firstCall;                                                  ///< Call that is partialy serviced
-
-            QVector<int> n_i;                                                 ///< Detailed number of AS that is used by given classes
-            QStack<Call *> calls;                                             ///< FiFo Qeue with calls
-
-            State(const ModelResourcess &par): n(0), firstCall(nullptr)
-            {
-                n_i.resize(par.V());
-            }
+            int n;                                    ///< Total number of occupied resourcess
+            QVector<int> n_i;                         ///< Occupied resourcess vs class
+            QVector<int> n_k;                         ///< Occupied resourcess of given group
+            mutable QVector<int> subgroupSequence;    /// Sequence of checking group for new call service
+            mutable QVector<int> subgroupFreeAUs;     /// Number of AS that is now available in given group
         } state;
 
       private:
@@ -269,21 +266,6 @@ class SimulatorAll: public Simulator
         inline const QVector<int> &getMicroStates() const { return state.n_i; }
         inline const QVector<int> &getOccupancyOfTheGroups() const { return state.n_i; }
 
-
-#ifndef DO_NOT_USE_SECUTIRY_CHECKS
-        void consistencyCheck()
-        {
-            int tmp = 0;
-            if (state.firstCall != nullptr)
-                tmp = state.firstCall->reqAS - state.firstCall->allocatedAS;
-            foreach (SimulatorAll::Call *tmpCall, state.calls)
-            {
-                tmp += (tmpCall->reqAS - tmpCall->allocatedAS);
-            }
-            if (tmp > state.n)
-                qFatal("Qeue error: n=%d, sum ad AS = %d", state.n, tmp);
-        }
-#endif
         Call   *getNextCall();
     };
 

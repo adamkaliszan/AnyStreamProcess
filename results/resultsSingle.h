@@ -22,7 +22,7 @@ class RSingle
 public:
     RSingle();
 
-    void init(const ModelSystem &system);
+    void init(const ModelSystem *system);
 
     RSingle& write(TypeGeneral type, double value);
     bool read(double &result, TypeGeneral type) const;

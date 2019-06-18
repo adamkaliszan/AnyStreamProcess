@@ -8,6 +8,7 @@ namespace Results
 RSystem::RSystem(const ModelSystem &model)
     : model(model)
 {
+    assert(model.m() > 0 && model.V() > 0);
     _aPerAU.clear();
 }
 
@@ -21,8 +22,8 @@ RInvestigator& RSystem::createNewInvestigation(Investigator *algorithm, decimal 
 
     if (!resultsForInvestigatorsAndOfferedTraffic[algorithm].contains(aPerAU))
     {
-        resultsForInvestigatorsAndOfferedTraffic[algorithm].insert(aPerAU, RInvestigator(model));
-        resultsForInvestigatorsAndOfferedTraffic[algorithm].find(aPerAU)->init(noOfSeries);
+        resultsForInvestigatorsAndOfferedTraffic[algorithm].insert(aPerAU, RInvestigator());
+        resultsForInvestigatorsAndOfferedTraffic[algorithm].find(aPerAU)->init(&model, static_cast<int>(noOfSeries));
     }
     return *(resultsForInvestigatorsAndOfferedTraffic[algorithm].find(aPerAU));
 }
