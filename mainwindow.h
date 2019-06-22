@@ -149,10 +149,6 @@ private slots:
 
     void on_comboBox_CallServStrType_currentIndexChanged(int index);
 
-    void on_comboBoxServerSchedulerAlgorithm_currentIndexChanged(int index);
-
-    void on_comboBoxBufferSchedulerAlgorithm_currentIndexChanged(int index);
-
     void on_ResultsQtChartRefresh();
 
     void on_comboBoxResultsQtType_currentIndexChanged(int index);
@@ -162,6 +158,12 @@ private slots:
 
 
     void on_actionConfigure_triggered();
+
+    void on_comboBoxServerGroupSchedulerAlgorithm_currentIndexChanged(int index);
+
+    void on_comboBoxBufferGroupSchedulerAlgorithm_currentIndexChanged(int index);
+
+    void on_comboBoxSystemSchedulerAlgorithm_currentIndexChanged(int index);
 
 private:
     QVector<ModelCreator *>  vectPredefinedSystems;

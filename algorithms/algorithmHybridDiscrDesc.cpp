@@ -16,7 +16,7 @@ bool AlgorithmHybridDiscrDesc::possible(const ModelSystem &system) const
     if (system.getBuffer().V() == 0)
         return false;
 
-    if (system.getBufferPolicy() != BufferPolicy::dFIFO_Seq)
+    if (system.getBufferPolicy() != SystemPolicy::dFIFO_Seq)
         return false;
 
     return Investigator::possible(system);

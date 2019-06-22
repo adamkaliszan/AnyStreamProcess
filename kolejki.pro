@@ -33,12 +33,10 @@ SOURCES += main.cpp\
     model.cpp \
     dialogAbout.cpp \
     algorithms/investigator.cpp \
-    algorithms/simulatorQeueFIFO.cpp \
     algorithms/algorithmConvGamma3.cpp \
     algorithms/algorithmConvGamma2d.cpp \
     algorithms/algorithmHybridDiscr.cpp \
     algorithms/algorithmHybridDiscrDesc.cpp \
-    algorithms/simulatorQeueSdFIFO.cpp \
     algorithms/alg_cFIFO_hybrid.cpp \
     algorithms/alg_cFIFO_convGamma.cpp \
     algorithms/alg_noFIFO.cpp \
@@ -73,7 +71,6 @@ HEADERS  += mainwindow.h \
     algorithms/algorithmConvGamma2d.h \
     algorithms/algorithmHybridDiscr.h \
     algorithms/algorithmHybridDiscrDesc.h \
-    algorithms/simulatorQeueSdFIFO.h \
     algorithms/alg_cFIFO_hybrid.h \
     algorithms/alg_cFIFO_convGamma.h \
     algorithms/alg_noFIFO.h \
@@ -85,7 +82,6 @@ HEADERS  += mainwindow.h \
     algorithms/simulator.h \
     algorithms/algorithmConv3d.h \
     algorithms/simulationParameters.h \
-    algorithms/simulatorQeueFIFO.h \
     algorithms/algorithmConvGamma3.h \
     gnuplot-iostream.h \
     results/resultsGnuplot.h \

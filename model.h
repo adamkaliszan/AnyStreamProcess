@@ -22,7 +22,7 @@ enum class ResourcessScheduler
 
 QString serverResourcessSchedulerToString(ResourcessScheduler value);
 
-enum class BufferPolicy
+enum class SystemPolicy
 {
     Continuos,     ///< Call can be splited between server and buffers resourcess. Calls goes to the buffer first
     SD_FIFO,       ///< All calls are being served. If there is no room in server, the service time is increased and calls occypy server and budder
@@ -31,7 +31,7 @@ enum class BufferPolicy
     Disabled       ///< Buffer is disabled
 };
 
-QString bufferResourcessSchedulerToString(BufferPolicy value);
+QString bufferResourcessSchedulerToString(SystemPolicy value);
 
 
 class ModelSubResourcess
@@ -462,14 +462,14 @@ private:
     const QVector<ModelTrClass> _trClasses;
     const ModelResourcess       _server;
     const ModelResourcess       _buffer;
-    const BufferPolicy          _bufferPolicy;
+    const SystemPolicy          _bufferPolicy;
 
     int _totalAt;
     int _V;
 
 public:
     ModelSystem(const ModelSystem &system);
-    ModelSystem(const QVector<ModelTrClass> &trClasses, const ModelResourcess &server, const ModelResourcess &buffer, BufferPolicy bufferPolicy);
+    ModelSystem(const QVector<ModelTrClass> &trClasses, const ModelResourcess &server, const ModelResourcess &buffer, SystemPolicy bufferPolicy);
 
     bool operator==(const ModelSystem &rho) const;
 
@@ -477,7 +477,7 @@ public:
     inline const QVector<ModelTrClass>& getTrClasses() const {return _trClasses;}
     inline const ModelResourcess& getServer() const {return _server;}
     inline const ModelResourcess& getBuffer() const {return _buffer;}
-    inline BufferPolicy getBufferPolicy() const {return _bufferPolicy;}
+    inline SystemPolicy getBufferPolicy() const {return _bufferPolicy;}
 
     bool isInBlockingState(int classNo, const QVector<int> &serverGroupsState, const QVector<int> bufferGroupsState) const;
     bool isServerAvailable(int classNo, const QVector<int> &serverGroupsState) const;
@@ -529,7 +529,7 @@ private:
     MCRsc _server;
     MCRsc _buffer;
 
-    BufferPolicy _bufferPolicy;
+    SystemPolicy _systemPolicy;
 
 public:
     ModelCreator();
@@ -574,10 +574,13 @@ public:
     void addQeues(ModelSubResourcess qeue, bool optimize = true);          ///< Add qeues to the system
 
     void setServerSchedulerAlgorithm(ResourcessScheduler algorithm);
-    void setBufferSchedulerAlgorithm(BufferPolicy algorithm);
+    void setBufferSchedulerAlgorithm(ResourcessScheduler algorithm);
+
+    void setSystemSchedulerAlgorithm(SystemPolicy algorithm);
 
     inline ResourcessScheduler getBufferScheduler() const {return _buffer.scheduler; }
     inline ResourcessScheduler getServerScheduler() const {return _server.scheduler; }
+    inline SystemPolicy getSystemScheduler() const {return _systemPolicy; }
 
     void clearAll();
 
@@ -602,7 +605,7 @@ Q_DECLARE_METATYPE(ModelCreator*)
 Q_DECLARE_METATYPE(ModelTrClass::SourceType)
 Q_DECLARE_METATYPE(ModelTrClass::StreamType)
 Q_DECLARE_METATYPE(ResourcessScheduler)
-Q_DECLARE_METATYPE(BufferPolicy)
+Q_DECLARE_METATYPE(SystemPolicy)
 
 
 #endif // MODEL_H

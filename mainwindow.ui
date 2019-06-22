@@ -149,58 +149,12 @@
              <item row="2" column="0">
               <layout class="QHBoxLayout" name="horizontalLayoutGroupChooseAlg"/>
              </item>
-             <item row="1" column="2">
-              <layout class="QGridLayout" name="gridLayoutModelQeue" columnstretch="0,0,0">
+             <item row="1" column="0">
+              <layout class="QGridLayout" name="gridLayoutModelServer" rowstretch="0,0,0,0,0,0,0" columnstretch="0,0,0,0,0,0">
                <property name="sizeConstraint">
                 <enum>QLayout::SetMinAndMaxSize</enum>
                </property>
-               <item row="6" column="0" colspan="3">
-                <layout class="QHBoxLayout" name="horizontalLayoutModelQeueListButtons">
-                 <property name="sizeConstraint">
-                  <enum>QLayout::SetDefaultConstraint</enum>
-                 </property>
-                 <item>
-                  <widget class="QPushButton" name="pushButton_kolejkidodaj">
-                   <property name="enabled">
-                    <bool>true</bool>
-                   </property>
-                   <property name="text">
-                    <string>Add</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QPushButton" name="pushButton_kolejkiZmien">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="text">
-                    <string>Change</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QPushButton" name="pushButton_kolejkiUsun">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="layoutDirection">
-                    <enum>Qt::RightToLeft</enum>
-                   </property>
-                   <property name="text">
-                    <string>Remove</string>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </item>
-               <item row="4" column="1">
+               <item row="3" column="4">
                 <widget class="QSpinBox" name="spinBoxKolejkaPojemnosc">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
@@ -219,20 +173,7 @@
                  </property>
                 </widget>
                </item>
-               <item row="5" column="0">
-                <widget class="QLabel" name="labelModelQeueNumber">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="text">
-                  <string>No of subgroups</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="5" column="1">
+               <item row="4" column="4">
                 <widget class="QSpinBox" name="spinBoxKolejkaLiczba">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
@@ -248,8 +189,8 @@
                  </property>
                 </widget>
                </item>
-               <item row="4" column="0">
-                <widget class="QLabel" name="labelModelQeueCapacity">
+               <item row="3" column="0">
+                <widget class="QLabel" name="labelPodgrupaPojemnosc">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
                    <horstretch>0</horstretch>
@@ -261,51 +202,55 @@
                  </property>
                 </widget>
                </item>
-               <item row="3" column="2" rowspan="3">
-                <widget class="QListWidget" name="listWidgetKolejki">
+               <item row="6" column="3">
+                <widget class="QPushButton" name="pushButton_kolejkidodaj">
+                 <property name="enabled">
+                  <bool>true</bool>
+                 </property>
+                 <property name="text">
+                  <string>Add</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="1">
+                <widget class="QSpinBox" name="spinBoxPodgrupaLiczba">
                  <property name="sizePolicy">
-                  <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+                  <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
                    <horstretch>0</horstretch>
                    <verstretch>0</verstretch>
                   </sizepolicy>
                  </property>
-                 <property name="minimumSize">
-                  <size>
-                   <width>100</width>
-                   <height>0</height>
-                  </size>
+                 <property name="minimum">
+                  <number>1</number>
                  </property>
-                 <property name="baseSize">
-                  <size>
-                   <width>0</width>
-                   <height>50</height>
-                  </size>
-                 </property>
-                 <property name="sizeAdjustPolicy">
-                  <enum>QAbstractScrollArea::AdjustToContentsOnFirstShow</enum>
+                 <property name="maximum">
+                  <number>100</number>
                  </property>
                 </widget>
                </item>
-               <item row="2" column="2">
-                <widget class="QComboBox" name="comboBoxSubBufferSchedulerAlgorithm"/>
-               </item>
-               <item row="1" column="2">
-                <widget class="QComboBox" name="comboBox"/>
-               </item>
-               <item row="2" column="0" colspan="2">
-                <widget class="QLabel" name="label_subbufferScheduler">
+               <item row="6" column="4">
+                <widget class="QPushButton" name="pushButton_kolejkiZmien">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
                  <property name="text">
-                  <string>Subbuffer scheduler</string>
+                  <string>Change</string>
                  </property>
                 </widget>
                </item>
-              </layout>
-             </item>
-             <item row="1" column="0">
-              <layout class="QGridLayout" name="gridLayoutModelServer" rowstretch="0,0,0,0,0,0,0" columnstretch="0,0,0">
-               <property name="sizeConstraint">
-                <enum>QLayout::SetMinAndMaxSize</enum>
-               </property>
+               <item row="4" column="0">
+                <widget class="QLabel" name="labelPodgrupaLiczba">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="text">
+                  <string>No of subgroups</string>
+                 </property>
+                </widget>
+               </item>
                <item row="6" column="0" colspan="3">
                 <layout class="QHBoxLayout" name="horizontalLayoutModelServerListButtons">
                  <property name="sizeConstraint">
@@ -349,7 +294,20 @@
                  </item>
                 </layout>
                </item>
-               <item row="4" column="1">
+               <item row="3" column="3">
+                <widget class="QLabel" name="labelModelQeueCapacity">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="text">
+                  <string>Subgroup capacity</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="1">
                 <widget class="QSpinBox" name="spinBoxPodgrupaPojemnosc">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
@@ -368,37 +326,8 @@
                  </property>
                 </widget>
                </item>
-               <item row="5" column="1">
-                <widget class="QSpinBox" name="spinBoxPodgrupaLiczba">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="minimum">
-                  <number>1</number>
-                 </property>
-                 <property name="maximum">
-                  <number>100</number>
-                 </property>
-                </widget>
-               </item>
-               <item row="4" column="0">
-                <widget class="QLabel" name="labelPodgrupaPojemnosc">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="text">
-                  <string>Subgroup capacity</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="5" column="0">
-                <widget class="QLabel" name="labelPodgrupaLiczba">
+               <item row="4" column="3">
+                <widget class="QLabel" name="labelModelQeueNumber">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
                    <horstretch>0</horstretch>
@@ -410,7 +339,74 @@
                  </property>
                 </widget>
                </item>
-               <item row="3" column="2" rowspan="3">
+               <item row="6" column="5">
+                <widget class="QPushButton" name="pushButton_kolejkiUsun">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="layoutDirection">
+                  <enum>Qt::RightToLeft</enum>
+                 </property>
+                 <property name="text">
+                  <string>Remove</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="2" colspan="4">
+                <widget class="QComboBox" name="comboBoxSystemSchedulerAlgorithm"/>
+               </item>
+               <item row="2" column="3">
+                <widget class="QLabel" name="label_subbufferScheduler">
+                 <property name="text">
+                  <string>Buffer scheduler</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="4">
+                <widget class="QComboBox" name="comboBoxBufferGroupSchedulerAlgorithm"/>
+               </item>
+               <item row="2" column="5" rowspan="3">
+                <widget class="QListWidget" name="listWidgetKolejki">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>100</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                 <property name="baseSize">
+                  <size>
+                   <width>0</width>
+                   <height>50</height>
+                  </size>
+                 </property>
+                 <property name="sizeAdjustPolicy">
+                  <enum>QAbstractScrollArea::AdjustToContentsOnFirstShow</enum>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0">
+                <widget class="QLabel" name="label_subgroupSchedulerAlgorithm">
+                 <property name="text">
+                  <string>Server scheduler</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="1">
+                <widget class="QComboBox" name="comboBoxServerGroupSchedulerAlgorithm"/>
+               </item>
+               <item row="2" column="2" rowspan="3">
                 <widget class="QListWidget" name="listWidgetWiazki">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
@@ -438,26 +434,20 @@
                  </property>
                 </widget>
                </item>
-               <item row="2" column="2">
-                <widget class="QComboBox" name="comboBoxServerSchedulerAlgorithm"/>
-               </item>
-               <item row="2" column="0" colspan="2">
-                <widget class="QLabel" name="label_subgroupSchedulerAlgorithm">
+               <item row="0" column="0" colspan="2">
+                <widget class="QLabel" name="label_systemPolicy">
                  <property name="text">
-                  <string>Subgroup scheduler</string>
+                  <string>System policy</string>
                  </property>
                 </widget>
                </item>
-               <item row="3" column="0" colspan="2">
-                <widget class="QCheckBox" name="checkBoxServerDiscrette">
-                 <property name="text">
-                  <string>Discrette server</string>
-                 </property>
-                 <property name="checked">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
+              </layout>
+             </item>
+             <item row="1" column="2">
+              <layout class="QGridLayout" name="gridLayoutModelQeue" columnstretch="0">
+               <property name="sizeConstraint">
+                <enum>QLayout::SetMinAndMaxSize</enum>
+               </property>
               </layout>
              </item>
             </layout>
@@ -1337,8 +1327,8 @@
    <slot>classUiParChanged()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>704</x>
-     <y>449</y>
+     <x>356</x>
+     <y>390</y>
     </hint>
     <hint type="destinationlabel">
      <x>193</x>
@@ -1353,8 +1343,8 @@
    <slot>classUiParChanged()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>704</x>
-     <y>513</y>
+     <x>618</x>
+     <y>454</y>
     </hint>
     <hint type="destinationlabel">
      <x>399</x>
@@ -1369,8 +1359,8 @@
    <slot>classUiParChanged()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>704</x>
-     <y>481</y>
+     <x>618</x>
+     <y>422</y>
     </hint>
     <hint type="destinationlabel">
      <x>399</x>
@@ -1385,8 +1375,8 @@
    <slot>classUiParChanged()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>295</x>
-     <y>385</y>
+     <x>356</x>
+     <y>358</y>
     </hint>
     <hint type="destinationlabel">
      <x>219</x>
@@ -1401,8 +1391,8 @@
    <slot>classUiParChanged()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>432</x>
-     <y>480</y>
+     <x>356</x>
+     <y>421</y>
     </hint>
     <hint type="destinationlabel">
      <x>294</x>
@@ -1417,8 +1407,8 @@
    <slot>queueUiParChanged()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>535</x>
-     <y>243</y>
+     <x>554</x>
+     <y>241</y>
     </hint>
     <hint type="destinationlabel">
      <x>199</x>
@@ -1433,8 +1423,8 @@
    <slot>classUiParChanged()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>432</x>
-     <y>448</y>
+     <x>185</x>
+     <y>389</y>
     </hint>
     <hint type="destinationlabel">
      <x>294</x>
@@ -1497,8 +1487,8 @@
    <slot>groupUiParChanged()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>143</x>
-     <y>243</y>
+     <x>214</x>
+     <y>241</y>
     </hint>
     <hint type="destinationlabel">
      <x>199</x>
@@ -1529,8 +1519,8 @@
    <slot>classUiParChanged()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>432</x>
-     <y>512</y>
+     <x>356</x>
+     <y>453</y>
     </hint>
     <hint type="destinationlabel">
      <x>294</x>
@@ -1545,8 +1535,8 @@
    <slot>classUiParChanged()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>295</x>
-     <y>417</y>
+     <x>185</x>
+     <y>358</y>
     </hint>
     <hint type="destinationlabel">
      <x>229</x>
@@ -1561,8 +1551,8 @@
    <slot>classUiParChanged()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>295</x>
-     <y>353</y>
+     <x>356</x>
+     <y>326</y>
     </hint>
     <hint type="destinationlabel">
      <x>399</x>

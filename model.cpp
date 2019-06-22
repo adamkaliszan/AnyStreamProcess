@@ -22,28 +22,28 @@ QString serverResourcessSchedulerToString(ResourcessScheduler value)
     return result;
 }
 
-QString bufferResourcessSchedulerToString(BufferPolicy value)
+QString bufferResourcessSchedulerToString(SystemPolicy value)
 {
     QString result;
     switch (value)
     {
-    case BufferPolicy::Continuos:
+    case SystemPolicy::Continuos:
         result = "Continuos";
         break;
 
-    case BufferPolicy::dFIFO_Seq:
+    case SystemPolicy::dFIFO_Seq:
         result = "Discrette";
         break;
 
-    case BufferPolicy::qFIFO_Seq:
+    case SystemPolicy::qFIFO_Seq:
         result = "Discrette qFIFO";
         break;
 
-    case BufferPolicy::SD_FIFO:
+    case SystemPolicy::SD_FIFO:
         result = "State dependent";
         break;
 
-    case BufferPolicy::Disabled:
+    case SystemPolicy::Disabled:
         result = "No buffer";
         break;
 
@@ -905,7 +905,7 @@ bool MCRsc::operator<(const MCRsc &rho) const
 
 
 ModelCreator::ModelCreator():
-    _bufferPolicy(BufferPolicy::Disabled)
+    _systemPolicy(SystemPolicy::Disabled)
   , id(0)
 {
 }
@@ -956,9 +956,14 @@ void ModelCreator::setServerSchedulerAlgorithm(ResourcessScheduler algorithm)
     this->_server.scheduler = algorithm;
 }
 
-void ModelCreator::setBufferSchedulerAlgorithm(BufferPolicy algorithm)
+void ModelCreator::setBufferSchedulerAlgorithm(ResourcessScheduler algorithm)
 {
-    this->_bufferPolicy = algorithm;
+    this->_buffer.scheduler = algorithm;
+}
+
+void ModelCreator::setSystemSchedulerAlgorithm(SystemPolicy algorithm)
+{
+    this->_systemPolicy = algorithm;
 }
 
 void ModelCreator::clearAll()
@@ -1022,7 +1027,7 @@ const ModelSystem ModelCreator::getConstSyst() const
 {
     ModelResourcess server(_server.resourcess, _server.scheduler);
     ModelResourcess buffer(_buffer.resourcess, _buffer.scheduler);
-    ModelSystem result(_traffic.trClasses, server, buffer, _bufferPolicy);
+    ModelSystem result(_traffic.trClasses, server, buffer, _systemPolicy);
     return result;
 }
 
@@ -1079,7 +1084,7 @@ bool ModelCreator::operator >(const ModelCreator &rho) const
     if (_buffer > rho._buffer)
         return true;
 
-    if (_bufferPolicy > rho._bufferPolicy)
+    if (_systemPolicy > rho._systemPolicy)
         return true;
 
     return false;
@@ -1108,7 +1113,7 @@ bool ModelCreator::operator <(const ModelCreator &rho) const
     if (_buffer < rho._buffer)
         return true;
 
-    if (_bufferPolicy < rho._bufferPolicy)
+    if (_systemPolicy < rho._systemPolicy)
         return true;
 
     return false;
@@ -1984,7 +1989,7 @@ ModelSystem::ModelSystem(const ModelSystem &system)
 
 }
 
-ModelSystem::ModelSystem(const QVector<ModelTrClass> &trClasses, const ModelResourcess &server, const ModelResourcess &buffer, BufferPolicy bufferPolicy)
+ModelSystem::ModelSystem(const QVector<ModelTrClass> &trClasses, const ModelResourcess &server, const ModelResourcess &buffer, SystemPolicy bufferPolicy)
   : _trClasses(trClasses)
   , _server(server)
   , _buffer(buffer)

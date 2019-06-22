@@ -16,8 +16,6 @@
 #include "algorithms/alg_cFIFO_hybrid.h"
 #include "algorithms/algorithmHybridDiscr.h"
 #include "algorithms/algorithmHybridDiscrDesc.h"
-#include "algorithms/simulatorQeueFIFO.h"
-#include "algorithms/simulatorQeueSdFIFO.h"
 #include "algorithms/simulatorAllSystems.h"
 #include "algorithms/simulationParameters.h"
 #include "algorithms/algRekLag.h"
@@ -238,9 +236,6 @@ void MainWindow::addAlgorithmsAndParams()
 //    algorithms.append(new AlgorithmHybrid(AlgorithmHybrid::algVariant::yPropPlus));
 //    algorithms.append(new AlgorithmHybrid(AlgorithmHybrid::algVariant::yAprox));
 //    algorithms.append(new AlgorithmHybridDiscrDesc());
-
-//    addTestedAlgorithm(new Algorithms::SimulatorQeueFifo());
-//    addTestedAlgorithm(new Algorithms::SimulatorQeueSdFifo());
     addTestedAlgorithm(new Algorithms::SimulatorAll());
     addTestedAlgorithm(new Algorithms::algRekLagGS());
     addTestedAlgorithm(new Algorithms::algRekLagGS2());
@@ -266,7 +261,6 @@ void MainWindow::addAlgorithmsAndParams()
     addAlgorithm(new SimulatorQeueFifo(queueServDiscipline::cFIFO));
     addAlgorithm(new SimulatorQeueFifo(queueServDiscipline::dFIFO));
     addAlgorithm(new SimulatorQeueFifo(queueServDiscipline::qFIFO));
-    addAlgorithm(new SimulatorQeueSdFifo());
 */
     //foreach (Investigator *tmpAlg, algorithms)
     //{
@@ -1417,19 +1411,25 @@ void MainWindow::loadLanguage(const QString &rLanguage)
         foreach (ResourcessScheduler tmp, tmpOptions)
         {
             variant.setValue(tmp);
-            ui->comboBoxServerSchedulerAlgorithm->addItem(serverResourcessSchedulerToString(tmp), variant);
+            ui->comboBoxServerGroupSchedulerAlgorithm->addItem(serverResourcessSchedulerToString(tmp), variant);
         }
 
-        QVector<BufferPolicy> tmpOptionsBuffer = {
-            BufferPolicy::dFIFO_Seq,
-            BufferPolicy::Continuos,
-            BufferPolicy::qFIFO_Seq,
-            BufferPolicy::SD_FIFO
-        };
-        foreach (BufferPolicy tmp, tmpOptionsBuffer)
+        foreach (ResourcessScheduler tmp, tmpOptions)
         {
             variant.setValue(tmp);
-            ui->comboBoxSubBufferSchedulerAlgorithm->addItem(bufferResourcessSchedulerToString(tmp), variant);
+            ui->comboBoxBufferGroupSchedulerAlgorithm->addItem(serverResourcessSchedulerToString(tmp), variant);
+        }
+
+        QVector<SystemPolicy> tmpOptionsBuffer = {
+            SystemPolicy::dFIFO_Seq,
+            SystemPolicy::Continuos,
+            SystemPolicy::qFIFO_Seq,
+            SystemPolicy::SD_FIFO
+        };
+        foreach (SystemPolicy tmp, tmpOptionsBuffer)
+        {
+            variant.setValue(tmp);
+            ui->comboBoxSystemSchedulerAlgorithm->addItem(bufferResourcessSchedulerToString(tmp), variant);
         }
     }
 }
@@ -1708,21 +1708,6 @@ void MainWindow::on_comboBox_CallServStrType_currentIndexChanged(int index)
         break;
     }
 }
-
-void MainWindow::on_comboBoxServerSchedulerAlgorithm_currentIndexChanged(int index)
-{
-    (void) index;
-    system->setServerSchedulerAlgorithm(ui->comboBoxServerSchedulerAlgorithm->currentData().value<ResourcessScheduler>());
-    fillSystem();
-}
-
-void MainWindow::on_comboBoxBufferSchedulerAlgorithm_currentIndexChanged(int index)
-{
-    (void) index;
-    system->setBufferSchedulerAlgorithm(ui->comboBoxSubBufferSchedulerAlgorithm->currentData().value<BufferPolicy>());
-    fillSystem();
-}
-
 
 void MainWindow::fillListWidgetWithParams(QListWidget *outList, QLabel *outLabel, Results::ParameterType paramType)
 {
@@ -2030,4 +2015,26 @@ void MainWindow::on_ResultsQtChartRefresh()
 void MainWindow::on_actionConfigure_triggered()
 {
     dlgConfig->show();
+}
+
+
+void MainWindow::on_comboBoxServerGroupSchedulerAlgorithm_currentIndexChanged(int index)
+{
+    (void) index;
+    system->setServerSchedulerAlgorithm(ui->comboBoxServerGroupSchedulerAlgorithm->currentData().value<ResourcessScheduler>());
+    fillSystem();
+}
+
+void MainWindow::on_comboBoxBufferGroupSchedulerAlgorithm_currentIndexChanged(int index)
+{
+    (void) index;
+    system->setBufferSchedulerAlgorithm(ui->comboBoxBufferGroupSchedulerAlgorithm->currentData().value<ResourcessScheduler>());
+    fillSystem();
+}
+
+void MainWindow::on_comboBoxSystemSchedulerAlgorithm_currentIndexChanged(int index)
+{
+    (void) index;
+    system->setSystemSchedulerAlgorithm(ui->comboBoxSystemSchedulerAlgorithm->currentData().value<SystemPolicy>());
+    fillSystem();
 }
