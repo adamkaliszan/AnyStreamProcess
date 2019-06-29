@@ -1986,7 +1986,6 @@ ModelSystem::ModelSystem(const ModelSystem &system)
   , _totalAt(system._totalAt)
   , _V(system._V)
 {
-
 }
 
 ModelSystem::ModelSystem(const QVector<ModelTrClass> &trClasses, const ModelResourcess &server, const ModelResourcess &buffer, SystemPolicy bufferPolicy)

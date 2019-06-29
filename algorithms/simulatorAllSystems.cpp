@@ -114,7 +114,9 @@ SimulatorAll::Call *SimulatorAll::Engine::_getNewCall()
 void SimulatorAll::Engine::prepareCallToService(SimulatorAll::Call *callThatIsInService)
 {
     callThatIsInService->proc           = agenda->getNewProcess();
+#ifdef QT_DEBUG
     callThatIsInService->proc->state    = ProcAll::ProcState::SENDING_DATA;
+#endif
     callThatIsInService->proc->execute  = callThatIsInService->trEndedFun;
     callThatIsInService->proc->callData = callThatIsInService;
     callThatIsInService->proc->time     = callThatIsInService->plannedServiceTime;
@@ -125,14 +127,15 @@ void SimulatorAll::Engine::prepareCallToService(SimulatorAll::Call *callThatIsIn
 void SimulatorAll::Engine::reuseProcess(ProcAll *proc)
 {
     proc->idx = 0;
+#ifdef QT_DEBUG
     proc->setUseless();
-
+#endif
     agenda->reuseProcess(proc);
 }
 
 void SimulatorAll::Engine::addProcess(ProcAll *proc)
 {
-#ifndef DO_NOT_USE_SECUTIRY_CHECKS
+#ifdef QT_DEBUG
     if (proc->time < 0)
         qFatal("Negative time value");
     if (proc->callData->classIdx > system->par.m())
@@ -143,7 +146,7 @@ void SimulatorAll::Engine::addProcess(ProcAll *proc)
 
 void SimulatorAll::Engine::removeProcess(ProcAll *proc)
 {
-#ifndef DO_NOT_USE_SECUTIRY_CHECKS
+#ifdef QT_DEBUG
     if (proc->time < 0)
         qFatal("Negative time value");
 #endif
@@ -327,6 +330,7 @@ double SimulatorAll::Engine::doSimExperiment(int numberOfLostCall, unsigned int 
 void SimulatorAll::System::writesResultsOfSingleExperiment(RSingle& singleResults, double simulationTime)
 {
     server->writesResultsOfSingleExperiment(singleResults, simulationTime);
+    buffer->writesResultsOfSingleExperiment(singleResults, simulationTime);
 
     int V  = server->getV() + buffer->getV();
     const int &m  = par.m();
@@ -526,14 +530,11 @@ void SimulatorAll::System::writesResultsOfSingleExperiment(RSingle& singleResult
 
 bool SimulatorAll::System::serveNewCall(SimulatorAll::Call *newCall)
 {
-#ifndef DO_NOT_USE_SECUTIRY_CHECKS
-
-#endif
     int groupNumber;
-    bool isPlace = server->findAS(newCall->reqAS, groupNumber);
+    bool isPlaceInServer = server->findAS(newCall->reqAS, groupNumber);
+    bool isPlaceInBuffer = false;
 
-
-    if (isPlace)
+    if (isPlaceInServer)
     {
         engine->prepareCallToService(newCall);
 
@@ -549,6 +550,8 @@ bool SimulatorAll::System::serveNewCall(SimulatorAll::Call *newCall)
     }
     else
     {
+        isPlaceInBuffer = buffer->findAS(newCall->reqAS, groupNumber);
+
         if (0)
         {
             serveCallsInEque();
@@ -584,11 +587,6 @@ void SimulatorAll::System::removeCallFromBuffer(SimulatorAll::Call *call)
 
 void SimulatorAll::System::finishCall(SimulatorAll::Call *call, bool acceptedToService)
 {
-#ifndef DO_NOT_USE_SECUTIRY_CHECKS
-    if (call->classIdx > 100)
-        qFatal("Wrong class idx");
-#endif
-
     if (!acceptedToService)
     {
         engine->notifyLostCall();
@@ -603,21 +601,61 @@ void SimulatorAll::System::finishCall(SimulatorAll::Call *call, bool acceptedToS
 
 void SimulatorAll::System::serveCallsInEque()
 {
+    switch (par.getBufferPolicy())
+    {
+    case SystemPolicy::Disabled:
+        serveCallsInEqueSpDisabled();
+        break;
+
+    case SystemPolicy::SD_FIFO:
+        serveCallsInEqueSpSdFifo();
+        break;
+
+    case SystemPolicy::Continuos:
+        serveCallsInEqueSpCFifo();
+        break;
+
+    case SystemPolicy::dFIFO_Seq:
+        serveCallsInEqueSpDFifo();
+        break;
+
+    case SystemPolicy::qFIFO_Seq:
+        serveCallsInEqueSpQFifo();
+        break;
+    }
+/*
     Call *tmpCall;
     int numberOfAvailableAS;
+    bool doQuit = false;
 
-    numberOfAvailableAS = server->getNoOfFreeAS();
-    while(numberOfAvailableAS > 0)
+    while((numberOfAvailableAS = server->getNoOfFreeAS()) > 0)
     {
-        tmpCall = buffer->getNextCall();
-        if (tmpCall == nullptr)
+        if (nullptr == (tmpCall = buffer->getNextCall()))
             break;
 
-//TODO        if (buffer->par.scheduler != BufferResourcessScheduler::Continuos && tmpCall->reqAS > numberOfAvailableAS)
-//            break;
+        switch (par.getBufferPolicy())
+        {
+        case SystemPolicy::Disabled:
+            doQuit = true;
+            break;
+
+        case SystemPolicy::SD_FIFO:
+            //TODO implement it
+            doQuit = true;
+            break;
+
+        case SystemPolicy::Continuos
+
+        }
+
+        // There is no more calls in the buffer
+
+        if ((this->par.getBufferPolicy() != SystemPolicy::Continuos)    // We can't serve part of given call
+         && (tmpCall->reqAS > numberOfAvailableAS))                     // We can't serve whole call
+            break;
 
         int maxResToAll = tmpCall->reqAS - tmpCall->allocatedAS;
-#ifndef DO_NOT_USE_SECUTIRY_CHECKS
+#ifdef QT_DEBUG
         if (buffer->state.n < (int)maxResToAll)
             qFatal("Wrong number of max ressourcess to allocate");
 #endif
@@ -644,12 +682,60 @@ void SimulatorAll::System::serveCallsInEque()
         }
         buffer->takeCall(tmpCall, noOfAS_toAllocate);
 
+        if (doQuit)
+            break;
+        }
+        }
+        */
+}
 
-        numberOfAvailableAS = server->getNoOfFreeAS();
+void SimulatorAll::System::serveCallsInEqueSpDisabled()
+{
+    return;
+}
 
+void SimulatorAll::System::serveCallsInEqueSpSdFifo()
+{
+    qFatal("Not implemented");
+    //TODO Adam: implement it
+}
+
+void Algorithms::SimulatorAll::System::serveCallsInEqueSpDFifo()
+{
+    Call *tmpCall;
+    int numberOfAvailableAS;
+
+    while (
+        ((numberOfAvailableAS = server->getMaxNumberOfAsInSingleGroup()) > 0)
+     && (nullptr != (tmpCall = buffer->showFirstCall())))
+    {
+        if (tmpCall->reqAS > numberOfAvailableAS)                     // We can't serve whole call
+            break;
+
+        tmpCall->allocatedAS = tmpCall->reqAS;
+        tmpCall->proc = engine->getNewProcess();
+        tmpCall->proc->time = tmpCall->plannedServiceTime;
+        tmpCall->proc->callData = tmpCall;
+#ifdef QT_DEBUG
+        tmpCall->proc->state = ProcAll::ProcState::SENDING_DATA;
+#endif
+        tmpCall->proc->execute = tmpCall->trEndedFun;
+        engine->addProcess(tmpCall->proc);
+        buffer->removeCall(tmpCall);
     }
 }
 
+void SimulatorAll::System::serveCallsInEqueSpQFifo()
+{
+    qFatal("Not implemented");
+    //TODO Adam: implement it
+}
+
+void Algorithms::SimulatorAll::System::serveCallsInEqueSpCFifo()
+{
+    qFatal("Not implemented");
+    //TODO Adam: implement it
+}
 
 #define FOLDINGSTART { //Statistics
 
@@ -701,21 +787,9 @@ void SimulatorAll::System::statsDisable()
 {
 }
 
-void SimulatorAll::Server::statsClear()
-{
-    statistics->clear();
-}
-
 void SimulatorAll::Server::statsColectPre(const ModelSystem &system, double time)
 {
     statistics->collectPre(system, time, state.n, state.n_i, state.n_k);
-
-    statsColectPreGroupsAvailability(time);
-}
-
-void SimulatorAll::Server::statsColectPreGroupsAvailability(double time)
-{
-    (void) time;
 }
 
 void SimulatorAll::Server::statsCollectPost(int classIdx, int old_n, int n, SimulatorAll::EventType simEvent)
@@ -736,7 +810,7 @@ double SimulatorAll::Server::statsGetOccupancyTimeOfState(int state) const
 
 #define FOLDINGEND }
 
-bool SimulatorAll::Server::findAS(int noOfAUs, int& groupNo) const
+bool SimulatorAll::CommonRes::findAS(int noOfAUs, int& groupNo) const
 {
     bool result = false;
     int groupNoTmp;
@@ -773,15 +847,12 @@ bool SimulatorAll::Server::findAS(int noOfAUs, int& groupNo) const
 
 void SimulatorAll::Server::addCall(Call *call, int noOfAS, int groupNo, bool newCall)
 {
-    call->groupIndex = groupNo;
-    state.n += noOfAS;
+    call->serverGroupIndex = groupNo;
+    state.addCall(call, noOfAS, groupNo);
     assert(vTotal >= state.n);
-    state.n_i[call->classIdx] += noOfAS;
-    state.n_k[groupNo] += noOfAS;
-    state.subgroupFreeAUs[groupNo] -=noOfAS;
 
 
-#ifndef DO_NOT_USE_SECUTIRY_CHECKS
+#ifdef QT_DEBUG
     if (call->reqAS < call->allocatedAS)
         qFatal("More AS is allocated then it is required");
     if (noOfAS > call->allocatedAS)
@@ -790,7 +861,7 @@ void SimulatorAll::Server::addCall(Call *call, int noOfAS, int groupNo, bool new
     if (newCall)
     {
         calls.append(call);
-#ifndef DO_NOT_USE_SECUTIRY_CHECKS
+#ifdef QT_DEBUG
         if (calls.length() > this->vTotal)
             qFatal("To many calls on server's list");
 #endif
@@ -799,43 +870,12 @@ void SimulatorAll::Server::addCall(Call *call, int noOfAS, int groupNo, bool new
 
 void SimulatorAll::Server::removeCall(SimulatorAll::Call *call)
 {
-    this->state.subgroupFreeAUs[call->groupIndex] +=call->allocatedAS;
+    state.removeCall(call, call->serverGroupIndex);
     calls.removeAll(call);
-    state.n -=call->allocatedAS;
-    state.n_i[call->classIdx]-= call->allocatedAS;
-    state.n_k[call->groupIndex]-= call->allocatedAS;
 }
 
-double SimulatorAll::Server::resourceUtilization(int classNumber, int stateNo) const
-{
-    return statistics->getTimeStatisticsSC(classNumber, stateNo).occupancyUtilization;
-}
-
-double SimulatorAll::Server::getTimeOfState(int stateNo) const
-{
-    return statistics->getTimeStatistics(stateNo).occupancyTime;
-}
-
-SimulatorAll::Server::Server(System *system)
-  : system(system)
-  , scheduler(system->par.getServer().schedulerAlg)
-  , vTotal(system->par.getServer().V())
-  , vMax(system->par.getServer().vMax())
-  , k(system->par.getServer().k())
-  , m(system->par.m())
+SimulatorAll::Server::Server(System *system): CommonRes (system, system->par.getServer())
 {   
-    state.n = 0;
-    state.n_k.resize(k);
-    state.n_i.resize(m);
-
-    state.subgroupFreeAUs.resize(k);
-    state.subgroupSequence.resize(k);
-    for (int j=0; j<k; j++)
-    {
-        state.subgroupFreeAUs[j] = system->par.getServer().V(j);
-        state.subgroupSequence[j] = j;
-    }
-
     statistics = new ServerStatistics(system->par);
 }
 
@@ -941,7 +981,7 @@ void SimulatorAll::Server::writesResultsOfSingleExperiment(RSingle &singleResult
     }
 }
 
-int SimulatorAll::Server::getMaxNumberOfAsInSingleGroup()
+int SimulatorAll::CommonRes::getMaxNumberOfAsInSingleGroup() const
 {
     int result = 0;
 
@@ -1322,7 +1362,9 @@ void ProcAll::initializeIndependent(
     callData = system->getNewCall(trClass, classIdx, IncE);
     callData->trEndedFun = ProcAll::callServiceEndedIndependent;
 
+#ifdef QT_DEBUG
     this->state = ProcAll::ProcState::WAITING_FOR_NEW_CALL;
+#endif
     this->execute = funNewCall;
     this->time = funTimeNewCall(this->callData->sourceE, this->callData->sourceD);
     system->addProcess(this);
@@ -1359,7 +1401,9 @@ void ProcAll::ProcAll::initializeDependent(
     callData = engine->getNewCall(trClass, classIdx, IncE);
     callData->trEndedFun = funEndCall;
 
+#ifdef QT_DEBUG
     this->state = ProcAll::ProcState::WAITING_FOR_NEW_CALL;
+#endif
     this->execute = funNewCall;
     this->time = funTimeNewCall(this->callData->sourceE, this->callData->sourceD);
     engine->addProcess(this);
@@ -1375,7 +1419,7 @@ SimulatorAll::EventType ProcAll::newCallIndep(
 {
     SimulatorAll::EventType result;
 
-#ifndef DO_NOT_USE_SECUTIRY_CHECKS
+#ifdef QT_DEBUG
     if (proc->callData->classIdx > system->par.m())
         qFatal("Wrong class idx");
 #endif
@@ -1391,7 +1435,9 @@ SimulatorAll::EventType ProcAll::newCallIndep(
     ProcAll *newProc = proc;
     newProc->callData = system->engine->getNewCall(proc->callData);
 
+#ifdef QT_DEBUG
     newProc->state = ProcAll::ProcState::WAITING_FOR_NEW_CALL;
+#endif
     newProc->execute = funNewCall;
     newProc->time = funTimeNewCall(newProc->callData->sourceE, newProc->callData->sourceD);
     system->engine->addProcess(newProc);
@@ -1409,7 +1455,7 @@ SimulatorAll::EventType ProcAll::newCallDepMinus(
 {
     SimulatorAll::EventType result;
 
-#ifndef DO_NOT_USE_SECUTIRY_CHECKS
+#ifdef QT_DEBUG
     if (proc->callData->classIdx > system->par.m())
         qFatal("Wrong class idx");
 #endif
@@ -1426,11 +1472,11 @@ SimulatorAll::EventType ProcAll::newCallDepMinus(
         ProcAll *newProc = system->engine->getNewProcess();
         newProc->callData = system->engine->getNewCall(callData);
 
-    #ifndef DO_NOT_USE_SECUTIRY_CHECKS
+#ifdef QT_DEBUG
         if (newProc->callData->classIdx > system->par.m())
             qFatal("Wrong class idx");
-    #endif
         newProc->state = ProcAll::ProcState::WAITING_FOR_NEW_CALL;
+#endif
         newProc->execute = funNewCall;
         newProc->time = funTimeNewCall(newProc->callData->sourceE, newProc->callData->sourceD);
         system->engine->addProcess(newProc);
@@ -1454,7 +1500,7 @@ SimulatorAll::EventType ProcAll::newCallDepPlus(ProcAll *proc
 {
     SimulatorAll::EventType result;
 
-#ifndef DO_NOT_USE_SECUTIRY_CHECKS
+#ifdef QT_DEBUG
     if (proc->callData->classIdx > system->par.m())
         qFatal("Wrong class idx");
 #endif
@@ -1477,7 +1523,9 @@ SimulatorAll::EventType ProcAll::newCallDepPlus(ProcAll *proc
         callData->complementaryCall = nullptr;
     }
 
+#ifdef QT_DEBUG
     procNewCall->state = ProcAll::ProcState::WAITING_FOR_NEW_CALL;
+#endif
     procNewCall->execute = funNewCall;
     procNewCall->time = funTimeNewCall(procNewCall->callData->sourceE, procNewCall->callData->sourceD);
     system->engine->addProcess(procNewCall);
@@ -1490,8 +1538,9 @@ SimulatorAll::EventType ProcAll::newCallDepPlus(ProcAll *proc
         newProc->callData->proc = newProc;
         callData->complementaryCall = newProc->callData;
         newProc->callData->complementaryCall = callData;
-
+#ifdef QT_DEBUG
         newProc->state = ProcAll::ProcState::WAITING_FOR_NEW_CALL;
+#endif
         newProc->execute = funNewCall;
         newProc->time = funTimeNewCall(newProc->callData->sourceE, newProc->callData->sourceD);
         system->engine->addProcess(newProc);
@@ -1508,7 +1557,7 @@ SimulatorAll::EventType ProcAll::newCallDepPlus(ProcAll *proc
 
 SimulatorAll::EventType ProcAll::callServiceEndedIndependent(ProcAll *proc, SimulatorAll::System *system)
 {
-#ifndef DO_NOT_USE_SECUTIRY_CHECKS
+#ifdef QT_DEBUG
     if (proc->callData->classIdx > system->par.m())
         qFatal("Wrong class idx");
 #endif
@@ -1529,9 +1578,10 @@ SimulatorAll::EventType ProcAll::callServiceEndedDependentMinus(ProcAll *proc
     ProcAll *newProc = system->engine->getNewProcess();
     newProc->callData = system->engine->getNewCall(proc->callData);
 
-#ifndef DO_NOT_USE_SECUTIRY_CHECKS
+#ifdef QT_DEBUG
     if (proc->callData->classIdx > system->par.m())
         qFatal("Wrong class idx");
+    newProc->state = ProcAll::ProcState::WAITING_FOR_NEW_CALL;
 #endif
     system->endCallService(proc->callData);
 
@@ -1539,7 +1589,7 @@ SimulatorAll::EventType ProcAll::callServiceEndedDependentMinus(ProcAll *proc
     system->engine->reuseProcess(proc);
 
     //Adding new process with state Waiting for new call
-    newProc->state = ProcAll::ProcState::WAITING_FOR_NEW_CALL;
+
     newProc->execute = funNewCall;
     newProc->time = funTimeNewCall(newProc->callData->sourceE, newProc->callData->sourceD);
     system->engine->addProcess(newProc);
@@ -1554,8 +1604,10 @@ SimulatorAll::EventType ProcAll::callServiceEndedDependentPlus(ProcAll *proc, Si
     if (scheduledCall->complementaryCall != proc->callData)
         qFatal("Wrong relations between Pascal sourcess");
 
+#ifdef QT_DEBUG
     if (proc->state == ProcState::USELESS)\
         qFatal("Wrong Process state");
+#endif
     system->endCallService(proc->callData);
 
     system->cancellScheduledCall(scheduledCall);
@@ -1596,24 +1648,24 @@ void SimulatorAll::Call::collectTheStats(double time)
 
 #define FOLDINGSTART { // buffer
 
-SimulatorAll::Buffer::Buffer(SimulatorAll::System *system)
-  : k(system->par.getBuffer().k())
-  , m(system->par.m())
-  , par(system->par.getBuffer())
+SimulatorAll::Buffer::Buffer(SimulatorAll::System *system): CommonRes (system, system->par.getBuffer())
 {
-    state.n = 0;
-    state.n_k.resize(k);
-    state.n_i.resize(m);
-
-    state.subgroupFreeAUs.resize(k);
-    state.subgroupSequence.resize(k);
-
     statistics = new BufferStatistics(system->par);
 }
 
-void SimulatorAll::Buffer::statsClear()
+void SimulatorAll::Buffer::addCall(SimulatorAll::Call *newCall, int groupNo)
 {
-    statistics->clear();
+    newCall->bufferGroupIndex = groupNo;
+    state.addCall(newCall, newCall->reqAS, groupNo);
+    assert(vTotal >= state.n);
+
+    calls.append(newCall);
+}
+
+void SimulatorAll::Buffer::removeCall(SimulatorAll::Call *first)
+{
+    state.removeCall(first, first->bufferGroupIndex);
+    assert(calls.removeAll(first) == 1);
 }
 
 void SimulatorAll::Buffer::statsColectPre(double time)
@@ -1628,29 +1680,41 @@ void SimulatorAll::Buffer::statsCollectPost(int classIdx, int old_n, int n)
     (void) n;
 }
 
-void SimulatorAll::Buffer::takeCall(SimulatorAll::Call *call, int noOfAS)
+void SimulatorAll::Buffer::writesResultsOfSingleExperiment(RSingle &singleResults, double simulationTime)
 {
-    //TODO
+#warning "Implement it"
+//    statistics->
+
 }
 
-void SimulatorAll::Buffer::removeCall(SimulatorAll::Call *first)
+
+SimulatorAll::CommonRes::CommonRes(SimulatorAll::System *system, const ModelResourcess &res)
+    : system(system)
+    , scheduler(res.schedulerAlg)
+    , vTotal(res.V())
+    , vMax(res.vMax())
+    , k(res.k())
+    , m(system->par.m())
 {
-    (void) first;
+    state.n = 0;
+    state.n_k.resize(k);
+    state.n_i.resize(m);
+
+    state.subgroupFreeAUs.resize(k);
+    state.subgroupSequence.resize(k);
+    for (int j=0; j<k; j++)
+    {
+        state.subgroupFreeAUs[j] = system->par.getServer().V(j);
+        state.subgroupSequence[j] = j;
+    }
 }
 
-SimulatorAll::Call *SimulatorAll::Buffer::getNextCall()
+SimulatorAll::CommonRes::~CommonRes()
 {
-    return nullptr;//TODO
+
 }
 
 #define FOLDINEND }
 
-
-
-
-
-
-
-
-
-} // namespace Algorithms
+ }
+// namespace Algorithms

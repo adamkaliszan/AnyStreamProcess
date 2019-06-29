@@ -138,105 +138,98 @@ class SimulatorAll: public Simulator
         void removeCallFromServer(Call *call);
         void removeCallFromBuffer(Call *call);
         void serveCallsInEque();
+
+        void serveCallsInEqueSpDisabled();
+        void serveCallsInEqueSpSdFifo();
+        void serveCallsInEqueSpDFifo();
+        void serveCallsInEqueSpQFifo();
+        void serveCallsInEqueSpCFifo();
     };
 
-    class Server
+    class CommonRes
     {
-        friend void SimulatorAll::System::writesResultsOfSingleExperiment(RSingle&, double simulationTime);
-        friend void SimulatorAll::System::statsCollectPre(double time);
-
+        friend void SimulatorAll::System::writesResultsOfSingleExperiment(Results::RSingle&, double simulationTime);
     public:
         const System  * const system;
-        const ResourcessScheduler scheduler;    /// Algorithm that is responsible for choosing the group if more then 1
-        const int vTotal;                             /// Server capacity
-        const int vMax;                               /// Max number of AU in a single group
-        const int k;                                  /// Number of groups
-        const int m;                                  /// Number of traffic classes
+        const ResourcessScheduler scheduler;          ///< Algorithm that is responsible for choosing the group if more then 1
+        const int vTotal;                             ///< Server capacity
+        const int vMax;                               ///< Max number of AU in a single group
+        const int k;                                  ///< Number of groups
+        const int m;                                  ///< Number of traffic classes
 
-    private:
+    protected:
         struct
         {
             int n;                                    ///< Total number of occupied resourcess
             QVector<int> n_i;                         ///< Occupied resourcess vs class
             QVector<int> n_k;                         ///< Occupied resourcess of given group
-            mutable QVector<int> subgroupSequence;    /// Sequence of checking group for new call service
-            mutable QVector<int> subgroupFreeAUs;     /// Number of AS that is now available in given group
-        } state;                                      ///< Server state
+            mutable QVector<int> subgroupSequence;    ///< Sequence of checking group for new call service
+            mutable QVector<int> subgroupFreeAUs;     ///< Number of AS that is now available in given group
 
-
-        ServerStatistics *statistics;
-
+            void addCall(const Call *nCall, int noOfAS, int groupNo)
+            {
+                n += noOfAS;
+                n_i[nCall->classIdx] += noOfAS;
+                n_k[groupNo] += noOfAS;
+                subgroupFreeAUs[groupNo] -=noOfAS;
+            }
+            void removeCall(const Call *rCall, int groupNo)
+            {
+                subgroupFreeAUs[groupNo] +=rCall->allocatedAS;
+                n -=rCall->allocatedAS;
+                n_i[rCall->classIdx]-= rCall->allocatedAS;
+                n_k[groupNo]-= rCall->allocatedAS;
+            }
+        } state;
         QList<Call *> calls;
 
-        double resourceUtilization(int ClassNumber, int stateNo) const;
-        double getTimeOfState(int stateNo) const;
+    public:
+        CommonRes(SimulatorAll::System *system, const ModelResourcess &res);
+        ~CommonRes();
 
+        inline int getV()                                    const { return vTotal; }
+        inline int getNoOfFreeAS()                           const { return vTotal - state.n;}
+        inline int get_n()                                   const { return state.n; }
+        inline const QVector<int> &getMicroStates()          const { return state.n_i; }
+        inline const QVector<int> &getOccupancyOfTheGroups() const { return state.n_k; }
 
-        void statsColectPreGroupsAvailability(double time);
+        int getMaxNumberOfAsInSingleGroup()                  const;
+
+        bool findAS(int noOfAUs, int &groupNo)               const;
+    };
+
+    class Server: public CommonRes
+    {
+        friend void SimulatorAll::System::writesResultsOfSingleExperiment(RSingle&, double simulationTime);
+        friend void SimulatorAll::System::statsCollectPre(double time);
+
+    private:
+        ServerStatistics *statistics;
 
     public:
         Server(System *system);
         ~Server();
 
-        inline int get_n() const {return state.n; }
-        inline const QVector<int> &getMicroStates() const { return state.n_i; }
-        inline const QVector<int> &getOccupancyOfTheGroups() const { return state.n_k; }
-
-        void writesResultsOfSingleExperiment(RSingle& singleResults, double simulationTime);
-
-        inline int getNoOfFreeAS() const { return vTotal - state.n; }
-        int getMaxNumberOfAsInSingleGroup();
-
-        inline int getV() const {return vTotal;}
-
         void addCall(Call *call, int noOfAS, int groupNo, bool newCall);
         void removeCall(Call *call);
-
 #define FOLDINGSTART { //Statistics
+        inline void statsClear() { statistics->clear(); }
         void statsEnable();
         void statsDisable();
-        void statsClear();
 
         void statsColectPre(const ModelSystem &system, double time);
-
-
         void statsCollectPost(int classIdx, int old_n, int n, EventType simEvent);
+
         inline double statsGetWorkoutPerClassAndState(int i, int n) const;
         inline double statsGetOccupancyTimeOfState(int state) const;
+
+        void writesResultsOfSingleExperiment(RSingle& singleResults, double simulationTime);
 #define FOLDINGEND }
-
-
-        /**
-         * @brief findAS
-         * @param firstAU
-         * @param groupNo
-         * @param noOfAUs
-         * @param allocationStrategy
-         * @return True if there is a place for
-         */
-        bool findAS(int noOfAUs, int &groupNo) const;
     };
 
-    class Buffer
+    class Buffer: public CommonRes
     {
         friend void SimulatorAll::System::writesResultsOfSingleExperiment(Results::RSingle&, double simulationTime);
-
-
-
-      public:
-        const int k;                                  /// Number of groups
-        const int m;                                  /// Number of traffic classes
-
-        const ModelResourcess &par;
-
-        struct
-        {
-            int n;                                    ///< Total number of occupied resourcess
-            QVector<int> n_i;                         ///< Occupied resourcess vs class
-            QVector<int> n_k;                         ///< Occupied resourcess of given group
-            mutable QVector<int> subgroupSequence;    /// Sequence of checking group for new call service
-            mutable QVector<int> subgroupFreeAUs;     /// Number of AS that is now available in given group
-        } state;
 
       private:
         BufferStatistics *statistics;
@@ -245,28 +238,25 @@ class SimulatorAll: public Simulator
         Buffer(System *system);
         ~Buffer();
 
-        inline int   getV()                                      { return par.V(); }
-        inline int   getNoOfFreeAS()                             { return par.V() - state.n;}
+        void   addCall(SimulatorAll::Call *newCall, int groupNo);
+        void   removeCall(Call *first);
+
+        inline Call *showFirstCall() {   return (calls.isEmpty()) ? nullptr : calls.first();}
+        Call   *showCall(int callIdx);
 
 #define FOLDINGSTART { //Statistics
+        inline void statsClear()                          {statistics->clear();}
         void statsEnable();
         void statsDisable();
-        void statsClear();
+
         void statsColectPre(double time);
         void statsCollectPost(int classIdx, int old_n, int n);
+
         inline double statsGetWorkoutPerClassAndState(int i, int n) const;
         inline double statsGetOccupancyTimeOfState(int state) const;
+
+        void writesResultsOfSingleExperiment(RSingle& singleResults, double simulationTime);
 #define FOLDINGEND }
-
-        void   addCall(SimulatorAll::Call *newCall);
-        void   takeCall(SimulatorAll::Call *call, int noOfAS);
-        inline void   removeCall(Call *first);
-
-        inline int get_n() const {return state.n; }
-        inline const QVector<int> &getMicroStates() const { return state.n_i; }
-        inline const QVector<int> &getOccupancyOfTheGroups() const { return state.n_i; }
-
-        Call   *getNextCall();
     };
 
     struct Call
@@ -294,8 +284,8 @@ class SimulatorAll: public Simulator
         int reqAS;                    ///< Required number of allocation slots.
         int allocatedAS;              ///< Number of allocated AS
 
-        int firstAuIndexInAGroup;     ///< Index of a first AU in a group, next AUs are allocated in a sequence
-        int groupIndex;               ///< Index of the group, where the call was allocated
+        int serverGroupIndex;         ///< Index of the server's group, where the call was allocated
+        int bufferGroupIndex;         ///< Index of the server's group, where the call was allocated
 
         ProcAll *proc;
         Call *complementaryCall;      ///< Only tr. classes where no os sourcess is increasing with the number of serviced calls
@@ -325,20 +315,20 @@ public:
         WAITING_FOR_NEW_CALL,
         SENDING_DATA
     };
-
-private:
+#ifdef QT_DEBUG
     ProcState state;
+#endif
+private:
+
 
 
     void initializeIndependent(SimulatorAll::Engine *system
-            , const ModelTrClass *trClass
-            , int classIdx
-            , double a
-            , int sumPropAt
-            , int V
+            , const ModelTrClass *trClass , int classIdx
+            , double a, int sumPropAt, int V
             , double (*funTimeNewCall)(double, double)
-            , SimulatorAll::EventType (*funNewCall)(ProcAll *, SimulatorAll::System *)
-            );
+            , SimulatorAll::EventType (*funNewCall)(ProcAll *, SimulatorAll::System *));
+
+
 
 #define INDEPENDENT_ALL(X,Y,NEW_CALL_DISTR,CALL_SERV_DISTRIB) \
     void initializeIndep##X##Y(SimulatorAll::Engine *system, const ModelTrClass *trClass, int idx, double a, int sumPropAt, int V)\
@@ -522,7 +512,9 @@ public:
     uint   idx;              /// Index on the binary heap
     SimulatorAll::Call *callData;
 
+#ifdef QT_DEBUG
     inline void setUseless()                                       { state = ProcState::USELESS; }
+#endif
     inline void removeCallData()                                   { callData = nullptr; }
     inline void setCallData(SimulatorAll::Call *newCallData)       { callData = newCallData; }
     inline bool hasCallData()                                      { return (callData != nullptr); }

@@ -28,7 +28,7 @@ private:
         u_int32_t len;
         QVector<P*> array;
 
-#ifndef DO_NOT_USE_SECUTIRY_CHECKS
+#ifdef QT_DEBUG
         void consistencyCheck()
         {
             P *tmpProc;
@@ -107,7 +107,7 @@ private:
         }
         void _fixTheHeapDown(u_int32_t idx)
         {
-#ifndef DO_NOT_USE_SECUTIRY_CHECKS
+#ifdef QT_DEBUG
             if (idx >= len)
                 qFatal("Wrong index");
 #endif
@@ -133,7 +133,7 @@ private:
 
         void add(P *newProc)
         {
-#ifndef DO_NOT_USE_SECUTIRY_CHECKS
+#ifdef QT_DEBUG
             if (newProc->time < 0)
                 qFatal("Negative time value");
             consistencyCheck();
@@ -150,13 +150,13 @@ private:
             newProc->idx = len;
             len++;
             _fixTheHeapUp();
-#ifndef DO_NOT_USE_SECUTIRY_CHECKS
+#ifdef QT_DEBUG
             consistencyCheck();
 #endif
         }
         void remove(P *proc)
         {
-#ifndef DO_NOT_USE_SECUTIRY_CHECKS
+#ifdef QT_DEBUG
             consistencyCheck();
 #endif
             u_int32_t idx = proc->idx;
@@ -174,7 +174,7 @@ private:
                 _fixTheHeapDown(idx);
                 _fixTheHeapUp(idx);
             }
-#ifndef DO_NOT_USE_SECUTIRY_CHECKS
+#ifdef QT_DEBUG
             consistencyCheck();
 #endif
         }
@@ -189,14 +189,14 @@ private:
 #endif
             _fixTheHeapDown(proc->idx);
             _fixTheHeapUp(proc->idx);
-#ifndef DO_NOT_USE_SECUTIRY_CHECKS
+#ifdef QT_DEBUG
             consistencyCheck();
 #endif
         }
 
         P *takeFirst()
         {
-#ifndef DO_NOT_USE_SECUTIRY_CHECKS
+#ifdef QT_DEBUG
             if (this->len == 0)
                 qFatal("Agenda is empty");
             consistencyCheck();
@@ -212,7 +212,7 @@ private:
 #ifdef INC_AGENDA_PERFORMANCE
             result->time-=timeOffset;
 #endif
-#ifndef DO_NOT_USE_SECUTIRY_CHECKS
+#ifdef QT_DEBUG
             consistencyCheck();
 #endif
             return result;
@@ -262,7 +262,7 @@ public:
     P *takeFirstProcess()
     {
         P *result=processes.takeFirst();
-#ifndef DO_NOT_USE_SECUTIRY_CHECKS
+#ifdef QT_DEBUG
         if (result == nullptr)
         {
             qFatal("Can't take next process. The list is empty");

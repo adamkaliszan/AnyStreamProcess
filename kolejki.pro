@@ -12,7 +12,6 @@ QTPLUGIN += qsqlmysql
 
 LIBS += -lboost_iostreams -lboost_system -lboost_filesystem
 
-#DEFINES +="DO_NOT_USE_SECUTIRY_CHECKS=1"
 DEFINES +="INC_AGENDA_PERFORMANCE=1"
 
 QMAKE_CXXFLAGS += -std=c++11
