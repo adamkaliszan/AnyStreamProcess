@@ -904,7 +904,7 @@ bool MainWindow::fillSystem()
     foreach (QListWidgetItem *tmpItem, ui->listWidgetWiazki->findItems(QString("*"), Qt::MatchWrap | Qt::MatchWildcard))
     {
         ModelSubResourcess tmpGroup = *tmpItem->data(Qt::UserRole).value<ModelSubResourcess*>();
-        system->addGroups(tmpGroup);
+        system->addServerGroups(tmpGroup);
         if (progress > 0)
             progress++;
     }
@@ -912,7 +912,7 @@ bool MainWindow::fillSystem()
     foreach (QListWidgetItem *tmpItem, ui->listWidgetKolejki->findItems(QString("*"), Qt::MatchWrap | Qt::MatchWildcard))
     {
         ModelSubResourcess tmpGroup = *tmpItem->data(Qt::UserRole).value<ModelSubResourcess*>();
-        system->addQeues(tmpGroup);
+        system->addBufferGroups(tmpGroup);
     }
 
     NewTitle();
@@ -984,7 +984,7 @@ bool MainWindow::dbReadSystems()
                 int k = singleSystem.value("k").toInt();
                 int v = singleSystem.value("v").toInt();
                 ModelSubResourcess tmpGroup(k, v);
-                tmpSyst->addGroups(tmpGroup);
+                tmpSyst->addServerGroups(tmpGroup);
             }
         }
 
@@ -996,7 +996,7 @@ bool MainWindow::dbReadSystems()
                 int k = singleSystem.value("k").toInt();
                 int v = singleSystem.value("v").toInt();
                 ModelSubResourcess tmpGroup(k, v);
-                tmpSyst->addQeues(tmpGroup);
+                tmpSyst->addBufferGroups(tmpGroup);
             }
         }
         QString systemDescription;
@@ -1538,13 +1538,13 @@ void MainWindow::drawSystemModel()
     foreach (QListWidgetItem *tmpItem, ui->listWidgetWiazki->findItems(QString("*"), Qt::MatchWrap | Qt::MatchWildcard))
     {
         ModelSubResourcess tmpGroup = *tmpItem->data(Qt::UserRole).value<ModelSubResourcess*>();
-        sys->addGroups(tmpGroup);
+        sys->addServerGroups(tmpGroup);
     }
 
     foreach (QListWidgetItem *tmpItem, ui->listWidgetKolejki->findItems(QString("*"), Qt::MatchWrap | Qt::MatchWildcard))
     {
         ModelSubResourcess tmpGroup = *tmpItem->data(Qt::UserRole).value<ModelSubResourcess*>();
-        sys->addQeues(tmpGroup);
+        sys->addBufferGroups(tmpGroup);
     }
 
     QBrush qeueBrush(Qt::lightGray);

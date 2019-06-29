@@ -2,25 +2,31 @@
 #ifndef SIMULATOR_ALL_SYSTEMS_H
 #define SIMULATOR_ALL_SYSTEMS_H
 
-#include <QExplicitlySharedDataPointer>
-
+#include <math.h>
 #include <qglobal.h>
 #include <QStack>
 #include <QList>
-#include <math.h>
+
 #include "simulator.h"
 #include "simulatordatacollection.h"
-
 #include "simulatorStatistics.h"
 
 namespace Algorithms
 {
 
+
+
 class ProcAll;
 
 class SimulatorAll: public Simulator
 {
-  public:
+public:
+    struct CallRscData
+    {
+        int allocatedAU;          ///< Number of allocated AS
+        int groupIndex;           ///< Index of the group, where the call was allocated
+    };
+
     SimulatorAll();
 
     QString shortName()  const { return "Simulation"; }
@@ -135,11 +141,9 @@ class SimulatorAll: public Simulator
         void cancellScheduledCall(Call *call) {  engine->removeProcess(call->proc); engine->reuseCall(call); }
 
     private:
-        void removeCallFromServer(Call *call);
-        void removeCallFromBuffer(Call *call);
         void serveCallsInEque();
 
-        void serveCallsInEqueSpDisabled();
+        inline void serveCallsInEqueSpDisabled() const { return; }
         void serveCallsInEqueSpSdFifo();
         void serveCallsInEqueSpDFifo();
         void serveCallsInEqueSpQFifo();
@@ -173,12 +177,12 @@ class SimulatorAll: public Simulator
                 n_k[groupNo] += noOfAS;
                 subgroupFreeAUs[groupNo] -=noOfAS;
             }
-            void removeCall(const Call *rCall, int groupNo)
+            void removeCall(const Call *rCall, const CallRscData &rscData)
             {
-                subgroupFreeAUs[groupNo] +=rCall->allocatedAS;
-                n -=rCall->allocatedAS;
-                n_i[rCall->classIdx]-= rCall->allocatedAS;
-                n_k[groupNo]-= rCall->allocatedAS;
+                subgroupFreeAUs[rscData.groupIndex]+= rscData.allocatedAU;
+                n-= rscData.allocatedAU;
+                n_i[rCall->classIdx]-= rscData.allocatedAU;
+                n_k[rscData.groupIndex]-= rscData.allocatedAU;
             }
         } state;
         QList<Call *> calls;
@@ -210,7 +214,11 @@ class SimulatorAll: public Simulator
         Server(System *system);
         ~Server();
 
-        void addCall(Call *call, int noOfAS, int groupNo, bool newCall);
+        bool addCall(Call *call);
+        bool addCall(Call *call, int groupNumber);
+        bool addCallPartially(Call *call, int noOfAs);
+        bool addCallPartially(Call *call, int noOfAs, int groupNumber);
+
         void removeCall(Call *call);
 #define FOLDINGSTART { //Statistics
         inline void statsClear() { statistics->clear(); }
@@ -238,7 +246,7 @@ class SimulatorAll: public Simulator
         Buffer(System *system);
         ~Buffer();
 
-        void   addCall(SimulatorAll::Call *newCall, int groupNo);
+        void   addCall(SimulatorAll::Call *nCall, int groupNo);
         void   removeCall(Call *first);
 
         inline Call *showFirstCall() {   return (calls.isEmpty()) ? nullptr : calls.first();}
@@ -282,10 +290,9 @@ class SimulatorAll: public Simulator
         const ModelTrClass *trClass;  ///< Traffic Class data (parameters like call service intensity, number of BBUs, ...)
         int classIdx;                 ///< Class number
         int reqAS;                    ///< Required number of allocation slots.
-        int allocatedAS;              ///< Number of allocated AS
 
-        int serverGroupIndex;         ///< Index of the server's group, where the call was allocated
-        int bufferGroupIndex;         ///< Index of the server's group, where the call was allocated
+        CallRscData server;           ///< Information about call allocation on server
+        CallRscData buffer;           ///< Information about call allocation on buffer
 
         ProcAll *proc;
         Call *complementaryCall;      ///< Only tr. classes where no os sourcess is increasing with the number of serviced calls

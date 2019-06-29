@@ -1,10 +1,10 @@
-#include "simulatorAllSystems.h"
-#include <qstring.h>
 #include <qglobal.h>
-#include <utils/lag.h>
-#include "utils/utilsMisc.h"
 #include <qmath.h>
+#include <qstring.h>
 
+#include "utils/lag.h"
+#include "utils/utilsMisc.h"
+#include "simulatorAllSystems.h"
 
 namespace Algorithms
 {
@@ -161,7 +161,10 @@ SimulatorAll::Call *SimulatorAll::Engine::getNewCall(SimulatorAll::Call *parent)
     result->DUtransfered          = 0;
     result->timeOnSystem          = 0;
     result->timeOnServer          = 0;
-    result->allocatedAS           = 0;
+    result->server.groupIndex     = -1;
+    result->server.allocatedAU    = 0;
+    result->buffer.groupIndex     = -1;
+    result->buffer.allocatedAU    = 0;
 
     result->complementaryCall = nullptr;
 
@@ -228,7 +231,10 @@ SimulatorAll::Call *SimulatorAll::Engine::getNewCall(
     result->DUtransfered          = 0;
     result->timeOnSystem          = 0;
     result->timeOnServer          = 0;
-    result->allocatedAS           = 0;
+    result->server.allocatedAU    = 0;
+    result->server.groupIndex     = -1;
+    result->buffer.allocatedAU    = 0;
+    result->buffer.groupIndex     = -1;
 
     result->complementaryCall = nullptr;
 
@@ -540,8 +546,8 @@ bool SimulatorAll::System::serveNewCall(SimulatorAll::Call *newCall)
 
         calls.append(newCall);
 
-        newCall->allocatedAS    = newCall->reqAS;
-        server->addCall(newCall, newCall->reqAS, groupNumber, true);
+        newCall->server.allocatedAU = newCall->reqAS;
+        server->addCall(newCall, groupNumber);
 
         state.n += newCall->reqAS;
         state.n_i[static_cast<int>(newCall->classIdx)] += newCall->reqAS;
@@ -567,26 +573,20 @@ bool SimulatorAll::System::serveNewCall(SimulatorAll::Call *newCall)
 
 void SimulatorAll::System::endCallService(SimulatorAll::Call *call)
 {
-    removeCallFromServer(call);
-    calls.removeAll(call);
-
-    state.n-=call->reqAS;
-    finishCall(call, true);
-}
-
-void SimulatorAll::System::removeCallFromServer(SimulatorAll::Call *call)
-{
     server->removeCall(call);
-    serveCallsInEque();
-}
 
-void SimulatorAll::System::removeCallFromBuffer(SimulatorAll::Call *call)
-{
-    buffer->removeCall(call);
+    calls.removeAll(call);
+    state.n-=call->reqAS;
+    state.n_i[call->classIdx]-=call->reqAS;
+
+    finishCall(call, true);                  //Update Simulation engine
+
+    serveCallsInEque();
 }
 
 void SimulatorAll::System::finishCall(SimulatorAll::Call *call, bool acceptedToService)
 {
+    //Update simulation end conditions
     if (!acceptedToService)
     {
         engine->notifyLostCall();
@@ -595,8 +595,8 @@ void SimulatorAll::System::finishCall(SimulatorAll::Call *call, bool acceptedToS
     {
         engine->notifyServicedCall();
     }
+    //Reuse object
     engine->reuseCall(call);
-
 }
 
 void SimulatorAll::System::serveCallsInEque()
@@ -623,75 +623,6 @@ void SimulatorAll::System::serveCallsInEque()
         serveCallsInEqueSpQFifo();
         break;
     }
-/*
-    Call *tmpCall;
-    int numberOfAvailableAS;
-    bool doQuit = false;
-
-    while((numberOfAvailableAS = server->getNoOfFreeAS()) > 0)
-    {
-        if (nullptr == (tmpCall = buffer->getNextCall()))
-            break;
-
-        switch (par.getBufferPolicy())
-        {
-        case SystemPolicy::Disabled:
-            doQuit = true;
-            break;
-
-        case SystemPolicy::SD_FIFO:
-            //TODO implement it
-            doQuit = true;
-            break;
-
-        case SystemPolicy::Continuos
-
-        }
-
-        // There is no more calls in the buffer
-
-        if ((this->par.getBufferPolicy() != SystemPolicy::Continuos)    // We can't serve part of given call
-         && (tmpCall->reqAS > numberOfAvailableAS))                     // We can't serve whole call
-            break;
-
-        int maxResToAll = tmpCall->reqAS - tmpCall->allocatedAS;
-#ifdef QT_DEBUG
-        if (buffer->state.n < (int)maxResToAll)
-            qFatal("Wrong number of max ressourcess to allocate");
-#endif
-        bool newCall = (tmpCall->allocatedAS == 0);
-        int noOfAS_toAllocate =qMin(numberOfAvailableAS, (int) maxResToAll);
-        tmpCall->allocatedAS += noOfAS_toAllocate;
-
-        double newTime = (tmpCall->DUmessageSize-tmpCall->DUtransfered)/tmpCall->allocatedAS;
-
-//TODO         server->addCall(tmpCall, noOfAS_toAllocate, newCall);
-
-        if (newCall)
-        {
-            tmpCall->proc = engine->getNewProcess();
-            tmpCall->proc->time = newTime;
-            tmpCall->proc->callData = tmpCall;
-//TODO            tmpCall->proc->state = ProcAll::PROC_STATE::SENDING_DATA;
-            tmpCall->proc->execute = tmpCall->trEndedFun;
-            engine->addProcess(tmpCall->proc);
-        }
-        else
-        {
-//TODO            engine->changeProcessWakeUpTime(tmpCall->proc, newTime);
-        }
-        buffer->takeCall(tmpCall, noOfAS_toAllocate);
-
-        if (doQuit)
-            break;
-        }
-        }
-        */
-}
-
-void SimulatorAll::System::serveCallsInEqueSpDisabled()
-{
-    return;
 }
 
 void SimulatorAll::System::serveCallsInEqueSpSdFifo()
@@ -703,25 +634,25 @@ void SimulatorAll::System::serveCallsInEqueSpSdFifo()
 void Algorithms::SimulatorAll::System::serveCallsInEqueSpDFifo()
 {
     Call *tmpCall;
-    int numberOfAvailableAS;
 
-    while (
-        ((numberOfAvailableAS = server->getMaxNumberOfAsInSingleGroup()) > 0)
-     && (nullptr != (tmpCall = buffer->showFirstCall())))
+    int groupNumber;
+    while ((server->getNoOfFreeAS() > 0) && (nullptr != (tmpCall = buffer->showFirstCall())))
     {
-        if (tmpCall->reqAS > numberOfAvailableAS)                     // We can't serve whole call
-            break;
+        if (server->findAS(tmpCall->reqAS, groupNumber))
+        {
+            buffer->removeCall(tmpCall);
+            server->addCall(tmpCall, groupNumber);
 
-        tmpCall->allocatedAS = tmpCall->reqAS;
-        tmpCall->proc = engine->getNewProcess();
-        tmpCall->proc->time = tmpCall->plannedServiceTime;
-        tmpCall->proc->callData = tmpCall;
-#ifdef QT_DEBUG
-        tmpCall->proc->state = ProcAll::ProcState::SENDING_DATA;
-#endif
-        tmpCall->proc->execute = tmpCall->trEndedFun;
-        engine->addProcess(tmpCall->proc);
-        buffer->removeCall(tmpCall);
+
+            tmpCall->proc = engine->getNewProcess();
+            tmpCall->proc->time = tmpCall->plannedServiceTime;
+            tmpCall->proc->callData = tmpCall;
+    #ifdef QT_DEBUG
+            tmpCall->proc->state = ProcAll::ProcState::SENDING_DATA;
+    #endif
+            tmpCall->proc->execute = tmpCall->trEndedFun;
+            engine->addProcess(tmpCall->proc);
+        }
     }
 }
 
@@ -845,35 +776,6 @@ bool SimulatorAll::CommonRes::findAS(int noOfAUs, int& groupNo) const
     return result;
 }
 
-void SimulatorAll::Server::addCall(Call *call, int noOfAS, int groupNo, bool newCall)
-{
-    call->serverGroupIndex = groupNo;
-    state.addCall(call, noOfAS, groupNo);
-    assert(vTotal >= state.n);
-
-
-#ifdef QT_DEBUG
-    if (call->reqAS < call->allocatedAS)
-        qFatal("More AS is allocated then it is required");
-    if (noOfAS > call->allocatedAS)
-        qFatal("Wrong argument value");
-#endif
-    if (newCall)
-    {
-        calls.append(call);
-#ifdef QT_DEBUG
-        if (calls.length() > this->vTotal)
-            qFatal("To many calls on server's list");
-#endif
-    }
-}
-
-void SimulatorAll::Server::removeCall(SimulatorAll::Call *call)
-{
-    state.removeCall(call, call->serverGroupIndex);
-    calls.removeAll(call);
-}
-
 SimulatorAll::Server::Server(System *system): CommonRes (system, system->par.getServer())
 {   
     statistics = new ServerStatistics(system->par);
@@ -882,6 +784,46 @@ SimulatorAll::Server::Server(System *system): CommonRes (system, system->par.get
 SimulatorAll::Server::~Server()
 {
     state.n = 0;
+}
+
+bool SimulatorAll::Server::addCall(SimulatorAll::Call *call)
+{
+    int groupNo;
+    bool result;
+    if(true == (result = findAS(call->reqAS, groupNo)))
+    {
+        result = addCall(call, groupNo);
+        calls.append(call);
+    }
+    return result;
+}
+
+bool SimulatorAll::Server::addCall(SimulatorAll::Call *call, int groupNumber)
+{
+    bool result;
+    if (true == (result = (state.subgroupFreeAUs[groupNumber] >= call->reqAS)))
+    {
+        call->server.groupIndex = groupNumber;
+        call->server.allocatedAU = call->reqAS;
+        state.addCall(call, call->reqAS, groupNumber);
+    }
+    return result;
+}
+
+bool SimulatorAll::Server::addCallPartially(SimulatorAll::Call *call, int noOfAs)
+{
+    return false;
+}
+
+bool SimulatorAll::Server::addCallPartially(SimulatorAll::Call *call, int noOfAs, int groupNumber)
+{
+    return false;
+}
+
+void SimulatorAll::Server::removeCall(SimulatorAll::Call *call)
+{
+    state.removeCall(call, call->server);
+    calls.removeAll(call);
 }
 
 void SimulatorAll::Server::writesResultsOfSingleExperiment(RSingle &singleResults, double simulationTime)
@@ -1642,7 +1584,7 @@ void SimulatorAll::Call::IncrTimeInServer(double time)
 void SimulatorAll::Call::collectTheStats(double time)
 {
     timeOnSystem +=time;
-    DUtransfered += (time * allocatedAS);
+    DUtransfered += (time * server.allocatedAU);
 }
 #define FOLDINEND }
 
@@ -1653,19 +1595,19 @@ SimulatorAll::Buffer::Buffer(SimulatorAll::System *system): CommonRes (system, s
     statistics = new BufferStatistics(system->par);
 }
 
-void SimulatorAll::Buffer::addCall(SimulatorAll::Call *newCall, int groupNo)
+void SimulatorAll::Buffer::addCall(SimulatorAll::Call *nCall, int groupNo)
 {
-    newCall->bufferGroupIndex = groupNo;
-    state.addCall(newCall, newCall->reqAS, groupNo);
+    nCall->buffer.groupIndex = groupNo;
+    state.addCall(nCall, nCall->reqAS, groupNo);
     assert(vTotal >= state.n);
 
-    calls.append(newCall);
+    calls.append(nCall);
 }
 
-void SimulatorAll::Buffer::removeCall(SimulatorAll::Call *first)
+void SimulatorAll::Buffer::removeCall(SimulatorAll::Call *rCall)
 {
-    state.removeCall(first, first->bufferGroupIndex);
-    assert(calls.removeAll(first) == 1);
+    state.removeCall(rCall, rCall->buffer);
+    assert(calls.removeAll(rCall) == 1);
 }
 
 void SimulatorAll::Buffer::statsColectPre(double time)

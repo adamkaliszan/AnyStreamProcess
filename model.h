@@ -570,8 +570,8 @@ public:
     int id;
 
     void addClass(ModelTrClass *newClass);                                 ///< Creates a copy. The copy is added to the system
-    void addGroups(ModelSubResourcess newGroup, bool optimize = true);     ///< Add groups to the system. Previous types of group are checked before
-    void addQeues(ModelSubResourcess qeue, bool optimize = true);          ///< Add qeues to the system
+    void addServerGroups(ModelSubResourcess newGroup, bool optimize = false);     ///< Add groups to the system. Previous types of group are checked before
+    void addBufferGroups(ModelSubResourcess qeue, bool optimize = false);          ///< Add qeues to the system
 
     void setServerSchedulerAlgorithm(ResourcessScheduler algorithm);
     void setBufferSchedulerAlgorithm(ResourcessScheduler algorithm);

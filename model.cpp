@@ -919,7 +919,7 @@ void ModelCreator::addClass(ModelTrClass *newClass)
     _traffic.trClasses.push_back(*newClass);
 }
 
-void ModelCreator::addGroups(ModelSubResourcess newGroup, bool optimize)
+void ModelCreator::addServerGroups(ModelSubResourcess newGroup, bool optimize)
 {
     if (optimize)
     {
@@ -935,7 +935,7 @@ void ModelCreator::addGroups(ModelSubResourcess newGroup, bool optimize)
     _server.resourcess.push_back(newGroup);
 }
 
-void ModelCreator::addQeues(ModelSubResourcess qeue, bool optimize)
+void ModelCreator::addBufferGroups(ModelSubResourcess qeue, bool optimize)
 {
     if (optimize)
     {
@@ -948,7 +948,7 @@ void ModelCreator::addQeues(ModelSubResourcess qeue, bool optimize)
             }
         }
     }
-    _server.resourcess.push_back(qeue);
+    _buffer.resourcess.push_back(qeue);
 }
 
 void ModelCreator::setServerSchedulerAlgorithm(ResourcessScheduler algorithm)
