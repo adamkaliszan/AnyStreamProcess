@@ -119,9 +119,22 @@ void SimulatorAll::Engine::prepareCallToService(SimulatorAll::Call *callThatIsIn
 #endif
     callThatIsInService->proc->execute  = callThatIsInService->trEndedFun;
     callThatIsInService->proc->callData = callThatIsInService;
-    callThatIsInService->proc->time     = callThatIsInService->plannedServiceTime;
-    agenda->addProcess(callThatIsInService->proc);
 
+    callThatIsInService->proc->time     = callThatIsInService->plannedServiceTime;
+    if (callThatIsInService->reqAS != callThatIsInService->server.allocatedAU)
+    {
+        callThatIsInService->proc->time*= callThatIsInService->reqAS;
+        callThatIsInService->proc->time/= callThatIsInService->server.allocatedAU;
+    }
+
+    agenda->addProcess(callThatIsInService->proc);
+}
+
+void SimulatorAll::Engine::updateServiceTime(SimulatorAll::Call *uCall)
+{
+    double dataToTransfer = uCall->plannedServiceTime * uCall->reqAS - uCall->DUtransfered;
+    double remainingTime = uCall->proc->time = dataToTransfer / uCall->server.allocatedAU;
+    agenda->changeProcessWakeUpTime(uCall->proc, remainingTime);
 }
 
 void SimulatorAll::Engine::reuseProcess(ProcAll *proc)
@@ -536,74 +549,140 @@ void SimulatorAll::System::writesResultsOfSingleExperiment(RSingle& singleResult
 
 bool SimulatorAll::System::serveNewCall(SimulatorAll::Call *newCall)
 {
-    int groupNumber;
-    bool isPlaceInServer = server->findAS(newCall->reqAS, groupNumber);
-    bool isPlaceInBuffer = false;
+    int serverGroupNumber;
+    int bufferGroupNumber;
+    int maxServerSpace;
 
-    if (isPlaceInServer)
+    bool isPlaceInServer = server->findAS(newCall->reqAS, serverGroupNumber);
+    bool isPlaceInBuffer;
+    SystemPolicy sysPolicy = par.getBufferPolicy();
+    bool result = false;
+
+
+    newCall->buffer.allocatedAU = 0;
+    newCall->server.allocatedAU = 0;
+
+
+    if (isPlaceInServer && buffer->get_n() == 0)
     {
+        result = true;
+        addCall(newCall);
+        server->addCall(newCall, serverGroupNumber);
         engine->prepareCallToService(newCall);
-
-        calls.append(newCall);
-
-        newCall->server.allocatedAU = newCall->reqAS;
-        server->addCall(newCall, groupNumber);
-
-        state.n += newCall->reqAS;
-        state.n_i[static_cast<int>(newCall->classIdx)] += newCall->reqAS;
-
-        return true;
     }
     else
     {
-        isPlaceInBuffer = buffer->findAS(newCall->reqAS, groupNumber);
-
-        if (0)
+        switch (sysPolicy)
         {
-            serveCallsInEque();
-            return true;
-        }
-        else
-        {
+        case SystemPolicy::NoBuffer:
             finishCall(newCall, false);
-            return false;
+            break;
+
+        case SystemPolicy::dFIFO:
+            if (true == (isPlaceInBuffer = buffer->findAS(newCall->reqAS, bufferGroupNumber)))
+            {
+                result = true;
+                addCall(newCall);
+                buffer->addCall(newCall, serverGroupNumber);
+            }
+            else
+            {
+                finishCall(newCall, false);
+            }
+            break;
+
+        case SystemPolicy::cFifo:
+            maxServerSpace = server->getMaxNumberOfAsInSingleGroup();
+            isPlaceInBuffer = buffer->findAS(newCall->reqAS - maxServerSpace, bufferGroupNumber);
+
+            if (isPlaceInBuffer)
+            {
+                result = true;
+                addCall(newCall);
+                if ( maxServerSpace > 0)
+                {
+                    server->addCallPartially(newCall, maxServerSpace);
+                    buffer->addCall(newCall, bufferGroupNumber);
+                    engine->prepareCallToService(newCall);
+                }
+                else
+                {
+                    buffer->addCall(newCall, bufferGroupNumber);
+                }
+            }
+            else
+            {
+                finishCall(newCall, false);
+            }
+            break;
+
+        case SystemPolicy::qFIFO:
+            if (isPlaceInServer)
+            {
+                result = true;
+                addCall(newCall);
+                server->addCall(newCall, serverGroupNumber);
+                engine->prepareCallToService(newCall);
+            }
+            else
+            {
+                if (true == (isPlaceInBuffer = buffer->findAS(newCall->reqAS, bufferGroupNumber)))
+                {
+                    result = true;
+                    addCall(newCall);
+                    buffer->addCall(newCall, bufferGroupNumber);
+                }
+                else
+                {
+                    finishCall(newCall, false);
+                }
+            }
+            break;
+
+        case SystemPolicy::SD_FIFO:
+            qFatal("Not implemented");
+            break;
         }
     }
+
+    return result;
 }
 
 void SimulatorAll::System::endCallService(SimulatorAll::Call *call)
 {
-    server->removeCall(call);
+    if (call->server.allocatedAU > 0)
+        server->removeCall(call);
 
-    calls.removeAll(call);
-    state.n-=call->reqAS;
-    state.n_i[call->classIdx]-=call->reqAS;
+    if (call->buffer.allocatedAU > 0)
+        buffer->removeCall(call);
+
+    removeCall(call);
 
     finishCall(call, true);                  //Update Simulation engine
 
-    serveCallsInEque();
+    if (buffer->get_n())
+        serveCallsInEque();
 }
 
-void SimulatorAll::System::finishCall(SimulatorAll::Call *call, bool acceptedToService)
+void SimulatorAll::System::addCall(SimulatorAll::Call *nCall)
 {
-    //Update simulation end conditions
-    if (!acceptedToService)
-    {
-        engine->notifyLostCall();
-    }
-    else
-    {
-        engine->notifyServicedCall();
-    }
-    //Reuse object
-    engine->reuseCall(call);
+    calls.append(nCall);
+    state.n+= nCall->reqAS;
+    state.n_i[static_cast<int>(nCall->classIdx)] += nCall->reqAS;
+}
+
+void SimulatorAll::System::removeCall(SimulatorAll::Call *rCall)
+{
+    assert(calls.removeAll(rCall) == 1);
+    state.n-= rCall->reqAS;
+    state.n_i[static_cast<int>(rCall->classIdx)] += rCall->reqAS;
 }
 
 void SimulatorAll::System::serveCallsInEque()
 {
     switch (par.getBufferPolicy())
     {
-    case SystemPolicy::Disabled:
+    case SystemPolicy::NoBuffer:
         serveCallsInEqueSpDisabled();
         break;
 
@@ -611,15 +690,15 @@ void SimulatorAll::System::serveCallsInEque()
         serveCallsInEqueSpSdFifo();
         break;
 
-    case SystemPolicy::Continuos:
+    case SystemPolicy::cFifo:
         serveCallsInEqueSpCFifo();
         break;
 
-    case SystemPolicy::dFIFO_Seq:
+    case SystemPolicy::dFIFO:
         serveCallsInEqueSpDFifo();
         break;
 
-    case SystemPolicy::qFIFO_Seq:
+    case SystemPolicy::qFIFO:
         serveCallsInEqueSpQFifo();
         break;
     }
@@ -640,18 +719,10 @@ void Algorithms::SimulatorAll::System::serveCallsInEqueSpDFifo()
     {
         if (server->findAS(tmpCall->reqAS, groupNumber))
         {
-            buffer->removeCall(tmpCall);
-            server->addCall(tmpCall, groupNumber);
+            tmpCall = buffer->popCall();
+            assert(server->addCall(tmpCall, groupNumber));
 
-
-            tmpCall->proc = engine->getNewProcess();
-            tmpCall->proc->time = tmpCall->plannedServiceTime;
-            tmpCall->proc->callData = tmpCall;
-    #ifdef QT_DEBUG
-            tmpCall->proc->state = ProcAll::ProcState::SENDING_DATA;
-    #endif
-            tmpCall->proc->execute = tmpCall->trEndedFun;
-            engine->addProcess(tmpCall->proc);
+            engine->prepareCallToService(tmpCall);
         }
     }
 }
@@ -1598,7 +1669,8 @@ SimulatorAll::Buffer::Buffer(SimulatorAll::System *system): CommonRes (system, s
 void SimulatorAll::Buffer::addCall(SimulatorAll::Call *nCall, int groupNo)
 {
     nCall->buffer.groupIndex = groupNo;
-    state.addCall(nCall, nCall->reqAS, groupNo);
+    nCall->buffer.allocatedAU = nCall->reqAS - nCall->server.allocatedAU;
+    state.addCall(nCall, nCall->buffer.allocatedAU, groupNo);
     assert(vTotal >= state.n);
 
     calls.append(nCall);
@@ -1607,7 +1679,17 @@ void SimulatorAll::Buffer::addCall(SimulatorAll::Call *nCall, int groupNo)
 void SimulatorAll::Buffer::removeCall(SimulatorAll::Call *rCall)
 {
     state.removeCall(rCall, rCall->buffer);
+    rCall->buffer.allocatedAU = 0;
     assert(calls.removeAll(rCall) == 1);
+}
+
+SimulatorAll::Call *SimulatorAll::Buffer::popCall()
+{
+    Call *result = calls.takeFirst();
+    state.removeCall(result, result->buffer);
+    result->buffer.allocatedAU = 0;
+
+    return result;
 }
 
 void SimulatorAll::Buffer::statsColectPre(double time)

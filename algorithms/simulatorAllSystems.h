@@ -81,6 +81,8 @@ public:
         double doSimExperiment(int numberOfLostCall, unsigned int seed, int numberOfServicedCalls=0);
 
         inline void prepareCallToService(Call *callThatIsInService);
+        inline void updateServiceTime(Call *uCall);
+
 
         inline ProcAll* getNewProcess()           { return agenda->getNewProcess(); }
         inline ProcAll *takeFirstProcess()        { return agenda->takeFirstProcess(); }
@@ -100,12 +102,12 @@ public:
         const ModelSystem &par;
 
       private:
-      // System components
+        /// ****************************** System components
         Server *server;               ///< Server details
         Buffer *buffer;               ///< Buffer details
         QList<Call *> calls;          ///< Calls in system
 
-      // System state
+        /// ****************************** System state
         struct State
         {
             int n;                    ///< Number of occupied resourcess by all the classes
@@ -117,7 +119,6 @@ public:
             }
         } state;                      ///< System state
 
-      // System statistics
         SystemStatistics *statistics; ///< Statistics that are colected during simulation experiment
 
 
@@ -137,10 +138,26 @@ public:
 
         bool serveNewCall(Call *newCall);                                    ///< this call may be or not accepted to the service
         void endCallService(Call *call);                                     ///< this call was accepted
-        void finishCall(Call *call, bool acceptedToService);                 ///< this call was accepted or rejected
-        void cancellScheduledCall(Call *call) {  engine->removeProcess(call->proc); engine->reuseCall(call); }
+
+        inline void finishCall(Call *call, bool acceptedToService)           ///< this call was accepted or rejected
+        {   /// Update simulation end conditions
+            if (!acceptedToService)
+                engine->notifyLostCall();
+            else
+                engine->notifyServicedCall();
+            /// Reuse object
+            engine->reuseCall(call);
+        }
+        inline void cancellScheduledCall(Call *call)                         ///< For state dependent plus surcess
+        {
+            engine->removeProcess(call->proc);
+            engine->reuseCall(call);
+        }
 
     private:
+        void addCall(Call *nCall);
+        void removeCall(Call *rCall);
+
         void serveCallsInEque();
 
         inline void serveCallsInEqueSpDisabled() const { return; }
@@ -183,6 +200,11 @@ public:
                 n-= rscData.allocatedAU;
                 n_i[rCall->classIdx]-= rscData.allocatedAU;
                 n_k[rscData.groupIndex]-= rscData.allocatedAU;
+#ifdef QT_DEBUG
+                assert(n >=0);
+                assert(n_i[rCall->classIdx]>=0);
+                assert(n_k[rscData.groupIndex]>=0);
+#endif
             }
         } state;
         QList<Call *> calls;
@@ -248,6 +270,7 @@ public:
 
         void   addCall(SimulatorAll::Call *nCall, int groupNo);
         void   removeCall(Call *first);
+        Call*   popCall();
 
         inline Call *showFirstCall() {   return (calls.isEmpty()) ? nullptr : calls.first();}
         Call   *showCall(int callIdx);

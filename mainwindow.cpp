@@ -1421,9 +1421,9 @@ void MainWindow::loadLanguage(const QString &rLanguage)
         }
 
         QVector<SystemPolicy> tmpOptionsBuffer = {
-            SystemPolicy::dFIFO_Seq,
-            SystemPolicy::Continuos,
-            SystemPolicy::qFIFO_Seq,
+            SystemPolicy::dFIFO,
+            SystemPolicy::cFifo,
+            SystemPolicy::qFIFO,
             SystemPolicy::SD_FIFO
         };
         foreach (SystemPolicy tmp, tmpOptionsBuffer)

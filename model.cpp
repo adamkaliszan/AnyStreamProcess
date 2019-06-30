@@ -27,15 +27,15 @@ QString bufferResourcessSchedulerToString(SystemPolicy value)
     QString result;
     switch (value)
     {
-    case SystemPolicy::Continuos:
+    case SystemPolicy::cFifo:
         result = "Continuos";
         break;
 
-    case SystemPolicy::dFIFO_Seq:
+    case SystemPolicy::dFIFO:
         result = "Discrette";
         break;
 
-    case SystemPolicy::qFIFO_Seq:
+    case SystemPolicy::qFIFO:
         result = "Discrette qFIFO";
         break;
 
@@ -43,7 +43,7 @@ QString bufferResourcessSchedulerToString(SystemPolicy value)
         result = "State dependent";
         break;
 
-    case SystemPolicy::Disabled:
+    case SystemPolicy::NoBuffer:
         result = "No buffer";
         break;
 
@@ -905,7 +905,7 @@ bool MCRsc::operator<(const MCRsc &rho) const
 
 
 ModelCreator::ModelCreator():
-    _systemPolicy(SystemPolicy::Disabled)
+    _systemPolicy(SystemPolicy::NoBuffer)
   , id(0)
 {
 }

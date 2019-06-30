@@ -24,11 +24,11 @@ QString serverResourcessSchedulerToString(ResourcessScheduler value);
 
 enum class SystemPolicy
 {
-    Continuos,     ///< Call can be splited between server and buffers resourcess. Calls goes to the buffer first
-    SD_FIFO,       ///< All calls are being served. If there is no room in server, the service time is increased and calls occypy server and budder
-    dFIFO_Seq,     ///< Calls are discrette ang goes to the buffer first. If the buffer is empty, the calls are accepted by the server
-    qFIFO_Seq,     ///< Calls are discrette and goes to server and next to the buffer
-    Disabled       ///< Buffer is disabled
+    NoBuffer,      ///< Buffer is disabled
+    cFifo,         ///< Call can be splited between server and buffers resourcess. Calls goes to the buffer first
+    dFIFO,         ///< Calls are discrette ang goes to the buffer first. If the buffer is empty, the calls are accepted by the server
+    qFIFO,         ///< Calls are discrette and goes to server and next to the buffer
+    SD_FIFO        ///< All calls are being served. If there is no room in server, the service time is increased and calls occypy server and budder
 };
 
 QString bufferResourcessSchedulerToString(SystemPolicy value);
