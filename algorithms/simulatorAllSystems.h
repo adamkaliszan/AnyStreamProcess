@@ -13,9 +13,6 @@
 
 namespace Algorithms
 {
-
-
-
 class ProcAll;
 
 class SimulatorAll: public Simulator
@@ -162,7 +159,7 @@ public:
 
         inline void serveCallsInEqueSpDisabled() const { return; }
         void serveCallsInEqueSpSdFifo();
-        void serveCallsInEqueSpDFifo();
+        int serveCallsInEque_DFifo();
         void serveCallsInEqueSpQFifo();
         void serveCallsInEqueSpCFifo();
     };
@@ -187,23 +184,28 @@ public:
             mutable QVector<int> subgroupSequence;    ///< Sequence of checking group for new call service
             mutable QVector<int> subgroupFreeAUs;     ///< Number of AS that is now available in given group
 
-            void addCall(const Call *nCall, int noOfAS, int groupNo)
+            void addCall(const Call *nCall, const CallRscData &rscData)
             {
-                n += noOfAS;
-                n_i[nCall->classIdx] += noOfAS;
-                n_k[groupNo] += noOfAS;
-                subgroupFreeAUs[groupNo] -=noOfAS;
+                n += rscData.allocatedAU;
+                n_i[nCall->classIdx]+= rscData.allocatedAU;
+                n_k[rscData.groupIndex]+= rscData.allocatedAU;
+                subgroupFreeAUs[rscData.groupIndex]-= rscData.allocatedAU;
+#ifdef QT_DEBUG
+                assert(subgroupFreeAUs[rscData.groupIndex] >= 0);
+                assert(rscData.allocatedAU > 0);
+#endif
             }
             void removeCall(const Call *rCall, const CallRscData &rscData)
             {
-                subgroupFreeAUs[rscData.groupIndex]+= rscData.allocatedAU;
                 n-= rscData.allocatedAU;
                 n_i[rCall->classIdx]-= rscData.allocatedAU;
                 n_k[rscData.groupIndex]-= rscData.allocatedAU;
+                subgroupFreeAUs[rscData.groupIndex]+= rscData.allocatedAU;
 #ifdef QT_DEBUG
                 assert(n >=0);
                 assert(n_i[rCall->classIdx]>=0);
                 assert(n_k[rscData.groupIndex]>=0);
+                assert(rscData.allocatedAU > 0);
 #endif
             }
         } state;
@@ -234,9 +236,7 @@ public:
 
     public:
         Server(System *system);
-        ~Server();
 
-        bool addCall(Call *call);
         bool addCall(Call *call, int groupNumber);
         bool addCallPartially(Call *call, int noOfAs);
         bool addCallPartially(Call *call, int noOfAs, int groupNumber);

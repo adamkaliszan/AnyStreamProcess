@@ -667,15 +667,22 @@ void SimulatorAll::System::endCallService(SimulatorAll::Call *call)
 void SimulatorAll::System::addCall(SimulatorAll::Call *nCall)
 {
     calls.append(nCall);
+
     state.n+= nCall->reqAS;
-    state.n_i[static_cast<int>(nCall->classIdx)] += nCall->reqAS;
+    state.n_i[nCall->classIdx]+= nCall->reqAS;
+#ifdef QT_DEBUG
+    assert(state.n <=this->par.V());
+#endif
 }
 
 void SimulatorAll::System::removeCall(SimulatorAll::Call *rCall)
 {
     assert(calls.removeAll(rCall) == 1);
     state.n-= rCall->reqAS;
-    state.n_i[static_cast<int>(rCall->classIdx)] += rCall->reqAS;
+    state.n_i[rCall->classIdx]-= rCall->reqAS;
+#ifdef QT_DEBUG
+    assert(state.n >= 0);
+#endif
 }
 
 void SimulatorAll::System::serveCallsInEque()
@@ -695,7 +702,7 @@ void SimulatorAll::System::serveCallsInEque()
         break;
 
     case SystemPolicy::dFIFO:
-        serveCallsInEqueSpDFifo();
+        serveCallsInEque_DFifo();
         break;
 
     case SystemPolicy::qFIFO:
@@ -710,12 +717,15 @@ void SimulatorAll::System::serveCallsInEqueSpSdFifo()
     //TODO Adam: implement it
 }
 
-void Algorithms::SimulatorAll::System::serveCallsInEqueSpDFifo()
+int Algorithms::SimulatorAll::System::serveCallsInEque_DFifo()
 {
     Call *tmpCall;
 
     int groupNumber;
-    while ((server->getNoOfFreeAS() > 0) && (nullptr != (tmpCall = buffer->showFirstCall())))
+    int noOfFreeAsInSever;
+    int noOfMovedCalls = 0;
+
+    while (((noOfFreeAsInSever = server->getNoOfFreeAS()) > 0) && (nullptr != (tmpCall = buffer->showFirstCall())))
     {
         if (server->findAS(tmpCall->reqAS, groupNumber))
         {
@@ -723,8 +733,13 @@ void Algorithms::SimulatorAll::System::serveCallsInEqueSpDFifo()
             assert(server->addCall(tmpCall, groupNumber));
 
             engine->prepareCallToService(tmpCall);
+
+            noOfMovedCalls++;
         }
+        else
+            break;
     }
+    return noOfMovedCalls;
 }
 
 void SimulatorAll::System::serveCallsInEqueSpQFifo()
@@ -852,22 +867,6 @@ SimulatorAll::Server::Server(System *system): CommonRes (system, system->par.get
     statistics = new ServerStatistics(system->par);
 }
 
-SimulatorAll::Server::~Server()
-{
-    state.n = 0;
-}
-
-bool SimulatorAll::Server::addCall(SimulatorAll::Call *call)
-{
-    int groupNo;
-    bool result;
-    if(true == (result = findAS(call->reqAS, groupNo)))
-    {
-        result = addCall(call, groupNo);
-        calls.append(call);
-    }
-    return result;
-}
 
 bool SimulatorAll::Server::addCall(SimulatorAll::Call *call, int groupNumber)
 {
@@ -876,7 +875,8 @@ bool SimulatorAll::Server::addCall(SimulatorAll::Call *call, int groupNumber)
     {
         call->server.groupIndex = groupNumber;
         call->server.allocatedAU = call->reqAS;
-        state.addCall(call, call->reqAS, groupNumber);
+        state.addCall(call, call->server);
+        calls.append(call);
     }
     return result;
 }
@@ -894,7 +894,12 @@ bool SimulatorAll::Server::addCallPartially(SimulatorAll::Call *call, int noOfAs
 void SimulatorAll::Server::removeCall(SimulatorAll::Call *call)
 {
     state.removeCall(call, call->server);
-    calls.removeAll(call);
+    call->server.allocatedAU = 0;
+#ifdef QT_DEBUG
+    assert(calls.removeAll(call) == 1);
+#else
+    calls.removeOne(call);
+#endif
 }
 
 void SimulatorAll::Server::writesResultsOfSingleExperiment(RSingle &singleResults, double simulationTime)
@@ -1670,17 +1675,24 @@ void SimulatorAll::Buffer::addCall(SimulatorAll::Call *nCall, int groupNo)
 {
     nCall->buffer.groupIndex = groupNo;
     nCall->buffer.allocatedAU = nCall->reqAS - nCall->server.allocatedAU;
-    state.addCall(nCall, nCall->buffer.allocatedAU, groupNo);
-    assert(vTotal >= state.n);
-
+    state.addCall(nCall, nCall->buffer);
     calls.append(nCall);
+#ifdef QT_DEBUG
+    assert(vTotal >= state.n);
+    assert(system->par.getBuffer().V(groupNo) == state.n_k[groupNo] + state.subgroupFreeAUs[groupNo]);
+#endif
 }
 
 void SimulatorAll::Buffer::removeCall(SimulatorAll::Call *rCall)
 {
     state.removeCall(rCall, rCall->buffer);
     rCall->buffer.allocatedAU = 0;
+#ifdef QT_DEBUG
     assert(calls.removeAll(rCall) == 1);
+    assert(system->par.getBuffer().V(rCall->buffer.groupIndex) == state.n_k[rCall->buffer.groupIndex] + state.subgroupFreeAUs[rCall->buffer.groupIndex]);
+#else
+    calls.removeOne(rCall);
+#endif
 }
 
 SimulatorAll::Call *SimulatorAll::Buffer::popCall()
@@ -1728,8 +1740,13 @@ SimulatorAll::CommonRes::CommonRes(SimulatorAll::System *system, const ModelReso
     state.subgroupSequence.resize(k);
     for (int j=0; j<k; j++)
     {
-        state.subgroupFreeAUs[j] = system->par.getServer().V(j);
+        state.subgroupFreeAUs[j] = res.V(j);
         state.subgroupSequence[j] = j;
+        state.n_k[j] = 0;
+    }
+    for (int i=0; i<m; i++)
+    {
+        state.n_i[i] = 0;
     }
 }
 
