@@ -227,7 +227,7 @@ void MainWindow::addAlgorithmsAndParams()
     //addExperimentalAlgorithm(new convolutionAlgorithmGamma3());
     //addExperimentalAlgorithm(new convolutionAlgorithm3d_v1());
     //addExperimentalAlgorithm(new Algorithm2Pass());
-    //addExperimentalAlgorithm(new AlgorithmHybridDiscr());
+    addExperimentalAlgorithm(new Algorithms::AlgorithmHybridDiscrDesc());
 
     algorithms.append(new Algorithms::AlgorithmHybridNoFifo());
 //    algorithms.append(new AlgorithmAnyStreamFAG());
