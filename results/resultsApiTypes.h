@@ -30,6 +30,8 @@ enum class Type
     OccupancyDistributionServerOnly,
     OccupancyDistributionBufferOnly,
 
+    OccupancyDistributionServerAndBuffer,
+
     NumberOfCallsInServerVsServerState,
     NumberOfCallsInServerVsSystemState,
     NumberOfCallsInBufferVsBufferState,

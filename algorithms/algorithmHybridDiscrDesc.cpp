@@ -7,8 +7,9 @@ namespace Algorithms
 AlgorithmHybridDiscrDesc::AlgorithmHybridDiscrDesc(): Investigator()
 {
     myQoS_Set
-       <<Results::Type::BlockingProbability
-       <<Results::Type::OccupancyDistribution;
+      <<Results::Type::BlockingProbability
+      <<Results::Type::OccupancyDistribution
+      <<Results::Type::OccupancyDistributionServerAndBuffer;
 }
 
 bool AlgorithmHybridDiscrDesc::possible(const ModelSystem &system) const
@@ -48,7 +49,8 @@ void AlgorithmHybridDiscrDesc::calculateSystem(
 
     X = new double*[VsVb+1];
     delta_X = new double*[VsVb+1];            ///
-    double **Q_X = new double*[VsVb+1];       /// 2d distribution
+    QVector<QVector<double>> Q_X;             /// 2d distribution
+    Q_X.resize(VsVb+1);
 
     int t_max = 0;
     for (int i=0; i<m; i++)
@@ -60,9 +62,8 @@ void AlgorithmHybridDiscrDesc::calculateSystem(
     for (int n=0; n<=VsVb; n++)
     {
          X[n] = new double[t_max];
-         Q_X[n] = new double[t_max];
-         bzero(X[n], t_max*sizeof(double));
-         bzero(Q_X[n], t_max*sizeof(double));
+         Q_X[n].resize(t_max);
+         bzero(X[n], static_cast<size_t>(t_max)*sizeof(double));
          if (n<=Vs)
              X[n][0] = 1;
 
@@ -285,12 +286,12 @@ void AlgorithmHybridDiscrDesc::calculateSystem(
         {
             double val = 0;
 
-            if (n_s <=Vs && n_b == 0)
+            if (n_b == 0)
                 val = Q_X[n_s + n_b][0];
             else
             {
                 int unused = n_s - Vs;
-                if (n_b >= unused)
+                if ((n_b >= unused) && (unused >= 0) && (unused < t_max))
                     val = Q_X[n_s + n_b][unused];
             }
             (*results)->write(TypeForServerAngBufferState::StateProbability, val, n_s, n_b);

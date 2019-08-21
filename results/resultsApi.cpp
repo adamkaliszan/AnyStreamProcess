@@ -27,6 +27,8 @@ void TypesAndSettings::_initialize()
     _myMap.insert(Type::OccupancyDistributionServerOnly                        , new SettingsTypeForServerState(TypeForServerState::StateProbability                                   , "Occupancy distribution in server"                     , "Ps(n)"    ));
     _myMap.insert(Type::OccupancyDistributionBufferOnly                        , new SettingsTypeForBufferState(TypeForBufferState::StateProbability                                   , "Occupancy distribution in buffer"                     , "Pb(n)"    ));
 
+    _myMap.insert(Type::OccupancyDistributionServerAndBuffer                   , new SettingsTypeForServerAndBufferState(TypeForServerAngBufferState::StateProbability                 , "Occupancy distribution 2d       "                     , "P(n_s, n_b)"));
+
     _myMap.insert(Type::NumberOfCallsInSystemVsSystemState                     , new SettingsTypeForClassAndSystemState(TypeForClassAndSystemState::UsageForSystem                     , "Number of calls in system"                            , "yi(n)"    ));
     _myMap.insert(Type::NumberOfCallsInServerVsServerState                     , new SettingsTypeForClassAndSystemState(TypeForClassAndSystemState::UsageForServer                     , "Number of calls in server"                            , "yis(n)"   ));
     _myMap.insert(Type::NumberOfCallsInBufferVsBufferState                     , new SettingsTypeForClassAndSystemState(TypeForClassAndSystemState::UsageForBuffer                     , "Number of calls in buffer"                            , "yib(n)"   ));
@@ -52,6 +54,19 @@ void TypesAndSettings::_initialize()
       , new SettingsAvailableSubroupDistribution(                  "Distribution of available groups"                           , "RDP"));
 
     _isInitialized = true;
+}
+
+void TypesAndSettings::release()
+{
+    if (_isInitialized)
+    {
+        foreach (Type tmp, _myMap.keys())
+        {
+            delete _myMap[tmp];
+        }
+        _myMap.clear();
+        _isInitialized = false;
+    }
 }
 
 const Settings* TypesAndSettings::getSettingConst(Type type)
@@ -1802,7 +1817,7 @@ double Settings::getXmax(RSystem &rSystem) const
         break;
 
     case ParameterType::ServerState:
-        result = rSystem.getModel().getServer().k();
+        result = rSystem.getModel().getServer().V();
         break;
 
     case ParameterType::BufferState:
@@ -2027,6 +2042,195 @@ bool ParametersSet::operator<(const ParametersSet &rho) const
     if (numberOfGroups != rho.numberOfGroups)
         return numberOfGroups < rho.numberOfGroups;
 
+    return result;
+}
+
+SettingsTypeForServerAndBufferState::SettingsTypeForServerAndBufferState(TypeForServerAngBufferState qos, QString name, QString shortName): Settings (name, shortName), qos(qos)
+{
+    dependencyParameters.append(ParameterType::ServerState);
+    dependencyParameters.append(ParameterType::BufferState);
+    dependencyParameters.append(ParameterType::OfferedTrafficPerAS);
+
+    functionalParameter  = ParameterType::ServerState;
+    additionalParameter1 = ParameterType::BufferState;
+    additionalParameter2 = ParameterType::OfferedTrafficPerAS;
+}
+
+bool SettingsTypeForServerAndBufferState::getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
+{
+    bool result = false;
+
+    outPlot->clear();
+    if (functionalParameter == ParameterType::OfferedTrafficPerAS)
+    {
+        foreach(decimal a, rSystem.getAvailableAperAU())
+        {
+            const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+
+            double y=0;
+            if ((*singlePoint)->read(y, qos, parametersSet.serverState, parametersSet.bufferState))
+            {
+                if ((y > 0) || linearScale)
+                {
+                    *outPlot<<QPointF(static_cast<double>(a), y);
+                    result = true;
+                }
+                yMinAndMax.first = qMin<double>(yMinAndMax.first, y);
+                yMinAndMax.second = qMax<double>(yMinAndMax.second, y);
+            }
+        }
+    }
+
+    if (functionalParameter == ParameterType::ServerState)
+    {
+        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+        for (int n=0; n<=rSystem.getModel().getServer().V(); n++)
+        {
+            double y=0;
+
+            if ((*singlePoint)->read(y, qos, n, parametersSet.bufferState))
+            {
+                if ((y > 0) || linearScale)
+                {
+                    *outPlot<<QPointF(n, y);
+                    result = true;
+                }
+                yMinAndMax.first = qMin<double>(yMinAndMax.first, y);
+                yMinAndMax.second = qMax<double>(yMinAndMax.second, y);
+            }
+        }
+    }
+
+    if (functionalParameter == ParameterType::BufferState)
+    {
+        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+        for (int n=0; n<=rSystem.getModel().getServer().V(); n++)
+        {
+            double y=0;
+
+            if ((*singlePoint)->read(y, qos, parametersSet.serverState, n))
+            {
+                if ((y > 0) || linearScale)
+                {
+                    *outPlot<<QPointF(n, y);
+                    result = true;
+                }
+                yMinAndMax.first = qMin<double>(yMinAndMax.first, y);
+                yMinAndMax.second = qMax<double>(yMinAndMax.second, y);
+            }
+        }
+    }
+    return result;
+}
+
+bool SettingsTypeForServerAndBufferState::getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
+{
+    bool result = false;
+
+    outPlot.clear();
+    if (functionalParameter == ParameterType::OfferedTrafficPerAS)
+    {
+        foreach(decimal a, rSystem.getAvailableAperAU())
+        {
+            const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+
+            double y=0;
+            if ((*singlePoint)->read(y, qos, parametersSet.serverState, parametersSet.bufferState))
+            {
+                if (y>0)
+                    result = true;
+            }
+            outPlot.append(y);
+        }
+    }
+
+    if (functionalParameter == ParameterType::ServerState)
+    {
+        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+        for (int n=0; n<=rSystem.getModel().getServer().V(); n++)
+        {
+            double y=0;
+
+            if ((*singlePoint)->read(y, qos, n, parametersSet.bufferState))
+            {
+                if (y>0)
+                    result = true;
+            }
+            outPlot.append(y);
+        }
+    }
+
+    if (functionalParameter == ParameterType::BufferState)
+    {
+        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+        for (int n=0; n<=rSystem.getModel().getBuffer().V(); n++)
+        {
+            double y=0;
+
+            if ((*singlePoint)->read(y, qos, parametersSet.serverState, n))
+            {
+                if (y>0)
+                    result = true;
+            }
+            outPlot.append(y);
+        }
+    }
+    return result;
+}
+
+QList<ParametersSet> SettingsTypeForServerAndBufferState::getParametersList(const ModelSystem &system, const QList<decimal> &aOfPerAU) const
+{
+    QList<ParametersSet> result;
+    int ns, nb;
+    decimal a;
+
+    switch(functionalParameter)
+    {
+    case ParameterType::OfferedTrafficPerAS:
+        for (ns=0; ns <= system.getServer().V(); ns++)
+        {
+            for (nb=0; nb <= system.getBuffer().V(); nb++)
+            {
+                ParametersSet item;
+                item.serverState = ns;
+                item.bufferState = nb;
+                item.a = -1;
+                result.append(item);
+            }
+        }
+        break;
+
+    case ParameterType::ServerState:
+        for (nb=0; nb <= system.getBuffer().V(); nb++)
+        {
+            foreach (a, aOfPerAU)
+            {
+                ParametersSet item;
+                item.serverState = -1;
+                item.bufferState = nb;
+                item.a = a;
+                result.append(item);
+            }
+        }
+        break;
+
+    case ParameterType::BufferState:
+        for (ns=0; ns <= system.getServer().V(); ns++)
+        {
+            foreach (a, aOfPerAU)
+            {
+                ParametersSet item;
+                item.serverState = ns;
+                item.bufferState = -1;
+                item.a = a;
+                result.append(item);
+            }
+        }
+        break;
+
+    default:
+        qFatal("Wrong functional parameter");
+    }
     return result;
 }
 

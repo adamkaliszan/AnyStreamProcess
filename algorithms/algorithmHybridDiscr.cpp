@@ -8,7 +8,8 @@ AlgorithmHybridDiscr::AlgorithmHybridDiscr(): Investigator()
 {
     myQoS_Set
        <<Results::Type::BlockingProbability
-       <<Results::Type::OccupancyDistribution;
+       <<Results::Type::OccupancyDistribution
+       <<Results::Type::OccupancyDistributionServerAndBuffer;
 }
 
 bool AlgorithmHybridDiscr::possible(ModelSystem &system)
@@ -35,15 +36,15 @@ void AlgorithmHybridDiscr::calculateSystem(
     p_single = new TrClVector[m];
     P_without_i = new TrClVector[m];
 
-    state **unusedProb;
-    unusedProb = new state*[VsVb+1];
+    State **unusedProb;
+    unusedProb = new State*[VsVb+1];
 
 
     double *delta = new double[VsVb+1];
     double **deltaDetail = new double*[VsVb+1];
 
-    state *Q = new state[VsVb+1];
-    state **Qdetail = new state*[VsVb+1];
+    State *Q = new State[VsVb+1];
+    State **Qdetail = new State*[VsVb+1];
 
     int t_max = 0;
     for (int i=0; i<m; i++)
@@ -54,10 +55,10 @@ void AlgorithmHybridDiscr::calculateSystem(
 
     for (int n=0; n<=VsVb; n++)
     {
-         unusedProb[n] = new state[t_max];
-         Qdetail[n] = new state[t_max];
-         bzero(unusedProb[n], t_max*sizeof(state));
-         bzero(Qdetail[n], t_max*sizeof(state));
+         unusedProb[n] = new State[t_max];
+         Qdetail[n] = new State[t_max];
+         bzero(unusedProb[n], t_max*sizeof(State));
+         bzero(Qdetail[n], t_max*sizeof(State));
          if (n<=Vs)
              unusedProb[n][0].p = 1;
 

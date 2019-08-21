@@ -148,6 +148,18 @@ public:
     virtual QList<ParametersSet> getParametersList(const ModelSystem &system, const QList<decimal> &aOfPerAU) const;
 };
 
+class SettingsTypeForServerAndBufferState: public Settings
+{
+private:
+    const TypeForServerAngBufferState qos;
+public:
+    SettingsTypeForServerAndBufferState(TypeForServerAngBufferState qos, QString name, QString shortName);
+
+    bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
+    bool getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet) const;
+    virtual QList<ParametersSet> getParametersList(const ModelSystem &system, const QList<decimal> &aOfPerAU) const;
+};
+
 class SettingsTypeForClassAndSystemState: public Settings
 {
 private:
@@ -218,6 +230,8 @@ private:
     static void _initialize();
 
 public:
+    static void release();
+
     static const Settings *getSettingConst(Type type);
     static Settings *getSetting(Type type);
     static QString typeToString(Type type);

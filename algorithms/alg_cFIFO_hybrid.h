@@ -15,8 +15,7 @@ class AlgorithmHybrid : public Investigator
 public:
     enum class AlgVariant;
 
-    AlgorithmHybrid();
-    AlgorithmHybrid(AlgVariant variant);
+    AlgorithmHybrid(AlgVariant variant = AlgVariant::yFAG);
 
     QString shortName()      const;
     virtual int complexity() const {return 1; }

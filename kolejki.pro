@@ -117,3 +117,6 @@ RESOURCES += \
 DISTFILES += \
     languages/kolejki_pl.ts \
     languages/kolejki_en.ts
+
+SUBDIRS += \
+    Core/Core.pro

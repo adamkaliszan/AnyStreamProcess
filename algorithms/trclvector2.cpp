@@ -5,16 +5,15 @@
 
 TrClVector::TrClVector(): previous(nullptr)
 {
-    _states2.clear();
-    _states2.fill(state(), 1);
-    _states2[0].p = 1;
+    _states.resize(1);
+    _states[0].p = 1;
 
     aggregatedClasses.clear();
 }
 
 TrClVector::TrClVector(const TrClVector &rho): aggregatedClasses(rho.aggregatedClasses)
 {
-    _states2 = rho._states2;//.fill(state(), rho._lastIdx+1);
+    _states = rho._states;//.fill(state(), rho._lastIdx+1);
 
     if (rho.previous != nullptr)
         previous = new TrClVector(*(rho.previous));
@@ -24,20 +23,19 @@ TrClVector::TrClVector(const TrClVector &rho): aggregatedClasses(rho.aggregatedC
 
 TrClVector::TrClVector(int LastIdx): previous(nullptr)
 {
-    _states2.fill(state(), LastIdx + 1);
-    _states2[0].p = 1;
+    _states.resize(LastIdx + 1);
+    _states[0].p = 1;
 }
 
 TrClVector::TrClVector(int V, const QVector<pairIdT> &aggregatedClasses): previous(nullptr), aggregatedClasses(aggregatedClasses)
 {
-    _states2.clear();
-    _states2.fill(state(), V+1);
-    _states2[0].p = 1;
+    _states.resize(V+1);
+    _states[0].p = 1;
 }
 
 TrClVector::~TrClVector()
 {
-    _states2.clear();
+    _states.clear();
 
     if (previous != nullptr)
         delete previous;
@@ -47,19 +45,19 @@ double &TrClVector::operator[](int n)
 {
     if (n > V())
         throw std::out_of_range("Vector's index is out of range");
-    return _states2[n].p;
+    return _states[n].p;
 }
 
-void TrClVector::setState(int n, const state &refState)
+void TrClVector::setState(int n, const State &refState)
 {
-    _states2[n] = refState;
+    _states[n] = refState;
 }
 
-state &TrClVector::getState(int n)
+State &TrClVector::getState(int n)
 {
     if (n > V())
         throw std::out_of_range("Vector's index is out of range");
-    return _states2[n];
+    return _states[n];
 }
 
 void TrClVector::setIntInNew(int n, int i, double value)
@@ -71,7 +69,7 @@ void TrClVector::setIntInNew(int n, int i, double value)
     if (classIdx == -1)
         throw std::out_of_range("Can't find proper class");
 
-    _states2[n].intInNewSC[classIdx] = value;
+    _states[n].intInNewSC[classIdx] = value;
 }
 
 void TrClVector::setIntInEnd(int n, int i, double value)
@@ -83,7 +81,7 @@ void TrClVector::setIntInEnd(int n, int i, double value)
     if (classIdx == -1)
         throw std::out_of_range("Can't find proper class");
 
-    _states2[n].intInEndSC[classIdx] = value;
+    _states[n].intInEndSC[classIdx] = value;
 }
 
 void TrClVector::setIntOutNew(int n, int i, double value)
@@ -95,7 +93,7 @@ void TrClVector::setIntOutNew(int n, int i, double value)
     if (classIdx == -1)
         throw std::out_of_range("Can't find proper class");
 
-    _states2[n].intOutNewSC[classIdx] = value;
+    _states[n].intOutNewSC[classIdx] = value;
 }
 
 void TrClVector::setIntOutEnd(int n, int i, double value)
@@ -107,7 +105,7 @@ void TrClVector::setIntOutEnd(int n, int i, double value)
     if (classIdx == -1)
         throw std::out_of_range("Can't find proper class");
 
-    _states2[n].intOutEndSC[classIdx] = value;
+    _states[n].intOutEndSC[classIdx] = value;
 }
 
 void TrClVector::setY(int n, int i, double value)
@@ -119,7 +117,7 @@ void TrClVector::setY(int n, int i, double value)
     if (classIdx == -1)
         throw std::out_of_range("Can't find proper class");
 
-    _states2[n].y[classIdx] = value;
+    _states[n].y[classIdx] = value;
 }
 
 double TrClVector::getIntInNew(int n, int i) const
@@ -131,7 +129,7 @@ double TrClVector::getIntInNew(int n, int i) const
     if (classIdx == -1)
         throw std::out_of_range("Can't find proper class");
 
-    double result = _states2[n].intInNewSC[classIdx];
+    double result = _states[n].intInNewSC[classIdx];
     return result;
 }
 
@@ -144,7 +142,7 @@ double TrClVector::getIntInEnd(int n, int i) const
     if (classIdx == -1)
         throw std::out_of_range("Can't find proper class");
 
-    return _states2[n].intInEndSC[classIdx];
+    return _states[n].intInEndSC[classIdx];
 }
 
 double TrClVector::getIntOutNew(int n, int i) const
@@ -156,7 +154,7 @@ double TrClVector::getIntOutNew(int n, int i) const
     if (classIdx == -1)
         throw std::out_of_range("Can't find proper class");
 
-    double result = _states2[n].intOutNewSC[classIdx];
+    double result = _states[n].intOutNewSC[classIdx];
     return result;
 }
 
@@ -169,7 +167,7 @@ double TrClVector::getIntOutEnd(int n, int i) const
     if (classIdx == -1)
         throw std::out_of_range("Can't find proper class");
 
-    return _states2[n].intOutEndSC[classIdx];
+    return _states[n].intOutEndSC[classIdx];
 }
 
 double TrClVector::getY(int n, int i) const
@@ -181,7 +179,7 @@ double TrClVector::getY(int n, int i) const
     if (classIdx == -1)
         throw std::out_of_range("Can't find proper class");
 
-    return _states2[n].y[classIdx];
+    return _states[n].y[classIdx];
 }
 
 TrClVector &TrClVector::operator=(const TrClVector &rho)
@@ -197,7 +195,7 @@ TrClVector &TrClVector::operator=(const TrClVector &rho)
     //for (int n=0; n<=_lastIdx; n++)
     //    _states2[n] = rho._states2[n];
 
-    _states2 = rho._states2;
+    _states = rho._states;
 
     aggregatedClasses = rho.aggregatedClasses;
     previous = (rho.previous == nullptr) ? nullptr : new TrClVector(*(rho.previous));
@@ -207,31 +205,31 @@ TrClVector &TrClVector::operator=(const TrClVector &rho)
 
 void TrClVector::normalize(double sumOfAllTheStates)
 {
-    if (sumOfAllTheStates == 0)
+    if (qFuzzyIsNull(sumOfAllTheStates))
         qFatal("sum of all the states can't be 0");
 
     double sum = 0;
     for (int n=0; n<=V(); n++)
     {
 #ifdef QT_DEBUG
-        if (std::isnan(_states2[n].p))
+        if (std::isnan(_states[n].p))
             qFatal("p_n = NAN");
 #endif
-        sum += _states2[n].p;
+        sum += _states[n].p;
     }
 
     for (int n=0; n<=V(); n++)
     {
-        _states2[n].p *= sumOfAllTheStates;
-        _states2[n].p /= sum;
+        _states[n].p *= sumOfAllTheStates;
+        _states[n].p /= sum;
 
 #ifdef QT_DEBUG
-        if (std::isnan(_states2[n].p))
+        if (std::isnan(_states[n].p))
             qFatal("p_n = NAN");
 #endif
     }
     if (previous != nullptr)
-        previous->normalize(sumOfAllTheStates - _states2[V()].p);
+        previous->normalize(sumOfAllTheStates - _states[V()].p);
 }
 
 void TrClVector::generateNormalizedPoissonPrevDistrib()
@@ -245,7 +243,7 @@ void TrClVector::generateNormalizedPoissonPrevDistrib()
     previous = new TrClVector(this->V()-1, this->aggregatedClasses);
 
     for (int n=0; n<V(); n++)
-        previous->_states2[n] = _states2[n];
+        previous->_states[n] = _states[n];
     previous->normalize();
     previous->generateNormalizedPoissonPrevDistrib();
 }
@@ -261,8 +259,8 @@ void TrClVector::generateDeNormalizedPoissonPrevDistrib()
     previous = new TrClVector(V()-1, this->aggregatedClasses);
 
     for (int n=0; n<V(); n++)
-        previous->_states2[n] = _states2[n];
-    previous->normalize(1.0-_states2[V()].p);
+        previous->_states[n] = _states[n];
+    previous->normalize(1.0-_states[V()].p);
     previous->generateNormalizedPoissonPrevDistrib();
 }
 
@@ -301,18 +299,18 @@ void TrClVector::prepareResult(TrClVector &result, const TrClVector &Pa, const T
     }
     for (n=0; n<=len; n++)
     {
-        result._states2[n].m = result.aggregatedClasses.length();
-        result._states2[n].intInNewSC = new double[result._states2[n].m];
-        result._states2[n].intInEndSC = new double[result._states2[n].m];
-        result._states2[n].intOutNewSC = new double[result._states2[n].m];
-        result._states2[n].intOutEndSC = new double[result._states2[n].m];
-        result._states2[n].y = new double[result._states2[n].m];
+        result._states[n].m = result.aggregatedClasses.length();
+        result._states[n].intInNewSC = new double[result._states[n].m];
+        result._states[n].intInEndSC = new double[result._states[n].m];
+        result._states[n].intOutNewSC = new double[result._states[n].m];
+        result._states[n].intOutEndSC = new double[result._states[n].m];
+        result._states[n].y = new double[result._states[n].m];
 
-        bzero(result._states2[n].intInNewSC, result._states2[n].m * sizeof(double));
-        bzero(result._states2[n].intInEndSC, result._states2[n].m * sizeof(double));
-        bzero(result._states2[n].intOutNewSC, result._states2[n].m * sizeof(double));
-        bzero(result._states2[n].intOutEndSC, result._states2[n].m * sizeof(double));
-        bzero(result._states2[n].y, result._states2[n].m * sizeof(double));
+        bzero(result._states[n].intInNewSC, static_cast<size_t>(result._states[n].m) * sizeof(double));
+        bzero(result._states[n].intInEndSC, static_cast<size_t>(result._states[n].m) * sizeof(double));
+        bzero(result._states[n].intOutNewSC, static_cast<size_t>(result._states[n].m) * sizeof(double));
+        bzero(result._states[n].intOutEndSC, static_cast<size_t>(result._states[n].m) * sizeof(double));
+        bzero(result._states[n].y, static_cast<size_t>(result._states[n].m) * sizeof(double));
     }
 }
 
@@ -339,10 +337,10 @@ TrClVector TrClVector::convFAG(const TrClVector &Pa, const TrClVector &Pb, bool 
             if (lb > Pb.V())
                 continue;
 
-            result[n] += Pa._states2[la].p * Pb._states2[lb].p;
+            result[n] += Pa._states[la].p * Pb._states[lb].p;
 
-            result._states2[n].tIntOutNew += (Pa._states2[la].p * Pb._states2[lb].p * (Pa._states2[la].tIntOutNew + Pb._states2[lb].tIntOutNew));
-            result._states2[n].tIntOutEnd += (Pa._states2[la].p * Pb._states2[lb].p * (Pa._states2[la].tIntOutEnd + Pb._states2[lb].tIntOutEnd));
+            result._states[n].tIntOutNew += (Pa._states[la].p * Pb._states[lb].p * (Pa._states[la].tIntOutNew + Pb._states[lb].tIntOutNew));
+            result._states[n].tIntOutEnd += (Pa._states[la].p * Pb._states[lb].p * (Pa._states[la].tIntOutEnd + Pb._states[lb].tIntOutEnd));
 
             for (int i=0; i<result.aggregatedClasses.length(); i++)
             {
@@ -351,35 +349,35 @@ TrClVector TrClVector::convFAG(const TrClVector &Pa, const TrClVector &Pb, bool 
                 int clIdxA = Pa.internalClassId(clIdx);
                 int clIdxB = Pb.internalClassId(clIdx);
 
-                double intOutNewA = (clIdxA == -1) ? 0 : Pa._states2[la].intOutNewSC[clIdxA];
-                double intOutNewB = (clIdxB == -1) ? 0 : Pb._states2[lb].intOutNewSC[clIdxB];
-                double intOutEndA = (clIdxA == -1) ? 0 : Pa._states2[la].intOutEndSC[clIdxA];
-                double intOutEndB = (clIdxB == -1) ? 0 : Pb._states2[lb].intOutEndSC[clIdxB];
+                double intOutNewA = (clIdxA == -1) ? 0 : Pa._states[la].intOutNewSC[clIdxA];
+                double intOutNewB = (clIdxB == -1) ? 0 : Pb._states[lb].intOutNewSC[clIdxB];
+                double intOutEndA = (clIdxA == -1) ? 0 : Pa._states[la].intOutEndSC[clIdxA];
+                double intOutEndB = (clIdxB == -1) ? 0 : Pb._states[lb].intOutEndSC[clIdxB];
 
-                double yA = (clIdxA == -1) ? 0 : Pa._states2[la].y[clIdxA];
-                double yB = (clIdxB == -1) ? 0 : Pb._states2[lb].y[clIdxB];
+                double yA = (clIdxA == -1) ? 0 : Pa._states[la].y[clIdxA];
+                double yB = (clIdxB == -1) ? 0 : Pb._states[lb].y[clIdxB];
 
-                result._states2[n].intOutNewSC[i] += Pa._states2[la].p * Pb._states2[lb].p * (intOutNewA + intOutNewB);
-                result._states2[n].intOutEndSC[i] += Pa._states2[la].p * Pb._states2[lb].p * (intOutEndA + intOutEndB);
-                result._states2[n].y[i] += Pa._states2[la].p * Pb._states2[lb].p * (yA + yB);
+                result._states[n].intOutNewSC[i] += Pa._states[la].p * Pb._states[lb].p * (intOutNewA + intOutNewB);
+                result._states[n].intOutEndSC[i] += Pa._states[la].p * Pb._states[lb].p * (intOutEndA + intOutEndB);
+                result._states[n].y[i] += Pa._states[la].p * Pb._states[lb].p * (yA + yB);
             }
         }
-        if (result[n] != 0)
+        if (!qFuzzyIsNull(result[n]))
         {
-            result._states2[n].tIntOutNew /= result[n];
-            result._states2[n].tIntOutEnd /= result[n];
+            result._states[n].tIntOutNew /= result[n];
+            result._states[n].tIntOutEnd /= result[n];
 
             for (int i=0; i<result.aggregatedClasses.length(); i++)
             {
-                result._states2[n].intOutNewSC[i] /= result[n];
-                result._states2[n].intOutEndSC[i] /= result[n];
-                result._states2[n].y[i]           /= result[n];
+                result._states[n].intOutNewSC[i] /= result[n];
+                result._states[n].intOutEndSC[i] /= result[n];
+                result._states[n].y[i]           /= result[n];
             }
         }
         else
         {
-            result._states2[n].tIntOutNew = 0;
-            result._states2[n].tIntOutEnd = 0;
+            result._states[n].tIntOutNew = 0;
+            result._states[n].tIntOutEnd = 0;
         }
         sum +=result[n];
     }
@@ -391,27 +389,26 @@ TrClVector TrClVector::convFAG(const TrClVector &Pa, const TrClVector &Pb, bool 
 
         for (int i=0; i<result.aggregatedClasses.length(); i++)
         {
-            result._states2[n].intInNewSC[i] = 0;
-            result._states2[n].intInEndSC[i] = 0;
+            result._states[n].intInNewSC[i] = 0;
+            result._states[n].intInEndSC[i] = 0;
 
             int t = result.aggregatedClasses[i].t;
-            if (n >= (int)
-                    t)
+            if (n >= static_cast<int>(t))
             {
-                result._states2[n].intInNewSC[i] = result._states2[n-t].intOutNewSC[i];
+                result._states[n].intInNewSC[i] = result._states[n-t].intOutNewSC[i];
                 //result._states[n].tIntInNew    += result._states[n-t].intOutNewSC[i];
-                sumNew += result._states2[n-t].intOutNewSC[i];
+                sumNew += result._states[n-t].intOutNewSC[i];
             }
 
             if (n+t <=len)
             {
-                result._states2[n].intInEndSC[i] = result._states2[n+t].intOutEndSC[i];
+                result._states[n].intInEndSC[i] = result._states[n+t].intOutEndSC[i];
                 //result._states[n].tIntInEnd    += result._states[n+t].intOutEndSC[i];
-                sumEnd += result._states2[n+t].intOutEndSC[i];
+                sumEnd += result._states[n+t].intOutEndSC[i];
             }
         }
-        result._states2[n].tIntInNew = sumNew;
-        result._states2[n].tIntInEnd = sumEnd;
+        result._states[n].tIntInNew = sumNew;
+        result._states[n].tIntInEnd = sumEnd;
 
     }
 
@@ -448,10 +445,10 @@ TrClVector TrClVector::convFAGanyStream(const TrClVector &P_A, const TrClVector 
             const TrClVector *Pa = P_A.getTruncatedVector(result.V() - lb);
             const TrClVector *Pb = P_B.getTruncatedVector(result.V() - la);
 
-            result[n] += Pa->_states2[la].p * Pb->_states2[lb].p;
+            result[n] += Pa->_states[la].p * Pb->_states[lb].p;
 
-            result._states2[n].tIntOutNew += (Pa->_states2[la].p * Pb->_states2[lb].p * (Pa->_states2[la].tIntOutNew + Pb->_states2[lb].tIntOutNew));
-            result._states2[n].tIntOutEnd += (Pa->_states2[la].p * Pb->_states2[lb].p * (Pa->_states2[la].tIntOutEnd + Pb->_states2[lb].tIntOutEnd));
+            result._states[n].tIntOutNew += (Pa->_states[la].p * Pb->_states[lb].p * (Pa->_states[la].tIntOutNew + Pb->_states[lb].tIntOutNew));
+            result._states[n].tIntOutEnd += (Pa->_states[la].p * Pb->_states[lb].p * (Pa->_states[la].tIntOutEnd + Pb->_states[lb].tIntOutEnd));
 
             for (int i=0; i<result.aggregatedClasses.length(); i++)
             {
@@ -460,35 +457,35 @@ TrClVector TrClVector::convFAGanyStream(const TrClVector &P_A, const TrClVector 
                 int clIdxA = P_A.internalClassId(clIdx);
                 int clIdxB = P_B.internalClassId(clIdx);
 
-                double intOutNewA = (clIdxA == -1) ? 0 : Pa->_states2[la].intOutNewSC[clIdxA];
-                double intOutNewB = (clIdxB == -1) ? 0 : Pb->_states2[lb].intOutNewSC[clIdxB];
-                double intOutEndA = (clIdxA == -1) ? 0 : Pa->_states2[la].intOutEndSC[clIdxA];
-                double intOutEndB = (clIdxB == -1) ? 0 : Pb->_states2[lb].intOutEndSC[clIdxB];
+                double intOutNewA = (clIdxA == -1) ? 0 : Pa->_states[la].intOutNewSC[clIdxA];
+                double intOutNewB = (clIdxB == -1) ? 0 : Pb->_states[lb].intOutNewSC[clIdxB];
+                double intOutEndA = (clIdxA == -1) ? 0 : Pa->_states[la].intOutEndSC[clIdxA];
+                double intOutEndB = (clIdxB == -1) ? 0 : Pb->_states[lb].intOutEndSC[clIdxB];
 
-                double yA = (clIdxA == -1) ? 0 : Pa->_states2[la].y[clIdxA];
-                double yB = (clIdxB == -1) ? 0 : Pb->_states2[lb].y[clIdxB];
+                double yA = (clIdxA == -1) ? 0 : Pa->_states[la].y[clIdxA];
+                double yB = (clIdxB == -1) ? 0 : Pb->_states[lb].y[clIdxB];
 
-                result._states2[n].intOutNewSC[i] += Pa->_states2[la].p * Pb->_states2[lb].p * (intOutNewA + intOutNewB);
-                result._states2[n].intOutEndSC[i] += Pa->_states2[la].p * Pb->_states2[lb].p * (intOutEndA + intOutEndB);
-                result._states2[n].y[i] += Pa->_states2[la].p * Pb->_states2[lb].p * (yA + yB);
+                result._states[n].intOutNewSC[i] += Pa->_states[la].p * Pb->_states[lb].p * (intOutNewA + intOutNewB);
+                result._states[n].intOutEndSC[i] += Pa->_states[la].p * Pb->_states[lb].p * (intOutEndA + intOutEndB);
+                result._states[n].y[i] += Pa->_states[la].p * Pb->_states[lb].p * (yA + yB);
             }
         }
-        if (result[n] != 0)
+        if (!qFuzzyIsNull(result[n]))
         {
-            result._states2[n].tIntOutNew /= result[n];
-            result._states2[n].tIntOutEnd /= result[n];
+            result._states[n].tIntOutNew /= result[n];
+            result._states[n].tIntOutEnd /= result[n];
 
             for (int i=0; i<result.aggregatedClasses.length(); i++)
             {
-                result._states2[n].intOutNewSC[i] /= result[n];
-                result._states2[n].intOutEndSC[i] /= result[n];
-                result._states2[n].y[i]           /= result[n];
+                result._states[n].intOutNewSC[i] /= result[n];
+                result._states[n].intOutEndSC[i] /= result[n];
+                result._states[n].y[i]           /= result[n];
             }
         }
         else
         {
-            result._states2[n].tIntOutNew = 0;
-            result._states2[n].tIntOutEnd = 0;
+            result._states[n].tIntOutNew = 0;
+            result._states[n].tIntOutEnd = 0;
         }
         sum +=result[n];
     }
@@ -500,32 +497,31 @@ TrClVector TrClVector::convFAGanyStream(const TrClVector &P_A, const TrClVector 
 
         for (int i=0; i<result.aggregatedClasses.length(); i++)
         {
-            result._states2[n].intInNewSC[i] = 0;
-            result._states2[n].intInEndSC[i] = 0;
+            result._states[n].intInNewSC[i] = 0;
+            result._states[n].intInEndSC[i] = 0;
 
             int t = result.aggregatedClasses[i].t;
-            if (n >= (int)
-                    t)
+            if (n >= static_cast<int>(t))
             {
-                result._states2[n].intInNewSC[i] = result._states2[n-t].intOutNewSC[i];
+                result._states[n].intInNewSC[i] = result._states[n-t].intOutNewSC[i];
                 //result._states[n].tIntInNew    += result._states[n-t].intOutNewSC[i];
-                sumNew += result._states2[n-t].intOutNewSC[i];
+                sumNew += result._states[n-t].intOutNewSC[i];
             }
 
             if (n+t <=len)
             {
-                result._states2[n].intInEndSC[i] = result._states2[n+t].intOutEndSC[i];
-                sumEnd += result._states2[n+t].intOutEndSC[i];
+                result._states[n].intInEndSC[i] = result._states[n+t].intOutEndSC[i];
+                sumEnd += result._states[n+t].intOutEndSC[i];
 
-                result._states2[n].intInEndSC[i] = result._states2[n+t].intOutEndSC[i];
-                sumEnd += result._states2[n+t].intOutEndSC[i];
+                result._states[n].intInEndSC[i] = result._states[n+t].intOutEndSC[i];
+                sumEnd += result._states[n+t].intOutEndSC[i];
             }
         }
-        result._states2[n].tIntInNew = sumNew;
-        result._states2[n].tIntInEnd = sumEnd;
+        result._states[n].tIntInNew = sumNew;
+        result._states[n].tIntInEnd = sumEnd;
 
-        result._states2[n].tIntInNew = sumNew;
-        result._states2[n].tIntInEnd = sumEnd;
+        result._states[n].tIntInNew = sumNew;
+        result._states[n].tIntInEnd = sumEnd;
 
     }
 
@@ -544,9 +540,9 @@ void TrClVector::addClass(int id, int t)
         qFatal("This class is aggregated already");
     aggregatedClasses.append(tmp);
 
-    for (int n=0; n< _states2.length(); n++)
+    for (int n=0; n< _states.length(); n++)
     {
-        _states2[n].addClassOnTheEnd();
+        _states[n].addClassOnTheEnd();
     }
 }
 
@@ -558,59 +554,73 @@ int TrClVector::internalClassId(int classId) const
     return -1;
 }
 
-state::state(): p(0), tIntInNew(0), tIntInEnd(0), tIntOutNew(0), tIntOutEnd(0), intInNewSC(nullptr), intInEndSC(nullptr),
+State::State(): p(0), tIntInNew(0), tIntInEnd(0), tIntOutNew(0), tIntOutEnd(0), intInNewSC(nullptr), intInEndSC(nullptr),
     intOutNewSC(nullptr), intOutEndSC(nullptr), y(nullptr), m(0)
 {
 
 }
 
-state::state(const state &rho): p(rho.p), tIntInNew(rho.tIntInNew), tIntInEnd(rho.tIntInEnd), tIntOutNew(rho.tIntOutNew), tIntOutEnd(rho.tIntOutEnd), m(rho.m)
+State::State(const State &rho): p(rho.p), tIntInNew(rho.tIntInNew), tIntInEnd(rho.tIntInEnd), tIntOutNew(rho.tIntOutNew), tIntOutEnd(rho.tIntOutEnd), m(rho.m)
 {
-    if (rho.intInNewSC == nullptr)
+    if (rho.intInNewSC != nullptr)
     {
         intInNewSC = new double[rho.m];
-        memcpy(intInNewSC, rho.intInNewSC, m*sizeof(double));
+        memcpy(intInNewSC, rho.intInNewSC, static_cast<size_t>(m)*sizeof(double));
     }
-    if (rho.intInEndSC == nullptr)
+    if (rho.intInEndSC != nullptr)
     {
         intInEndSC = new double[rho.m];
-        memcpy(intInEndSC, rho.intInEndSC, m*sizeof(double));
+        memcpy(intInEndSC, rho.intInEndSC, static_cast<size_t>(m)*sizeof(double));
     }
 
-    if (rho.intOutNewSC == nullptr)
+    if (rho.intOutNewSC != nullptr)
     {
         intOutNewSC = new double[rho.m];
-        memcpy(intOutNewSC, rho.intOutNewSC, m*sizeof(double));
+        memcpy(intOutNewSC, rho.intOutNewSC, static_cast<size_t>(m)*sizeof(double));
     }
-    if (rho.intOutEndSC == nullptr)
+    if (rho.intOutEndSC != nullptr)
     {
         intOutEndSC = new double[rho.m];
-        memcpy(intOutEndSC, rho.intOutEndSC, m*sizeof(double));
+        memcpy(intOutEndSC, rho.intOutEndSC, static_cast<size_t>(m)*sizeof(double));
     }
 
-    if (rho.y == nullptr)
+    if (rho.y != nullptr)
     {
         y = new double[rho.m];
-        memcpy(y, rho.y, m*sizeof(double));
+        memcpy(y, rho.y, static_cast<size_t>(m)*sizeof(double));
     }
 }
 
-state::~state()
+State::~State()
 {
-    if (intOutNewSC != nullptr)
+    if (intInNewSC != nullptr)
+    {
         delete []intInNewSC;
-    if (intOutEndSC != nullptr)
+        intInNewSC = nullptr;
+    }
+    if (intInEndSC != nullptr)
+    {
         delete []intInEndSC;
+        intInEndSC = nullptr;
+    }
     if (intOutNewSC != nullptr)
+    {
         delete []intOutNewSC;
+        intOutNewSC = nullptr;
+    }
     if (intOutEndSC != nullptr)
+    {
         delete []intOutEndSC;
+        intOutEndSC = nullptr;
+    }
     if (y != nullptr)
+    {
         delete []y;
-
+        y = nullptr;
+    }
 }
 
-state &state::operator=(const state &rho)
+State &State::operator=(const State &rho)
 {
     this->p = rho.p;
     this->tIntOutNew = rho.tIntOutNew;
@@ -622,7 +632,7 @@ state &state::operator=(const state &rho)
     if (rho.intInNewSC != nullptr)
     {
         intInNewSC = new double[rho.m];
-        memcpy(intInNewSC, rho.intInNewSC, m*sizeof(double));
+        memcpy(intInNewSC, rho.intInNewSC, static_cast<size_t>(m)*sizeof(double));
     }
     else
         intInNewSC = nullptr;
@@ -630,7 +640,7 @@ state &state::operator=(const state &rho)
     if (rho.intInEndSC != nullptr)
     {
         intInEndSC = new double[rho.m];
-        memcpy(intInEndSC, rho.intInEndSC, m*sizeof(double));
+        memcpy(intInEndSC, rho.intInEndSC, static_cast<size_t>(m)*sizeof(double));
     }
     else
         intInEndSC = nullptr;
@@ -639,7 +649,7 @@ state &state::operator=(const state &rho)
     if (rho.intOutNewSC != nullptr)
     {
         intOutNewSC = new double[rho.m];
-        memcpy(intOutNewSC, rho.intOutNewSC, m*sizeof(double));
+        memcpy(intOutNewSC, rho.intOutNewSC, static_cast<size_t>(m)*sizeof(double));
     }
     else
         intOutNewSC = nullptr;
@@ -647,7 +657,7 @@ state &state::operator=(const state &rho)
     if (rho.intOutEndSC != nullptr)
     {
         intOutEndSC = new double[rho.m];
-        memcpy(intOutEndSC, rho.intOutEndSC, m*sizeof(double));
+        memcpy(intOutEndSC, rho.intOutEndSC, static_cast<size_t>(m)*sizeof(double));
     }
     else
         intOutEndSC = nullptr;
@@ -655,7 +665,7 @@ state &state::operator=(const state &rho)
     if (rho.y != nullptr)
     {
         y = new double[rho.m];
-        memcpy(y, rho.y, m*sizeof(double));
+        memcpy(y, rho.y, static_cast<size_t>(m)*sizeof(double));
     }
     else
         y = nullptr;
@@ -663,7 +673,7 @@ state &state::operator=(const state &rho)
     return *this;
 }
 
-void state::addClassOnTheEnd()
+void State::addClassOnTheEnd()
 {
     if (m == 0)
     {
@@ -678,31 +688,31 @@ void state::addClassOnTheEnd()
         double *tmp;
 
         tmp = new double[m+1];
-        memcpy(tmp, intInNewSC, m*sizeof(double));
+        memcpy(tmp, intInNewSC, static_cast<size_t>(m)*sizeof(double));
         tmp[m] = 0;
         delete []intInNewSC;
         intInNewSC = tmp;
 
         tmp = new double[m+1];
-        memcpy(tmp, intInEndSC, m*sizeof(double));
+        memcpy(tmp, intInEndSC, static_cast<size_t>(m)*sizeof(double));
         tmp[m] = 0;
         delete []intInEndSC;
         intInEndSC = tmp;
 
         tmp = new double[m+1];
-        memcpy(tmp, intOutNewSC, m*sizeof(double));
+        memcpy(tmp, intOutNewSC, static_cast<size_t>(m)*sizeof(double));
         tmp[m] = 0;
         delete []intOutNewSC;
         intOutNewSC = tmp;
 
         tmp = new double[m+1];
-        memcpy(tmp, intOutEndSC, m*sizeof(double));
+        memcpy(tmp, intOutEndSC, static_cast<size_t>(m)*sizeof(double));
         tmp[m] = 0;
         delete []intOutEndSC;
         intOutEndSC = tmp;
 
         tmp = new double[m+1];
-        memcpy(tmp, y, m*sizeof(double));
+        memcpy(tmp, y, static_cast<size_t>(m)*sizeof(double));
         tmp[m] = 0;
         delete []y;
         y = tmp;

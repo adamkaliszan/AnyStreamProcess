@@ -31,7 +31,7 @@ public:
 
     ~AlgRekGeneral();
 
-    virtual double getSigma(int classNumber, int state);
+    virtual double getSigma(int classNumber, int State);
 protected:
     QVector<double> states;
 

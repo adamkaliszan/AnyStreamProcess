@@ -19,7 +19,7 @@ public:
             );
 
     virtual bool possible(const ModelSystem &system) const;
-    virtual double getSigma(int classNumber, int state);
+    virtual double getSigma(int classNumber, int State);
 };
 
 
@@ -37,7 +37,7 @@ public:
             );
 
     virtual bool possible(const ModelSystem &system) const;
-    virtual double getSigma(int classNumber, int state);
+    virtual double getSigma(int classNumber, int State);
 };
 
 } // namespace Algorithms

@@ -11,6 +11,7 @@ namespace Algorithms
 
 SimulatorAll::SimulatorAll() : Simulator()
 {
+    myQoS_Set << Results::Type::OccupancyDistributionServerAndBuffer;
     myQoS_Set << Results::Type::AllSugbrupsInGivenCombinationNotAvailableForCallsOfGivenClass;
     myQoS_Set << Results::Type::AvailableSubroupDistribution;
     myQoS_Set << Results::Type::AllSugbrupsInGivenCombinationAvailableForCallsOfGivenClass;
@@ -352,6 +353,9 @@ void SimulatorAll::System::writesResultsOfSingleExperiment(RSingle& singleResult
     buffer->writesResultsOfSingleExperiment(singleResults, simulationTime);
 
     int V  = server->getV() + buffer->getV();
+    int Vs = server->getV();
+    int Vb = buffer->getV();
+
     const int &m  = par.m();
 
     int max_t = 0;
@@ -542,6 +546,16 @@ void SimulatorAll::System::writesResultsOfSingleExperiment(RSingle& singleResult
 
         }
         assert(totalStatesDurationTime < simulationTime*1.1);
+    }
+/// TypeForServerAndBufferState
+    for (int ns=0; ns<=Vs; ns++)
+    {
+       for (int nb=0; nb<=Vb; nb++)
+       {
+           double stateDurationTime = statistics->getTimeStatistics(ns, nb).occupancyTime;
+           double p = stateDurationTime / simulationTime;
+           singleResults.write(TypeForServerAngBufferState::StateProbability, p, ns, nb);
+       }
     }
 }
 

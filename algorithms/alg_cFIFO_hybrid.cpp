@@ -14,25 +14,8 @@ namespace Algorithms
  *
  *
  */
-AlgorithmHybrid::AlgorithmHybrid() : Investigator(), variant(AlgVariant::yFAG)
-{
-    myQoS_Set
-     << Results::Type::BlockingProbability
-     << Results::Type::LossProbability
-     << Results::Type::OccupancyDistribution
-     << Results::Type::OccupancyDistributionServerOnly
-     << Results::Type::OccupancyDistributionBufferOnly
-     << Results::Type::NumberOfCallsInSystemVsSystemState
-     << Results::Type::NumberOfCallsInServerVsServerState
-     << Results::Type::NumberOfCallsInBufferVsBufferState
-     << Results::Type::NewCallOfSingleClassIntensityOut_inSystemVsSystemState<<Results::Type::NewCallOutIntensityServerVsSystemState<<Results::Type::NewCallOutIntensityBufferVsSystemState
-     << Results::Type::NewCallOfSingleClassIntensityIn_inSystemVsSystemState <<Results::Type::NewCallInIntensityServerVsSystemState <<Results::Type::NewCallInIntensityBufferVsSystemState
-     << Results::Type::EndCallOfSingleClassIntensityOut_inSystemVsSystemState<<Results::Type::EndCallOutIntensityServerVsSystemState<<Results::Type::EndCallOutIntensityBufferVsSystemState
-     << Results::Type::EndCallOfSingleClassIntensityIn_inSystemVsSystemState <<Results::Type::EndCallInIntensityServerVsSystemState <<Results::Type::EndCallInIntensityBufferVsSystemState
-         ;
-}
 
-AlgorithmHybrid::AlgorithmHybrid(AlgorithmHybrid::AlgVariant var) : Investigator(), variant(var)
+AlgorithmHybrid::AlgorithmHybrid(AlgorithmHybrid::AlgVariant variant) : Investigator(), variant(variant)
 {
     myQoS_Set
      << Results::Type::BlockingProbability
@@ -40,6 +23,7 @@ AlgorithmHybrid::AlgorithmHybrid(AlgorithmHybrid::AlgVariant var) : Investigator
      << Results::Type::OccupancyDistribution
      << Results::Type::OccupancyDistributionServerOnly
      << Results::Type::OccupancyDistributionBufferOnly
+     << Results::Type::OccupancyDistributionServerAndBuffer
      << Results::Type::NumberOfCallsInSystemVsSystemState
      << Results::Type::NumberOfCallsInServerVsServerState
      << Results::Type::NumberOfCallsInBufferVsBufferState

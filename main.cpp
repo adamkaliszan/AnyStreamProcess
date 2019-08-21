@@ -144,6 +144,10 @@ int main(int argc, char *argv[])
         qDebug()<<"Sorry, not implemented yet";
     }
     w.updateAlgorithmsList();
-    return a.exec();
+    int result = a.exec();
+
+    TypesAndSettings::release();
+
+    return result;
 }
 

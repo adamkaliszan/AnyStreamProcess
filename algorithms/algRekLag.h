@@ -13,7 +13,7 @@ public:
 
     virtual QString shortName() const {return QString("LAG clasic"); }
 
-    virtual double getSigma(int classNumber, int state);
+    virtual double getSigma(int classNumber, int State);
 
     bool possible(const ModelSystem &system) const;
 };

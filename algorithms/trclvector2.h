@@ -11,7 +11,7 @@
 
 class TrClVector;
 
-class state
+class State
 {
     friend class TrClVector;
 public:
@@ -31,11 +31,11 @@ private:
 
     int m;
 public:
-    state();
-    state(const state &rho);
-    ~state();
+    State();
+    State(const State &rho);
+    ~State();
 
-    state &operator=(const state &rho);
+    State &operator=(const State &rho);
 
     void addClassOnTheEnd();
 };
@@ -59,7 +59,7 @@ public:
     QVector<pairIdT> aggregatedClasses;
 private:
 
-    QVector<struct state> _states2;
+    QVector<State> _states;
 
 public:
 
@@ -94,11 +94,11 @@ public:
 
     const TrClVector *getTruncatedVector(int lastIndex) const;
 
-    int    V() const                                       { return  _states2.length() -1; }
+    int    V() const                                       { return  _states.length() -1; }
     int    m() const                                       { return aggregatedClasses.length(); }
 
-    void    setState(int n, const state &refState);
-    state & getState(int n);
+    void    setState(int n, const State &refState);
+    State & getState(int n);
 
     void    setIntInNew(int n, int i, double value);
     void    setIntInEnd(int n, int i, double value);
