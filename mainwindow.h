@@ -14,6 +14,21 @@
 #include <QGraphicsScene>
 #include <QGraphicsItem>
 
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QWidget>
+#include <QtWidgets/QHBoxLayout>
+#include <QtWidgets/QVBoxLayout>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QRadioButton>
+#include <QtWidgets/QSlider>
+#include <QtWidgets/QGroupBox>
+#include <QtWidgets/QComboBox>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QMessageBox>
+#include <QtGui/QPainter>
+#include <QtGui/QScreen>
+
+
 #include "config.h"
 #include "model.h"
 #include "algorithms/simulationParameters.h"
@@ -21,6 +36,8 @@
 #include "results/resultsSystem.h"
 #include "results/resultsApi.h"
 #include "results/resultsGnuplot.h"
+
+#include "surfacegraph.h"
 
 
 #include "utils/decimal.h"
@@ -82,6 +99,9 @@ private:
     QtCharts::QValueAxis         *axisX;
     QtCharts::QLogValueAxis      *axisYlog;
     QtCharts::QValueAxis         *axisYlinear;
+
+    QWidget *containerGraph3d;
+    Q3DSurface *graph3d;
 
 public slots:
     void on_gnuplotSave();
@@ -164,6 +184,10 @@ private slots:
     void on_comboBoxBufferGroupSchedulerAlgorithm_currentIndexChanged(int index);
 
     void on_comboBoxSystemSchedulerAlgorithm_currentIndexChanged(int index);
+
+    void on_checkBoxY_axis_stateChanged(int arg1);
+
+    void on_comboBoxResultsQtY_axis_currentIndexChanged(int index);
 
 private:
     QVector<ModelCreator *>  vectPredefinedSystems;

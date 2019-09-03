@@ -6,6 +6,30 @@
 #include <QTextStream>
 #include <QtCharts>
 #include <QVariant>
+
+
+#include <QtDataVisualization/Q3DSurface>
+#include <QtDataVisualization/QSurfaceDataProxy>
+#include <QtDataVisualization/QHeightMapSurfaceDataProxy>
+#include <QtDataVisualization/QSurface3DSeries>
+#include <QtWidgets/QSlider>
+
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QWidget>
+#include <QtWidgets/QHBoxLayout>
+#include <QtWidgets/QVBoxLayout>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QRadioButton>
+#include <QtWidgets/QSlider>
+#include <QtWidgets/QGroupBox>
+#include <QtWidgets/QComboBox>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QMessageBox>
+#include <QtGui/QPainter>
+#include <QtGui/QScreen>
+
+#include "surfacegraph.h"
+
 #include "algorithms/algorithmConv.h"
 #include "algorithms/alg_cFIFO_convGamma.h"
 #include "algorithms/alg_noFIFO.h"
@@ -67,6 +91,21 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->widgetResultsPlot->setChart(qtChart);
     ui->widgetResultsPlot->setRenderHint(QPainter::Antialiasing);
+
+    graph3d = new Q3DSurface();
+    containerGraph3d = QWidget::createWindowContainer(graph3d);
+    containerGraph3d->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    containerGraph3d->setFocusPolicy(Qt::StrongFocus);
+
+    if (!graph3d->hasContext()) {
+        QMessageBox msgBox;
+        msgBox.setText("Couldn't initialize the OpenGL context.");
+        msgBox.exec();
+    }
+
+    ui->gridResultsPlot3d->addWidget(containerGraph3d);
+    containerGraph3d->setVisible(false);
+    containerGraph3d->setEnabled(false);
 }
 
 MainWindow::~MainWindow()
@@ -671,7 +710,9 @@ void MainWindow::on_comboBoxResultsQtType_currentIndexChanged(int index)
     const Settings *settings = Results::TypesAndSettings::getSettingConst(type);
 
     ui->comboBoxResultsQtX_axis->clear();
-    int currentIndex = -1;
+    ui->comboBoxResultsQtY_axis->clear();
+    int currentIndexX = -1;
+    int currentIndexY = -1;
     int tmpIndex = 0;
 
     if (settings)
@@ -680,13 +721,23 @@ void MainWindow::on_comboBoxResultsQtType_currentIndexChanged(int index)
        {
 
            ui->comboBoxResultsQtX_axis->addItem(Results::TypesAndSettings::parameterToString(param), QVariant::fromValue(param));
-           if (param == settings->getFunctionalParameter())
-               currentIndex = tmpIndex;
+
+           if (param == settings->getFunctionalParameterX())
+               currentIndexX = tmpIndex;
+
+           ui->comboBoxResultsQtY_axis->addItem(Results::TypesAndSettings::parameterToString(param), QVariant::fromValue(param));
+           if (param == settings->getFunctionalParameterY())
+               currentIndexY = tmpIndex;
+
            tmpIndex++;
        }
     }
-    if (currentIndex >= 0)
-        ui->comboBoxResultsQtX_axis->setCurrentIndex(currentIndex);
+    if (currentIndexX >= 0)
+        ui->comboBoxResultsQtX_axis->setCurrentIndex(currentIndexX);
+
+    if (currentIndexY >= 0)
+        ui->comboBoxResultsQtY_axis->setCurrentIndex(currentIndexY);
+
 }
 
 void MainWindow::on_comboBoxResultsQtX_axis_currentIndexChanged(int index)
@@ -696,7 +747,7 @@ void MainWindow::on_comboBoxResultsQtX_axis_currentIndexChanged(int index)
     Settings *settings = Results::TypesAndSettings::getSetting(type);
 
     Results::ParameterType paramType = ui->comboBoxResultsQtX_axis->currentData().value<Results::ParameterType>();
-    settings->setFunctionalParameter(paramType);
+    settings->setFunctionalParameterX(paramType);
 
     fillListWidgetWithParams(ui->listWidgetResultsQtAdditionalParameters1, ui->labelResultsQtAdditionalParameters1, settings->getAdditionalParameter1());
     fillListWidgetWithParams(ui->listWidgetResultsQtAdditionalParameters2, ui->labelResultsQtAdditionalParameters2, settings->getAdditionalParameter2());
@@ -845,6 +896,8 @@ void MainWindow::updateQoS_ComboBox(QSet<Results::Type> &qos)
 {
     ui->comboBoxResultsQtType->clear();
     ui->comboBoxResultsQtX_axis->clear();
+    ui->comboBoxResultsQtY_axis->clear();
+
     ui->listWidgetResultsQtAdditionalParameters1->setVisible(false);
     ui->listWidgetResultsQtAdditionalParameters2->setVisible(false);
     ui->labelResultsQtAdditionalParameters1->setVisible(false);
@@ -1820,7 +1873,7 @@ void MainWindow::on_ResultsQtChartRefresh()
     Results::Settings *setting = Results::TypesAndSettings::getSetting(type);
 
     Results::ParameterType xAxisParam = ui->comboBoxResultsQtX_axis->currentData(Qt::UserRole).value<Results::ParameterType>();
-    setting->setFunctionalParameter(xAxisParam);
+    setting->setFunctionalParameterX(xAxisParam);
 
     int noOfAlgorithms = 0;
 
@@ -2037,4 +2090,41 @@ void MainWindow::on_comboBoxSystemSchedulerAlgorithm_currentIndexChanged(int ind
     (void) index;
     system->setSystemSchedulerAlgorithm(ui->comboBoxSystemSchedulerAlgorithm->currentData().value<SystemPolicy>());
     fillSystem();
+}
+
+void MainWindow::on_checkBoxY_axis_stateChanged(int arg1)
+{
+    if (arg1)
+    {
+        containerGraph3d->setVisible(true);
+        containerGraph3d->setEnabled(true);
+
+        ui->widgetResultsPlot->setVisible(false);
+        ui->widgetResultsPlot->setEnabled(false);
+
+        ui->comboBoxResultsQtY_axis->setEnabled(true);
+    }
+    else
+    {
+        containerGraph3d->setVisible(false);
+        containerGraph3d->setEnabled(false);
+
+        ui->widgetResultsPlot->setVisible(true);
+        ui->widgetResultsPlot->setEnabled(true);
+
+        ui->comboBoxResultsQtY_axis->setEnabled(false);
+    }
+}
+
+void MainWindow::on_comboBoxResultsQtY_axis_currentIndexChanged(int index)
+{
+        (void) index;
+        Results::Type type = ui->comboBoxResultsQtType->currentData().value<Results::Type>();
+        Settings *settings = Results::TypesAndSettings::getSetting(type);
+
+        Results::ParameterType paramType = ui->comboBoxResultsQtY_axis->currentData().value<Results::ParameterType>();
+        settings->setFunctionalParameterX(paramType);
+
+        fillListWidgetWithParams(ui->listWidgetResultsQtAdditionalParameters1, ui->labelResultsQtAdditionalParameters1, settings->getAdditionalParameter1());
+        fillListWidgetWithParams(ui->listWidgetResultsQtAdditionalParameters2, ui->labelResultsQtAdditionalParameters2, settings->getAdditionalParameter2());
 }

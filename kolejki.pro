@@ -7,6 +7,7 @@
 QT += core gui sql
 QT += widgets
 QT += charts
+QT += datavisualization
 
 QTPLUGIN += qsqlmysql
 
@@ -47,6 +48,7 @@ SOURCES += main.cpp\
     algorithms/algorithmConv3d.cpp \
     algorithms/simulationParameters.cpp \
     results/resultsGnuplot.cpp \
+    surfacegraph.cpp \
     utils/probDistributions.cpp \
     utils/lag.cpp \
     utils/vectorUtils.cpp \
@@ -85,6 +87,7 @@ HEADERS  += mainwindow.h \
     gnuplot-iostream.h \
     results/resultsGnuplot.h \
     results/resultsSingle.h \
+    surfacegraph.h \
     utils/lag.h \
     utils/probDistributions.h \
     utils/decimal.h \

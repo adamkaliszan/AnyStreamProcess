@@ -98,7 +98,7 @@ QString TypesAndSettings::typeToX_AxisString(Type type)
 {
     QString result;
     const Settings *tmp = getSettingConst(type);
-    switch (tmp->getFunctionalParameter())
+    switch (tmp->getFunctionalParameterX())
     {
     case ParameterType::OfferedTrafficPerAS:
         result = "a";
@@ -123,10 +123,10 @@ QString TypesAndSettings::typeToX_AxisString(Type type)
     return result;
 }
 
-QMap<ParametersSet, QVector<double>> TypesAndSettings::getPlotsY(RSystem &rSystem, Type qos, ParameterType functionalParameter, Investigator *algorithm)
+QMap<ParametersSet, QVector<double>> TypesAndSettings::getPlotsValues(RSystem &rSystem, Type qos, ParameterType functionalParameter, Investigator *algorithm)
 {
     Settings *qosSettings = _myMap[qos];
-    qosSettings->setFunctionalParameter(functionalParameter);
+    qosSettings->setFunctionalParameterX(functionalParameter);
     QList<ParametersSet> sysParams = qosSettings->getParametersList(rSystem.getModel(), rSystem.getAvailableAperAU());
 
     QMap<ParametersSet, QVector<double>> result;
@@ -140,7 +140,7 @@ QMap<ParametersSet, QVector<double>> TypesAndSettings::getPlotsY(RSystem &rSyste
     return result;
 }
 
-const QVector<decimal> TypesAndSettings::getPlotsX(RSystem &rSystem, ParameterType functionalParameter)
+const QVector<decimal> TypesAndSettings::getPlotsXorY(RSystem &rSystem, ParameterType functionalParameter)
 {
     QVector<decimal> result;
 
@@ -241,9 +241,11 @@ SettingsTypeForClass::SettingsTypeForClass(TypeForClass qos, QString name, QStri
     dependencyParameters.append(ParameterType::OfferedTrafficPerAS);
     dependencyParameters.append(ParameterType::TrafficClass);
 
-    functionalParameter  = ParameterType::OfferedTrafficPerAS;
-    additionalParameter1 = ParameterType::TrafficClass;
-    additionalParameter2 = ParameterType::None;
+    functionalParameterX  = ParameterType::OfferedTrafficPerAS;
+    functionalParameterY  = ParameterType::None;
+    additionalParameter[0] = ParameterType::TrafficClass;
+    additionalParameter[1] = ParameterType::None;
+    additionalParameter[2] = ParameterType::None;
 }
 
 bool SettingsTypeForClass::getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
@@ -251,7 +253,7 @@ bool SettingsTypeForClass::getSinglePlot(QLineSeries *outPlot, QPair<double, dou
     bool result = false;
 
     outPlot->clear();
-    if (functionalParameter == ParameterType::OfferedTrafficPerAS)
+    if (functionalParameterX == ParameterType::OfferedTrafficPerAS)
     {
         foreach(decimal a, rSystem.getAvailableAperAU())
         {
@@ -273,7 +275,7 @@ bool SettingsTypeForClass::getSinglePlot(QLineSeries *outPlot, QPair<double, dou
         }
     }
 
-    if (functionalParameter == ParameterType::TrafficClass)
+    if (functionalParameterX == ParameterType::TrafficClass)
     {
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
 
@@ -300,7 +302,7 @@ QList<ParametersSet> SettingsTypeForClass::getParametersList(const ModelSystem &
     QList<ParametersSet> result;
     int i;
     decimal a;
-    switch (functionalParameter)
+    switch (functionalParameterX)
     {
     case ParameterType::OfferedTrafficPerAS:
         for (i=0; i<system.m(); i++)
@@ -333,7 +335,7 @@ bool SettingsTypeForClass::getSinglePlot(QVector<double> &outPlot, RSystem &rSys
     bool result = false;
 
     outPlot.clear();
-    if (functionalParameter == ParameterType::OfferedTrafficPerAS)
+    if (functionalParameterX == ParameterType::OfferedTrafficPerAS)
     {
         foreach(decimal a, rSystem.getAvailableAperAU())
         {
@@ -350,7 +352,7 @@ bool SettingsTypeForClass::getSinglePlot(QVector<double> &outPlot, RSystem &rSys
         }
     }
 
-    if (functionalParameter == ParameterType::TrafficClass)
+    if (functionalParameterX == ParameterType::TrafficClass)
     {
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
 
@@ -373,9 +375,11 @@ SettingsTypeForSystemState::SettingsTypeForSystemState(TypeForSystemState qos, Q
     dependencyParameters.append(ParameterType::OfferedTrafficPerAS);
     dependencyParameters.append(ParameterType::SystemState);
 
-    functionalParameter  = ParameterType::SystemState;
-    additionalParameter1 = ParameterType::OfferedTrafficPerAS;
-    additionalParameter2 = ParameterType::None;
+    functionalParameterX  = ParameterType::SystemState;
+    functionalParameterY  = ParameterType::None;
+    additionalParameter[0] = ParameterType::OfferedTrafficPerAS;
+    additionalParameter[1] = ParameterType::None;
+    additionalParameter[2] = ParameterType::None;
 }
 
 bool SettingsTypeForSystemState::getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
@@ -383,7 +387,7 @@ bool SettingsTypeForSystemState::getSinglePlot(QLineSeries *outPlot, QPair<doubl
     bool result = false;
 
     outPlot->clear();
-    if (functionalParameter == ParameterType::OfferedTrafficPerAS)
+    if (functionalParameterX == ParameterType::OfferedTrafficPerAS)
     {
         foreach(decimal a, rSystem.getAvailableAperAU())
         {
@@ -403,7 +407,7 @@ bool SettingsTypeForSystemState::getSinglePlot(QLineSeries *outPlot, QPair<doubl
         }
     }
 
-    if (functionalParameter == ParameterType::SystemState)
+    if (functionalParameterX == ParameterType::SystemState)
     {
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int n=0; n<=rSystem.getModel().V(); n++)
@@ -430,7 +434,7 @@ bool SettingsTypeForSystemState::getSinglePlot(QVector<double> &outPlot, RSystem
     bool result = false;
 
     outPlot.clear();
-    if (functionalParameter == ParameterType::OfferedTrafficPerAS)
+    if (functionalParameterX == ParameterType::OfferedTrafficPerAS)
     {
         foreach(decimal a, rSystem.getAvailableAperAU())
         {
@@ -446,7 +450,7 @@ bool SettingsTypeForSystemState::getSinglePlot(QVector<double> &outPlot, RSystem
         }
     }
 
-    if (functionalParameter == ParameterType::SystemState)
+    if (functionalParameterX == ParameterType::SystemState)
     {
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int n=0; n<=rSystem.getModel().V(); n++)
@@ -469,7 +473,7 @@ QList<ParametersSet> SettingsTypeForSystemState::getParametersList(const ModelSy
     QList<ParametersSet> result;
     int n;
 
-    switch (functionalParameter)
+    switch (functionalParameterX)
     {
     case ParameterType::OfferedTrafficPerAS:
         for (n=0; n <= system.V(); n++)
@@ -500,9 +504,11 @@ SettingsTypeForServerState::SettingsTypeForServerState(TypeForServerState qos, Q
     dependencyParameters.append(ParameterType::OfferedTrafficPerAS);
     dependencyParameters.append(ParameterType::ServerState);
 
-    functionalParameter  = ParameterType::ServerState;
-    additionalParameter1 = ParameterType::OfferedTrafficPerAS;
-    additionalParameter2 = ParameterType::None;
+    functionalParameterX  = ParameterType::ServerState;
+    functionalParameterY  = ParameterType::None;
+    additionalParameter[0] = ParameterType::OfferedTrafficPerAS;
+    additionalParameter[1] = ParameterType::None;
+    additionalParameter[2] = ParameterType::None;
 }
 
 bool SettingsTypeForServerState::getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
@@ -510,7 +516,7 @@ bool SettingsTypeForServerState::getSinglePlot(QLineSeries *outPlot, QPair<doubl
     bool result = false;
 
     outPlot->clear();
-    if (functionalParameter == ParameterType::OfferedTrafficPerAS)
+    if (functionalParameterX == ParameterType::OfferedTrafficPerAS)
     {
         foreach(decimal a, rSystem.getAvailableAperAU())
         {
@@ -530,7 +536,7 @@ bool SettingsTypeForServerState::getSinglePlot(QLineSeries *outPlot, QPair<doubl
         }
     }
 
-    if (functionalParameter == ParameterType::ServerState)
+    if (functionalParameterX == ParameterType::ServerState)
     {
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int n=0; n<=rSystem.getModel().getServer().V(); n++)
@@ -557,7 +563,7 @@ bool SettingsTypeForServerState::getSinglePlot(QVector<double> &outPlot, RSystem
     bool result = false;
 
     outPlot.clear();
-    if (functionalParameter == ParameterType::OfferedTrafficPerAS)
+    if (functionalParameterX == ParameterType::OfferedTrafficPerAS)
     {
         foreach(decimal a, rSystem.getAvailableAperAU())
         {
@@ -573,7 +579,7 @@ bool SettingsTypeForServerState::getSinglePlot(QVector<double> &outPlot, RSystem
         }
     }
 
-    if (functionalParameter == ParameterType::ServerState)
+    if (functionalParameterX == ParameterType::ServerState)
     {
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int n=0; n<=rSystem.getModel().getServer().V(); n++)
@@ -597,7 +603,7 @@ QList<ParametersSet> SettingsTypeForServerState::getParametersList(const ModelSy
     int n;
     decimal a;
 
-    switch (functionalParameter)
+    switch (functionalParameterX)
     {
     case ParameterType::OfferedTrafficPerAS:
         for (n=0; n <= system.getServer().V(); n++)
@@ -630,9 +636,11 @@ SettingsTypeForBufferState::SettingsTypeForBufferState(TypeForBufferState qos, Q
     dependencyParameters.append(ParameterType::OfferedTrafficPerAS);
     dependencyParameters.append(ParameterType::BufferState);
 
-    functionalParameter  = ParameterType::BufferState;
-    additionalParameter1 = ParameterType::OfferedTrafficPerAS;
-    additionalParameter2 = ParameterType::None;
+    functionalParameterX  = ParameterType::BufferState;
+    functionalParameterY  = ParameterType::None;
+    additionalParameter[0] = ParameterType::OfferedTrafficPerAS;
+    additionalParameter[1] = ParameterType::None;
+    additionalParameter[2] = ParameterType::None;
 }
 
 bool SettingsTypeForBufferState::getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
@@ -640,7 +648,7 @@ bool SettingsTypeForBufferState::getSinglePlot(QLineSeries *outPlot, QPair<doubl
     bool result = false;
 
     outPlot->clear();
-    if (functionalParameter == ParameterType::OfferedTrafficPerAS)
+    if (functionalParameterX == ParameterType::OfferedTrafficPerAS)
     {
         foreach(decimal a, rSystem.getAvailableAperAU())
         {
@@ -660,7 +668,7 @@ bool SettingsTypeForBufferState::getSinglePlot(QLineSeries *outPlot, QPair<doubl
         }
     }
 
-    if (functionalParameter == ParameterType::BufferState)
+    if (functionalParameterX == ParameterType::BufferState)
     {
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int n=0; n<=rSystem.getModel().getBuffer().V(); n++)
@@ -687,7 +695,7 @@ bool SettingsTypeForBufferState::getSinglePlot(QVector<double> &outPlot, RSystem
     bool result = false;
 
     outPlot.clear();
-    if (functionalParameter == ParameterType::OfferedTrafficPerAS)
+    if (functionalParameterX == ParameterType::OfferedTrafficPerAS)
     {
         foreach(decimal a, rSystem.getAvailableAperAU())
         {
@@ -703,7 +711,7 @@ bool SettingsTypeForBufferState::getSinglePlot(QVector<double> &outPlot, RSystem
         }
     }
 
-    if (functionalParameter == ParameterType::BufferState)
+    if (functionalParameterX == ParameterType::BufferState)
     {
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int n=0; n<=rSystem.getModel().getBuffer().V(); n++)
@@ -727,7 +735,7 @@ QList<ParametersSet> SettingsTypeForBufferState::getParametersList(const ModelSy
     int n;
     decimal a;
 
-    switch(functionalParameter)
+    switch(functionalParameterX)
     {
     case ParameterType::OfferedTrafficPerAS:
         for (n=0; n <= system.getBuffer().V(); n++)
@@ -761,9 +769,10 @@ SettingsTypeForClassAndSystemState::SettingsTypeForClassAndSystemState(TypeForCl
     dependencyParameters.append(ParameterType::TrafficClass);
     dependencyParameters.append(ParameterType::OfferedTrafficPerAS);
 
-    functionalParameter  = ParameterType::SystemState;
-    additionalParameter2 = ParameterType::TrafficClass;
-    additionalParameter1 = ParameterType::OfferedTrafficPerAS;
+    functionalParameterX  = ParameterType::SystemState;
+    functionalParameterY  = ParameterType::None;
+    additionalParameter[0] = ParameterType::OfferedTrafficPerAS;
+    additionalParameter[1] = ParameterType::TrafficClass;
 }
 
 bool SettingsTypeForClassAndSystemState::getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
@@ -771,7 +780,7 @@ bool SettingsTypeForClassAndSystemState::getSinglePlot(QLineSeries *outPlot, QPa
     bool result = false;
 
     outPlot->clear();
-    if (functionalParameter == ParameterType::OfferedTrafficPerAS)
+    if (functionalParameterX == ParameterType::OfferedTrafficPerAS)
     {
         foreach(decimal a, rSystem.getAvailableAperAU())
         {
@@ -790,7 +799,7 @@ bool SettingsTypeForClassAndSystemState::getSinglePlot(QLineSeries *outPlot, QPa
         }
     }
 
-    if (functionalParameter == ParameterType::SystemState)
+    if (functionalParameterX == ParameterType::SystemState)
     {
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int n=0; n<=rSystem.getModel().V(); n++)
@@ -809,7 +818,7 @@ bool SettingsTypeForClassAndSystemState::getSinglePlot(QLineSeries *outPlot, QPa
         }
     }
 
-    if (functionalParameter == ParameterType::TrafficClass)
+    if (functionalParameterX == ParameterType::TrafficClass)
     {
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int i=0; i<rSystem.getModel().m(); i++)
@@ -835,7 +844,7 @@ bool SettingsTypeForClassAndSystemState::getSinglePlot(QVector<double> &outPlot,
     bool result = false;
 
     outPlot.clear();
-    if (functionalParameter == ParameterType::OfferedTrafficPerAS)
+    if (functionalParameterX == ParameterType::OfferedTrafficPerAS)
     {
         foreach(decimal a, rSystem.getAvailableAperAU())
         {
@@ -850,7 +859,7 @@ bool SettingsTypeForClassAndSystemState::getSinglePlot(QVector<double> &outPlot,
         }
     }
 
-    if (functionalParameter == ParameterType::SystemState)
+    if (functionalParameterX == ParameterType::SystemState)
     {
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int n=0; n<=rSystem.getModel().V(); n++)
@@ -865,7 +874,7 @@ bool SettingsTypeForClassAndSystemState::getSinglePlot(QVector<double> &outPlot,
         }
     }
 
-    if (functionalParameter == ParameterType::TrafficClass)
+    if (functionalParameterX == ParameterType::TrafficClass)
     {
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int i=0; i<rSystem.getModel().m(); i++)
@@ -887,7 +896,7 @@ QList<ParametersSet> SettingsTypeForClassAndSystemState::getParametersList(const
     QList<ParametersSet> result;
     int i;
     int n;
-    switch (functionalParameter)
+    switch (functionalParameterX)
     {
     case ParameterType::OfferedTrafficPerAS:
         for (i=0; i < system.m(); i++)
@@ -939,9 +948,11 @@ SettingsTypeForClassAndServerState::SettingsTypeForClassAndServerState(TypeForCl
     dependencyParameters.append(ParameterType::TrafficClass);
     dependencyParameters.append(ParameterType::OfferedTrafficPerAS);
 
-    functionalParameter  = ParameterType::ServerState;
-    additionalParameter2 = ParameterType::TrafficClass;
-    additionalParameter1 = ParameterType::OfferedTrafficPerAS;
+    functionalParameterX  = ParameterType::ServerState;
+    functionalParameterY  = ParameterType::None;
+    additionalParameter[0] = ParameterType::OfferedTrafficPerAS;
+    additionalParameter[1] = ParameterType::TrafficClass;
+    additionalParameter[2] = ParameterType::None;
 }
 
 bool SettingsTypeForClassAndServerState::getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
@@ -949,7 +960,7 @@ bool SettingsTypeForClassAndServerState::getSinglePlot(QLineSeries *outPlot, QPa
     bool result = false;
 
     outPlot->clear();
-    if (functionalParameter == ParameterType::OfferedTrafficPerAS)
+    if (functionalParameterX == ParameterType::OfferedTrafficPerAS)
     {
         foreach(decimal a, rSystem.getAvailableAperAU())
         {
@@ -969,7 +980,7 @@ bool SettingsTypeForClassAndServerState::getSinglePlot(QLineSeries *outPlot, QPa
         }
     }
 
-    if (functionalParameter == ParameterType::SystemState)
+    if (functionalParameterX == ParameterType::SystemState)
     {
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int n=0; n<=rSystem.getModel().getServer().V(); n++)
@@ -989,7 +1000,7 @@ bool SettingsTypeForClassAndServerState::getSinglePlot(QLineSeries *outPlot, QPa
         }
     }
 
-    if (functionalParameter == ParameterType::TrafficClass)
+    if (functionalParameterX == ParameterType::TrafficClass)
     {
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int i=0; i<rSystem.getModel().m(); i++)
@@ -1016,7 +1027,7 @@ bool SettingsTypeForClassAndServerState::getSinglePlot(QVector<double> &outPlot,
     bool result = false;
 
     outPlot.clear();
-    if (functionalParameter == ParameterType::OfferedTrafficPerAS)
+    if (functionalParameterX == ParameterType::OfferedTrafficPerAS)
     {
         foreach(decimal a, rSystem.getAvailableAperAU())
         {
@@ -1032,7 +1043,7 @@ bool SettingsTypeForClassAndServerState::getSinglePlot(QVector<double> &outPlot,
         }
     }
 
-    if (functionalParameter == ParameterType::SystemState)
+    if (functionalParameterX == ParameterType::SystemState)
     {
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int n=0; n<=rSystem.getModel().getServer().V(); n++)
@@ -1048,7 +1059,7 @@ bool SettingsTypeForClassAndServerState::getSinglePlot(QVector<double> &outPlot,
         }
     }
 
-    if (functionalParameter == ParameterType::TrafficClass)
+    if (functionalParameterX == ParameterType::TrafficClass)
     {
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int i=0; i<rSystem.getModel().m(); i++)
@@ -1073,7 +1084,7 @@ QList<ParametersSet> SettingsTypeForClassAndServerState::getParametersList(const
     int i;
     int n;
     decimal a;
-    switch (functionalParameter)
+    switch (functionalParameterX)
     {
     case ParameterType::OfferedTrafficPerAS:
         for (i=0; i < system.m(); i++)
@@ -1128,9 +1139,11 @@ SettingsTypeForClassAndBufferState::SettingsTypeForClassAndBufferState(TypeForCl
     dependencyParameters.append(ParameterType::TrafficClass);
     dependencyParameters.append(ParameterType::OfferedTrafficPerAS);
 
-    functionalParameter  = ParameterType::BufferState;
-    additionalParameter2 = ParameterType::TrafficClass;
-    additionalParameter1 = ParameterType::OfferedTrafficPerAS;
+    functionalParameterX  = ParameterType::BufferState;
+    functionalParameterY  = ParameterType::None;
+    additionalParameter[0] = ParameterType::OfferedTrafficPerAS;
+    additionalParameter[1] = ParameterType::TrafficClass;
+    additionalParameter[2] = ParameterType::None;
 }
 
 bool SettingsTypeForClassAndBufferState::getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
@@ -1138,7 +1151,7 @@ bool SettingsTypeForClassAndBufferState::getSinglePlot(QLineSeries *outPlot, QPa
     bool result = false;
 
     outPlot->clear();
-    if (functionalParameter == ParameterType::OfferedTrafficPerAS)
+    if (functionalParameterX == ParameterType::OfferedTrafficPerAS)
     {
         foreach(decimal a, rSystem.getAvailableAperAU())
         {
@@ -1158,7 +1171,7 @@ bool SettingsTypeForClassAndBufferState::getSinglePlot(QLineSeries *outPlot, QPa
         }
     }
 
-    if (functionalParameter == ParameterType::SystemState)
+    if (functionalParameterX == ParameterType::SystemState)
     {
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int n=0; n<=rSystem.getModel().getBuffer().V(); n++)
@@ -1178,7 +1191,7 @@ bool SettingsTypeForClassAndBufferState::getSinglePlot(QLineSeries *outPlot, QPa
         }
     }
 
-    if (functionalParameter == ParameterType::TrafficClass)
+    if (functionalParameterX == ParameterType::TrafficClass)
     {
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int i=0; i<rSystem.getModel().m(); i++)
@@ -1205,7 +1218,7 @@ bool SettingsTypeForClassAndBufferState::getSinglePlot(QVector<double> &outPlot,
     bool result = false;
 
     outPlot.clear();
-    if (functionalParameter == ParameterType::OfferedTrafficPerAS)
+    if (functionalParameterX == ParameterType::OfferedTrafficPerAS)
     {
         foreach(decimal a, rSystem.getAvailableAperAU())
         {
@@ -1221,7 +1234,7 @@ bool SettingsTypeForClassAndBufferState::getSinglePlot(QVector<double> &outPlot,
         }
     }
 
-    if (functionalParameter == ParameterType::SystemState)
+    if (functionalParameterX == ParameterType::SystemState)
     {
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int n=0; n<=rSystem.getModel().getBuffer().V(); n++)
@@ -1237,7 +1250,7 @@ bool SettingsTypeForClassAndBufferState::getSinglePlot(QVector<double> &outPlot,
         }
     }
 
-    if (functionalParameter == ParameterType::TrafficClass)
+    if (functionalParameterX == ParameterType::TrafficClass)
     {
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int i=0; i<rSystem.getModel().m(); i++)
@@ -1262,7 +1275,7 @@ QList<ParametersSet> SettingsTypeForClassAndBufferState::getParametersList(const
     int n;
     decimal a;
 
-    switch(functionalParameter)
+    switch(functionalParameterX)
     {
     case ParameterType::OfferedTrafficPerAS:
         for (i=0; i < system.m(); i++)
@@ -1316,9 +1329,11 @@ SettingsForClassAndServerGroupsCombination::SettingsForClassAndServerGroupsCombi
     dependencyParameters.append(ParameterType::TrafficClass);
     dependencyParameters.append(ParameterType::CombinationNumber);
 
-    functionalParameter  = ParameterType::OfferedTrafficPerAS;
-    additionalParameter1 = ParameterType::TrafficClass;
-    additionalParameter2 = ParameterType::CombinationNumber;
+    functionalParameterX  = ParameterType::OfferedTrafficPerAS;
+    functionalParameterX  = ParameterType::None;
+    additionalParameter[0] = ParameterType::TrafficClass;
+    additionalParameter[1] = ParameterType::CombinationNumber;
+    additionalParameter[2] = ParameterType::None;
 }
 
 bool SettingsForClassAndServerGroupsCombination::getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
@@ -1343,7 +1358,7 @@ bool SettingsForClassAndServerGroupsCombination::getSinglePlot(QLineSeries *outP
     }
 
     outPlot->clear();
-    if (functionalParameter == ParameterType::OfferedTrafficPerAS)
+    if (functionalParameterX == ParameterType::OfferedTrafficPerAS)
     {
         foreach(decimal a, rSystem.getAvailableAperAU())
         {
@@ -1365,7 +1380,7 @@ bool SettingsForClassAndServerGroupsCombination::getSinglePlot(QLineSeries *outP
         }
     }
 
-    if (functionalParameter == ParameterType::NumberOfGroups)
+    if (functionalParameterX == ParameterType::NumberOfGroups)
     {
         int noOfCombinations = rSystem.getNoOfGroupsCombinations();
 
@@ -1388,7 +1403,7 @@ bool SettingsForClassAndServerGroupsCombination::getSinglePlot(QLineSeries *outP
         }
     }
 
-    if (functionalParameter == ParameterType::TrafficClass)
+    if (functionalParameterX == ParameterType::TrafficClass)
     {
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int i=0; i < rSystem.getModel().m(); i++)
@@ -1417,7 +1432,7 @@ bool SettingsForClassAndServerGroupsCombination::getSinglePlot(QVector<double> &
     bool result = false;
 
     outPlot.clear();
-    if (functionalParameter == ParameterType::OfferedTrafficPerAS)
+    if (functionalParameterX == ParameterType::OfferedTrafficPerAS)
     {
         foreach(decimal a, rSystem.getAvailableAperAU())
         {
@@ -1434,7 +1449,7 @@ bool SettingsForClassAndServerGroupsCombination::getSinglePlot(QVector<double> &
         }
     }
 
-    if (functionalParameter == ParameterType::NumberOfGroups)
+    if (functionalParameterX == ParameterType::NumberOfGroups)
     {
         int noOfCombinations = rSystem.getNoOfGroupsCombinations();
         int t = rSystem.getModel().t(parametersSet.classIndex);
@@ -1453,7 +1468,7 @@ bool SettingsForClassAndServerGroupsCombination::getSinglePlot(QVector<double> &
         }
     }
 
-    if (functionalParameter == ParameterType::TrafficClass)
+    if (functionalParameterX == ParameterType::TrafficClass)
     {
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int i=0; i < rSystem.getModel().m(); i++)
@@ -1486,7 +1501,7 @@ QList<ParametersSet> SettingsForClassAndServerGroupsCombination::getParametersLi
     int combNo;
     decimal a;
 
-    switch (functionalParameter)
+    switch (functionalParameterX)
     {
     case ParameterType::OfferedTrafficPerAS:
         for (i=0; i < system.m(); i++)
@@ -1549,9 +1564,11 @@ SettingsAvailableSubroupDistribution::SettingsAvailableSubroupDistribution(QStri
     dependencyParameters.append(ParameterType::TrafficClass);
     dependencyParameters.append(ParameterType::NumberOfGroups);
 
-    functionalParameter  = ParameterType::OfferedTrafficPerAS;
-    additionalParameter1 = ParameterType::TrafficClass;
-    additionalParameter2 = ParameterType::NumberOfGroups;
+    functionalParameterX  = ParameterType::OfferedTrafficPerAS;
+    functionalParameterY  = ParameterType::None;
+    additionalParameter[0] = ParameterType::TrafficClass;
+    additionalParameter[1] = ParameterType::NumberOfGroups;
+    additionalParameter[2] = ParameterType::None;
 }
 
 bool SettingsAvailableSubroupDistribution::getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
@@ -1559,7 +1576,7 @@ bool SettingsAvailableSubroupDistribution::getSinglePlot(QLineSeries *outPlot, Q
     bool result = false;
 
     outPlot->clear();
-    if (functionalParameter == ParameterType::OfferedTrafficPerAS)
+    if (functionalParameterX == ParameterType::OfferedTrafficPerAS)
     {
         int t = rSystem.getModel().t(parametersSet.classIndex);
         foreach(decimal a, rSystem.getAvailableAperAU())
@@ -1582,7 +1599,7 @@ bool SettingsAvailableSubroupDistribution::getSinglePlot(QLineSeries *outPlot, Q
         }
     }
 
-    if (functionalParameter == ParameterType::NumberOfGroups)
+    if (functionalParameterX == ParameterType::NumberOfGroups)
     {
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         int t = rSystem.getModel().t(parametersSet.classIndex);
@@ -1603,7 +1620,7 @@ bool SettingsAvailableSubroupDistribution::getSinglePlot(QLineSeries *outPlot, Q
         }
     }
 
-    if (functionalParameter == ParameterType::TrafficClass)
+    if (functionalParameterX == ParameterType::TrafficClass)
     {
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int i=0; i < rSystem.getModel().m(); i++)
@@ -1631,7 +1648,7 @@ bool SettingsAvailableSubroupDistribution::getSinglePlot(QVector<double> &outPlo
     bool result = false;
 
     outPlot.clear();
-    if (functionalParameter == ParameterType::OfferedTrafficPerAS)
+    if (functionalParameterX == ParameterType::OfferedTrafficPerAS)
     {
         int t = rSystem.getModel().t(parametersSet.classIndex);
         foreach(decimal a, rSystem.getAvailableAperAU())
@@ -1648,7 +1665,7 @@ bool SettingsAvailableSubroupDistribution::getSinglePlot(QVector<double> &outPlo
         }
     }
 
-    if (functionalParameter == ParameterType::NumberOfGroups)
+    if (functionalParameterX == ParameterType::NumberOfGroups)
     {
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         int t = rSystem.getModel().t(parametersSet.classIndex);
@@ -1665,7 +1682,7 @@ bool SettingsAvailableSubroupDistribution::getSinglePlot(QVector<double> &outPlo
         }
     }
 
-    if (functionalParameter == ParameterType::TrafficClass)
+    if (functionalParameterX == ParameterType::TrafficClass)
     {
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int i=0; i < rSystem.getModel().m(); i++)
@@ -1692,7 +1709,7 @@ QList<ParametersSet> SettingsAvailableSubroupDistribution::getParametersList(con
     int i;
     decimal a;
 
-    switch (functionalParameter)
+    switch (functionalParameterX)
     {
     case ParameterType::OfferedTrafficPerAS:
         for (k=0; k <= system.getServer().V(); k++)
@@ -1740,25 +1757,71 @@ QList<ParametersSet> SettingsAvailableSubroupDistribution::getParametersList(con
     return result;
 }
 
-bool Settings::setFunctionalParameter(ParameterType param)
+bool Settings::setFunctionalParameterX(ParameterType param)
 {
     bool result = false;
     if (dependencyParameters.contains(param))
     {
         result = true;
-        functionalParameter = param;
-        additionalParameter1 = ParameterType::None;
-        additionalParameter2 = ParameterType::None;
+        functionalParameterX = param;
+
+        if (functionalParameterY == param)
+            functionalParameterY = ParameterType::None;
+
+        additionalParameter[0] = ParameterType::None;
+        additionalParameter[1] = ParameterType::None;
+        additionalParameter[1] = ParameterType::None;
 
 
         foreach (ParameterType tmpParam, this->dependencyParameters)
         {
-            if (functionalParameter == tmpParam)
+            if (functionalParameterX == tmpParam)
                 continue;
-            if (additionalParameter1 == ParameterType::None)
-                additionalParameter1 = tmpParam;
+
+            if (functionalParameterY == tmpParam)
+                continue;
+
+            if (additionalParameter[0] == ParameterType::None)
+                additionalParameter[0] = tmpParam;
+            else if (additionalParameter[1] == ParameterType::None)
+                additionalParameter[1] = tmpParam;
             else
-                additionalParameter2 = tmpParam;
+                additionalParameter[2] = tmpParam;
+
+        }
+    }
+    return result;
+}
+
+bool Settings::setFunctionalParameterY(ParameterType param)
+{
+    bool result = false;
+    if (dependencyParameters.contains(param))
+    {
+        result = true;
+        functionalParameterY = param;
+        if (functionalParameterX == param)
+            functionalParameterX = ParameterType::None;
+
+        additionalParameter[0] = ParameterType::None;
+        additionalParameter[1] = ParameterType::None;
+        additionalParameter[1] = ParameterType::None;
+
+
+        foreach (ParameterType tmpParam, this->dependencyParameters)
+        {
+            if (functionalParameterX == tmpParam)
+                continue;
+
+            if (functionalParameterY == tmpParam)
+                continue;
+
+            if (additionalParameter[0] == ParameterType::None)
+                additionalParameter[0] = tmpParam;
+            else if (additionalParameter[1] == ParameterType::None)
+                additionalParameter[1] = tmpParam;
+            else
+                additionalParameter[2] = tmpParam;
         }
     }
     return result;
@@ -1768,7 +1831,7 @@ double Settings::getXmin(RSystem &rSystem) const
 {
     double result = -1;
 
-    switch (functionalParameter)
+    switch (functionalParameterX)
     {
     case ParameterType::OfferedTrafficPerAS:
         result = rSystem.getMinAperAU();
@@ -1794,7 +1857,7 @@ double Settings::getXmax(RSystem &rSystem) const
 {
     double result = -1;
 
-    switch (functionalParameter)
+    switch (functionalParameterX)
     {
     case ParameterType::OfferedTrafficPerAS:
         result = rSystem.getMaxAperAU();
@@ -1991,11 +2054,14 @@ QString Settings::getParameterDescription(const ParametersSet &params, const Mod
     QTextStream str;
     str.setString(&result, QIODevice::Append);
 
-    if (additionalParameter1 != ParameterType::None)
-        str<<getTypeValue(params, additionalParameter1, system);
+    if (additionalParameter[0] != ParameterType::None)
+        str<<getTypeValue(params, additionalParameter[0], system);
 
-    if (additionalParameter2 != ParameterType::None)
-        str<<" "<<getTypeValue(params, additionalParameter2, system);
+    if (additionalParameter[1] != ParameterType::None)
+        str<<" "<<getTypeValue(params, additionalParameter[1], system);
+
+    if (additionalParameter[2] != ParameterType::None)
+        str<<" "<<getTypeValue(params, additionalParameter[2], system);
 
     str.flush();
     return result;
@@ -2007,11 +2073,14 @@ QString Settings::getParameterDescription(const ParametersSet &params, const Mod
     QTextStream str;
     str.setString(&result, QIODevice::Append);
 
-    if ((additionalParameter1 != ParameterType::None) && !dontDescribeMe.contains(additionalParameter1))
-        str<<getTypeValue(params, additionalParameter1, system);
+    if ((additionalParameter[0] != ParameterType::None) && !dontDescribeMe.contains(additionalParameter[0]))
+        str<<getTypeValue(params, additionalParameter[0], system);
 
-    if ((additionalParameter2 != ParameterType::None) && !dontDescribeMe.contains(additionalParameter2))
-        str<<" "<<getTypeValue(params, additionalParameter2, system);
+    if ((additionalParameter[1] != ParameterType::None) && !dontDescribeMe.contains(additionalParameter[1]))
+        str<<" "<<getTypeValue(params, additionalParameter[1], system);
+
+    if ((additionalParameter[2] != ParameterType::None) && !dontDescribeMe.contains(additionalParameter[2]))
+        str<<" "<<getTypeValue(params, additionalParameter[2], system);
 
     str.flush();
     return result;
@@ -2051,9 +2120,11 @@ SettingsTypeForServerAndBufferState::SettingsTypeForServerAndBufferState(TypeFor
     dependencyParameters.append(ParameterType::BufferState);
     dependencyParameters.append(ParameterType::OfferedTrafficPerAS);
 
-    functionalParameter  = ParameterType::ServerState;
-    additionalParameter1 = ParameterType::BufferState;
-    additionalParameter2 = ParameterType::OfferedTrafficPerAS;
+    functionalParameterX  = ParameterType::ServerState;
+    functionalParameterY  = ParameterType::None;
+    additionalParameter[0] = ParameterType::BufferState;
+    additionalParameter[1] = ParameterType::OfferedTrafficPerAS;
+    additionalParameter[2] = ParameterType::None;
 }
 
 bool SettingsTypeForServerAndBufferState::getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
@@ -2061,7 +2132,7 @@ bool SettingsTypeForServerAndBufferState::getSinglePlot(QLineSeries *outPlot, QP
     bool result = false;
 
     outPlot->clear();
-    if (functionalParameter == ParameterType::OfferedTrafficPerAS)
+    if (functionalParameterX == ParameterType::OfferedTrafficPerAS)
     {
         foreach(decimal a, rSystem.getAvailableAperAU())
         {
@@ -2081,7 +2152,7 @@ bool SettingsTypeForServerAndBufferState::getSinglePlot(QLineSeries *outPlot, QP
         }
     }
 
-    if (functionalParameter == ParameterType::ServerState)
+    if (functionalParameterX == ParameterType::ServerState)
     {
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int n=0; n<=rSystem.getModel().getServer().V(); n++)
@@ -2101,7 +2172,7 @@ bool SettingsTypeForServerAndBufferState::getSinglePlot(QLineSeries *outPlot, QP
         }
     }
 
-    if (functionalParameter == ParameterType::BufferState)
+    if (functionalParameterX == ParameterType::BufferState)
     {
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int n=0; n<=rSystem.getModel().getServer().V(); n++)
@@ -2128,7 +2199,7 @@ bool SettingsTypeForServerAndBufferState::getSinglePlot(QVector<double> &outPlot
     bool result = false;
 
     outPlot.clear();
-    if (functionalParameter == ParameterType::OfferedTrafficPerAS)
+    if (functionalParameterX == ParameterType::OfferedTrafficPerAS)
     {
         foreach(decimal a, rSystem.getAvailableAperAU())
         {
@@ -2144,7 +2215,7 @@ bool SettingsTypeForServerAndBufferState::getSinglePlot(QVector<double> &outPlot
         }
     }
 
-    if (functionalParameter == ParameterType::ServerState)
+    if (functionalParameterX == ParameterType::ServerState)
     {
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int n=0; n<=rSystem.getModel().getServer().V(); n++)
@@ -2160,7 +2231,7 @@ bool SettingsTypeForServerAndBufferState::getSinglePlot(QVector<double> &outPlot
         }
     }
 
-    if (functionalParameter == ParameterType::BufferState)
+    if (functionalParameterX == ParameterType::BufferState)
     {
         const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int n=0; n<=rSystem.getModel().getBuffer().V(); n++)
@@ -2184,7 +2255,7 @@ QList<ParametersSet> SettingsTypeForServerAndBufferState::getParametersList(cons
     int ns, nb;
     decimal a;
 
-    switch(functionalParameter)
+    switch(functionalParameterX)
     {
     case ParameterType::OfferedTrafficPerAS:
         for (ns=0; ns <= system.getServer().V(); ns++)

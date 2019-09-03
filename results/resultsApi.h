@@ -50,14 +50,16 @@ class ResultMap
 class Settings
 {
 protected:
-    ParameterType functionalParameter;
-    ParameterType additionalParameter1;
-    ParameterType additionalParameter2;
+    ParameterType functionalParameterX;
+    ParameterType functionalParameterY;
+    ParameterType additionalParameter[3];
 
 public:
-    ParameterType getFunctionalParameter() const {return  functionalParameter;}
-    ParameterType getAdditionalParameter1() const {return additionalParameter1;}
-    ParameterType getAdditionalParameter2() const {return additionalParameter2;}
+    ParameterType getFunctionalParameterX() const {return  functionalParameterX;}
+    ParameterType getFunctionalParameterY() const {return  functionalParameterY;}
+    ParameterType getAdditionalParameter1() const {return additionalParameter[0];}
+    ParameterType getAdditionalParameter2() const {return additionalParameter[1];}
+    ParameterType getAdditionalParameter3() const {return additionalParameter[2];}
 
     enum class GnuplotKeyPosition
     {
@@ -76,7 +78,8 @@ public:
 
 
 
-    bool setFunctionalParameter(ParameterType param);
+    bool setFunctionalParameterX(ParameterType param);
+    bool setFunctionalParameterY(ParameterType param);
 
     virtual bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const =0;
     virtual bool getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet) const = 0;
@@ -242,8 +245,8 @@ public:
 
 
 
-    static QMap<ParametersSet, QVector<double>> getPlotsY(RSystem &rSystem, Type qos, ParameterType functionalParameter, Investigator *algorithm);
-    static const QVector<decimal> getPlotsX(RSystem &rSystem, ParameterType functionalParameter);
+    static QMap<ParametersSet, QVector<double>> getPlotsValues(RSystem &rSystem, Type qos, ParameterType functionalParameter, Investigator *algorithm);
+    static const QVector<decimal> getPlotsXorY(RSystem &rSystem, ParameterType functionalParameter);
 };
 
 

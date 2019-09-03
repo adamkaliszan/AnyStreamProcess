@@ -92,8 +92,8 @@ void GnuplotScript::WriteDataAndScript(QString baseFileNameWithPath, const Model
     {
         if (!algorithm->getQoS_Set().contains(qosType))
             continue;
-        QVector<decimal> xVals = TypesAndSettings::getPlotsX(*systemResults, setting->getFunctionalParameter());
-        QMap<ParametersSet, QVector<double>> yVals = TypesAndSettings::getPlotsY(*systemResults, qosType, setting->getFunctionalParameter(), algorithm);
+        QVector<decimal> xVals = TypesAndSettings::getPlotsXorY(*systemResults, setting->getFunctionalParameterX());
+        QMap<ParametersSet, QVector<double>> yVals = TypesAndSettings::getPlotsValues(*systemResults, qosType, setting->getFunctionalParameterX(), algorithm);
 
         QString dataFileNameWithPath = baseFileNameWithPath + algorithm->shortName() + ".dat";
         QString dataFileName = dataFileNameWithPath.mid(dataFileNameWithPath.lastIndexOf("/")+1);
@@ -104,7 +104,7 @@ void GnuplotScript::WriteDataAndScript(QString baseFileNameWithPath, const Model
 
 
 
-        dataStream<<"#"<<TypesAndSettings::parameterToString(setting->getFunctionalParameter());
+        dataStream<<"#"<<TypesAndSettings::parameterToString(setting->getFunctionalParameterX());
         int colNo = 2;
 
         dt = 1;

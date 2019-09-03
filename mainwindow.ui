@@ -782,343 +782,11 @@
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout">
         <item>
-         <layout class="QGridLayout" name="gridLayoutQoS_Algorithms">
-          <property name="sizeConstraint">
-           <enum>QLayout::SetMinimumSize</enum>
-          </property>
-          <item row="0" column="3">
-           <widget class="QLabel" name="label_Amin">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;a&lt;span style=&quot; vertical-align:sub;&quot;&gt;min&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1" rowspan="3">
-           <widget class="QListWidget" name="listWidgetAlgorithmsAlternative">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="baseSize">
-             <size>
-              <width>0</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="selectionMode">
-             <enum>QAbstractItemView::MultiSelection</enum>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QLabel" name="labelAlgorithmsAlternative">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
-              <horstretch>1</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Alternative algorithms</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="4">
-           <widget class="QDoubleSpinBox" name="doubleSpinBox_aMax">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="decimals">
-             <number>3</number>
-            </property>
-            <property name="maximum">
-             <double>15.000000000000000</double>
-            </property>
-            <property name="singleStep">
-             <double>0.100000000000000</double>
-            </property>
-            <property name="value">
-             <double>1.500000000000000</double>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="2">
-           <widget class="QLabel" name="label">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
-              <horstretch>2</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="baseSize">
-             <size>
-              <width>300</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>Simulation's exp param</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="3">
-           <widget class="QLabel" name="label_Amax">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;a&lt;span style=&quot; vertical-align:sub;&quot;&gt;max&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
+         <layout class="QGridLayout" name="gridResultsPlot3d">
           <item row="0" column="0">
-           <widget class="QLabel" name="labelAlgorithms">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
-              <horstretch>2</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="baseSize">
-             <size>
-              <width>300</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>Working algorithms</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="3">
-           <widget class="QLabel" name="label_Adelta">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;ð a&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="4">
-           <widget class="QDoubleSpinBox" name="doubleSpinBox_aDelta">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="decimals">
-             <number>3</number>
-            </property>
-            <property name="minimum">
-             <double>0.001000000000000</double>
-            </property>
-            <property name="maximum">
-             <double>1.000000000000000</double>
-            </property>
-            <property name="singleStep">
-             <double>0.050000000000000</double>
-            </property>
-            <property name="value">
-             <double>0.100000000000000</double>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0" rowspan="3">
-           <widget class="QListWidget" name="listWidgetAlgorithms">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="baseSize">
-             <size>
-              <width>0</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="selectionMode">
-             <enum>QAbstractItemView::MultiSelection</enum>
-            </property>
-            <property name="selectionBehavior">
-             <enum>QAbstractItemView::SelectItems</enum>
-            </property>
-            <property name="layoutMode">
-             <enum>QListView::SinglePass</enum>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="2" rowspan="3">
-           <widget class="QListWidget" name="listWidgetSimulationParameters">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="baseSize">
-             <size>
-              <width>300</width>
-              <height>0</height>
-             </size>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="3" colspan="2">
-           <widget class="QPushButton" name="pushButtonStart">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Start</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="4">
-           <widget class="QDoubleSpinBox" name="doubleSpinBox_aMin">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="decimals">
-             <number>3</number>
-            </property>
-            <property name="maximum">
-             <double>10.000000000000000</double>
-            </property>
-            <property name="singleStep">
-             <double>0.100000000000000</double>
-            </property>
-            <property name="value">
-             <double>0.500000000000000</double>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <layout class="QGridLayout" name="gridLayoutCharts">
-          <property name="sizeConstraint">
-           <enum>QLayout::SetMaximumSize</enum>
-          </property>
-          <item row="23" column="0" colspan="3">
-           <widget class="QCheckBox" name="checkBoxResultsQtShowKey">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Show key</string>
-            </property>
-           </widget>
-          </item>
-          <item row="22" column="3" rowspan="3">
-           <widget class="QListWidget" name="listWidgetResultsQtAdditionalParameters1">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="selectionMode">
-             <enum>QAbstractItemView::MultiSelection</enum>
-            </property>
-           </widget>
-          </item>
-          <item row="22" column="4" rowspan="3">
-           <widget class="QListWidget" name="listWidgetResultsQtAdditionalParameters2">
-            <property name="enabled">
-             <bool>true</bool>
-            </property>
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="selectionMode">
-             <enum>QAbstractItemView::MultiSelection</enum>
-            </property>
-           </widget>
-          </item>
-          <item row="20" column="4">
-           <widget class="QLabel" name="labelResultsQtAdditionalParameters2">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Trafic classes</string>
-            </property>
-           </widget>
-          </item>
-          <item row="20" column="3">
-           <widget class="QLabel" name="labelResultsQtAdditionalParameters1">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Additional parameters</string>
-            </property>
-           </widget>
-          </item>
-          <item row="17" column="0" colspan="5">
-           <widget class="Line" name="line">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0" rowspan="3" colspan="5">
            <widget class="QChartView" name="widgetResultsPlot" native="true">
             <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+             <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
@@ -1131,10 +799,17 @@
             </property>
            </widget>
           </item>
-          <item row="20" column="0">
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_ResultType">
+          <property name="sizeConstraint">
+           <enum>QLayout::SetDefaultConstraint</enum>
+          </property>
+          <item>
            <widget class="QLabel" name="labelResultsQtType">
             <property name="sizePolicy">
-             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
+             <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
@@ -1144,46 +819,10 @@
             </property>
            </widget>
           </item>
-          <item row="22" column="0">
-           <widget class="QLabel" name="labelResultsQtX_axis">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>X axis</string>
-            </property>
-           </widget>
-          </item>
-          <item row="24" column="0" colspan="3">
-           <widget class="QCheckBox" name="checkBoxResultsQtLogScaleOnAxisY">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Log scale on axis Y</string>
-            </property>
-           </widget>
-          </item>
-          <item row="20" column="2">
+          <item>
            <widget class="QComboBox" name="comboBoxResultsQtType">
             <property name="sizePolicy">
-             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-           </widget>
-          </item>
-          <item row="22" column="2">
-           <widget class="QComboBox" name="comboBoxResultsQtX_axis">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
+             <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
@@ -1193,17 +832,523 @@
          </layout>
         </item>
         <item>
-         <widget class="QProgressBar" name="progressBar">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
+         <layout class="QHBoxLayout" name="horizontalLayout_QosFunPar">
+          <property name="sizeConstraint">
+           <enum>QLayout::SetDefaultConstraint</enum>
           </property>
-          <property name="value">
-           <number>24</number>
+          <item>
+           <layout class="QGridLayout" name="gridLayoutCharts">
+            <property name="sizeConstraint">
+             <enum>QLayout::SetMaximumSize</enum>
+            </property>
+            <item row="0" column="0">
+             <widget class="QLabel" name="labelResultsQtX_axis">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>X axis</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QComboBox" name="comboBoxResultsQtY_axis">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="editable">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QComboBox" name="comboBoxResultsQtX_axis">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0" colspan="2">
+             <widget class="QCheckBox" name="checkBoxResultsQtShowKey">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Show key</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0" colspan="2">
+             <widget class="QCheckBox" name="checkBoxResultsQtLogScaleOnAxisY">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Log scale on axis Y</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QCheckBox" name="checkBoxY_axis">
+              <property name="text">
+               <string>Y axis</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_AdditionalPar1">
+            <item>
+             <widget class="QLabel" name="labelResultsQtAdditionalParameters1">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Additional parameters</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QListWidget" name="listWidgetResultsQtAdditionalParameters1">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>10</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>120</height>
+               </size>
+              </property>
+              <property name="selectionMode">
+               <enum>QAbstractItemView::MultiSelection</enum>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_AdditionalPar2">
+            <item>
+             <widget class="QLabel" name="labelResultsQtAdditionalParameters2">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Additional parameters</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QListWidget" name="listWidgetResultsQtAdditionalParameters2">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>10</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>120</height>
+               </size>
+              </property>
+              <property name="selectionMode">
+               <enum>QAbstractItemView::MultiSelection</enum>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_Calculations">
+          <property name="sizeConstraint">
+           <enum>QLayout::SetDefaultConstraint</enum>
           </property>
-         </widget>
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_AlgorithmsAndSimParams">
+            <property name="sizeConstraint">
+             <enum>QLayout::SetMaximumSize</enum>
+            </property>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_Algorithms">
+              <item>
+               <layout class="QVBoxLayout" name="verticalLayout_ReleasedAlgorithms">
+                <property name="sizeConstraint">
+                 <enum>QLayout::SetMinimumSize</enum>
+                </property>
+                <item>
+                 <widget class="QLabel" name="labelAlgorithms">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
+                    <horstretch>1</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="baseSize">
+                   <size>
+                    <width>300</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Working algorithms</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QListWidget" name="listWidgetAlgorithms">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>10</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>16777215</width>
+                    <height>100</height>
+                   </size>
+                  </property>
+                  <property name="baseSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="selectionMode">
+                   <enum>QAbstractItemView::MultiSelection</enum>
+                  </property>
+                  <property name="selectionBehavior">
+                   <enum>QAbstractItemView::SelectItems</enum>
+                  </property>
+                  <property name="layoutMode">
+                   <enum>QListView::SinglePass</enum>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <layout class="QVBoxLayout" name="verticalLayout_ExperimentalAlgorithms">
+                <property name="sizeConstraint">
+                 <enum>QLayout::SetMinimumSize</enum>
+                </property>
+                <item>
+                 <widget class="QLabel" name="labelAlgorithmsAlternative">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
+                    <horstretch>2</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string>Alternative algorithms</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QListWidget" name="listWidgetAlgorithmsAlternative">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>10</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>16777215</width>
+                    <height>100</height>
+                   </size>
+                  </property>
+                  <property name="baseSize">
+                   <size>
+                    <width>0</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="selectionMode">
+                   <enum>QAbstractItemView::MultiSelection</enum>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QLabel" name="label">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
+                <horstretch>2</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="baseSize">
+               <size>
+                <width>300</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Simulation's exp param</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QListWidget" name="listWidgetSimulationParameters">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>60</height>
+               </size>
+              </property>
+              <property name="baseSize">
+               <size>
+                <width>300</width>
+                <height>0</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_TrafficOffered">
+            <property name="sizeConstraint">
+             <enum>QLayout::SetMaximumSize</enum>
+            </property>
+            <item>
+             <spacer name="verticalSpacer">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Maximum</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <layout class="QGridLayout" name="gridLayoutQoS_Start">
+              <property name="sizeConstraint">
+               <enum>QLayout::SetMaximumSize</enum>
+              </property>
+              <item row="4" column="4">
+               <widget class="QDoubleSpinBox" name="doubleSpinBox_aDelta">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="decimals">
+                 <number>3</number>
+                </property>
+                <property name="minimum">
+                 <double>0.001000000000000</double>
+                </property>
+                <property name="maximum">
+                 <double>1.000000000000000</double>
+                </property>
+                <property name="singleStep">
+                 <double>0.050000000000000</double>
+                </property>
+                <property name="value">
+                 <double>0.100000000000000</double>
+                </property>
+               </widget>
+              </item>
+              <item row="7" column="3" colspan="2">
+               <widget class="QPushButton" name="pushButtonStart">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>Start</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="4">
+               <widget class="QDoubleSpinBox" name="doubleSpinBox_aMin">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="decimals">
+                 <number>3</number>
+                </property>
+                <property name="maximum">
+                 <double>10.000000000000000</double>
+                </property>
+                <property name="singleStep">
+                 <double>0.100000000000000</double>
+                </property>
+                <property name="value">
+                 <double>0.500000000000000</double>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="3">
+               <widget class="QLabel" name="label_Amin">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;a&lt;span style=&quot; vertical-align:sub;&quot;&gt;min&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="3">
+               <widget class="QLabel" name="label_Adelta">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;ð a&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="4">
+               <widget class="QDoubleSpinBox" name="doubleSpinBox_aMax">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="decimals">
+                 <number>3</number>
+                </property>
+                <property name="maximum">
+                 <double>15.000000000000000</double>
+                </property>
+                <property name="singleStep">
+                 <double>0.100000000000000</double>
+                </property>
+                <property name="value">
+                 <double>1.500000000000000</double>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="3">
+               <widget class="QLabel" name="label_Amax">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;a&lt;span style=&quot; vertical-align:sub;&quot;&gt;max&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="8" column="3" colspan="2">
+               <widget class="QProgressBar" name="progressBar">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="value">
+                 <number>0</number>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </item>
+         </layout>
         </item>
        </layout>
       </widget>
@@ -1321,18 +1466,34 @@
  </resources>
  <connections>
   <connection>
-   <sender>spinBoxClassesSourcess</sender>
-   <signal>valueChanged(int)</signal>
+   <sender>listWidgetResultsQtAdditionalParameters1</sender>
+   <signal>itemSelectionChanged()</signal>
    <receiver>MainWindow</receiver>
-   <slot>classUiParChanged()</slot>
+   <slot>on_ResultsQtChartRefresh()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>356</x>
-     <y>390</y>
+     <x>295</x>
+     <y>794</y>
     </hint>
     <hint type="destinationlabel">
-     <x>193</x>
-     <y>584</y>
+     <x>503</x>
+     <y>351</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>listWidgetAlgorithms</sender>
+   <signal>itemSelectionChanged()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>on_ResultsQtChartRefresh()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>120</x>
+     <y>235</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>317</x>
+     <y>899</y>
     </hint>
    </hints>
   </connection>
@@ -1353,70 +1514,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>doubleSpinBoxIncomingExDx</sender>
-   <signal>valueChanged(double)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>classUiParChanged()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>618</x>
-     <y>422</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>399</x>
-     <y>335</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>spinBoxClassesT</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>classUiParChanged()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>356</x>
-     <y>358</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>219</x>
-     <y>586</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>comboBox_NewCallStrType</sender>
-   <signal>currentIndexChanged(int)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>classUiParChanged()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>356</x>
-     <y>421</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>294</x>
-     <y>438</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>spinBoxKolejkaLiczba</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>queueUiParChanged()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>554</x>
-     <y>241</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>199</x>
-     <y>337</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>comboBox_SourceType</sender>
    <signal>currentIndexChanged(int)</signal>
    <receiver>MainWindow</receiver>
@@ -1433,18 +1530,50 @@
    </hints>
   </connection>
   <connection>
-   <sender>checkBoxResultsQtShowKey</sender>
-   <signal>toggled(bool)</signal>
+   <sender>doubleSpinBoxIncomingExDx</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>classUiParChanged()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>618</x>
+     <y>422</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>335</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spinBoxClassesSourcess</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>classUiParChanged()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>356</x>
+     <y>390</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>193</x>
+     <y>584</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>listWidgetResultsQtAdditionalParameters2</sender>
+   <signal>pressed(QModelIndex)</signal>
    <receiver>MainWindow</receiver>
    <slot>on_ResultsQtChartRefresh()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>120</x>
-     <y>818</y>
+     <x>557</x>
+     <y>794</y>
     </hint>
     <hint type="destinationlabel">
-     <x>573</x>
-     <y>734</y>
+     <x>539</x>
+     <y>606</y>
     </hint>
    </hints>
   </connection>
@@ -1481,13 +1610,29 @@
    </hints>
   </connection>
   <connection>
-   <sender>spinBoxPodgrupaLiczba</sender>
+   <sender>spinBoxClassesT</sender>
    <signal>valueChanged(int)</signal>
    <receiver>MainWindow</receiver>
-   <slot>groupUiParChanged()</slot>
+   <slot>classUiParChanged()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>214</x>
+     <x>356</x>
+     <y>358</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>219</x>
+     <y>586</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spinBoxKolejkaLiczba</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>queueUiParChanged()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>554</x>
      <y>241</y>
     </hint>
     <hint type="destinationlabel">
@@ -1497,18 +1642,18 @@
    </hints>
   </connection>
   <connection>
-   <sender>spinBoxKolejkaPojemnosc</sender>
-   <signal>valueChanged(int)</signal>
+   <sender>listWidgetSimulationParameters</sender>
+   <signal>itemSelectionChanged()</signal>
    <receiver>MainWindow</receiver>
-   <slot>queueUiParChanged()</slot>
+   <slot>on_ResultsQtChartRefresh()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>535</x>
-     <y>205</y>
+     <x>516</x>
+     <y>235</y>
     </hint>
     <hint type="destinationlabel">
-     <x>575</x>
-     <y>129</y>
+     <x>260</x>
+     <y>1059</y>
     </hint>
    </hints>
   </connection>
@@ -1529,6 +1674,54 @@
    </hints>
   </connection>
   <connection>
+   <sender>spinBoxPodgrupaLiczba</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>groupUiParChanged()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>214</x>
+     <y>241</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>337</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBoxResultsQtShowKey</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>on_ResultsQtChartRefresh()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>120</x>
+     <y>818</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>573</x>
+     <y>734</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spinBoxKolejkaPojemnosc</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>queueUiParChanged()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>535</x>
+     <y>205</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>575</x>
+     <y>129</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
    <sender>doubleSpinBoxClassesMu</sender>
    <signal>valueChanged(double)</signal>
    <receiver>MainWindow</receiver>
@@ -1541,70 +1734,6 @@
     <hint type="destinationlabel">
      <x>229</x>
      <y>583</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>spinBoxClassesAT</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>classUiParChanged()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>356</x>
-     <y>326</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>399</x>
-     <y>288</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>listWidgetResultsQtAdditionalParameters2</sender>
-   <signal>pressed(QModelIndex)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>on_ResultsQtChartRefresh()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>557</x>
-     <y>794</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>539</x>
-     <y>606</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>listWidgetResultsQtAdditionalParameters1</sender>
-   <signal>itemSelectionChanged()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>on_ResultsQtChartRefresh()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>295</x>
-     <y>794</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>503</x>
-     <y>351</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>listWidgetAlgorithms</sender>
-   <signal>itemSelectionChanged()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>on_ResultsQtChartRefresh()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>120</x>
-     <y>235</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>317</x>
-     <y>899</y>
     </hint>
    </hints>
   </connection>
@@ -1625,18 +1754,34 @@
    </hints>
   </connection>
   <connection>
-   <sender>listWidgetSimulationParameters</sender>
-   <signal>itemSelectionChanged()</signal>
+   <sender>comboBox_NewCallStrType</sender>
+   <signal>currentIndexChanged(int)</signal>
    <receiver>MainWindow</receiver>
-   <slot>on_ResultsQtChartRefresh()</slot>
+   <slot>classUiParChanged()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>516</x>
-     <y>235</y>
+     <x>356</x>
+     <y>421</y>
     </hint>
     <hint type="destinationlabel">
-     <x>260</x>
-     <y>1059</y>
+     <x>294</x>
+     <y>438</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spinBoxClassesAT</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>classUiParChanged()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>356</x>
+     <y>326</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>288</y>
     </hint>
    </hints>
   </connection>
