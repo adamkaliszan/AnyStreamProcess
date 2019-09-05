@@ -92,7 +92,7 @@ void GnuplotScript::WriteDataAndScript(QString baseFileNameWithPath, const Model
     {
         if (!algorithm->getQoS_Set().contains(qosType))
             continue;
-        QVector<decimal> xVals = TypesAndSettings::getPlotsXorY(*systemResults, setting->getFunctionalParameterX());
+        QVector<decimal> xVals = TypesAndSettings::getPlotsXorZ(*systemResults, setting->getFunctionalParameterX());
         QMap<ParametersSet, QVector<double>> yVals = TypesAndSettings::getPlotsValues(*systemResults, qosType, setting->getFunctionalParameterX(), algorithm);
 
         QString dataFileNameWithPath = baseFileNameWithPath + algorithm->shortName() + ".dat";

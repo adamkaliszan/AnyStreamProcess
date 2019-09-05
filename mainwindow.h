@@ -37,8 +37,9 @@
 #include "results/resultsApi.h"
 #include "results/resultsGnuplot.h"
 
-#include "surfacegraph.h"
-
+#include <QtDataVisualization/Q3DSurface>
+#include <QtDataVisualization/QSurfaceDataProxy>
+#include <QtDataVisualization/QSurface3DSeries>
 
 #include "utils/decimal.h"
 
@@ -102,6 +103,7 @@ private:
 
     QWidget *containerGraph3d;
     Q3DSurface *graph3d;
+
 
 public slots:
     void on_gnuplotSave();
@@ -190,6 +192,10 @@ private slots:
     void on_comboBoxResultsQtY_axis_currentIndexChanged(int index);
 
 private:
+    void prepare2dChart(Results::Settings *setting, Type type, int noOfAlgorithms);
+
+    void prepare3dChart(Results::Settings *setting, Results::Type type, int noOfAlgorithms);
+
     QVector<ModelCreator *>  vectPredefinedSystems;
 
     int getNoOfPoints(double aMin, double aMax, double aDelta) const;
@@ -246,6 +252,7 @@ private:
     void addTestedAlgorithm(Investigator *algorithm);
     void addExperimentalAlgorithm(Investigator *algorithm);
     void fillListWidgetWithParams(QListWidget *outList, QLabel *outLabel, Results::ParameterType paramType);
+    void solveParamXYconflict(QComboBox *outCombo, Results::ParameterType paramTypeToSkip);
     void clearParameters(Results::ParametersSet &outParameters);
 };
 

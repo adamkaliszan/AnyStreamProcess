@@ -3,6 +3,8 @@
 
 #include "utils/lag.h"
 
+using namespace QtDataVisualization;
+
 namespace Results
 {
 
@@ -140,7 +142,7 @@ QMap<ParametersSet, QVector<double>> TypesAndSettings::getPlotsValues(RSystem &r
     return result;
 }
 
-const QVector<decimal> TypesAndSettings::getPlotsXorY(RSystem &rSystem, ParameterType functionalParameter)
+const QVector<decimal> TypesAndSettings::getPlotsXorZ(RSystem &rSystem, ParameterType functionalParameter)
 {
     QVector<decimal> result;
 
@@ -242,7 +244,7 @@ SettingsTypeForClass::SettingsTypeForClass(TypeForClass qos, QString name, QStri
     dependencyParameters.append(ParameterType::TrafficClass);
 
     functionalParameterX  = ParameterType::OfferedTrafficPerAS;
-    functionalParameterY  = ParameterType::None;
+    functionalParameterZ  = ParameterType::None;
     additionalParameter[0] = ParameterType::TrafficClass;
     additionalParameter[1] = ParameterType::None;
     additionalParameter[2] = ParameterType::None;
@@ -370,13 +372,75 @@ bool SettingsTypeForClass::getSinglePlot(QVector<double> &outPlot, RSystem &rSys
     return result;
 }
 
+bool SettingsTypeForClass::getSinglePlot3d(QSurface3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
+{
+    bool result = false;
+
+    float x, y, z;
+    if (functionalParameterZ == ParameterType::OfferedTrafficPerAS)
+    {
+        foreach(decimal a, rSystem.getAvailableAperAU())
+        {
+            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
+            const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+            z = static_cast<float>(a);
+
+            for (int i=0; i < rSystem.getModel().m(); i++)
+            {
+                x = parametersSet.classIndex;
+
+                double yTmp;
+                if ((*singlePoint)->read(yTmp, qos, parametersSet.classIndex))
+                {
+                    if (yTmp>0)
+                        result = true;
+
+                    y = static_cast<float>(yTmp);
+                    QSurfaceDataItem tmp(QVector3D(x, y, z));
+                    dataRow->append(tmp);
+                }
+            }
+            outPlot.dataProxy()->addRow(dataRow);
+        }
+    }
+
+    if (functionalParameterZ == ParameterType::TrafficClass)
+    {
+
+        for (int i=0; i <rSystem.getModel().m(); i++)
+        {
+            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
+            z = i;
+
+            foreach(decimal a, rSystem.getAvailableAperAU())
+            {
+                const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+                x = static_cast<float>(a);
+
+                double yTmp=0;
+                if ((*singlePoint)->read(yTmp, qos, i))
+                {
+                    if (yTmp>0)
+                        result = true;
+                    y = static_cast<float>(yTmp);
+
+                    QSurfaceDataItem tmp(QVector3D(x, y, z));
+                    dataRow->append(tmp);
+                }
+            }
+            outPlot.dataProxy()->addRow(dataRow);
+        }
+    }
+    return result;
+}
+
 SettingsTypeForSystemState::SettingsTypeForSystemState(TypeForSystemState qos, QString name, QString shortName): Settings (name, shortName), qos(qos)
 {
     dependencyParameters.append(ParameterType::OfferedTrafficPerAS);
     dependencyParameters.append(ParameterType::SystemState);
 
     functionalParameterX  = ParameterType::SystemState;
-    functionalParameterY  = ParameterType::None;
+    functionalParameterZ  = ParameterType::None;
     additionalParameter[0] = ParameterType::OfferedTrafficPerAS;
     additionalParameter[1] = ParameterType::None;
     additionalParameter[2] = ParameterType::None;
@@ -468,6 +532,68 @@ bool SettingsTypeForSystemState::getSinglePlot(QVector<double> &outPlot, RSystem
     return result;
 }
 
+bool SettingsTypeForSystemState::getSinglePlot3d(QSurface3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
+{
+    bool result = false;
+    float x, y, z;
+
+    if (functionalParameterZ == ParameterType::OfferedTrafficPerAS)
+    {
+        foreach(decimal a, rSystem.getAvailableAperAU())
+        {
+            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
+            const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+            z = static_cast<float>(a);
+
+            for (int n=0; n <= rSystem.getModel().V(); n++)
+            {
+                x = n;
+
+                double yTmp=0;
+                if ((*singlePoint)->read(yTmp, qos, n))
+                {
+                    if (yTmp > 0)
+                        result = true;
+
+                    y = static_cast<float>(yTmp);
+                    QSurfaceDataItem tmp(QVector3D(x, y, z));
+                    dataRow->append(tmp);
+                }
+            }
+            outPlot.dataProxy()->addRow(dataRow);
+        }
+    }
+
+    if (functionalParameterZ == ParameterType::SystemState)
+    {
+        for (int n=0; n<=rSystem.getModel().V(); n++)
+        {
+            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
+            z = parametersSet.systemState;
+
+            foreach(decimal a, rSystem.getAvailableAperAU())
+            {
+                const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+                x = static_cast<float>(a);
+
+                double yTmp=0;
+
+                if ((*singlePoint)->read(yTmp, qos, n))
+                {
+                    if (yTmp > 0)
+                        result = true;
+
+                    y = static_cast<float>(yTmp);
+                    QSurfaceDataItem tmp(QVector3D(x, y, z));
+                    dataRow->append(tmp);
+                }
+            }
+            outPlot.dataProxy()->addRow(dataRow);
+        }
+    }
+    return result;
+}
+
 QList<ParametersSet> SettingsTypeForSystemState::getParametersList(const ModelSystem &system, const QList<decimal> &aOfPerAU) const
 {
     QList<ParametersSet> result;
@@ -505,7 +631,7 @@ SettingsTypeForServerState::SettingsTypeForServerState(TypeForServerState qos, Q
     dependencyParameters.append(ParameterType::ServerState);
 
     functionalParameterX  = ParameterType::ServerState;
-    functionalParameterY  = ParameterType::None;
+    functionalParameterZ  = ParameterType::None;
     additionalParameter[0] = ParameterType::OfferedTrafficPerAS;
     additionalParameter[1] = ParameterType::None;
     additionalParameter[2] = ParameterType::None;
@@ -597,6 +723,68 @@ bool SettingsTypeForServerState::getSinglePlot(QVector<double> &outPlot, RSystem
     return result;
 }
 
+bool SettingsTypeForServerState::getSinglePlot3d(QSurface3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
+{
+    (void) parametersSet;
+    bool result = false;
+    float x, y, z;
+
+    if (functionalParameterZ == ParameterType::OfferedTrafficPerAS)
+    {
+        foreach(decimal a, rSystem.getAvailableAperAU())
+        {
+            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
+            const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+            z = static_cast<float>(a);
+
+            for (int n=0; n <= rSystem.getModel().getServer().V(); n++)
+            {
+                x = n;
+
+                double yTmp=0;
+                if ((*singlePoint)->read(yTmp, qos, n))
+                {
+                    if (yTmp > 0)
+                        result = true;
+                    y = static_cast<float>(yTmp);
+                    QSurfaceDataItem tmp(QVector3D(x, y, z));
+                    dataRow->append(tmp);
+                }
+            }
+            outPlot.dataProxy()->addRow(dataRow);
+        }
+    }
+
+    if (functionalParameterZ == ParameterType::ServerState)
+    {
+        for (int n=0; n<=rSystem.getModel().getServer().V(); n++)
+        {
+            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
+            z = n;
+
+            foreach(decimal a, rSystem.getAvailableAperAU())
+            {
+                const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+                x = static_cast<float>(a);
+
+                double yTmp=0;
+                QVector<double> newRow;
+
+                if ((*singlePoint)->read(yTmp, qos, n))
+                {
+                    if (yTmp > 0)
+                        result = true;
+                    y = static_cast<float>(yTmp);
+                    QSurfaceDataItem tmp(QVector3D(x, y, z));
+                    dataRow->append(tmp);
+                }
+            }
+            outPlot.dataProxy()->addRow(dataRow);
+        }
+    }
+    return result;
+}
+
 QList<ParametersSet> SettingsTypeForServerState::getParametersList(const ModelSystem &system, const QList<decimal> &aOfPerAU) const
 {
     QList<ParametersSet> result;
@@ -637,7 +825,7 @@ SettingsTypeForBufferState::SettingsTypeForBufferState(TypeForBufferState qos, Q
     dependencyParameters.append(ParameterType::BufferState);
 
     functionalParameterX  = ParameterType::BufferState;
-    functionalParameterY  = ParameterType::None;
+    functionalParameterZ  = ParameterType::None;
     additionalParameter[0] = ParameterType::OfferedTrafficPerAS;
     additionalParameter[1] = ParameterType::None;
     additionalParameter[2] = ParameterType::None;
@@ -729,6 +917,71 @@ bool SettingsTypeForBufferState::getSinglePlot(QVector<double> &outPlot, RSystem
     return result;
 }
 
+bool SettingsTypeForBufferState::getSinglePlot3d(QSurface3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
+{
+    (void) parametersSet;
+
+    bool result = false;
+    float x, y, z;
+
+    if (functionalParameterZ == ParameterType::OfferedTrafficPerAS)
+    {
+
+        foreach(decimal a, rSystem.getAvailableAperAU())
+        {
+            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
+            z = static_cast<float>(a);
+
+            for (int n=0; n <= rSystem.getModel().getBuffer().V(); n++)
+            {
+                x = n;
+
+                const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+                double yTmp=0;
+
+                if ((*singlePoint)->read(yTmp, qos, n))
+                {
+                    if (yTmp > 0)
+                        result = true;
+                    y = static_cast<float>(yTmp);
+                    QSurfaceDataItem tmp(QVector3D(x, y, z));
+                    dataRow->append(tmp);
+                }
+            }
+            outPlot.dataProxy()->addRow(dataRow);
+        }
+    }
+
+    if (functionalParameterZ == ParameterType::BufferState)
+    {
+        for (int n=0; n<=rSystem.getModel().getBuffer().V(); n++)
+        {
+            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
+            z = n;
+
+            foreach(decimal a, rSystem.getAvailableAperAU())
+            {
+                x = static_cast<float>(a);
+
+                const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+
+                double yTmp=0;
+
+                if ((*singlePoint)->read(yTmp, qos, n))
+                {
+                    if (yTmp > 0)
+                        result = true;
+                    y = static_cast<float>(yTmp);
+                    QSurfaceDataItem tmp(QVector3D(x, y, z));
+                    dataRow->append(tmp);
+                }
+            }
+            outPlot.dataProxy()->addRow(dataRow);
+        }
+    }
+    return result;
+}
+
 QList<ParametersSet> SettingsTypeForBufferState::getParametersList(const ModelSystem &system, const QList<decimal> &aOfPerAU) const
 {
     QList<ParametersSet> result;
@@ -770,7 +1023,7 @@ SettingsTypeForClassAndSystemState::SettingsTypeForClassAndSystemState(TypeForCl
     dependencyParameters.append(ParameterType::OfferedTrafficPerAS);
 
     functionalParameterX  = ParameterType::SystemState;
-    functionalParameterY  = ParameterType::None;
+    functionalParameterZ  = ParameterType::None;
     additionalParameter[0] = ParameterType::OfferedTrafficPerAS;
     additionalParameter[1] = ParameterType::TrafficClass;
 }
@@ -891,6 +1144,155 @@ bool SettingsTypeForClassAndSystemState::getSinglePlot(QVector<double> &outPlot,
     return result;
 }
 
+bool SettingsTypeForClassAndSystemState::getSinglePlot3d(QSurface3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
+{
+    bool result = false;
+    float x, y, z;
+
+    if (functionalParameterZ == ParameterType::OfferedTrafficPerAS)
+    {
+        foreach(decimal a, rSystem.getAvailableAperAU())
+        {
+            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
+            const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+            z = static_cast<float>(a);
+
+            QVector<double> newRow;
+            if (functionalParameterX == ParameterType::SystemState)
+            {
+                for(int n = 0; n <= rSystem.getModel().V(); n++)
+                {
+                    x = n;
+
+                    double yTmp=0;
+                    if ((*singlePoint)->read(yTmp, qos, parametersSet.classIndex, n))
+                    {
+                        if (yTmp > 0)
+                            result = true;
+                        y = static_cast<float>(yTmp);
+                        QSurfaceDataItem tmp(QVector3D(x, y, z));
+                        dataRow->append(tmp);                    }
+                }
+            }
+            if (functionalParameterX == ParameterType::TrafficClass)
+            {
+                for(int i = 0; i < rSystem.getModel().m(); i++)
+                {
+                    x = i;
+
+                    double yTmp=0;
+                    if ((*singlePoint)->read(yTmp, qos, i, parametersSet.systemState))
+                    {
+                        if (yTmp > 0)
+                            result = true;
+                        y = static_cast<float>(yTmp);
+                        QSurfaceDataItem tmp(QVector3D(x, y, z));
+                        dataRow->append(tmp);
+                    }
+                }
+            }
+            outPlot.dataProxy()->addRow(dataRow);
+        }
+    }
+
+    if (functionalParameterZ == ParameterType::SystemState)
+    {
+        for (int n=0; n<=rSystem.getModel().V(); n++)
+        {
+            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
+            z = n;
+
+            if (functionalParameterX == ParameterType::OfferedTrafficPerAS)
+            {
+                foreach(decimal a, rSystem.getAvailableAperAU())
+                {
+                    const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+                    x = static_cast<float>(a);
+
+                    double yTmp=0;
+                    if ((*singlePoint)->read(yTmp, qos, parametersSet.classIndex, n))
+                    {
+                        if (yTmp > 0)
+                            result = true;
+                        y = static_cast<float>(yTmp);
+                        QSurfaceDataItem tmp(QVector3D(x, y, z));
+                        dataRow->append(tmp);
+                    }
+                }
+            }
+
+            if (functionalParameterX == ParameterType::TrafficClass)
+            {
+                const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+                for (int i=0; i < rSystem.getModel().m(); i++)
+                {
+                    x = i;
+
+                    double yTmp=0;
+                    if ((*singlePoint)->read(yTmp, qos, i, n))
+                    {
+                        if (yTmp > 0)
+                            result = true;
+                        y = static_cast<float>(yTmp);
+                        QSurfaceDataItem tmp(QVector3D(x, y, z));
+                        dataRow->append(tmp);
+                    }
+                }
+            }
+            outPlot.dataProxy()->addRow(dataRow);
+        }
+    }
+
+    if (functionalParameterZ == ParameterType::TrafficClass)
+    {
+        for (int i=0; i<rSystem.getModel().m(); i++)
+        {
+            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
+            z = i;
+
+            if (functionalParameterX == ParameterType::OfferedTrafficPerAS)
+            {
+                foreach(decimal a, rSystem.getAvailableAperAU())
+                {
+                    const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+                    x = static_cast<float>(a);
+
+                    double yTmp=0;
+                    if ((*singlePoint)->read(yTmp, qos, i, parametersSet.systemState))
+                    {
+                        if (yTmp > 0)
+                            result = true;
+                        y = static_cast<float>(yTmp);
+                        QSurfaceDataItem tmp(QVector3D(x, y, z));
+                        dataRow->append(tmp);
+                    }
+                }
+            }
+
+            if (functionalParameterX == ParameterType::SystemState)
+            {
+                const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+                for (int n=0; n<= rSystem.getModel().V(); n++)
+                {
+                    x = n;
+
+                    double yTmp=0;
+                    if ((*singlePoint)->read(yTmp, qos, i, n))
+                    {
+                        if (yTmp > 0)
+                            result = true;
+                        y = static_cast<float>(yTmp);
+                        QSurfaceDataItem tmp(QVector3D(x, y, z));
+                        dataRow->append(tmp);
+                    }
+                }
+            }
+            outPlot.dataProxy()->addRow(dataRow);
+        }
+    }
+    return result;
+}
+
 QList<ParametersSet> SettingsTypeForClassAndSystemState::getParametersList(const ModelSystem &system, const QList<decimal> &aOfPerAU) const
 {
     QList<ParametersSet> result;
@@ -949,7 +1351,7 @@ SettingsTypeForClassAndServerState::SettingsTypeForClassAndServerState(TypeForCl
     dependencyParameters.append(ParameterType::OfferedTrafficPerAS);
 
     functionalParameterX  = ParameterType::ServerState;
-    functionalParameterY  = ParameterType::None;
+    functionalParameterZ  = ParameterType::None;
     additionalParameter[0] = ParameterType::OfferedTrafficPerAS;
     additionalParameter[1] = ParameterType::TrafficClass;
     additionalParameter[2] = ParameterType::None;
@@ -1077,6 +1479,153 @@ bool SettingsTypeForClassAndServerState::getSinglePlot(QVector<double> &outPlot,
     return result;
 }
 
+bool SettingsTypeForClassAndServerState::getSinglePlot3d(QSurface3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
+{
+    bool result = false;
+    float x, y, z;
+
+    if (functionalParameterZ == ParameterType::OfferedTrafficPerAS)
+    {
+        foreach(decimal a, rSystem.getAvailableAperAU())
+        {
+            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
+            const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+            z = static_cast<float>(a);
+
+            if (functionalParameterX == ParameterType::ServerState)
+            {
+                for(int n = 0; n <= rSystem.getModel().getServer().V(); n++)
+                {
+                    x = n;
+
+                    double yTmp=0;
+                    if ((*singlePoint)->read(yTmp, qos, parametersSet.classIndex, n))
+                    {
+                        if (yTmp > 0)
+                            result = true;
+                        y = static_cast<float>(yTmp);
+                        QSurfaceDataItem tmp(QVector3D(x, y, z));
+                        dataRow->append(tmp);
+                    }
+                }
+            }
+            if (functionalParameterX == ParameterType::TrafficClass)
+            {
+                for(int i = 0; i < rSystem.getModel().m(); i++)
+                {
+                    x = i;
+
+                    double yTmp=0;
+                    if ((*singlePoint)->read(yTmp, qos, i, parametersSet.systemState))
+                    {
+                        if (yTmp > 0)
+                            result = true;
+                        y = static_cast<float>(yTmp);
+                        QSurfaceDataItem tmp(QVector3D(x, y, z));
+                        dataRow->append(tmp);
+                    }
+                }
+            }
+            outPlot.dataProxy()->addRow(dataRow);
+        }
+    }
+
+    if (functionalParameterZ == ParameterType::ServerState)
+    {
+        for (int n=0; n<=rSystem.getModel().getServer().V(); n++)
+        {
+            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
+            z = n;
+
+            if (functionalParameterX == ParameterType::OfferedTrafficPerAS)
+            {
+                foreach(decimal a, rSystem.getAvailableAperAU())
+                {
+                    const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+                    x = static_cast<float>(a);
+
+                    double yTmp=0;
+                    if ((*singlePoint)->read(yTmp, qos, parametersSet.classIndex, n))
+                    {
+                        if (yTmp > 0)
+                            result = true;
+                        y = static_cast<float>(yTmp);
+                        QSurfaceDataItem tmp(QVector3D(x, y, z));
+                        dataRow->append(tmp);
+                    }
+                }
+            }
+
+            if (functionalParameterX == ParameterType::TrafficClass)
+            {
+                const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+                for (int i=0; i < rSystem.getModel().m(); i++)
+                {
+                    x = i;
+
+                    double yTmp=0;
+                    if ((*singlePoint)->read(yTmp, qos, i, n))
+                    {
+                        if (yTmp > 0)
+                            result = true;
+                        y = static_cast<float>(yTmp);
+                        QSurfaceDataItem tmp(QVector3D(x, y, z));
+                        dataRow->append(tmp);
+                    }
+                }
+            }
+            outPlot.dataProxy()->addRow(dataRow);
+        }
+    }
+
+    if (functionalParameterZ == ParameterType::TrafficClass)
+    {
+        for (int i=0; i < rSystem.getModel().m(); i++)
+        {
+            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
+            z = i;
+            if (functionalParameterX == ParameterType::OfferedTrafficPerAS)
+            {
+                foreach(decimal a, rSystem.getAvailableAperAU())
+                {
+                    const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+                    x = static_cast<float>(a);
+
+                    double yTmp=0;
+                    if ((*singlePoint)->read(yTmp, qos, i, parametersSet.systemState))
+                    {
+                        if (yTmp > 0)
+                            result = true;
+                        y = static_cast<float>(yTmp);
+                        QSurfaceDataItem tmp(QVector3D(x, y, z));
+                        dataRow->append(tmp);
+                    }
+                }
+            }
+
+            if (functionalParameterX == ParameterType::ServerState)
+            {
+                const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+                for (int n=0; n <= rSystem.getModel().getServer().V(); n++)
+                {
+                    x = n;
+
+                    double yTmp=0;
+                    if ((*singlePoint)->read(yTmp, qos, i, n))
+                    {
+                        if (yTmp > 0)
+                            result = true;
+                        y = static_cast<float>(yTmp);
+                        QSurfaceDataItem tmp(QVector3D(x, y, z));
+                        dataRow->append(tmp);
+                    }
+                }
+            }
+        }
+    }
+    return result;
+}
+
 QList<ParametersSet> SettingsTypeForClassAndServerState::getParametersList(const ModelSystem &system, const QList<decimal> &aOfPerAU) const
 {
     QList<ParametersSet> result;
@@ -1140,7 +1689,7 @@ SettingsTypeForClassAndBufferState::SettingsTypeForClassAndBufferState(TypeForCl
     dependencyParameters.append(ParameterType::OfferedTrafficPerAS);
 
     functionalParameterX  = ParameterType::BufferState;
-    functionalParameterY  = ParameterType::None;
+    functionalParameterZ  = ParameterType::None;
     additionalParameter[0] = ParameterType::OfferedTrafficPerAS;
     additionalParameter[1] = ParameterType::TrafficClass;
     additionalParameter[2] = ParameterType::None;
@@ -1263,6 +1812,155 @@ bool SettingsTypeForClassAndBufferState::getSinglePlot(QVector<double> &outPlot,
                     result = true;
             }
             outPlot.append(y);
+        }
+    }
+    return result;
+}
+
+bool SettingsTypeForClassAndBufferState::getSinglePlot3d(QSurface3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
+{
+    bool result = false;
+    float x, y, z;
+
+    if (functionalParameterZ == ParameterType::OfferedTrafficPerAS)
+    {
+        foreach(decimal a, rSystem.getAvailableAperAU())
+        {
+            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
+            const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+            z = static_cast<float>(a);
+
+            if (functionalParameterX == ParameterType::BufferState)
+            {
+                for(int n = 0; n <= rSystem.getModel().getBuffer().V(); n++)
+                {
+                    x = n;
+
+                    double yTmp=0;
+                    if ((*singlePoint)->read(yTmp, qos, parametersSet.classIndex, n))
+                    {
+                        if (yTmp > 0)
+                            result = true;
+                        y = static_cast<float>(yTmp);
+                        QSurfaceDataItem tmp(QVector3D(x, y, z));
+                        dataRow->append(tmp);
+                    }
+                }
+            }
+            if (functionalParameterX == ParameterType::TrafficClass)
+            {
+                for(int i = 0; i < rSystem.getModel().m(); i++)
+                {
+                    x = i;
+
+                    double yTmp=0;
+                    if ((*singlePoint)->read(yTmp, qos, i, parametersSet.systemState))
+                    {
+                        if (yTmp > 0)
+                            result = true;
+                        y = static_cast<float>(yTmp);
+                        QSurfaceDataItem tmp(QVector3D(x, y, z));
+                        dataRow->append(tmp);
+                    }
+                }
+            }
+            outPlot.dataProxy()->addRow(dataRow);
+        }
+    }
+
+    if (functionalParameterZ == ParameterType::BufferState)
+    {
+        for (int n=0; n<=rSystem.getModel().getBuffer().V(); n++)
+        {
+            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
+            z = n;
+
+            if (functionalParameterX == ParameterType::OfferedTrafficPerAS)
+            {
+                foreach(decimal a, rSystem.getAvailableAperAU())
+                {
+                    const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+                    x = static_cast<float>(a);
+
+                    double yTmp=0;
+                    if ((*singlePoint)->read(yTmp, qos, parametersSet.classIndex, n))
+                    {
+                        if (yTmp > 0)
+                            result = true;
+                        y = static_cast<float>(yTmp);
+                        QSurfaceDataItem tmp(QVector3D(x, y, z));
+                        dataRow->append(tmp);
+                    }
+                }
+            }
+
+            if (functionalParameterX == ParameterType::TrafficClass)
+            {
+                const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+                for (int i=0; i < rSystem.getModel().m(); i++)
+                {
+                    x = i;
+
+                    double yTmp=0;
+                    if ((*singlePoint)->read(yTmp, qos, i, n))
+                    {
+                        if (yTmp > 0)
+                            result = true;
+                        y = static_cast<float>(yTmp);
+                        QSurfaceDataItem tmp(QVector3D(x, y, z));
+                        dataRow->append(tmp);
+                    }
+                }
+            }
+            outPlot.dataProxy()->addRow(dataRow);
+        }
+    }
+
+    if (functionalParameterZ == ParameterType::TrafficClass)
+    {
+        for (int i=0; i<rSystem.getModel().m(); i++)
+        {
+            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
+            z = i;
+
+            if (functionalParameterX == ParameterType::OfferedTrafficPerAS)
+            {
+                foreach(decimal a, rSystem.getAvailableAperAU())
+                {
+                    const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+                    x = static_cast<float>(a);
+
+                    double yTmp=0;
+                    if ((*singlePoint)->read(yTmp, qos, i, parametersSet.systemState))
+                    {
+                        if (yTmp > 0)
+                            result = true;
+                        y = static_cast<float>(yTmp);
+                        QSurfaceDataItem tmp(QVector3D(x, y, z));
+                        dataRow->append(tmp);
+                    }
+                }
+            }
+
+            if (functionalParameterX == ParameterType::BufferState)
+            {
+                const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+                for (int n=0; n<= rSystem.getModel().getBuffer().V(); n++)
+                {
+                    x = n;
+
+                    double yTmp=0;
+                    if ((*singlePoint)->read(yTmp, qos, i, n))
+                    {
+                        if (yTmp > 0)
+                            result = true;
+                        y = static_cast<float>(yTmp);
+                        QSurfaceDataItem tmp(QVector3D(x, y, z));
+                        dataRow->append(tmp);
+                    }
+                }
+            }
+            outPlot.dataProxy()->addRow(dataRow);
         }
     }
     return result;
@@ -1488,6 +2186,167 @@ bool SettingsForClassAndServerGroupsCombination::getSinglePlot(QVector<double> &
     return result;
 }
 
+bool SettingsForClassAndServerGroupsCombination::getSinglePlot3d(QSurface3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
+{
+    bool result = false;
+    float x, y, z;
+
+    if (functionalParameterZ == ParameterType::OfferedTrafficPerAS)
+    {
+        foreach(decimal a, rSystem.getAvailableAperAU())
+        {
+            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
+            const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+            z = static_cast<float>(a);
+
+            if (functionalParameterX == ParameterType::TrafficClass)
+            {
+                for (int i=0; i < rSystem.getModel().m(); i++)
+                {
+                    int t = rSystem.getModel().t(parametersSet.classIndex);
+                    x = i;
+
+                    double yTmp;
+                    if ((*singlePoint)->read(yTmp, TypeResourcess_VsServerGroupsCombination::InavailabilityInAllTheGroups, t, parametersSet.numberOfGroups))
+                    {
+                        if (yTmp > 0)
+                            result = true;
+                        y = static_cast<float>(yTmp);
+                        QSurfaceDataItem tmp(QVector3D(x, y, z));
+                        dataRow->append(tmp);
+                    }
+                }
+            }
+            if (functionalParameterX == ParameterType::CombinationNumber)
+            {
+                int t = rSystem.getModel().t(parametersSet.classIndex);
+                int noOfCombinations = rSystem.getNoOfGroupsCombinations();
+
+                for (int cn=0; cn<noOfCombinations; cn++)
+                {
+                    x = cn;
+
+                    double yTmp;
+                    if ((*singlePoint)->read(yTmp, TypeResourcess_VsServerGroupsCombination::InavailabilityInAllTheGroups, t, cn))
+                    {
+                        if (yTmp > 0)
+                            result = true;
+                        y = static_cast<float>(yTmp);
+                        QSurfaceDataItem tmp(QVector3D(x, y, z));
+                        dataRow->append(tmp);
+                    }
+                }
+            }
+            outPlot.dataProxy()->addRow(dataRow);
+        }
+    }
+
+    if (functionalParameterZ == ParameterType::CombinationNumber)
+    {
+        int noOfCombinations = rSystem.getNoOfGroupsCombinations();
+
+        for (int n=0; n <= noOfCombinations; n++)
+        {
+            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
+            z = n;
+
+            if (functionalParameterX == ParameterType::OfferedTrafficPerAS)
+            {
+                int t = rSystem.getModel().t(parametersSet.classIndex);
+                foreach (decimal a, rSystem.getAvailableAperAU())
+                {
+                    const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+                    x = static_cast<float>(a);
+
+                    double yTmp=0;
+                    if ((*singlePoint)->read(yTmp, TypeResourcess_VsServerGroupsCombination::AvailabilityInAllTheGroups, t, n))
+                    {
+                        if (yTmp > 0)
+                            result = true;
+                        y = static_cast<float>(yTmp);
+                        QSurfaceDataItem tmp(QVector3D(x, y, z));
+                        dataRow->append(tmp);
+                    }
+                }
+            }
+
+            if (functionalParameterX == ParameterType::TrafficClass)
+            {
+                const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+                for (int i=0; i < rSystem.getModel().m(); i++)
+                {
+                    int t = rSystem.getModel().t(i);
+                    x = i;
+
+                    double yTmp;
+                    if ((*singlePoint)->read(yTmp, TypeResourcess_VsServerGroupsCombination::AvailabilityInAllTheGroups, t, n))
+                    {
+                        if (yTmp > 0)
+                            result = true;
+                        y = static_cast<float>(yTmp);
+                        QSurfaceDataItem tmp(QVector3D(x, y, z));
+                        dataRow->append(tmp);
+                    }
+                }
+            }
+            outPlot.dataProxy()->addRow(dataRow);
+        }
+    }
+
+    if (functionalParameterZ == ParameterType::TrafficClass)
+    {
+        for (int i=0; i < rSystem.getModel().m(); i++)
+        {
+            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
+            int t = rSystem.getModel().t(i);
+            z = i;
+
+            if (functionalParameterX == ParameterType::OfferedTrafficPerAS)
+            {
+                foreach (decimal a, rSystem.getAvailableAperAU())
+                {
+                    const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+                    x = static_cast<float>(a);
+
+                    double yTmp;
+                    if ((*singlePoint)->read(yTmp, TypeResourcess_VsServerGroupsCombination::AvailabilityInAllTheGroups, t, parametersSet.combinationNumber))
+                    {
+                        if (yTmp > 0)
+                            result = true;
+                        y = static_cast<float>(yTmp);
+                        QSurfaceDataItem tmp(QVector3D(x, y, z));
+                        dataRow->append(tmp);
+                    }
+                }
+            }
+
+            if (functionalParameterX == ParameterType::CombinationNumber)
+            {
+                const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+                int noOfCOmbinations = rSystem.getNoOfGroupsCombinations();
+
+                for (int cn=0; cn < noOfCOmbinations; cn++)
+                {
+                    x = cn;
+
+                    double yTmp;
+                    if ((*singlePoint)->read(yTmp, TypeResourcess_VsServerGroupsCombination::AvailabilityInAllTheGroups, t, cn))
+                    {
+                        if (yTmp > 0)
+                            result = true;
+                        y = static_cast<float>(yTmp);
+                        QSurfaceDataItem tmp(QVector3D(x, y, z));
+                        dataRow->append(tmp);
+                    }
+                }
+            }
+            outPlot.dataProxy()->addRow(dataRow);
+        }
+    }
+
+    return result;
+}
+
 QList<ParametersSet> SettingsForClassAndServerGroupsCombination::getParametersList(const ModelSystem &system, const QList<decimal> &aOfPerAU) const
 {
     QList<ParametersSet> result;
@@ -1565,7 +2424,7 @@ SettingsAvailableSubroupDistribution::SettingsAvailableSubroupDistribution(QStri
     dependencyParameters.append(ParameterType::NumberOfGroups);
 
     functionalParameterX  = ParameterType::OfferedTrafficPerAS;
-    functionalParameterY  = ParameterType::None;
+    functionalParameterZ  = ParameterType::None;
     additionalParameter[0] = ParameterType::TrafficClass;
     additionalParameter[1] = ParameterType::NumberOfGroups;
     additionalParameter[2] = ParameterType::None;
@@ -1702,6 +2561,12 @@ bool SettingsAvailableSubroupDistribution::getSinglePlot(QVector<double> &outPlo
     return result;
 }
 
+bool SettingsAvailableSubroupDistribution::getSinglePlot3d(QSurface3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
+{
+    //TODO Adam
+    return false;
+}
+
 QList<ParametersSet> SettingsAvailableSubroupDistribution::getParametersList(const ModelSystem &system, const QList<decimal> &aOfPerAU) const
 {
     QList<ParametersSet> result;
@@ -1765,8 +2630,8 @@ bool Settings::setFunctionalParameterX(ParameterType param)
         result = true;
         functionalParameterX = param;
 
-        if (functionalParameterY == param)
-            functionalParameterY = ParameterType::None;
+        if (functionalParameterZ == param)
+            functionalParameterZ = ParameterType::None;
 
         additionalParameter[0] = ParameterType::None;
         additionalParameter[1] = ParameterType::None;
@@ -1778,7 +2643,7 @@ bool Settings::setFunctionalParameterX(ParameterType param)
             if (functionalParameterX == tmpParam)
                 continue;
 
-            if (functionalParameterY == tmpParam)
+            if (functionalParameterZ == tmpParam)
                 continue;
 
             if (additionalParameter[0] == ParameterType::None)
@@ -1799,7 +2664,7 @@ bool Settings::setFunctionalParameterY(ParameterType param)
     if (dependencyParameters.contains(param))
     {
         result = true;
-        functionalParameterY = param;
+        functionalParameterZ = param;
         if (functionalParameterX == param)
             functionalParameterX = ParameterType::None;
 
@@ -1813,7 +2678,7 @@ bool Settings::setFunctionalParameterY(ParameterType param)
             if (functionalParameterX == tmpParam)
                 continue;
 
-            if (functionalParameterY == tmpParam)
+            if (functionalParameterZ == tmpParam)
                 continue;
 
             if (additionalParameter[0] == ParameterType::None)
@@ -2121,7 +2986,7 @@ SettingsTypeForServerAndBufferState::SettingsTypeForServerAndBufferState(TypeFor
     dependencyParameters.append(ParameterType::OfferedTrafficPerAS);
 
     functionalParameterX  = ParameterType::ServerState;
-    functionalParameterY  = ParameterType::None;
+    functionalParameterZ  = ParameterType::None;
     additionalParameter[0] = ParameterType::BufferState;
     additionalParameter[1] = ParameterType::OfferedTrafficPerAS;
     additionalParameter[2] = ParameterType::None;
@@ -2244,6 +3109,157 @@ bool SettingsTypeForServerAndBufferState::getSinglePlot(QVector<double> &outPlot
                     result = true;
             }
             outPlot.append(y);
+        }
+    }
+    return result;
+}
+
+bool SettingsTypeForServerAndBufferState::getSinglePlot3d(QSurface3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
+{
+    bool result = false;
+    float x, y, z;
+
+    if (functionalParameterZ == ParameterType::OfferedTrafficPerAS)
+    {
+        foreach(decimal a, rSystem.getAvailableAperAU())
+        {
+            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
+            const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+            z = static_cast<float>(a);
+
+            if (functionalParameterX == ParameterType::ServerState)
+            {
+                for (int n=0; n<=rSystem.getModel().getServer().V(); n++)
+                {
+                    x = n;
+
+                    double yTmp;
+                    if ((*singlePoint)->read(yTmp, qos, n, parametersSet.bufferState))
+                    {
+                        if (yTmp > 0)
+                            result = true;
+                        y = static_cast<float>(yTmp);
+                        QSurfaceDataItem tmp(QVector3D(x, y, z));
+                        dataRow->append(tmp);
+                    }
+                }
+            }
+
+            if (functionalParameterX == ParameterType::BufferState)
+            {
+                for (int n=0; n<=rSystem.getModel().getBuffer().V(); n++)
+                {
+                    x = n;
+
+                    double yTmp;
+                    if ((*singlePoint)->read(yTmp, qos, parametersSet.serverState, n))
+                    {
+                        if (yTmp > 0)
+                            result = true;
+                        y = static_cast<float>(yTmp);
+                        QSurfaceDataItem tmp(QVector3D(x, y, z));
+                        dataRow->append(tmp);
+                    }
+                }
+            }
+            outPlot.dataProxy()->addRow(dataRow);
+        }
+    }
+
+    if (functionalParameterZ == ParameterType::ServerState)
+    {
+        for (int n=0; n<=rSystem.getModel().getServer().V(); n++)
+        {
+            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
+            z = n;
+
+            if (functionalParameterX == ParameterType::OfferedTrafficPerAS)
+            {
+                foreach (decimal a, rSystem.getAvailableAperAU())
+                {
+                    const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+                    x = static_cast<float>(a);
+
+                    double yTmp=0;
+                    if ((*singlePoint)->read(yTmp, qos, n, parametersSet.bufferState))
+                    {
+                        if (yTmp > 0)
+                            result = true;
+                        y = static_cast<float>(yTmp);
+                        QSurfaceDataItem tmp(QVector3D(x, y, z));
+                        dataRow->append(tmp);
+                    }
+                }
+            }
+
+            if (functionalParameterX == ParameterType::BufferState)
+            {
+                const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+
+                for (int nb=0; nb <= rSystem.getModel().getBuffer().V(); nb++)
+                {
+                    x = nb;
+
+                    double yTmp=0;
+                    if ((*singlePoint)->read(yTmp, qos, n, nb))
+                    {
+                        if (yTmp > 0)
+                            result = true;
+                        y = static_cast<float>(yTmp);
+                        QSurfaceDataItem tmp(QVector3D(x, y, z));
+                        dataRow->append(tmp);
+                    }
+                }
+            }
+            outPlot.dataProxy()->addRow(dataRow);
+        }
+    }
+
+    if (functionalParameterZ == ParameterType::BufferState)
+    {
+        for (int n=0; n<=rSystem.getModel().getBuffer().V(); n++)
+        {
+            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
+            z = n;
+
+            if (functionalParameterX == ParameterType::OfferedTrafficPerAS)
+            {
+                foreach (decimal a, rSystem.getAvailableAperAU())
+                {
+                    const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+                    x = static_cast<float>(a);
+
+                    double yTmp=0;
+                    if ((*singlePoint)->read(yTmp, qos, parametersSet.serverState, n))
+                    {
+                        if (yTmp > 0)
+                            result = true;
+                        y = static_cast<float>(yTmp);
+                        QSurfaceDataItem tmp(QVector3D(x, y, z));
+                        dataRow->append(tmp);
+                    }
+                }
+            }
+
+            if (functionalParameterX == ParameterType::ServerState)
+            {
+                const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+                for (int ns=0; ns <= rSystem.getModel().getServer().V(); ns++)
+                {
+                    x = ns;
+
+                    double yTmp = 0;
+                    if ((*singlePoint)->read(yTmp, qos, ns, n))
+                    {
+                        if (yTmp > 0)
+                            result = true;
+                        y = static_cast<float>(yTmp);
+                        QSurfaceDataItem tmp(QVector3D(x, y, z));
+                        dataRow->append(tmp);
+                    }
+                }
+            }
+            outPlot.dataProxy()->addRow(dataRow);
         }
     }
     return result;

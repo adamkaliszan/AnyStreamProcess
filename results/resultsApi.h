@@ -5,9 +5,21 @@
 #include <QMap>
 #include <QMetaType>
 
+#include <QtDataVisualization/QValue3DAxis>
+#include <QtDataVisualization/Q3DSurface>
+
+#include <QtDataVisualization/QSurfaceDataProxy>
+#include <QtDataVisualization/QHeightMapSurfaceDataProxy>
+#include <QtDataVisualization/QSurface3DSeries>
+
+#include <QtDataVisualization/Q3DTheme>
+
 #include "results/resultsSystem.h"
 #include "algorithms/investigator.h"
 #include "resultsApiTypes.h"
+
+
+using namespace QtDataVisualization;
 
 namespace Results
 {
@@ -51,12 +63,12 @@ class Settings
 {
 protected:
     ParameterType functionalParameterX;
-    ParameterType functionalParameterY;
+    ParameterType functionalParameterZ;
     ParameterType additionalParameter[3];
 
 public:
     ParameterType getFunctionalParameterX() const {return  functionalParameterX;}
-    ParameterType getFunctionalParameterY() const {return  functionalParameterY;}
+    ParameterType getFunctionalParameterZ() const {return  functionalParameterZ;}
     ParameterType getAdditionalParameter1() const {return additionalParameter[0];}
     ParameterType getAdditionalParameter2() const {return additionalParameter[1];}
     ParameterType getAdditionalParameter3() const {return additionalParameter[2];}
@@ -83,6 +95,8 @@ public:
 
     virtual bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const =0;
     virtual bool getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet) const = 0;
+
+    virtual bool getSinglePlot3d(QSurface3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet) const = 0;
 
     virtual QList<ParametersSet> getParametersList(const ModelSystem &system, const QList<decimal> &aOfPerAU) const = 0;
 
@@ -111,6 +125,8 @@ public:
 
     bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
     bool getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet) const;
+    bool getSinglePlot3d(QSurface3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet) const;
+
     virtual QList<ParametersSet> getParametersList(const ModelSystem &system, const QList<decimal> &aOfPerAU) const;
 };
 
@@ -124,6 +140,8 @@ public:
 
     bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
     bool getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet) const;
+    bool getSinglePlot3d(QSurface3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet) const;
+
     virtual QList<ParametersSet> getParametersList(const ModelSystem &system, const QList<decimal> &aOfPerAU) const;
 };
 
@@ -136,6 +154,9 @@ public:
 
     bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
     bool getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet) const;
+
+    bool getSinglePlot3d(QSurface3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet) const;
+
     virtual QList<ParametersSet> getParametersList(const ModelSystem &system, const QList<decimal> &aOfPerAU) const;
 };
 
@@ -148,6 +169,8 @@ public:
 
     bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
     bool getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet) const;
+    bool getSinglePlot3d(QSurface3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet) const;
+
     virtual QList<ParametersSet> getParametersList(const ModelSystem &system, const QList<decimal> &aOfPerAU) const;
 };
 
@@ -160,6 +183,8 @@ public:
 
     bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
     bool getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet) const;
+    bool getSinglePlot3d(QSurface3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet) const;
+
     virtual QList<ParametersSet> getParametersList(const ModelSystem &system, const QList<decimal> &aOfPerAU) const;
 };
 
@@ -172,6 +197,8 @@ public:
 
     bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
     bool getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet) const;
+    bool getSinglePlot3d(QSurface3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet) const;
+
     virtual QList<ParametersSet> getParametersList(const ModelSystem &system, const QList<decimal> &aOfPerAU) const;
 };
 
@@ -184,6 +211,8 @@ public:
 
     bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
     bool getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet) const;
+    bool getSinglePlot3d(QSurface3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet) const;
+
     virtual QList<ParametersSet> getParametersList(const ModelSystem &system, const QList<decimal> &aOfPerAU) const;
 };
 
@@ -196,6 +225,8 @@ public:
 
     bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
     bool getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet) const;
+    bool getSinglePlot3d(QSurface3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet) const;
+
     virtual QList<ParametersSet> getParametersList(const ModelSystem &system, const QList<decimal> &aOfPerAU) const;
 };
 
@@ -209,6 +240,8 @@ public:
 
     bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
     bool getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet) const;
+    bool getSinglePlot3d(QSurface3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet) const;
+
     virtual QList<ParametersSet> getParametersList(const ModelSystem &system, const QList<decimal> &aOfPerAU) const;
 };
 
@@ -219,6 +252,8 @@ public:
 
     bool getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet, bool linearScale=true) const;
     bool getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet) const;
+    bool getSinglePlot3d(QSurface3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const struct ParametersSet &parametersSet) const;
+
     virtual QList<ParametersSet> getParametersList(const ModelSystem &system, const QList<decimal> &aOfPerAU) const;
 };
 
@@ -246,7 +281,7 @@ public:
 
 
     static QMap<ParametersSet, QVector<double>> getPlotsValues(RSystem &rSystem, Type qos, ParameterType functionalParameter, Investigator *algorithm);
-    static const QVector<decimal> getPlotsXorY(RSystem &rSystem, ParameterType functionalParameter);
+    static const QVector<decimal> getPlotsXorZ(RSystem &rSystem, ParameterType functionalParameter);
 };
 
 

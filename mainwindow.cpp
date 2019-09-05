@@ -93,19 +93,24 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->widgetResultsPlot->setRenderHint(QPainter::Antialiasing);
 
     graph3d = new Q3DSurface();
+    graph3d->setAxisX(new QValue3DAxis);
+    graph3d->setAxisY(new QValue3DAxis);
+    graph3d->setAxisZ(new QValue3DAxis);
+
     containerGraph3d = QWidget::createWindowContainer(graph3d);
     containerGraph3d->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     containerGraph3d->setFocusPolicy(Qt::StrongFocus);
 
-    if (!graph3d->hasContext()) {
-        QMessageBox msgBox;
-        msgBox.setText("Couldn't initialize the OpenGL context.");
-        msgBox.exec();
-    }
-
     ui->gridResultsPlot3d->addWidget(containerGraph3d);
     containerGraph3d->setVisible(false);
     containerGraph3d->setEnabled(false);
+
+    ui->listWidgetResultsQtAdditionalParameters1->setVisible(false);
+    ui->listWidgetResultsQtAdditionalParameters2->setVisible(false);
+    ui->listWidgetResultsQtAdditionalParameters3->setVisible(false);
+    ui->labelResultsQtAdditionalParameters1->setVisible(false);
+    ui->labelResultsQtAdditionalParameters2->setVisible(false);
+    ui->labelResultsQtAdditionalParameters3->setVisible(false);
 }
 
 MainWindow::~MainWindow()
@@ -249,13 +254,11 @@ void MainWindow::addSimulationParams(SimulationParameters *par)
 void MainWindow::addTestedAlgorithm(Investigator *algorithm)
 {
     algorithms.append(algorithm);
-    //QObject::connect(algorithm, SIGNAL(sigCalculationDone()), this, SLOT(on_ResultsQtChartRefresh()));
 }
 
 void MainWindow::addExperimentalAlgorithm(Investigator *algorithm)
 {
     algorithms.append(algorithm);
-    //QObject::connect(algorithm, SIGNAL(sigCalculationDone()), this, SLOT(on_ResultsQtChartRefresh()));
 }
 
 
@@ -711,33 +714,32 @@ void MainWindow::on_comboBoxResultsQtType_currentIndexChanged(int index)
 
     ui->comboBoxResultsQtX_axis->clear();
     ui->comboBoxResultsQtY_axis->clear();
-    int currentIndexX = -1;
-    int currentIndexY = -1;
-    int tmpIndex = 0;
+    int currentIndexX = 0;
+    int currentIndexY = 0;
+    int tmpIndex = 1;
+
+    ui->comboBoxResultsQtX_axis->addItem(Results::TypesAndSettings::parameterToString(Results::ParameterType::None), QVariant::fromValue(Results::ParameterType::None));
+    ui->comboBoxResultsQtY_axis->addItem(Results::TypesAndSettings::parameterToString(Results::ParameterType::None), QVariant::fromValue(Results::ParameterType::None));
 
     if (settings)
     {
        foreach (Results::ParameterType param, settings->dependencyParameters)
        {
-
            ui->comboBoxResultsQtX_axis->addItem(Results::TypesAndSettings::parameterToString(param), QVariant::fromValue(param));
 
            if (param == settings->getFunctionalParameterX())
                currentIndexX = tmpIndex;
 
            ui->comboBoxResultsQtY_axis->addItem(Results::TypesAndSettings::parameterToString(param), QVariant::fromValue(param));
-           if (param == settings->getFunctionalParameterY())
+           if (param == settings->getFunctionalParameterZ())
                currentIndexY = tmpIndex;
 
            tmpIndex++;
        }
     }
-    if (currentIndexX >= 0)
-        ui->comboBoxResultsQtX_axis->setCurrentIndex(currentIndexX);
+    ui->comboBoxResultsQtX_axis->setCurrentIndex(currentIndexX);
 
-    if (currentIndexY >= 0)
-        ui->comboBoxResultsQtY_axis->setCurrentIndex(currentIndexY);
-
+    ui->comboBoxResultsQtY_axis->setCurrentIndex(currentIndexY);
 }
 
 void MainWindow::on_comboBoxResultsQtX_axis_currentIndexChanged(int index)
@@ -751,7 +753,29 @@ void MainWindow::on_comboBoxResultsQtX_axis_currentIndexChanged(int index)
 
     fillListWidgetWithParams(ui->listWidgetResultsQtAdditionalParameters1, ui->labelResultsQtAdditionalParameters1, settings->getAdditionalParameter1());
     fillListWidgetWithParams(ui->listWidgetResultsQtAdditionalParameters2, ui->labelResultsQtAdditionalParameters2, settings->getAdditionalParameter2());
+    fillListWidgetWithParams(ui->listWidgetResultsQtAdditionalParameters3, ui->labelResultsQtAdditionalParameters3, settings->getAdditionalParameter3());
+
+    if (ui->comboBoxResultsQtY_axis->currentData().value<Results::ParameterType>() != settings->getFunctionalParameterZ())
+        ui->comboBoxResultsQtY_axis->setCurrentIndex(0);
 }
+
+void MainWindow::on_comboBoxResultsQtY_axis_currentIndexChanged(int index)
+{
+    (void) index;
+    Results::Type type = ui->comboBoxResultsQtType->currentData().value<Results::Type>();
+    Settings *settings = Results::TypesAndSettings::getSetting(type);
+
+    Results::ParameterType paramType = ui->comboBoxResultsQtY_axis->currentData().value<Results::ParameterType>();
+    settings->setFunctionalParameterY(paramType);
+
+    fillListWidgetWithParams(ui->listWidgetResultsQtAdditionalParameters1, ui->labelResultsQtAdditionalParameters1, settings->getAdditionalParameter1());
+    fillListWidgetWithParams(ui->listWidgetResultsQtAdditionalParameters2, ui->labelResultsQtAdditionalParameters2, settings->getAdditionalParameter2());
+    fillListWidgetWithParams(ui->listWidgetResultsQtAdditionalParameters2, ui->labelResultsQtAdditionalParameters3, settings->getAdditionalParameter3());
+
+    if (ui->comboBoxResultsQtX_axis->currentData().value<Results::ParameterType>() != settings->getFunctionalParameterX())
+        ui->comboBoxResultsQtX_axis->setCurrentIndex(0);
+}
+
 
 void MainWindow::on_listWidgetKlasy_currentItemChanged(QListWidgetItem *current, QListWidgetItem *previous)
 {
@@ -900,8 +924,10 @@ void MainWindow::updateQoS_ComboBox(QSet<Results::Type> &qos)
 
     ui->listWidgetResultsQtAdditionalParameters1->setVisible(false);
     ui->listWidgetResultsQtAdditionalParameters2->setVisible(false);
+    ui->listWidgetResultsQtAdditionalParameters3->setVisible(false);
     ui->labelResultsQtAdditionalParameters1->setVisible(false);
     ui->labelResultsQtAdditionalParameters2->setVisible(false);
+    ui->labelResultsQtAdditionalParameters3->setVisible(false);
 
     foreach (Results::Type type, qos)
         ui->comboBoxResultsQtType->addItem(Results::TypesAndSettings::typeToString(type), QVariant::fromValue(type));
@@ -1864,11 +1890,16 @@ void MainWindow::fillListWidgetWithParams(QListWidget *outList, QLabel *outLabel
     }
 }
 
+void MainWindow::solveParamXYconflict(QComboBox *outCombo, ParameterType paramTypeToSkip)
+{
+    if (outCombo->currentData().value<Results::ParameterType>() == paramTypeToSkip)
+    {
+        ;
+    }
+}
+
 void MainWindow::on_ResultsQtChartRefresh()
 {
-    struct Results::ParametersSet parameters;
-    QString serDescription;
-
     Results::Type type = ui->comboBoxResultsQtType->currentData().value<Results::Type>();
     Results::Settings *setting = Results::TypesAndSettings::getSetting(type);
 
@@ -1900,6 +1931,24 @@ void MainWindow::on_ResultsQtChartRefresh()
     if (noOfAlgorithms == 0)
         return;
 
+    if (ui->widgetResultsPlot->isEnabled())
+        prepare2dChart(setting, type, noOfAlgorithms);
+    else
+        prepare3dChart(setting, type, noOfAlgorithms);
+
+}
+
+void MainWindow::prepare2dChart(Results::Settings *setting, Results::Type type, int noOfAlgorithms)
+{
+    static const QVector<QColor> algColors =
+    {
+        QColor::fromRgb(255,   0, 0), QColor::fromRgb(  0, 255,   0), QColor::fromRgb(  0,   0, 255)
+      , QColor::fromRgb(128, 128, 0), QColor::fromRgb(128,   0, 128), QColor::fromRgb(  0, 128, 128), QColor::fromRgb(128, 128, 128)
+      , QColor::fromRgb(128,   0, 0), QColor::fromRgb(  0, 128,   0), QColor::fromRgb(  0,   0, 128)
+    };
+
+    struct Results::ParametersSet parameters;
+    QString serDescription;
 
     QChart *chart = ui->widgetResultsPlot->chart();
     chart->removeAllSeries();
@@ -1917,13 +1966,6 @@ void MainWindow::on_ResultsQtChartRefresh()
     }
     else
         chart->legend()->setAlignment(Qt::AlignBottom);
-
-    static QVector<QColor> algColors =
-    {
-        QColor::fromRgb(255,   0, 0), QColor::fromRgb(  0, 255,   0), QColor::fromRgb(  0,   0, 255)
-      , QColor::fromRgb(128, 128, 0), QColor::fromRgb(128,   0, 128), QColor::fromRgb(  0, 128, 128), QColor::fromRgb(128, 128, 128)
-      , QColor::fromRgb(128,   0, 0), QColor::fromRgb(  0, 128,   0), QColor::fromRgb(  0,   0, 128)
-    };
 
     static QVector<Qt::PenStyle> par1lineStyle =
     {
@@ -1977,25 +2019,56 @@ void MainWindow::on_ResultsQtChartRefresh()
                     foreach (const QListWidgetItem *tmpItem2, ui->listWidgetResultsQtAdditionalParameters2->selectedItems())
                     {
                         QString name2 = Settings::updateParameters(parameters, tmpItem2->data(Qt::UserRole), setting->getAdditionalParameter2(), system->getConstSyst(), resultsForSystem);
-                        QLineSeries *series = new QLineSeries();
-                        setting->getSinglePlot(series, yMinAndMax, *resultsForSystem, algorithm, parameters, !ui->checkBoxResultsQtLogScaleOnAxisY->isChecked());
 
-                        series->setName(algorithm->shortName() + " " + name + " " + name2);
+                        if (setting->getAdditionalParameter3() != Results::ParameterType::None)
+                        {
+                            foreach (const QListWidgetItem *tmpItem3, ui->listWidgetResultsQtAdditionalParameters3->selectedItems())
+                            {
+                                QString name3 = Settings::updateParameters(parameters, tmpItem3->data(Qt::UserRole), setting->getAdditionalParameter3(), system->getConstSyst(), resultsForSystem);
 
-                        QPen tmpPen = QPen(algColors[algColIdx]);
-                        tmpPen.setStyle(par1lineStyle[par1BrushIdx]);
-                        tmpPen.setWidth(par2Lw[par2LwIdx]);
-                        tmpPen.setColor(algColors[algColIdx]);
+                                QLineSeries *series = new QLineSeries();
+                                setting->getSinglePlot(series, yMinAndMax, *resultsForSystem, algorithm, parameters, !ui->checkBoxResultsQtLogScaleOnAxisY->isChecked());
 
-                        series->setPen(tmpPen);
+                                series->setName(algorithm->shortName() + " " + name + " " + name2 + " " + name3);
 
-                        chart->addSeries(series);
-                        series->attachAxis(axisX);
-                        series->attachAxis(axisY);
+                                QPen tmpPen = QPen(algColors[algColIdx]);
+                                tmpPen.setStyle(par1lineStyle[par1BrushIdx]);
+                                tmpPen.setWidth(par2Lw[par2LwIdx]);
+                                tmpPen.setColor(algColors[algColIdx]);
 
-                        par2LwIdx++;
-                        if (par2LwIdx == par2Lw.length())
-                            par2LwIdx = 0;
+                                series->setPen(tmpPen);
+
+                                chart->addSeries(series);
+                                series->attachAxis(axisX);
+                                series->attachAxis(axisY);
+
+                                par2LwIdx++;
+                                if (par2LwIdx == par2Lw.length())
+                                    par2LwIdx = 0;
+                            }
+                        }
+                        else
+                        {
+                            QLineSeries *series = new QLineSeries();
+                            setting->getSinglePlot(series, yMinAndMax, *resultsForSystem, algorithm, parameters, !ui->checkBoxResultsQtLogScaleOnAxisY->isChecked());
+
+                            series->setName(algorithm->shortName() + " " + name + " " + name2);
+
+                            QPen tmpPen = QPen(algColors[algColIdx]);
+                            tmpPen.setStyle(par1lineStyle[par1BrushIdx]);
+                            tmpPen.setWidth(par2Lw[par2LwIdx]);
+                            tmpPen.setColor(algColors[algColIdx]);
+
+                            series->setPen(tmpPen);
+
+                            chart->addSeries(series);
+                            series->attachAxis(axisX);
+                            series->attachAxis(axisY);
+
+                            par2LwIdx++;
+                            if (par2LwIdx == par2Lw.length())
+                                par2LwIdx = 0;
+                        }
                     }
                 }
                 else
@@ -2065,6 +2138,88 @@ void MainWindow::on_ResultsQtChartRefresh()
         chart->legend()->hide();
 }
 
+void MainWindow::prepare3dChart(Results::Settings *setting, Results::Type type, int noOfAlgorithms)
+{
+    struct Results::ParametersSet parameters;
+    QSurface3DSeries *data;
+
+
+    graph3d->seriesList().clear();
+
+    foreach (QListWidgetItem *itm, ui->listWidgetAlgorithms->selectedItems() + ui->listWidgetAlgorithmsAlternative->selectedItems())
+    {
+        Investigator *algorithm = itm->data(Qt::UserRole).value<Investigator *>();
+        QString serDescription =  (noOfAlgorithms<=1) ? "" : algorithm->shortName() + " ";
+
+        if (!algorithm->calculationDone)
+            continue;
+
+        clearParameters(parameters);
+
+        if (setting->getAdditionalParameter1() != Results::ParameterType::None)
+        {
+            foreach (const QListWidgetItem *tmpItem1, ui->listWidgetResultsQtAdditionalParameters1->selectedItems())
+            {
+                QString name = Settings::updateParameters(parameters, tmpItem1->data(Qt::UserRole), setting->getAdditionalParameter1(), system->getConstSyst(), resultsForSystem);
+                if (setting->getAdditionalParameter2() != Results::ParameterType::None)
+                {
+                    foreach (const QListWidgetItem *tmpItem2, ui->listWidgetResultsQtAdditionalParameters2->selectedItems())
+                    {
+                        QString name2 = Settings::updateParameters(parameters, tmpItem2->data(Qt::UserRole), setting->getAdditionalParameter2(), system->getConstSyst(), resultsForSystem);
+
+                        if (setting->getAdditionalParameter3() != Results::ParameterType::None)
+                        {
+                            foreach (const QListWidgetItem *tmpItem3, ui->listWidgetResultsQtAdditionalParameters3->selectedItems())
+                            {
+                                QString name3 = Settings::updateParameters(parameters, tmpItem3->data(Qt::UserRole), setting->getAdditionalParameter2(), system->getConstSyst(), resultsForSystem);
+                                data = new QSurface3DSeries();
+                                setting->getSinglePlot3d(*data, *resultsForSystem, algorithm, parameters);
+                                graph3d->addSeries(data);
+                            }
+                        }
+                        else
+                        {
+                            data = new QSurface3DSeries();
+                            setting->getSinglePlot3d(*data, *resultsForSystem, algorithm, parameters);
+                            graph3d->addSeries(data);
+                        }
+                    }
+                }
+                else
+                {
+                    data = new QSurface3DSeries();
+                    setting->getSinglePlot3d(*data, *resultsForSystem, algorithm, parameters);
+                    data->setName(name);
+                    graph3d->addSeries(data);
+                }
+            }
+        }
+        else
+        {
+            data = new QSurface3DSeries();
+            setting->getSinglePlot3d(*data, *resultsForSystem, algorithm, parameters);
+            graph3d->addSeries(data);
+        }
+    }
+    graph3d->setTitle(Results::TypesAndSettings::typeToString(type));
+    //graph3d->axisX()->setLabelFormat("%.1f");
+    graph3d->axisX()->setAutoAdjustRange(true);
+    //graph3d->axisX()->setLabelAutoRotation(30);
+    graph3d->axisX()->setTitle(TypesAndSettings::parameterToString(setting->getFunctionalParameterX()));
+
+
+    graph3d->axisY()->setAutoAdjustRange(true);
+    //graph3d->axisY()->setLabelFormat("%.2e");
+
+    graph3d->axisZ()->setAutoAdjustRange(true);
+    //graph3d->axisZ()->setLabelFormat("%.2f");
+    graph3d->axisZ()->setTitle(TypesAndSettings::parameterToString(setting->getFunctionalParameterZ()));
+
+
+    graph3d->setHorizontalAspectRatio(1);
+}
+
+
 void MainWindow::on_actionConfigure_triggered()
 {
     dlgConfig->show();
@@ -2114,17 +2269,4 @@ void MainWindow::on_checkBoxY_axis_stateChanged(int arg1)
 
         ui->comboBoxResultsQtY_axis->setEnabled(false);
     }
-}
-
-void MainWindow::on_comboBoxResultsQtY_axis_currentIndexChanged(int index)
-{
-        (void) index;
-        Results::Type type = ui->comboBoxResultsQtType->currentData().value<Results::Type>();
-        Settings *settings = Results::TypesAndSettings::getSetting(type);
-
-        Results::ParameterType paramType = ui->comboBoxResultsQtY_axis->currentData().value<Results::ParameterType>();
-        settings->setFunctionalParameterX(paramType);
-
-        fillListWidgetWithParams(ui->listWidgetResultsQtAdditionalParameters1, ui->labelResultsQtAdditionalParameters1, settings->getAdditionalParameter1());
-        fillListWidgetWithParams(ui->listWidgetResultsQtAdditionalParameters2, ui->labelResultsQtAdditionalParameters2, settings->getAdditionalParameter2());
 }
