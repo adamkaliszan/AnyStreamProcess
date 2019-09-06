@@ -8,10 +8,10 @@
 #include <QVariant>
 
 
-#include <QtDataVisualization/Q3DSurface>
-#include <QtDataVisualization/QSurfaceDataProxy>
-#include <QtDataVisualization/QHeightMapSurfaceDataProxy>
-#include <QtDataVisualization/QSurface3DSeries>
+#include <QtDataVisualization/Q3DScatter>
+#include <QtDataVisualization/QScatterDataProxy>
+#include <QtDataVisualization/QScatter3DSeries>
+#include <QLogValue3DAxisFormatter>
 #include <QtWidgets/QSlider>
 
 #include <QtWidgets/QApplication>
@@ -28,7 +28,7 @@
 #include <QtGui/QPainter>
 #include <QtGui/QScreen>
 
-#include "surfacegraph.h"
+#include "qcolor.h"
 
 #include "algorithms/algorithmConv.h"
 #include "algorithms/alg_cFIFO_convGamma.h"
@@ -52,6 +52,8 @@
 
 
 using namespace QtCharts;
+using namespace QtDataVisualization;
+
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -92,10 +94,13 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->widgetResultsPlot->setChart(qtChart);
     ui->widgetResultsPlot->setRenderHint(QPainter::Antialiasing);
 
-    graph3d = new Q3DSurface();
+    graph3d = new Q3DScatter();
     graph3d->setAxisX(new QValue3DAxis);
     graph3d->setAxisY(new QValue3DAxis);
     graph3d->setAxisZ(new QValue3DAxis);
+
+    graph3dAxisYFormatLog = new QLogValue3DAxisFormatter();
+    graph3dAxisYFormatLin = new QValue3DAxisFormatter();
 
     containerGraph3d = QWidget::createWindowContainer(graph3d);
     containerGraph3d->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -2140,12 +2145,40 @@ void MainWindow::prepare2dChart(Results::Settings *setting, Results::Type type, 
 
 void MainWindow::prepare3dChart(Results::Settings *setting, Results::Type type, int noOfAlgorithms)
 {
+#define NO_OF_COLORS 5
+#define NO_OF_SHAPES 10
+    static Qt::GlobalColor colors[NO_OF_COLORS]
+    {
+        Qt::GlobalColor::yellow
+      , Qt::GlobalColor::red
+      , Qt::GlobalColor::green
+      , Qt::GlobalColor::blue
+      , Qt::GlobalColor::gray
+    };
+
+    static QAbstract3DSeries::Mesh shapes[] =
+    {
+        QAbstract3DSeries::MeshCube
+      , QAbstract3DSeries::MeshPyramid
+      , QAbstract3DSeries::MeshCone
+      , QAbstract3DSeries::MeshCylinder
+      , QAbstract3DSeries::MeshBevelBar
+      , QAbstract3DSeries::MeshBevelCube
+      , QAbstract3DSeries::MeshSphere
+      , QAbstract3DSeries::MeshMinimal
+      , QAbstract3DSeries::MeshArrow
+      , QAbstract3DSeries::MeshPoint
+    };
+
     struct Results::ParametersSet parameters;
-    QSurface3DSeries *data;
+    QScatter3DSeries *data;
 
 
-    graph3d->seriesList().clear();
+    foreach (QScatter3DSeries *tmp, graph3d->seriesList())
+        graph3d->removeSeries(tmp);
 
+
+    int colorIdx = 0;
     foreach (QListWidgetItem *itm, ui->listWidgetAlgorithms->selectedItems() + ui->listWidgetAlgorithmsAlternative->selectedItems())
     {
         Investigator *algorithm = itm->data(Qt::UserRole).value<Investigator *>();
@@ -2156,8 +2189,11 @@ void MainWindow::prepare3dChart(Results::Settings *setting, Results::Type type, 
 
         clearParameters(parameters);
 
+
         if (setting->getAdditionalParameter1() != Results::ParameterType::None)
         {
+            int shapeIdx = 0;
+
             foreach (const QListWidgetItem *tmpItem1, ui->listWidgetResultsQtAdditionalParameters1->selectedItems())
             {
                 QString name = Settings::updateParameters(parameters, tmpItem1->data(Qt::UserRole), setting->getAdditionalParameter1(), system->getConstSyst(), resultsForSystem);
@@ -2165,6 +2201,8 @@ void MainWindow::prepare3dChart(Results::Settings *setting, Results::Type type, 
                 {
                     foreach (const QListWidgetItem *tmpItem2, ui->listWidgetResultsQtAdditionalParameters2->selectedItems())
                     {
+                        int sizeIdx = 0;
+
                         QString name2 = Settings::updateParameters(parameters, tmpItem2->data(Qt::UserRole), setting->getAdditionalParameter2(), system->getConstSyst(), resultsForSystem);
 
                         if (setting->getAdditionalParameter3() != Results::ParameterType::None)
@@ -2172,51 +2210,90 @@ void MainWindow::prepare3dChart(Results::Settings *setting, Results::Type type, 
                             foreach (const QListWidgetItem *tmpItem3, ui->listWidgetResultsQtAdditionalParameters3->selectedItems())
                             {
                                 QString name3 = Settings::updateParameters(parameters, tmpItem3->data(Qt::UserRole), setting->getAdditionalParameter2(), system->getConstSyst(), resultsForSystem);
-                                data = new QSurface3DSeries();
+                                data = new QScatter3DSeries();
                                 setting->getSinglePlot3d(*data, *resultsForSystem, algorithm, parameters);
+
+                                data->setName(name+name2+name3);
+
+                                data->setMesh(shapes[shapeIdx]);
+                                data->setItemSize(1+1*sizeIdx);
+
+                                data->setBaseColor(colors[colorIdx]);
                                 graph3d->addSeries(data);
                             }
                         }
                         else
                         {
-                            data = new QSurface3DSeries();
+                            data = new QScatter3DSeries();
                             setting->getSinglePlot3d(*data, *resultsForSystem, algorithm, parameters);
+
+                            data->setName(name+name2);
+
+                            data->setMesh(shapes[shapeIdx]);
+                            data->setItemSize(1+1*sizeIdx);
+
+                            data->setBaseColor(colors[colorIdx]);
                             graph3d->addSeries(data);
                         }
+                        sizeIdx++;
                     }
                 }
                 else
                 {
-                    data = new QSurface3DSeries();
+                    data = new QScatter3DSeries();
                     setting->getSinglePlot3d(*data, *resultsForSystem, algorithm, parameters);
+
                     data->setName(name);
+                    data->setMesh(shapes[shapeIdx]);
+
+                   // data->set
+
+//                    data->set BaseColor(colors[colorIdx]);
+                    data->setBaseColor(colors[colorIdx]);
                     graph3d->addSeries(data);
                 }
+                shapeIdx++;
+                shapeIdx %= NO_OF_SHAPES;
             }
         }
         else
         {
-            data = new QSurface3DSeries();
+            data = new QScatter3DSeries();
             setting->getSinglePlot3d(*data, *resultsForSystem, algorithm, parameters);
+
+
+            data->setBaseColor(colors[colorIdx]);
             graph3d->addSeries(data);
         }
+
+        colorIdx++;
+        colorIdx %= NO_OF_COLORS;
     }
-    graph3d->setTitle(Results::TypesAndSettings::typeToString(type));
-    //graph3d->axisX()->setLabelFormat("%.1f");
+
+    graph3d->axisX()->setLabelAutoRotation(30);
+    graph3d->axisY()->setLabelAutoRotation(90);
+    graph3d->axisZ()->setLabelAutoRotation(30);
+
     graph3d->axisX()->setAutoAdjustRange(true);
-    //graph3d->axisX()->setLabelAutoRotation(30);
-    graph3d->axisX()->setTitle(TypesAndSettings::parameterToString(setting->getFunctionalParameterX()));
-
-
     graph3d->axisY()->setAutoAdjustRange(true);
-    //graph3d->axisY()->setLabelFormat("%.2e");
-
     graph3d->axisZ()->setAutoAdjustRange(true);
-    //graph3d->axisZ()->setLabelFormat("%.2f");
-    graph3d->axisZ()->setTitle(TypesAndSettings::parameterToString(setting->getFunctionalParameterZ()));
 
+
+    graph3d->setTitle(Results::TypesAndSettings::typeToString(type));
+
+    graph3d->axisX()->setTitle(TypesAndSettings::parameterToString(setting->getFunctionalParameterX()));
+    graph3d->axisZ()->setTitle(TypesAndSettings::parameterToString(setting->getFunctionalParameterZ()));
+    graph3d->axisX()->setTitleVisible(true);
+    graph3d->axisZ()->setTitleVisible(true);
+
+
+    graph3d->axisY()->setFormatter(ui->checkBoxResultsQtLogScaleOnAxisY->isChecked() ?
+                                       new QLogValue3DAxisFormatter() : new QValue3DAxisFormatter());
 
     graph3d->setHorizontalAspectRatio(1);
+
+#undef NO_OF_COLORS
+#undef NO_OF_SHAPES
 }
 
 

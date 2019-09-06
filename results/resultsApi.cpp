@@ -372,7 +372,7 @@ bool SettingsTypeForClass::getSinglePlot(QVector<double> &outPlot, RSystem &rSys
     return result;
 }
 
-bool SettingsTypeForClass::getSinglePlot3d(QSurface3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
+bool SettingsTypeForClass::getSinglePlot3d(QScatter3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
 {
     bool result = false;
 
@@ -381,7 +381,6 @@ bool SettingsTypeForClass::getSinglePlot3d(QSurface3DSeries &outPlot, RSystem &r
     {
         foreach(decimal a, rSystem.getAvailableAperAU())
         {
-            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
             const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
             z = static_cast<float>(a);
 
@@ -396,11 +395,10 @@ bool SettingsTypeForClass::getSinglePlot3d(QSurface3DSeries &outPlot, RSystem &r
                         result = true;
 
                     y = static_cast<float>(yTmp);
-                    QSurfaceDataItem tmp(QVector3D(x, y, z));
-                    dataRow->append(tmp);
+                    QScatterDataItem tmp(QVector3D(x, y, z));
+                    outPlot.dataProxy()->addItem(tmp);
                 }
             }
-            outPlot.dataProxy()->addRow(dataRow);
         }
     }
 
@@ -409,7 +407,6 @@ bool SettingsTypeForClass::getSinglePlot3d(QSurface3DSeries &outPlot, RSystem &r
 
         for (int i=0; i <rSystem.getModel().m(); i++)
         {
-            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
             z = i;
 
             foreach(decimal a, rSystem.getAvailableAperAU())
@@ -424,11 +421,10 @@ bool SettingsTypeForClass::getSinglePlot3d(QSurface3DSeries &outPlot, RSystem &r
                         result = true;
                     y = static_cast<float>(yTmp);
 
-                    QSurfaceDataItem tmp(QVector3D(x, y, z));
-                    dataRow->append(tmp);
+                    QScatterDataItem tmp(QVector3D(x, y, z));
+                    outPlot.dataProxy()->addItem(tmp);
                 }
             }
-            outPlot.dataProxy()->addRow(dataRow);
         }
     }
     return result;
@@ -532,7 +528,7 @@ bool SettingsTypeForSystemState::getSinglePlot(QVector<double> &outPlot, RSystem
     return result;
 }
 
-bool SettingsTypeForSystemState::getSinglePlot3d(QSurface3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
+bool SettingsTypeForSystemState::getSinglePlot3d(QScatter3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
 {
     bool result = false;
     float x, y, z;
@@ -541,7 +537,6 @@ bool SettingsTypeForSystemState::getSinglePlot3d(QSurface3DSeries &outPlot, RSys
     {
         foreach(decimal a, rSystem.getAvailableAperAU())
         {
-            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
             const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
             z = static_cast<float>(a);
 
@@ -556,11 +551,10 @@ bool SettingsTypeForSystemState::getSinglePlot3d(QSurface3DSeries &outPlot, RSys
                         result = true;
 
                     y = static_cast<float>(yTmp);
-                    QSurfaceDataItem tmp(QVector3D(x, y, z));
-                    dataRow->append(tmp);
+                    QScatterDataItem tmp(QVector3D(x, y, z));
+                    outPlot.dataProxy()->addItem(tmp);
                 }
             }
-            outPlot.dataProxy()->addRow(dataRow);
         }
     }
 
@@ -568,7 +562,6 @@ bool SettingsTypeForSystemState::getSinglePlot3d(QSurface3DSeries &outPlot, RSys
     {
         for (int n=0; n<=rSystem.getModel().V(); n++)
         {
-            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
             z = parametersSet.systemState;
 
             foreach(decimal a, rSystem.getAvailableAperAU())
@@ -584,11 +577,10 @@ bool SettingsTypeForSystemState::getSinglePlot3d(QSurface3DSeries &outPlot, RSys
                         result = true;
 
                     y = static_cast<float>(yTmp);
-                    QSurfaceDataItem tmp(QVector3D(x, y, z));
-                    dataRow->append(tmp);
+                    QScatterDataItem tmp(QVector3D(x, y, z));
+                    outPlot.dataProxy()->addItem(tmp);
                 }
             }
-            outPlot.dataProxy()->addRow(dataRow);
         }
     }
     return result;
@@ -723,7 +715,7 @@ bool SettingsTypeForServerState::getSinglePlot(QVector<double> &outPlot, RSystem
     return result;
 }
 
-bool SettingsTypeForServerState::getSinglePlot3d(QSurface3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
+bool SettingsTypeForServerState::getSinglePlot3d(QScatter3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
 {
     (void) parametersSet;
     bool result = false;
@@ -733,7 +725,6 @@ bool SettingsTypeForServerState::getSinglePlot3d(QSurface3DSeries &outPlot, RSys
     {
         foreach(decimal a, rSystem.getAvailableAperAU())
         {
-            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
             const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
             z = static_cast<float>(a);
 
@@ -747,11 +738,10 @@ bool SettingsTypeForServerState::getSinglePlot3d(QSurface3DSeries &outPlot, RSys
                     if (yTmp > 0)
                         result = true;
                     y = static_cast<float>(yTmp);
-                    QSurfaceDataItem tmp(QVector3D(x, y, z));
-                    dataRow->append(tmp);
+                    QScatterDataItem tmp(QVector3D(x, y, z));
+                    outPlot.dataProxy()->addItem(tmp);
                 }
             }
-            outPlot.dataProxy()->addRow(dataRow);
         }
     }
 
@@ -759,7 +749,6 @@ bool SettingsTypeForServerState::getSinglePlot3d(QSurface3DSeries &outPlot, RSys
     {
         for (int n=0; n<=rSystem.getModel().getServer().V(); n++)
         {
-            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
             z = n;
 
             foreach(decimal a, rSystem.getAvailableAperAU())
@@ -775,11 +764,10 @@ bool SettingsTypeForServerState::getSinglePlot3d(QSurface3DSeries &outPlot, RSys
                     if (yTmp > 0)
                         result = true;
                     y = static_cast<float>(yTmp);
-                    QSurfaceDataItem tmp(QVector3D(x, y, z));
-                    dataRow->append(tmp);
+                    QScatterDataItem tmp(QVector3D(x, y, z));
+                    outPlot.dataProxy()->addItem(tmp);
                 }
             }
-            outPlot.dataProxy()->addRow(dataRow);
         }
     }
     return result;
@@ -917,7 +905,7 @@ bool SettingsTypeForBufferState::getSinglePlot(QVector<double> &outPlot, RSystem
     return result;
 }
 
-bool SettingsTypeForBufferState::getSinglePlot3d(QSurface3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
+bool SettingsTypeForBufferState::getSinglePlot3d(QScatter3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
 {
     (void) parametersSet;
 
@@ -929,7 +917,6 @@ bool SettingsTypeForBufferState::getSinglePlot3d(QSurface3DSeries &outPlot, RSys
 
         foreach(decimal a, rSystem.getAvailableAperAU())
         {
-            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
             z = static_cast<float>(a);
 
             for (int n=0; n <= rSystem.getModel().getBuffer().V(); n++)
@@ -944,11 +931,9 @@ bool SettingsTypeForBufferState::getSinglePlot3d(QSurface3DSeries &outPlot, RSys
                     if (yTmp > 0)
                         result = true;
                     y = static_cast<float>(yTmp);
-                    QSurfaceDataItem tmp(QVector3D(x, y, z));
-                    dataRow->append(tmp);
-                }
+                    QScatterDataItem tmp(QVector3D(x, y, z));
+                    outPlot.dataProxy()->addItem(tmp);                }
             }
-            outPlot.dataProxy()->addRow(dataRow);
         }
     }
 
@@ -956,7 +941,6 @@ bool SettingsTypeForBufferState::getSinglePlot3d(QSurface3DSeries &outPlot, RSys
     {
         for (int n=0; n<=rSystem.getModel().getBuffer().V(); n++)
         {
-            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
             z = n;
 
             foreach(decimal a, rSystem.getAvailableAperAU())
@@ -972,11 +956,9 @@ bool SettingsTypeForBufferState::getSinglePlot3d(QSurface3DSeries &outPlot, RSys
                     if (yTmp > 0)
                         result = true;
                     y = static_cast<float>(yTmp);
-                    QSurfaceDataItem tmp(QVector3D(x, y, z));
-                    dataRow->append(tmp);
-                }
+                    QScatterDataItem tmp(QVector3D(x, y, z));
+                    outPlot.dataProxy()->addItem(tmp);                }
             }
-            outPlot.dataProxy()->addRow(dataRow);
         }
     }
     return result;
@@ -1144,7 +1126,7 @@ bool SettingsTypeForClassAndSystemState::getSinglePlot(QVector<double> &outPlot,
     return result;
 }
 
-bool SettingsTypeForClassAndSystemState::getSinglePlot3d(QSurface3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
+bool SettingsTypeForClassAndSystemState::getSinglePlot3d(QScatter3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
 {
     bool result = false;
     float x, y, z;
@@ -1153,7 +1135,6 @@ bool SettingsTypeForClassAndSystemState::getSinglePlot3d(QSurface3DSeries &outPl
     {
         foreach(decimal a, rSystem.getAvailableAperAU())
         {
-            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
             const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
             z = static_cast<float>(a);
 
@@ -1170,8 +1151,9 @@ bool SettingsTypeForClassAndSystemState::getSinglePlot3d(QSurface3DSeries &outPl
                         if (yTmp > 0)
                             result = true;
                         y = static_cast<float>(yTmp);
-                        QSurfaceDataItem tmp(QVector3D(x, y, z));
-                        dataRow->append(tmp);                    }
+                        QScatterDataItem tmp(QVector3D(x, y, z));
+                        outPlot.dataProxy()->addItem(tmp);
+                    }
                 }
             }
             if (functionalParameterX == ParameterType::TrafficClass)
@@ -1186,12 +1168,11 @@ bool SettingsTypeForClassAndSystemState::getSinglePlot3d(QSurface3DSeries &outPl
                         if (yTmp > 0)
                             result = true;
                         y = static_cast<float>(yTmp);
-                        QSurfaceDataItem tmp(QVector3D(x, y, z));
-                        dataRow->append(tmp);
+                        QScatterDataItem tmp(QVector3D(x, y, z));
+                        outPlot.dataProxy()->addItem(tmp);
                     }
                 }
             }
-            outPlot.dataProxy()->addRow(dataRow);
         }
     }
 
@@ -1199,7 +1180,6 @@ bool SettingsTypeForClassAndSystemState::getSinglePlot3d(QSurface3DSeries &outPl
     {
         for (int n=0; n<=rSystem.getModel().V(); n++)
         {
-            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
             z = n;
 
             if (functionalParameterX == ParameterType::OfferedTrafficPerAS)
@@ -1215,8 +1195,8 @@ bool SettingsTypeForClassAndSystemState::getSinglePlot3d(QSurface3DSeries &outPl
                         if (yTmp > 0)
                             result = true;
                         y = static_cast<float>(yTmp);
-                        QSurfaceDataItem tmp(QVector3D(x, y, z));
-                        dataRow->append(tmp);
+                        QScatterDataItem tmp(QVector3D(x, y, z));
+                        outPlot.dataProxy()->addItem(tmp);
                     }
                 }
             }
@@ -1234,12 +1214,11 @@ bool SettingsTypeForClassAndSystemState::getSinglePlot3d(QSurface3DSeries &outPl
                         if (yTmp > 0)
                             result = true;
                         y = static_cast<float>(yTmp);
-                        QSurfaceDataItem tmp(QVector3D(x, y, z));
-                        dataRow->append(tmp);
+                        QScatterDataItem tmp(QVector3D(x, y, z));
+                        outPlot.dataProxy()->addItem(tmp);
                     }
                 }
             }
-            outPlot.dataProxy()->addRow(dataRow);
         }
     }
 
@@ -1247,7 +1226,6 @@ bool SettingsTypeForClassAndSystemState::getSinglePlot3d(QSurface3DSeries &outPl
     {
         for (int i=0; i<rSystem.getModel().m(); i++)
         {
-            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
             z = i;
 
             if (functionalParameterX == ParameterType::OfferedTrafficPerAS)
@@ -1263,8 +1241,8 @@ bool SettingsTypeForClassAndSystemState::getSinglePlot3d(QSurface3DSeries &outPl
                         if (yTmp > 0)
                             result = true;
                         y = static_cast<float>(yTmp);
-                        QSurfaceDataItem tmp(QVector3D(x, y, z));
-                        dataRow->append(tmp);
+                        QScatterDataItem tmp(QVector3D(x, y, z));
+                        outPlot.dataProxy()->addItem(tmp);
                     }
                 }
             }
@@ -1282,12 +1260,11 @@ bool SettingsTypeForClassAndSystemState::getSinglePlot3d(QSurface3DSeries &outPl
                         if (yTmp > 0)
                             result = true;
                         y = static_cast<float>(yTmp);
-                        QSurfaceDataItem tmp(QVector3D(x, y, z));
-                        dataRow->append(tmp);
+                        QScatterDataItem tmp(QVector3D(x, y, z));
+                        outPlot.dataProxy()->addItem(tmp);
                     }
                 }
             }
-            outPlot.dataProxy()->addRow(dataRow);
         }
     }
     return result;
@@ -1479,7 +1456,7 @@ bool SettingsTypeForClassAndServerState::getSinglePlot(QVector<double> &outPlot,
     return result;
 }
 
-bool SettingsTypeForClassAndServerState::getSinglePlot3d(QSurface3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
+bool SettingsTypeForClassAndServerState::getSinglePlot3d(QScatter3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
 {
     bool result = false;
     float x, y, z;
@@ -1488,7 +1465,6 @@ bool SettingsTypeForClassAndServerState::getSinglePlot3d(QSurface3DSeries &outPl
     {
         foreach(decimal a, rSystem.getAvailableAperAU())
         {
-            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
             const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
             z = static_cast<float>(a);
 
@@ -1504,8 +1480,8 @@ bool SettingsTypeForClassAndServerState::getSinglePlot3d(QSurface3DSeries &outPl
                         if (yTmp > 0)
                             result = true;
                         y = static_cast<float>(yTmp);
-                        QSurfaceDataItem tmp(QVector3D(x, y, z));
-                        dataRow->append(tmp);
+                        QScatterDataItem tmp(QVector3D(x, y, z));
+                        outPlot.dataProxy()->addItem(tmp);
                     }
                 }
             }
@@ -1521,12 +1497,11 @@ bool SettingsTypeForClassAndServerState::getSinglePlot3d(QSurface3DSeries &outPl
                         if (yTmp > 0)
                             result = true;
                         y = static_cast<float>(yTmp);
-                        QSurfaceDataItem tmp(QVector3D(x, y, z));
-                        dataRow->append(tmp);
+                        QScatterDataItem tmp(QVector3D(x, y, z));
+                        outPlot.dataProxy()->addItem(tmp);
                     }
                 }
             }
-            outPlot.dataProxy()->addRow(dataRow);
         }
     }
 
@@ -1534,7 +1509,6 @@ bool SettingsTypeForClassAndServerState::getSinglePlot3d(QSurface3DSeries &outPl
     {
         for (int n=0; n<=rSystem.getModel().getServer().V(); n++)
         {
-            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
             z = n;
 
             if (functionalParameterX == ParameterType::OfferedTrafficPerAS)
@@ -1550,8 +1524,8 @@ bool SettingsTypeForClassAndServerState::getSinglePlot3d(QSurface3DSeries &outPl
                         if (yTmp > 0)
                             result = true;
                         y = static_cast<float>(yTmp);
-                        QSurfaceDataItem tmp(QVector3D(x, y, z));
-                        dataRow->append(tmp);
+                        QScatterDataItem tmp(QVector3D(x, y, z));
+                        outPlot.dataProxy()->addItem(tmp);
                     }
                 }
             }
@@ -1569,12 +1543,11 @@ bool SettingsTypeForClassAndServerState::getSinglePlot3d(QSurface3DSeries &outPl
                         if (yTmp > 0)
                             result = true;
                         y = static_cast<float>(yTmp);
-                        QSurfaceDataItem tmp(QVector3D(x, y, z));
-                        dataRow->append(tmp);
+                        QScatterDataItem tmp(QVector3D(x, y, z));
+                        outPlot.dataProxy()->addItem(tmp);
                     }
                 }
             }
-            outPlot.dataProxy()->addRow(dataRow);
         }
     }
 
@@ -1582,7 +1555,6 @@ bool SettingsTypeForClassAndServerState::getSinglePlot3d(QSurface3DSeries &outPl
     {
         for (int i=0; i < rSystem.getModel().m(); i++)
         {
-            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
             z = i;
             if (functionalParameterX == ParameterType::OfferedTrafficPerAS)
             {
@@ -1597,8 +1569,8 @@ bool SettingsTypeForClassAndServerState::getSinglePlot3d(QSurface3DSeries &outPl
                         if (yTmp > 0)
                             result = true;
                         y = static_cast<float>(yTmp);
-                        QSurfaceDataItem tmp(QVector3D(x, y, z));
-                        dataRow->append(tmp);
+                        QScatterDataItem tmp(QVector3D(x, y, z));
+                        outPlot.dataProxy()->addItem(tmp);
                     }
                 }
             }
@@ -1616,8 +1588,8 @@ bool SettingsTypeForClassAndServerState::getSinglePlot3d(QSurface3DSeries &outPl
                         if (yTmp > 0)
                             result = true;
                         y = static_cast<float>(yTmp);
-                        QSurfaceDataItem tmp(QVector3D(x, y, z));
-                        dataRow->append(tmp);
+                        QScatterDataItem tmp(QVector3D(x, y, z));
+                        outPlot.dataProxy()->addItem(tmp);
                     }
                 }
             }
@@ -1817,7 +1789,7 @@ bool SettingsTypeForClassAndBufferState::getSinglePlot(QVector<double> &outPlot,
     return result;
 }
 
-bool SettingsTypeForClassAndBufferState::getSinglePlot3d(QSurface3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
+bool SettingsTypeForClassAndBufferState::getSinglePlot3d(QScatter3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
 {
     bool result = false;
     float x, y, z;
@@ -1826,7 +1798,6 @@ bool SettingsTypeForClassAndBufferState::getSinglePlot3d(QSurface3DSeries &outPl
     {
         foreach(decimal a, rSystem.getAvailableAperAU())
         {
-            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
             const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
             z = static_cast<float>(a);
 
@@ -1842,8 +1813,8 @@ bool SettingsTypeForClassAndBufferState::getSinglePlot3d(QSurface3DSeries &outPl
                         if (yTmp > 0)
                             result = true;
                         y = static_cast<float>(yTmp);
-                        QSurfaceDataItem tmp(QVector3D(x, y, z));
-                        dataRow->append(tmp);
+                        QScatterDataItem tmp(QVector3D(x, y, z));
+                        outPlot.dataProxy()->addItem(tmp);
                     }
                 }
             }
@@ -1859,12 +1830,11 @@ bool SettingsTypeForClassAndBufferState::getSinglePlot3d(QSurface3DSeries &outPl
                         if (yTmp > 0)
                             result = true;
                         y = static_cast<float>(yTmp);
-                        QSurfaceDataItem tmp(QVector3D(x, y, z));
-                        dataRow->append(tmp);
+                        QScatterDataItem tmp(QVector3D(x, y, z));
+                        outPlot.dataProxy()->addItem(tmp);
                     }
                 }
             }
-            outPlot.dataProxy()->addRow(dataRow);
         }
     }
 
@@ -1872,7 +1842,6 @@ bool SettingsTypeForClassAndBufferState::getSinglePlot3d(QSurface3DSeries &outPl
     {
         for (int n=0; n<=rSystem.getModel().getBuffer().V(); n++)
         {
-            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
             z = n;
 
             if (functionalParameterX == ParameterType::OfferedTrafficPerAS)
@@ -1888,8 +1857,8 @@ bool SettingsTypeForClassAndBufferState::getSinglePlot3d(QSurface3DSeries &outPl
                         if (yTmp > 0)
                             result = true;
                         y = static_cast<float>(yTmp);
-                        QSurfaceDataItem tmp(QVector3D(x, y, z));
-                        dataRow->append(tmp);
+                        QScatterDataItem tmp(QVector3D(x, y, z));
+                        outPlot.dataProxy()->addItem(tmp);
                     }
                 }
             }
@@ -1907,12 +1876,11 @@ bool SettingsTypeForClassAndBufferState::getSinglePlot3d(QSurface3DSeries &outPl
                         if (yTmp > 0)
                             result = true;
                         y = static_cast<float>(yTmp);
-                        QSurfaceDataItem tmp(QVector3D(x, y, z));
-                        dataRow->append(tmp);
+                        QScatterDataItem tmp(QVector3D(x, y, z));
+                        outPlot.dataProxy()->addItem(tmp);
                     }
                 }
             }
-            outPlot.dataProxy()->addRow(dataRow);
         }
     }
 
@@ -1920,7 +1888,6 @@ bool SettingsTypeForClassAndBufferState::getSinglePlot3d(QSurface3DSeries &outPl
     {
         for (int i=0; i<rSystem.getModel().m(); i++)
         {
-            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
             z = i;
 
             if (functionalParameterX == ParameterType::OfferedTrafficPerAS)
@@ -1936,8 +1903,8 @@ bool SettingsTypeForClassAndBufferState::getSinglePlot3d(QSurface3DSeries &outPl
                         if (yTmp > 0)
                             result = true;
                         y = static_cast<float>(yTmp);
-                        QSurfaceDataItem tmp(QVector3D(x, y, z));
-                        dataRow->append(tmp);
+                        QScatterDataItem tmp(QVector3D(x, y, z));
+                        outPlot.dataProxy()->addItem(tmp);
                     }
                 }
             }
@@ -1955,12 +1922,11 @@ bool SettingsTypeForClassAndBufferState::getSinglePlot3d(QSurface3DSeries &outPl
                         if (yTmp > 0)
                             result = true;
                         y = static_cast<float>(yTmp);
-                        QSurfaceDataItem tmp(QVector3D(x, y, z));
-                        dataRow->append(tmp);
+                        QScatterDataItem tmp(QVector3D(x, y, z));
+                        outPlot.dataProxy()->addItem(tmp);
                     }
                 }
             }
-            outPlot.dataProxy()->addRow(dataRow);
         }
     }
     return result;
@@ -2186,7 +2152,7 @@ bool SettingsForClassAndServerGroupsCombination::getSinglePlot(QVector<double> &
     return result;
 }
 
-bool SettingsForClassAndServerGroupsCombination::getSinglePlot3d(QSurface3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
+bool SettingsForClassAndServerGroupsCombination::getSinglePlot3d(QScatter3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
 {
     bool result = false;
     float x, y, z;
@@ -2195,7 +2161,6 @@ bool SettingsForClassAndServerGroupsCombination::getSinglePlot3d(QSurface3DSerie
     {
         foreach(decimal a, rSystem.getAvailableAperAU())
         {
-            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
             const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
             z = static_cast<float>(a);
 
@@ -2212,8 +2177,8 @@ bool SettingsForClassAndServerGroupsCombination::getSinglePlot3d(QSurface3DSerie
                         if (yTmp > 0)
                             result = true;
                         y = static_cast<float>(yTmp);
-                        QSurfaceDataItem tmp(QVector3D(x, y, z));
-                        dataRow->append(tmp);
+                        QScatterDataItem tmp(QVector3D(x, y, z));
+                        outPlot.dataProxy()->addItem(tmp);
                     }
                 }
             }
@@ -2232,12 +2197,11 @@ bool SettingsForClassAndServerGroupsCombination::getSinglePlot3d(QSurface3DSerie
                         if (yTmp > 0)
                             result = true;
                         y = static_cast<float>(yTmp);
-                        QSurfaceDataItem tmp(QVector3D(x, y, z));
-                        dataRow->append(tmp);
+                        QScatterDataItem tmp(QVector3D(x, y, z));
+                        outPlot.dataProxy()->addItem(tmp);
                     }
                 }
             }
-            outPlot.dataProxy()->addRow(dataRow);
         }
     }
 
@@ -2247,7 +2211,6 @@ bool SettingsForClassAndServerGroupsCombination::getSinglePlot3d(QSurface3DSerie
 
         for (int n=0; n <= noOfCombinations; n++)
         {
-            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
             z = n;
 
             if (functionalParameterX == ParameterType::OfferedTrafficPerAS)
@@ -2264,8 +2227,8 @@ bool SettingsForClassAndServerGroupsCombination::getSinglePlot3d(QSurface3DSerie
                         if (yTmp > 0)
                             result = true;
                         y = static_cast<float>(yTmp);
-                        QSurfaceDataItem tmp(QVector3D(x, y, z));
-                        dataRow->append(tmp);
+                        QScatterDataItem tmp(QVector3D(x, y, z));
+                        outPlot.dataProxy()->addItem(tmp);
                     }
                 }
             }
@@ -2284,12 +2247,11 @@ bool SettingsForClassAndServerGroupsCombination::getSinglePlot3d(QSurface3DSerie
                         if (yTmp > 0)
                             result = true;
                         y = static_cast<float>(yTmp);
-                        QSurfaceDataItem tmp(QVector3D(x, y, z));
-                        dataRow->append(tmp);
+                        QScatterDataItem tmp(QVector3D(x, y, z));
+                        outPlot.dataProxy()->addItem(tmp);
                     }
                 }
             }
-            outPlot.dataProxy()->addRow(dataRow);
         }
     }
 
@@ -2297,7 +2259,6 @@ bool SettingsForClassAndServerGroupsCombination::getSinglePlot3d(QSurface3DSerie
     {
         for (int i=0; i < rSystem.getModel().m(); i++)
         {
-            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
             int t = rSystem.getModel().t(i);
             z = i;
 
@@ -2314,8 +2275,8 @@ bool SettingsForClassAndServerGroupsCombination::getSinglePlot3d(QSurface3DSerie
                         if (yTmp > 0)
                             result = true;
                         y = static_cast<float>(yTmp);
-                        QSurfaceDataItem tmp(QVector3D(x, y, z));
-                        dataRow->append(tmp);
+                        QScatterDataItem tmp(QVector3D(x, y, z));
+                        outPlot.dataProxy()->addItem(tmp);
                     }
                 }
             }
@@ -2335,12 +2296,11 @@ bool SettingsForClassAndServerGroupsCombination::getSinglePlot3d(QSurface3DSerie
                         if (yTmp > 0)
                             result = true;
                         y = static_cast<float>(yTmp);
-                        QSurfaceDataItem tmp(QVector3D(x, y, z));
-                        dataRow->append(tmp);
+                        QScatterDataItem tmp(QVector3D(x, y, z));
+                        outPlot.dataProxy()->addItem(tmp);
                     }
                 }
             }
-            outPlot.dataProxy()->addRow(dataRow);
         }
     }
 
@@ -2561,7 +2521,7 @@ bool SettingsAvailableSubroupDistribution::getSinglePlot(QVector<double> &outPlo
     return result;
 }
 
-bool SettingsAvailableSubroupDistribution::getSinglePlot3d(QSurface3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
+bool SettingsAvailableSubroupDistribution::getSinglePlot3d(QScatter3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
 {
     //TODO Adam
     return false;
@@ -3114,7 +3074,7 @@ bool SettingsTypeForServerAndBufferState::getSinglePlot(QVector<double> &outPlot
     return result;
 }
 
-bool SettingsTypeForServerAndBufferState::getSinglePlot3d(QSurface3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
+bool SettingsTypeForServerAndBufferState::getSinglePlot3d(QScatter3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
 {
     bool result = false;
     float x, y, z;
@@ -3123,7 +3083,6 @@ bool SettingsTypeForServerAndBufferState::getSinglePlot3d(QSurface3DSeries &outP
     {
         foreach(decimal a, rSystem.getAvailableAperAU())
         {
-            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
             const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
             z = static_cast<float>(a);
 
@@ -3139,8 +3098,8 @@ bool SettingsTypeForServerAndBufferState::getSinglePlot3d(QSurface3DSeries &outP
                         if (yTmp > 0)
                             result = true;
                         y = static_cast<float>(yTmp);
-                        QSurfaceDataItem tmp(QVector3D(x, y, z));
-                        dataRow->append(tmp);
+                        QScatterDataItem tmp(QVector3D(x, y, z));
+                        outPlot.dataProxy()->addItem(tmp);
                     }
                 }
             }
@@ -3157,12 +3116,11 @@ bool SettingsTypeForServerAndBufferState::getSinglePlot3d(QSurface3DSeries &outP
                         if (yTmp > 0)
                             result = true;
                         y = static_cast<float>(yTmp);
-                        QSurfaceDataItem tmp(QVector3D(x, y, z));
-                        dataRow->append(tmp);
+                        QScatterDataItem tmp(QVector3D(x, y, z));
+                        outPlot.dataProxy()->addItem(tmp);
                     }
                 }
             }
-            outPlot.dataProxy()->addRow(dataRow);
         }
     }
 
@@ -3170,7 +3128,6 @@ bool SettingsTypeForServerAndBufferState::getSinglePlot3d(QSurface3DSeries &outP
     {
         for (int n=0; n<=rSystem.getModel().getServer().V(); n++)
         {
-            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
             z = n;
 
             if (functionalParameterX == ParameterType::OfferedTrafficPerAS)
@@ -3186,8 +3143,8 @@ bool SettingsTypeForServerAndBufferState::getSinglePlot3d(QSurface3DSeries &outP
                         if (yTmp > 0)
                             result = true;
                         y = static_cast<float>(yTmp);
-                        QSurfaceDataItem tmp(QVector3D(x, y, z));
-                        dataRow->append(tmp);
+                        QScatterDataItem tmp(QVector3D(x, y, z));
+                        outPlot.dataProxy()->addItem(tmp);
                     }
                 }
             }
@@ -3206,12 +3163,11 @@ bool SettingsTypeForServerAndBufferState::getSinglePlot3d(QSurface3DSeries &outP
                         if (yTmp > 0)
                             result = true;
                         y = static_cast<float>(yTmp);
-                        QSurfaceDataItem tmp(QVector3D(x, y, z));
-                        dataRow->append(tmp);
+                        QScatterDataItem tmp(QVector3D(x, y, z));
+                        outPlot.dataProxy()->addItem(tmp);
                     }
                 }
             }
-            outPlot.dataProxy()->addRow(dataRow);
         }
     }
 
@@ -3219,7 +3175,6 @@ bool SettingsTypeForServerAndBufferState::getSinglePlot3d(QSurface3DSeries &outP
     {
         for (int n=0; n<=rSystem.getModel().getBuffer().V(); n++)
         {
-            QSurfaceDataRow *dataRow = new QSurfaceDataRow();
             z = n;
 
             if (functionalParameterX == ParameterType::OfferedTrafficPerAS)
@@ -3235,8 +3190,8 @@ bool SettingsTypeForServerAndBufferState::getSinglePlot3d(QSurface3DSeries &outP
                         if (yTmp > 0)
                             result = true;
                         y = static_cast<float>(yTmp);
-                        QSurfaceDataItem tmp(QVector3D(x, y, z));
-                        dataRow->append(tmp);
+                        QScatterDataItem tmp(QVector3D(x, y, z));
+                        outPlot.dataProxy()->addItem(tmp);
                     }
                 }
             }
@@ -3254,12 +3209,11 @@ bool SettingsTypeForServerAndBufferState::getSinglePlot3d(QSurface3DSeries &outP
                         if (yTmp > 0)
                             result = true;
                         y = static_cast<float>(yTmp);
-                        QSurfaceDataItem tmp(QVector3D(x, y, z));
-                        dataRow->append(tmp);
+                        QScatterDataItem tmp(QVector3D(x, y, z));
+                        outPlot.dataProxy()->addItem(tmp);
                     }
                 }
             }
-            outPlot.dataProxy()->addRow(dataRow);
         }
     }
     return result;

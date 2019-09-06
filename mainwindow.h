@@ -14,6 +14,9 @@
 #include <QGraphicsScene>
 #include <QGraphicsItem>
 
+
+#include <QLogValue3DAxisFormatter>
+
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QHBoxLayout>
@@ -37,9 +40,9 @@
 #include "results/resultsApi.h"
 #include "results/resultsGnuplot.h"
 
-#include <QtDataVisualization/Q3DSurface>
-#include <QtDataVisualization/QSurfaceDataProxy>
-#include <QtDataVisualization/QSurface3DSeries>
+#include <QtDataVisualization/Q3DScatter>
+#include <QtDataVisualization/QScatterDataProxy>
+#include <QtDataVisualization/QScatter3DSeries>
 
 #include "utils/decimal.h"
 
@@ -102,7 +105,11 @@ private:
     QtCharts::QValueAxis         *axisYlinear;
 
     QWidget *containerGraph3d;
-    Q3DSurface *graph3d;
+    Q3DScatter *graph3d;
+
+    QLogValue3DAxisFormatter *graph3dAxisYFormatLog;
+    QValue3DAxisFormatter *graph3dAxisYFormatLin;
+
 
 
 public slots:
