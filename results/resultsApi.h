@@ -102,6 +102,10 @@ public:
     virtual double getXmin(RSystem &rSystem) const;
     virtual double getXmax(RSystem &rSystem) const;
 
+    virtual double getZmin(RSystem &rSystem) const;
+    virtual double getZmax(RSystem &rSystem) const;
+
+
     QString name;               ///< Name without shortcuts
     QString shortName;          ///< Name with shortcuts
 
@@ -280,6 +284,8 @@ public:
 
 
     static QMap<ParametersSet, QVector<double>> getPlotsValues(RSystem &rSystem, Type qos, ParameterType functionalParameter, Investigator *algorithm);
+    static QMap<ParametersSet, QVector<double>> getPlotsValues3d(RSystem &rSystem, Type qos, ParameterType functionalParameter1, ParameterType functionalParameter2, Investigator *algorithm);
+
     static const QVector<decimal> getPlotsXorZ(RSystem &rSystem, ParameterType functionalParameter);
 };
 

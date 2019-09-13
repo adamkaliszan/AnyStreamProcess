@@ -142,6 +142,24 @@ QMap<ParametersSet, QVector<double>> TypesAndSettings::getPlotsValues(RSystem &r
     return result;
 }
 
+QMap<ParametersSet, QVector<double> > TypesAndSettings::getPlotsValues3d(RSystem &rSystem, Type qos, ParameterType functionalParameter1, ParameterType functionalParameter2, Investigator *algorithm)
+{
+    Settings *qosSettings = _myMap[qos];
+    qosSettings->setFunctionalParameterX(functionalParameter1);
+    qosSettings->setFunctionalParameterY(functionalParameter2);
+    QList<ParametersSet> sysParams = qosSettings->getParametersList(rSystem.getModel(), rSystem.getAvailableAperAU());
+
+    QMap<ParametersSet, QVector<double>> result;
+
+    foreach (ParametersSet sysParam, sysParams)
+    {
+        QVector<double> vector;
+        qosSettings->getSinglePlot(vector, rSystem, algorithm, sysParam);
+        result.insert(sysParam, vector);
+    }
+    return result;
+}
+
 const QVector<decimal> TypesAndSettings::getPlotsXorZ(RSystem &rSystem, ParameterType functionalParameter)
 {
     QVector<decimal> result;
@@ -307,22 +325,32 @@ QList<ParametersSet> SettingsTypeForClass::getParametersList(const ModelSystem &
     switch (functionalParameterX)
     {
     case ParameterType::OfferedTrafficPerAS:
-        for (i=0; i<system.m(); i++)
+        switch(functionalParameterZ)
         {
-            ParametersSet item;
-            item.classIndex = i;
-            item.a = -1;
-            result.append(item);
-        }
+            case ParameterType::None:
+            for (i=0; i<system.m(); i++)
+            {
+                ParametersSet item;
+                item.classIndex = i;
+                item.a = -1;
+                result.append(item);
+            }
+            break;
+            }
         break;
 
     case ParameterType::TrafficClass:
-        foreach (a, aOfPerAU)
+        switch(functionalParameterZ)
         {
-            ParametersSet item;
-            item.classIndex = -1;
-            item.a = a;
-            result.append(item);
+        case ParameterType::None:
+            foreach (a, aOfPerAU)
+            {
+                ParametersSet item;
+                item.classIndex = -1;
+                item.a = a;
+                result.append(item);
+            }
+            break;
         }
         break;
 
@@ -594,20 +622,30 @@ QList<ParametersSet> SettingsTypeForSystemState::getParametersList(const ModelSy
     switch (functionalParameterX)
     {
     case ParameterType::OfferedTrafficPerAS:
-        for (n=0; n <= system.V(); n++)
+        switch(functionalParameterZ)
         {
-            ParametersSet item;
-            item.systemState = n;
-            result.append(item);
+        case ParameterType::None:
+            for (n=0; n <= system.V(); n++)
+            {
+                ParametersSet item;
+                item.systemState = n;
+                result.append(item);
+            }
+            break;
         }
         break;
     case ParameterType::SystemState:
-        foreach (decimal a, aOfPerAU)
+        switch(functionalParameterZ)
         {
-            ParametersSet item;
-            item.systemState = -1;
-            item.a = a;
-            result.append(item);
+        case ParameterType::None:
+            foreach (decimal a, aOfPerAU)
+            {
+                ParametersSet item;
+                item.systemState = -1;
+                item.a = a;
+                result.append(item);
+            }
+            break;
         }
         break;
     default:
@@ -782,22 +820,32 @@ QList<ParametersSet> SettingsTypeForServerState::getParametersList(const ModelSy
     switch (functionalParameterX)
     {
     case ParameterType::OfferedTrafficPerAS:
-        for (n=0; n <= system.getServer().V(); n++)
+        switch(functionalParameterZ)
         {
-            ParametersSet item;
-            item.serverState = n;
-            item.a = -1;
-            result.append(item);
+        case ParameterType::None:
+            for (n=0; n <= system.getServer().V(); n++)
+            {
+                ParametersSet item;
+                item.serverState = n;
+                item.a = -1;
+                result.append(item);
+            }
+            break;
         }
         break;
 
     case ParameterType::ServerState:
-        foreach (a, aOfPerAU)
+        switch(functionalParameterZ)
         {
-            ParametersSet item;
-            item.serverState = -1;
-            item.a = a;
-            result.append(item);
+        case ParameterType::None:
+            foreach (a, aOfPerAU)
+            {
+                ParametersSet item;
+                item.serverState = -1;
+                item.a = a;
+                result.append(item);
+            }
+            break;
         }
         break;
 
@@ -973,22 +1021,31 @@ QList<ParametersSet> SettingsTypeForBufferState::getParametersList(const ModelSy
     switch(functionalParameterX)
     {
     case ParameterType::OfferedTrafficPerAS:
-        for (n=0; n <= system.getBuffer().V(); n++)
+        switch(functionalParameterZ)
         {
-            ParametersSet item;
-            item.bufferState = n;
-            item.a = -1;
-            result.append(item);
+        case ParameterType::None:
+            for (n=0; n <= system.getBuffer().V(); n++)
+            {
+                ParametersSet item;
+                item.bufferState = n;
+                item.a = -1;
+                result.append(item);
+            }
+            break;
         }
-        break;
 
     case ParameterType::BufferState:
-        foreach (a, aOfPerAU)
+        switch(functionalParameterZ)
         {
-            ParametersSet item;
-            item.bufferState = -1;
-            item.a = a;
-            result.append(item);
+        case ParameterType::None:
+            foreach (a, aOfPerAU)
+            {
+                ParametersSet item;
+                item.bufferState = -1;
+                item.a = a;
+                result.append(item);
+            }
+            break;
         }
         break;
 
@@ -1278,43 +1335,61 @@ QList<ParametersSet> SettingsTypeForClassAndSystemState::getParametersList(const
     switch (functionalParameterX)
     {
     case ParameterType::OfferedTrafficPerAS:
-        for (i=0; i < system.m(); i++)
+        switch(functionalParameterZ)
         {
-            for (n=0; n <= system.V(); n++)
-            {
-                ParametersSet item;
-                item.systemState = n;
-                item.classIndex = i;
-                result.append(item);
-            }
-        }
-        break;
-    case ParameterType::SystemState:
-        foreach (decimal a, aOfPerAU)
-        {
+        case ParameterType::None:
             for (i=0; i < system.m(); i++)
             {
-                ParametersSet item;
-                item.systemState = -1;
-                item.classIndex = i;
-                item.a = a;
-                result.append(item);
+                for (n=0; n <= system.V(); n++)
+                {
+                    ParametersSet item;
+                    item.systemState = n;
+                    item.classIndex = i;
+                    result.append(item);
+                }
             }
+            break;
         }
         break;
-    case ParameterType::TrafficClass:
-        foreach (decimal a, aOfPerAU)
+
+    case ParameterType::SystemState:
+        switch(functionalParameterZ)
         {
-            for (n=0; n <= system.V(); n++)
+        case ParameterType::None:
+            foreach (decimal a, aOfPerAU)
             {
-                ParametersSet item;
-                item.classIndex = -1;
-                item.systemState = n;
-                item.a = a;
-                result.append(item);
+                for (i=0; i < system.m(); i++)
+                {
+                    ParametersSet item;
+                    item.systemState = -1;
+                    item.classIndex = i;
+                    item.a = a;
+                    result.append(item);
+                }
             }
+            break;
         }
         break;
+
+    case ParameterType::TrafficClass:
+        switch(functionalParameterZ)
+        {
+            case ParameterType::None:
+            foreach (decimal a, aOfPerAU)
+            {
+                for (n=0; n <= system.V(); n++)
+                {
+                    ParametersSet item;
+                    item.classIndex = -1;
+                    item.systemState = n;
+                    item.a = a;
+                    result.append(item);
+                }
+            }
+            break;
+        }
+        break;
+
     default:
         qFatal("Wrong functional parameter");
     }
@@ -1608,43 +1683,58 @@ QList<ParametersSet> SettingsTypeForClassAndServerState::getParametersList(const
     switch (functionalParameterX)
     {
     case ParameterType::OfferedTrafficPerAS:
-        for (i=0; i < system.m(); i++)
+        switch(functionalParameterZ)
         {
-            for (n=0; n <= system.getServer().V(); n++)
+        case ParameterType::None:
+            for (i=0; i < system.m(); i++)
             {
-                ParametersSet item;
-                item.serverState = n;
-                item.classIndex = i;
-                result.append(item);
+                for (n=0; n <= system.getServer().V(); n++)
+                {
+                    ParametersSet item;
+                    item.serverState = n;
+                    item.classIndex = i;
+                    result.append(item);
+                }
             }
+            break;
         }
         break;
 
     case ParameterType::TrafficClass:
-        foreach (a, aOfPerAU)
+        switch(functionalParameterZ)
         {
-            for (n=0; n <= system.getServer().V(); n++)
+        case ParameterType::None:
+            foreach (a, aOfPerAU)
             {
-                ParametersSet item;
-                item.serverState = n;
-                item.classIndex = -1;
-                item.a = a;
-                result.append(item);
+                for (n=0; n <= system.getServer().V(); n++)
+                {
+                    ParametersSet item;
+                    item.serverState = n;
+                    item.classIndex = -1;
+                    item.a = a;
+                    result.append(item);
+                }
             }
+            break;
         }
         break;
 
     case ParameterType::ServerState:
-        foreach (a, aOfPerAU)
+        switch(functionalParameterZ)
         {
-            for (i=0; i < system.m(); i++)
+        case ParameterType::None:
+            foreach (a, aOfPerAU)
             {
-                ParametersSet item;
-                item.serverState = -1;
-                item.classIndex = i;
-                item.a = a;
-                result.append(item);
+                for (i=0; i < system.m(); i++)
+                {
+                    ParametersSet item;
+                    item.serverState = -1;
+                    item.classIndex = i;
+                    item.a = a;
+                    result.append(item);
+                }
             }
+            break;
         }
         break;
 
@@ -1942,45 +2032,61 @@ QList<ParametersSet> SettingsTypeForClassAndBufferState::getParametersList(const
     switch(functionalParameterX)
     {
     case ParameterType::OfferedTrafficPerAS:
-        for (i=0; i < system.m(); i++)
+        switch(functionalParameterZ)
         {
-            for (n=0; n <= system.getBuffer().V(); n++)
+        case ParameterType::None:
+            for (i=0; i < system.m(); i++)
             {
-                ParametersSet item;
-                item.bufferState = n;
-                item.classIndex = i;
-                result.append(item);
+                for (n=0; n <= system.getBuffer().V(); n++)
+                {
+                    ParametersSet item;
+                    item.bufferState = n;
+                    item.classIndex = i;
+                    result.append(item);
+                }
             }
+            break;
         }
         break;
-    case ParameterType::TrafficClass:
-        foreach (a, aOfPerAU)
-        {
-            for (n=0; n <= system.getBuffer().V(); n++)
-            {
-                ParametersSet item;
-                item.bufferState = n;
-                item.classIndex = -1;
-                item.a = a;
-                result.append(item);
-            }
 
+    case ParameterType::TrafficClass:
+        switch(functionalParameterZ)
+        {
+        case ParameterType::None:
+            foreach (a, aOfPerAU)
+            {
+                for (n=0; n <= system.getBuffer().V(); n++)
+                {
+                    ParametersSet item;
+                    item.bufferState = n;
+                    item.classIndex = -1;
+                    item.a = a;
+                    result.append(item);
+                }
+            }
+            break;
         }
         break;
 
     case ParameterType::BufferState:
-        foreach (a, aOfPerAU)
+        switch(functionalParameterZ)
         {
-            for (i=0; i < system.m(); i++)
+        case ParameterType::None:
+            foreach (a, aOfPerAU)
             {
-                ParametersSet item;
-                item.bufferState = -1;
-                item.classIndex = i;
-                item.a = a;
-                result.append(item);
+                for (i=0; i < system.m(); i++)
+                {
+                    ParametersSet item;
+                    item.bufferState = -1;
+                    item.classIndex = i;
+                    item.a = a;
+                    result.append(item);
+                }
             }
+            break;
         }
         break;
+
     default:
         qFatal("Qrong functional parameter");
     }
@@ -2323,50 +2429,64 @@ QList<ParametersSet> SettingsForClassAndServerGroupsCombination::getParametersLi
     switch (functionalParameterX)
     {
     case ParameterType::OfferedTrafficPerAS:
-        for (i=0; i < system.m(); i++)
+        switch(functionalParameterZ)
         {
-            for (combNo=0; combNo < noOfCOmbinations; combNo++)
+        case ParameterType::None:
+            for (i=0; i < system.m(); i++)
             {
-                if ((system.getServer().schedulerAlg == ResourcessScheduler::Random) && combinations[combNo].length() == lstNoOfGroupInCombination)
-                    continue;
-                lstNoOfGroupInCombination = combinations[combNo].length();
+                for (combNo=0; combNo < noOfCOmbinations; combNo++)
+                {
+                    if ((system.getServer().schedulerAlg == ResourcessScheduler::Random) && combinations[combNo].length() == lstNoOfGroupInCombination)
+                        continue;
+                    lstNoOfGroupInCombination = combinations[combNo].length();
 
-                ParametersSet item;
-                item.combinationNumber = combNo;
-                item.classIndex = i;
-                result.append(item);
+                    ParametersSet item;
+                    item.combinationNumber = combNo;
+                    item.classIndex = i;
+                    result.append(item);
+                }
             }
+            break;
         }
-        break;
     case ParameterType::TrafficClass:
-        foreach (a, aOfPerAU)
+        switch(functionalParameterZ)
         {
-            for (combNo=0; combNo < noOfCOmbinations; combNo++)
+        case ParameterType::None:
+            foreach (a, aOfPerAU)
             {
-                if ((system.getServer().schedulerAlg == ResourcessScheduler::Random) && combinations[combNo].length() == lstNoOfGroupInCombination)
-                    continue;
-                lstNoOfGroupInCombination = combinations[combNo].length();
+                for (combNo=0; combNo < noOfCOmbinations; combNo++)
+                {
+                    if ((system.getServer().schedulerAlg == ResourcessScheduler::Random) && combinations[combNo].length() == lstNoOfGroupInCombination)
+                        continue;
+                    lstNoOfGroupInCombination = combinations[combNo].length();
 
-                ParametersSet item;
-                item.combinationNumber = combNo;
-                item.classIndex = -1;
-                item.a = a;
-                result.append(item);
+                    ParametersSet item;
+                    item.combinationNumber = combNo;
+                    item.classIndex = -1;
+                    item.a = a;
+                    result.append(item);
+                }
             }
+            break;
         }
         break;
 
     case ParameterType::CombinationNumber:
-        foreach (a, aOfPerAU)
+        switch(functionalParameterZ)
         {
-            for (i=0; i < system.m(); i++)
+        case ParameterType::None:
+            foreach (a, aOfPerAU)
             {
-                ParametersSet item;
-                item.combinationNumber = -1;
-                item.classIndex = i;
-                item.a = a;
-                result.append(item);
+                for (i=0; i < system.m(); i++)
+                {
+                    ParametersSet item;
+                    item.combinationNumber = -1;
+                    item.classIndex = i;
+                    item.a = a;
+                    result.append(item);
+                }
             }
+            break;
         }
         break;
 
@@ -2537,42 +2657,134 @@ QList<ParametersSet> SettingsAvailableSubroupDistribution::getParametersList(con
     switch (functionalParameterX)
     {
     case ParameterType::OfferedTrafficPerAS:
-        for (k=0; k <= system.getServer().V(); k++)
+        switch (functionalParameterZ)
         {
+        case ParameterType::None:
+            for (k=0; k <= system.getServer().V(); k++)
+            {
+                for (i=0; i < system.m(); i++)
+                {
+                    ParametersSet item;
+                    item.numberOfGroups = k;
+                    item.classIndex = i;
+                    result.append(item);
+                }
+            }
+            break;
+
+        case ParameterType::NumberOfGroups:
             for (i=0; i < system.m(); i++)
             {
                 ParametersSet item;
-                item.numberOfGroups = k;
                 item.classIndex = i;
                 result.append(item);
             }
+            break;
+
+        case ParameterType::TrafficClass:
+            for (k=0; k <= system.getServer().V(); k++)
+            {
+                ParametersSet item;
+                item.numberOfGroups = k;
+                result.append(item);
+            }
+            break;
+
+        case ParameterType::OfferedTrafficPerAS:
+            qFatal("Funstional parameters for X and Z axis are the same");
+
+        default:
+            qFatal("Wrong functional parameter 2");
         }
         break;
+
     case ParameterType::NumberOfGroups:
-        foreach (a, aOfPerAU)
+        switch (functionalParameterZ)
         {
+        case ParameterType::None:
+            foreach (a, aOfPerAU)
+            {
+                for (i=0; i < system.m(); i++)
+                {
+                    ParametersSet item;
+                    item.numberOfGroups = -1;
+                    item.classIndex = i;
+                    item.a = a;
+                    result.append(item);
+                }
+            }
+            break;
+
+        case ParameterType::OfferedTrafficPerAS:
             for (i=0; i < system.m(); i++)
             {
                 ParametersSet item;
                 item.numberOfGroups = -1;
                 item.classIndex = i;
+                result.append(item);
+            }
+            break;
+
+        case ParameterType::TrafficClass:
+            foreach (a, aOfPerAU)
+            {
+                ParametersSet item;
+                item.numberOfGroups = -1;
                 item.a = a;
                 result.append(item);
             }
+            break;
+
+        case ParameterType::NumberOfGroups:
+            qFatal("Funstional parameters for X and Z axis are the same");
+
+        default:
+            qFatal("Wrong functional parameter 2");
         }
         break;
 
     case ParameterType::TrafficClass:
-        foreach (a, aOfPerAU)
+        switch (functionalParameterZ)
         {
+        case ParameterType::None:
+            foreach (a, aOfPerAU)
+            {
+                for (k=0; k <= system.getServer().V(); k++)
+                {
+                    ParametersSet item;
+                    item.numberOfGroups = k;
+                    item.classIndex = -1;
+                    item.a = a;
+                    result.append(item);
+                }
+            }
+            break;
+
+        case ParameterType::OfferedTrafficPerAS:
             for (k=0; k <= system.getServer().V(); k++)
             {
                 ParametersSet item;
                 item.numberOfGroups = k;
                 item.classIndex = -1;
+                result.append(item);
+            }
+            break;
+
+        case ParameterType::NumberOfGroups:
+            foreach (a, aOfPerAU)
+            {
+                ParametersSet item;
+                item.classIndex = -1;
                 item.a = a;
                 result.append(item);
             }
+            break;
+
+        case ParameterType::TrafficClass:
+            qFatal("Funstional parameters for X and Z axis are the same");
+
+        default:
+            qFatal("Wrong functional parameter 2");
         }
         break;
 
@@ -2683,6 +2895,72 @@ double Settings::getXmax(RSystem &rSystem) const
     double result = -1;
 
     switch (functionalParameterX)
+    {
+    case ParameterType::OfferedTrafficPerAS:
+        result = rSystem.getMaxAperAU();
+        break;
+
+    case ParameterType::TrafficClass:
+        result =  rSystem.getModel().m()-1;
+        break;
+
+    case ParameterType::NumberOfGroups:
+        result = rSystem.getModel().getServer().k();
+        break;
+
+    case ParameterType::CombinationNumber:
+        result = rSystem.getNoOfGroupsCombinations();
+        break;
+
+    case ParameterType::SystemState:
+        result = rSystem.getModel().V();
+        break;
+
+    case ParameterType::ServerState:
+        result = rSystem.getModel().getServer().V();
+        break;
+
+    case ParameterType::BufferState:
+        result = rSystem.getModel().getBuffer().V();
+        break;
+
+    case ParameterType::None:
+        break;
+    }
+    return result;
+}
+
+double Settings::getZmin(RSystem &rSystem) const
+{
+    double result = -1;
+
+    switch (functionalParameterX)
+    {
+    case ParameterType::OfferedTrafficPerAS:
+        result = rSystem.getMinAperAU();
+        break;
+
+    case ParameterType::TrafficClass:
+    case ParameterType::SystemState:
+    case ParameterType::ServerState:
+    case ParameterType::BufferState:
+    case ParameterType::NumberOfGroups:
+    case ParameterType::CombinationNumber:
+        result = 0;
+        break;
+
+    case ParameterType::None:
+        break;
+    }
+
+    return result;
+}
+
+double Settings::getZmax(RSystem &rSystem) const
+{
+    double result = -1;
+
+    switch (functionalParameterZ)
     {
     case ParameterType::OfferedTrafficPerAS:
         result = rSystem.getMaxAperAU();
@@ -3228,44 +3506,60 @@ QList<ParametersSet> SettingsTypeForServerAndBufferState::getParametersList(cons
     switch(functionalParameterX)
     {
     case ParameterType::OfferedTrafficPerAS:
-        for (ns=0; ns <= system.getServer().V(); ns++)
+        switch(functionalParameterZ)
         {
-            for (nb=0; nb <= system.getBuffer().V(); nb++)
+        case ParameterType::None:
+            for (ns=0; ns <= system.getServer().V(); ns++)
             {
-                ParametersSet item;
-                item.serverState = ns;
-                item.bufferState = nb;
-                item.a = -1;
-                result.append(item);
+                for (nb=0; nb <= system.getBuffer().V(); nb++)
+                {
+                    ParametersSet item;
+                    item.serverState = ns;
+                    item.bufferState = nb;
+                    item.a = -1;
+                    result.append(item);
+                }
             }
+            break;
         }
         break;
 
+
     case ParameterType::ServerState:
-        for (nb=0; nb <= system.getBuffer().V(); nb++)
+        switch(functionalParameterZ)
         {
-            foreach (a, aOfPerAU)
+        case ParameterType::None:
+            for (nb=0; nb <= system.getBuffer().V(); nb++)
             {
-                ParametersSet item;
-                item.serverState = -1;
-                item.bufferState = nb;
-                item.a = a;
-                result.append(item);
+                foreach (a, aOfPerAU)
+                {
+                    ParametersSet item;
+                    item.serverState = -1;
+                    item.bufferState = nb;
+                    item.a = a;
+                    result.append(item);
+                }
             }
+            break;
         }
         break;
 
     case ParameterType::BufferState:
-        for (ns=0; ns <= system.getServer().V(); ns++)
+        switch(functionalParameterZ)
         {
-            foreach (a, aOfPerAU)
+        case ParameterType::None:
+            for (ns=0; ns <= system.getServer().V(); ns++)
             {
-                ParametersSet item;
-                item.serverState = ns;
-                item.bufferState = -1;
-                item.a = a;
-                result.append(item);
+                foreach (a, aOfPerAU)
+                {
+                    ParametersSet item;
+                    item.serverState = ns;
+                    item.bufferState = -1;
+                    item.a = a;
+                    result.append(item);
+                }
             }
+            break;
         }
         break;
 

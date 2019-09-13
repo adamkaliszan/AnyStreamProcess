@@ -92,7 +92,7 @@ void AlgorithmHybridDiscr::calculateSystem(
             for (int l=0; l<=n; l+= classes[i].t)
             {
                 double pP = p_single[i][l] * P_without_i[i][n-l];
-                nominator += (static_cast<double>(l)/(double)(classes[i].t) * pP);
+                nominator += (static_cast<double>(l)/static_cast<double>(classes[i].t) * pP);
                 denumerator += pP;
             }
             ySYSTEM_V[i][n]=nominator/denumerator;
@@ -120,7 +120,7 @@ void AlgorithmHybridDiscr::calculateSystem(
             sum +=unusedProb[n][x].p;
         }
 
-        if (sum == 0)
+        if (qFuzzyIsNull(sum)) //sum == 0
         {
             unusedProb[n][0].p = 1;
             for (int x=1; x<t_max; x++)

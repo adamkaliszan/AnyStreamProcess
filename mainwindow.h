@@ -198,6 +198,8 @@ private slots:
 
     void on_comboBoxResultsQtY_axis_currentIndexChanged(int index);
 
+    void on_pushButtonSave3dChart_clicked();
+
 private:
     void prepare2dChart(Results::Settings *setting, Type type, int noOfAlgorithms);
 
@@ -236,7 +238,8 @@ private:
     QString configureTrClass(ModelTrClass *trClass);
 
 
-    void saveTheResults(QString &filename, Results::Type QoStype);
+    void saveTheResults(QString &filename, Results::Type qoStype);
+    void saveTheResults3d(QString &filename, Results::Type qoStype);
 
 
     QString ReadFilename(QString extension="ods");

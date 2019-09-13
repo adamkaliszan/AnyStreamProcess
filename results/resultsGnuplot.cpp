@@ -32,7 +32,7 @@ void GnuplotScript::WriteDataAndScript(QString baseFileNameWithPath, const Model
     scriptStream<<"set terminal postscript enhanced 'Times' 6 color\r\n";
     scriptStream<<"set encoding cp1250\r\n";
     scriptStream<<"set lmargin 9\n";
-    scriptStream<<"set xlabel \"a (traffic offered to a single BBU of the server)\"\n";
+    scriptStream<<"set xlabel \""<<TypesAndSettings::parameterToString(setting->getFunctionalParameterX())<<"\"\n";
     scriptStream<<"set xtics 0.1\n";
     scriptStream<<"set xtics nomirror\n";
     scriptStream<< "set xrange ["<<setting->getXmin(*systemResults)<<":"<<setting->getXmax(*systemResults)<<"]\n";
@@ -231,6 +231,104 @@ void GnuplotScript::WriteDataAndScript(QString baseFileNameWithPath, const Model
     }
 
     delete []scriptStreamTrClass;
+    scriptFile.close();
+}
+
+void GnuplotScript::WriteDataAndScript3d(QString baseFileNameWithPath, const ModelCreator *system, Settings *setting, Type qosType, QList<ParametersSet> parameters, QList<Investigator *> algorithms, int logScale, int showZeros)
+{
+
+    QFile scriptFile(baseFileNameWithPath + ".gp");
+
+    scriptFile.open(QFile::WriteOnly | QFile::Text);
+
+    QTextStream scriptStream(&scriptFile);
+
+    QVector<QString> scriptStringTrClass(system->m());
+    bool firstPlot = true;
+    QVector<bool> firstPlotTrClass(system->m(), true);
+
+    QList<ParameterType> noDescList;
+    noDescList.append(ParameterType::TrafficClass);
+
+    QString baseFileName = baseFileNameWithPath.mid(baseFileNameWithPath.lastIndexOf("/")+1);
+
+    scriptStream.setCodec("Windows-1250");
+
+    scriptStream<<"set terminal postscript enhanced 'Times' 6 color\r\n";
+    scriptStream<<"set encoding cp1250\r\n";
+    scriptStream<<"set output \""<<baseFileName<<".eps\"\r\n";
+    scriptStream<<"splot\\\r\n";
+
+    int i;
+
+    int lc = 1;
+    int dt = 1;
+    int lw = 1;
+
+    foreach(Investigator *algorithm, systemResults->getAvailableAlgorithms())
+    {
+        if (!algorithm->getQoS_Set().contains(qosType))
+            continue;
+        QVector<decimal> xVals = TypesAndSettings::getPlotsXorZ(*systemResults, setting->getFunctionalParameterX());
+        QMap<ParametersSet, QVector<double>> yVals = TypesAndSettings::getPlotsValues(*systemResults, qosType, setting->getFunctionalParameterX(), algorithm);
+
+        QString dataFileNameWithPath = baseFileNameWithPath + algorithm->shortName() + ".dat";
+        QString dataFileName = dataFileNameWithPath.mid(dataFileNameWithPath.lastIndexOf("/")+1);
+
+        QFile dataFile(dataFileNameWithPath);
+        dataFile.open(QFile::WriteOnly | QFile::Text);
+        QTextStream dataStream(&dataFile);
+
+
+
+        dataStream<<"#"<<TypesAndSettings::parameterToString(setting->getFunctionalParameterX());
+        int colNo = 2;
+
+        foreach(ParametersSet param, yVals.keys())
+        {
+            dataStream<<"\t"<<setting->getParameterDescription(param, system->getConstSyst());
+
+            dataStream<<"\t+-";
+            if (firstPlot)
+            {
+                firstPlot = false;
+                scriptStream<<"    ";
+            }
+            else
+                scriptStream<<"  , ";
+            scriptStream<<"\""<<dataFileName<<"\" using 1:2:3\\\r\n";
+        }
+        dataStream<<"\n";
+
+        for (i=0; i < xVals.length(); i++)
+        {
+            dataStream<< static_cast<double>(xVals[i]);
+
+            foreach(ParametersSet param, yVals.keys())
+            {
+                if (std::isnan(yVals[param][i]))
+                    dataStream<<"\t0";
+                else
+                    dataStream<<"\t"<<yVals[param][i];
+
+                if (algorithm->hasConfIntervall())
+                    dataStream<<"\t0";
+            }
+            dataStream<<"\n";
+
+        }
+        dataFile.close();
+        lc++;
+    }
+    scriptStream<<"\r\n";
+
+    if (setting->getAdditionalParameter1() == ParameterType::TrafficClass || setting->getAdditionalParameter2() == ParameterType::TrafficClass)
+    {
+        for (i=0; i<system->m(); i++)
+        {
+            scriptStream<<scriptStringTrClass[i]<<"\r\n";
+        }
+    }
     scriptFile.close();
 }
 

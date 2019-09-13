@@ -1283,6 +1283,22 @@ void MainWindow::saveTheResults(QString &fileName, Results::Type qosType)
     scrGnuplot->WriteDataAndScript(fileName, this->system, setting, qosType);
 }
 
+void MainWindow::saveTheResults3d(QString &fileName, Type qosType)
+{
+    QString scriptFileName = fileName + QString(".gp");
+    QString dataFileName = fileName + QString(".dat");
+    QString graphBaseFileName = fileName;
+
+    scrGnuplot->systemResults = this->resultsForSystem;
+
+    QList<Investigator*> algorithms;
+    QList<ParametersSet> parameters;
+
+    Results::Settings *setting = Results::TypesAndSettings::getSetting(qosType);
+    scrGnuplot->WriteDataAndScript3d(fileName, this->system, setting, qosType, parameters, algorithms, 1, 0);
+
+}
+
 void MainWindow::saveResultsGnuplotE()
 {
     QString suggestedFilename;
@@ -2245,9 +2261,6 @@ void MainWindow::prepare3dChart(Results::Settings *setting, Results::Type type, 
 
                     data->setName(name);
                     data->setMesh(shapes[shapeIdx]);
-
-                   // data->set
-
 //                    data->set BaseColor(colors[colorIdx]);
                     data->setBaseColor(colors[colorIdx]);
                     graph3d->addSeries(data);
@@ -2335,6 +2348,15 @@ void MainWindow::on_checkBoxY_axis_stateChanged(int arg1)
         ui->widgetResultsPlot->setEnabled(false);
 
         ui->comboBoxResultsQtY_axis->setEnabled(true);
+
+        ui->checkBoxResultsQtShowKey->setEnabled(false);
+        ui->checkBoxResultsQtShowKey->setVisible(false);
+
+        ui->checkBoxSkipZeros->setEnabled(true);
+        ui->checkBoxSkipZeros->setVisible(true);
+
+        ui->pushButtonSave3dChart->setEnabled(true);
+        ui->pushButtonSave3dChart->setVisible(true);
     }
     else
     {
@@ -2345,5 +2367,31 @@ void MainWindow::on_checkBoxY_axis_stateChanged(int arg1)
         ui->widgetResultsPlot->setEnabled(true);
 
         ui->comboBoxResultsQtY_axis->setEnabled(false);
+
+        ui->checkBoxResultsQtShowKey->setEnabled(true);
+        ui->checkBoxResultsQtShowKey->setVisible(true);
+
+        ui->checkBoxSkipZeros->setEnabled(false);
+        ui->checkBoxSkipZeros->setVisible(false);
+
+        ui->pushButtonSave3dChart->setEnabled(false);
+        ui->pushButtonSave3dChart->setVisible(false);
     }
+}
+
+void MainWindow::on_pushButtonSave3dChart_clicked()
+{
+    if (!ui->checkBoxY_axis->isChecked())
+        return;
+
+    Results::Type type = ui->comboBoxResultsQtType->currentData().value<Results::Type>();
+
+    QString defaultFileName;
+    QTextStream textStream(&defaultFileName);
+    textStream<<"~/";
+    textStream<<TypesAndSettings::typeToString(type);
+    textStream<<*system;
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Save 3d chart as gnuplot script"), defaultFileName, tr("Gnuplot Files (*.gp)"));
+
+    saveTheResults3d(fileName, type);
 }

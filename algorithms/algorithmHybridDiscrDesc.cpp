@@ -280,23 +280,33 @@ void AlgorithmHybridDiscrDesc::calculateSystem(
         //TODO algRes->resultsAS->setVal(resultsType::trDistribSystem, a, n, Qn, 0);
     }
 
-    for (int n_s=0; n_s<=Vs; n_s++)
-    {
-        for (int n_b=0; n_b<=Vb; n_b++)
-        {
-            double val = 0;
 
-            if (n_b == 0)
-                val = Q_X[n_s + n_b][0];
-            else
+    QVector<QVector<double>> distribution2d(Vs+1);
+    for(int n=0; n<=Vs; n++)
+        distribution2d[n].resize(Vb+1);
+
+
+    for (int n=0; n <= VsVb; n++)
+    {
+        for (int unused=0; unused < t_max; unused++)
+        {
+            int n_buf = n + unused - Vs;
+            if (n_buf <= 0)
             {
-                int unused = n_s - Vs;
-                if ((n_b >= unused) && (unused >= 0) && (unused < t_max))
-                    val = Q_X[n_s + n_b][unused];
+                distribution2d[n][0] += Q_X[n][unused];
+                continue;
             }
-            (*results)->write(TypeForServerAngBufferState::StateProbability, val, n_s, n_b);
+            if (n_buf > Vb)
+                continue;
+
+            int n_serv = n - n_buf;
+            distribution2d[n_serv][n_buf] += Q_X[n][unused];
         }
     }
+
+    for(int n_serv=0; n_serv<=Vs; n_serv++)
+        for (int n_buf=0; n_buf<=Vb; n_buf++)
+            (*results)->write(TypeForServerAngBufferState::StateProbability, distribution2d[n_serv][n_buf], n_serv, n_buf);
 
     deleteTemporaryData();
 

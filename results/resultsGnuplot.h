@@ -3,6 +3,9 @@
 
 #include <boost/tuple/tuple.hpp>
 
+#include <QList>
+
+
 #include "results/resultsApi.h"
 #include "results/resultsSystem.h"
 
@@ -42,7 +45,8 @@ public:
     void setFontSize(int size)           { this->fontSize = size; }
     int getFontSize() const              { return fontSize; }
 
-    void WriteDataAndScript(QString baseFileName, const ModelCreator *system, Settings *setting, Type qosType);
+    void WriteDataAndScript(QString baseFileNameWithPath, const ModelCreator *system, Settings *setting, Type qosType);
+    void WriteDataAndScript3d(QString baseFileNameWithPath, const ModelCreator *system, Settings *setting, Type qosType, QList<ParametersSet> parameters, QList<Investigator *> algorithms, int logScale=1, int showZeros = 0);
 };
 
 #endif // RESULTSGNUPLOT_H
