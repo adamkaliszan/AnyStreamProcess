@@ -328,15 +328,29 @@ QList<ParametersSet> SettingsTypeForClass::getParametersList(const ModelSystem &
         switch(functionalParameterZ)
         {
             case ParameterType::None:
-            for (i=0; i<system.m(); i++)
+                for (i=0; i<system.m(); i++)
+                {
+                    ParametersSet item;
+                    item.classIndex = i;
+                    item.a = -1;
+                    result.append(item);
+                }
+                break;
+
+            case ParameterType::TrafficClass:
             {
                 ParametersSet item;
-                item.classIndex = i;
+                item.classIndex = -1;
                 item.a = -1;
                 result.append(item);
+                break;
             }
-            break;
-            }
+            case ParameterType::OfferedTrafficPerAS:
+                qFatal("Funstional parameters for X and Z axis are the same");
+
+            default:
+                qFatal("Wrong functional parameter 2");
+        }
         break;
 
     case ParameterType::TrafficClass:
@@ -351,6 +365,20 @@ QList<ParametersSet> SettingsTypeForClass::getParametersList(const ModelSystem &
                 result.append(item);
             }
             break;
+
+        case ParameterType::OfferedTrafficPerAS:
+        {
+            ParametersSet item;
+            item.classIndex = -1;
+            item.a = -1;
+            result.append(item);
+            break;
+        }
+        case ParameterType::TrafficClass:
+            qFatal("Funstional parameters for X and Z axis are the same");
+
+        default:
+            qFatal("Wrong functional parameter 2");
         }
         break;
 
@@ -528,29 +556,73 @@ bool SettingsTypeForSystemState::getSinglePlot(QVector<double> &outPlot, RSystem
         {
             const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
 
+
+
             double y=0;
-            if ((*singlePoint)->read(y, qos, parametersSet.systemState))
+
+            if (functionalParameterZ == ParameterType::None)
             {
-                if (y > 0)
-                    result = true;
+                if ((*singlePoint)->read(y, qos, parametersSet.systemState))
+                {
+                    if (y > 0)
+                        result = true;
+                }
+                outPlot.append(y);
             }
-            outPlot.append(y);
+            else if (functionalParameterZ == ParameterType::SystemState)
+            {
+                for (int n=0; n <= rSystem.getModel().V(); n++)
+                {
+
+                    if ((*singlePoint)->read(y, qos, parametersSet.systemState))
+                    {
+                        if (y > 0)
+                            result = true;
+                    }
+                    else
+                    {
+                        y = 0;
+                    }
+                    outPlot.append(y);
+                }
+            }
         }
     }
 
     if (functionalParameterX == ParameterType::SystemState)
     {
-        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int n=0; n<=rSystem.getModel().V(); n++)
         {
             double y=0;
 
-            if ((*singlePoint)->read(y, qos, n))
+            if (functionalParameterZ == ParameterType::None)
             {
-                if (y > 0)
-                    result = true;
+                const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+                if ((*singlePoint)->read(y, qos, n))
+                {
+                    if (y > 0)
+                        result = true;
+                }
+                outPlot.append(y);
             }
-            outPlot.append(y);
+            else if (functionalParameterZ == ParameterType::OfferedTrafficPerAS)
+            {
+                foreach(decimal a, rSystem.getAvailableAperAU())
+                {
+                    const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+
+                    if ((*singlePoint)->read(y, qos, parametersSet.systemState))
+                    {
+                        if (y > 0)
+                            result = true;
+                    }
+                    else
+                    {
+                        y = 0;
+                    }
+                    outPlot.append(y);
+                }
+            }
         }
     }
     return result;
@@ -632,6 +704,20 @@ QList<ParametersSet> SettingsTypeForSystemState::getParametersList(const ModelSy
                 result.append(item);
             }
             break;
+        case ParameterType::SystemState:
+        {
+            ParametersSet item;
+            item.systemState = -1;
+            item.a = -1;
+            result.append(item);
+            break;
+        }
+
+        case ParameterType::OfferedTrafficPerAS:
+            qFatal("Funstional parameters for X and Z axis are the same");
+
+        default:
+            qFatal("Wrong functional parameter 2");
         }
         break;
     case ParameterType::SystemState:
@@ -646,6 +732,20 @@ QList<ParametersSet> SettingsTypeForSystemState::getParametersList(const ModelSy
                 result.append(item);
             }
             break;
+        case ParameterType::OfferedTrafficPerAS:
+        {
+            ParametersSet item;
+            item.systemState = -1;
+            item.a = -1;
+            result.append(item);
+            break;
+        }
+
+        case ParameterType::SystemState:
+            qFatal("Funstional parameters for X and Z axis are the same");
+
+        default:
+            qFatal("Wrong functional parameter 2");
         }
         break;
     default:
@@ -831,6 +931,21 @@ QList<ParametersSet> SettingsTypeForServerState::getParametersList(const ModelSy
                 result.append(item);
             }
             break;
+
+        case ParameterType::ServerState:
+        {
+            ParametersSet item;
+            item.serverState = -1;
+            item.a = -1;
+            result.append(item);
+            break;
+        }
+
+        case ParameterType::OfferedTrafficPerAS:
+            qFatal("Funstional parameters for X and Z axis are the same");
+
+        default:
+            qFatal("Wrong functional parameter 2");
         }
         break;
 
@@ -846,6 +961,20 @@ QList<ParametersSet> SettingsTypeForServerState::getParametersList(const ModelSy
                 result.append(item);
             }
             break;
+        case ParameterType::OfferedTrafficPerAS:
+        {
+            ParametersSet item;
+            item.serverState = -1;
+            item.a = -1;
+            result.append(item);
+            break;
+        }
+
+        case ParameterType::ServerState:
+            qFatal("Funstional parameters for X and Z axis are the same");
+
+        default:
+            qFatal("Wrong functional parameter 2");
         }
         break;
 
@@ -1021,6 +1150,7 @@ QList<ParametersSet> SettingsTypeForBufferState::getParametersList(const ModelSy
     switch(functionalParameterX)
     {
     case ParameterType::OfferedTrafficPerAS:
+    {
         switch(functionalParameterZ)
         {
         case ParameterType::None:
@@ -1032,12 +1162,31 @@ QList<ParametersSet> SettingsTypeForBufferState::getParametersList(const ModelSy
                 result.append(item);
             }
             break;
+
+        case ParameterType::BufferState:
+        {
+            ParametersSet item;
+            item.bufferState = -1;
+            item.a = -1;
+            result.append(item);
+            break;
         }
 
+        case ParameterType::OfferedTrafficPerAS:
+            qFatal("Funstional parameters for X and Z axis are the same");
+
+        default:
+            qFatal("Wrong functional parameter 2");
+        }
+        break;
+    }
+
     case ParameterType::BufferState:
+    {
         switch(functionalParameterZ)
         {
         case ParameterType::None:
+        {
             foreach (a, aOfPerAU)
             {
                 ParametersSet item;
@@ -1047,7 +1196,24 @@ QList<ParametersSet> SettingsTypeForBufferState::getParametersList(const ModelSy
             }
             break;
         }
+
+        case ParameterType::OfferedTrafficPerAS:
+        {
+            ParametersSet item;
+            item.bufferState = -1;
+            item.a = -1;
+            result.append(item);
+            break;
+        }
+
+        case ParameterType::BufferState:
+            qFatal("Funstional parameters for X and Z axis are the same");
+
+        default:
+            qFatal("Wrong functional parameter 2");
+        }
         break;
+    }
 
     default:
         qFatal("Wrong functional parameter");
@@ -1335,9 +1501,11 @@ QList<ParametersSet> SettingsTypeForClassAndSystemState::getParametersList(const
     switch (functionalParameterX)
     {
     case ParameterType::OfferedTrafficPerAS:
+    {
         switch(functionalParameterZ)
         {
         case ParameterType::None:
+        {
             for (i=0; i < system.m(); i++)
             {
                 for (n=0; n <= system.V(); n++)
@@ -1350,12 +1518,33 @@ QList<ParametersSet> SettingsTypeForClassAndSystemState::getParametersList(const
             }
             break;
         }
-        break;
 
+        case ParameterType::SystemState:
+        {
+            for (i=0; i < system.m(); i++)
+            {
+                ParametersSet item;
+                item.systemState = -1;
+                item.classIndex = i;
+                result.append(item);
+            }
+            break;
+        }
+
+        case ParameterType::OfferedTrafficPerAS:
+            qFatal("Funstional parameters for X and Z axis are the same");
+
+        default:
+            qFatal("Wrong functional parameter 2");
+        }
+        break;
+    }
     case ParameterType::SystemState:
+    {
         switch(functionalParameterZ)
         {
         case ParameterType::None:
+        {
             foreach (decimal a, aOfPerAU)
             {
                 for (i=0; i < system.m(); i++)
@@ -1369,12 +1558,33 @@ QList<ParametersSet> SettingsTypeForClassAndSystemState::getParametersList(const
             }
             break;
         }
+        case ParameterType::TrafficClass:
+        {
+            for (int n=0; n <= system.V(); n++)
+            {
+                ParametersSet item;
+                item.systemState = n;
+                item.classIndex = -1;
+                result.append(item);
+            }
+            break;
+        }
+
+        case ParameterType::SystemState:
+            qFatal("Funstional parameters for X and Z axis are the same");
+
+        default:
+            qFatal("Wrong functional parameter 2");
+
+        }
         break;
+    }
 
     case ParameterType::TrafficClass:
         switch(functionalParameterZ)
         {
-            case ParameterType::None:
+        case ParameterType::None:
+        {
             foreach (decimal a, aOfPerAU)
             {
                 for (n=0; n <= system.V(); n++)
@@ -1387,6 +1597,27 @@ QList<ParametersSet> SettingsTypeForClassAndSystemState::getParametersList(const
                 }
             }
             break;
+        }
+
+        case ParameterType::SystemState:
+        {
+            foreach (decimal a, aOfPerAU)
+            {
+                ParametersSet item;
+                item.systemState = -1;
+                item.classIndex = -1;
+                item.a = a;
+                result.append(item);
+            }
+            break;
+        }
+
+        case ParameterType::TrafficClass:
+            qFatal("Funstional parameters for X and Z axis are the same");
+
+        default:
+            qFatal("Wrong functional parameter 2");
+
         }
         break;
 
@@ -1697,6 +1928,32 @@ QList<ParametersSet> SettingsTypeForClassAndServerState::getParametersList(const
                 }
             }
             break;
+
+        case ParameterType::TrafficClass:
+            for (n=0; n <= system.getServer().V(); n++)
+            {
+                ParametersSet item;
+                item.serverState = n;
+                item.classIndex = -1;
+                result.append(item);
+            }
+            break;
+
+        case ParameterType::ServerState:
+            for (i=0; i < system.m(); i++)
+            {
+                ParametersSet item;
+                item.serverState = -1;
+                item.classIndex = i;
+                result.append(item);
+            }
+            break;
+
+        case ParameterType::OfferedTrafficPerAS:
+            qFatal("Funstional parameters for X and Z axis are the same");
+
+        default:
+            qFatal("Wrong functional parameter 2");
         }
         break;
 
@@ -1716,6 +1973,35 @@ QList<ParametersSet> SettingsTypeForClassAndServerState::getParametersList(const
                 }
             }
             break;
+
+        case ParameterType::OfferedTrafficPerAS:
+            for (n=0; n <= system.getServer().V(); n++)
+            {
+                ParametersSet item;
+                item.serverState = n;
+                item.classIndex = -1;
+                item.a = -1;
+                result.append(item);
+            }
+            break;
+
+
+        case ParameterType::ServerState:
+            foreach (a, aOfPerAU)
+            {
+                ParametersSet item;
+                item.serverState = -1;
+                item.classIndex = -1;
+                item.a = a;
+                result.append(item);
+            }
+            break;
+
+        case ParameterType::TrafficClass:
+            qFatal("Funstional parameters for X and Z axis are the same");
+
+        default:
+            qFatal("Wrong functional parameter 2");
         }
         break;
 
@@ -1735,6 +2021,35 @@ QList<ParametersSet> SettingsTypeForClassAndServerState::getParametersList(const
                 }
             }
             break;
+
+        case ParameterType::OfferedTrafficPerAS:
+            for (i=0; i < system.m(); i++)
+            {
+                ParametersSet item;
+                item.serverState = -1;
+                item.classIndex = i;
+                item.a = -1;
+                result.append(item);
+            }
+            break;
+
+        case ParameterType::TrafficClass:
+            foreach (a, aOfPerAU)
+            {
+                ParametersSet item;
+                item.serverState = -1;
+                item.classIndex = -1;
+                item.a = a;
+                result.append(item);
+            }
+            break;
+
+        case ParameterType::ServerState:
+            qFatal("Funstional parameters for X and Z axis are the same");
+
+        default:
+            qFatal("Wrong functional parameter 2");
+
         }
         break;
 
@@ -2046,6 +2361,32 @@ QList<ParametersSet> SettingsTypeForClassAndBufferState::getParametersList(const
                 }
             }
             break;
+
+        case ParameterType::TrafficClass:
+            for (n=0; n <= system.getBuffer().V(); n++)
+            {
+                ParametersSet item;
+                item.bufferState = n;
+                item.classIndex = -1;
+                result.append(item);
+            }
+            break;
+
+        case ParameterType::BufferState:
+            for (i=0; i < system.m(); i++)
+            {
+                ParametersSet item;
+                item.bufferState = -1;
+                item.classIndex = i;
+                result.append(item);
+            }
+            break;
+
+        case ParameterType::OfferedTrafficPerAS:
+            qFatal("Funstional parameters for X and Z axis are the same");
+
+        default:
+            qFatal("Wrong functional parameter 2");
         }
         break;
 
@@ -2065,6 +2406,33 @@ QList<ParametersSet> SettingsTypeForClassAndBufferState::getParametersList(const
                 }
             }
             break;
+
+        case ParameterType::OfferedTrafficPerAS:
+            for (n=0; n <= system.getBuffer().V(); n++)
+            {
+                ParametersSet item;
+                item.bufferState = n;
+                item.classIndex = -1;
+                item.a = -1;
+                result.append(item);
+            }
+            break;
+
+        case ParameterType::BufferState:
+            foreach (a, aOfPerAU)
+            {
+                ParametersSet item;
+                item.bufferState = -1;
+                item.classIndex = -1;
+                item.a = a;
+                result.append(item);
+            }
+            break;
+       case ParameterType::TrafficClass:
+            qFatal("Funstional parameters for X and Z axis are the same");
+
+        default:
+            qFatal("Wrong functional parameter 2");
         }
         break;
 
@@ -2084,6 +2452,34 @@ QList<ParametersSet> SettingsTypeForClassAndBufferState::getParametersList(const
                 }
             }
             break;
+
+        case ParameterType::OfferedTrafficPerAS:
+            for (i=0; i < system.m(); i++)
+            {
+                ParametersSet item;
+                item.bufferState = -1;
+                item.classIndex = i;
+                item.a = -1;
+                result.append(item);
+            }
+            break;
+
+        case ParameterType::TrafficClass:
+            foreach (a, aOfPerAU)
+            {
+                ParametersSet item;
+                item.bufferState = -1;
+                item.classIndex = -1;
+                item.a = a;
+                result.append(item);
+            }
+            break;
+
+        case ParameterType::BufferState:
+            qFatal("Funstional parameters for X and Z axis are the same");
+
+        default:
+            qFatal("Wrong functional parameter 2");
         }
         break;
 
@@ -2447,7 +2843,42 @@ QList<ParametersSet> SettingsForClassAndServerGroupsCombination::getParametersLi
                 }
             }
             break;
+
+
+        case ParameterType::TrafficClass:
+        {
+            for (combNo=0; combNo < noOfCOmbinations; combNo++)
+            {
+                if ((system.getServer().schedulerAlg == ResourcessScheduler::Random) && combinations[combNo].length() == lstNoOfGroupInCombination)
+                    continue;
+                lstNoOfGroupInCombination = combinations[combNo].length();
+
+                ParametersSet item;
+                item.combinationNumber = combNo;
+                item.classIndex = -1;
+                result.append(item);
+            }
+            break;
         }
+
+        case ParameterType::CombinationNumber:
+            for (i=0; i < system.m(); i++)
+            {
+                ParametersSet item;
+                item.combinationNumber = -1;
+                item.classIndex = i;
+                result.append(item);
+            }
+            break;
+
+        case ParameterType::OfferedTrafficPerAS:
+            qFatal("Funstional parameters for X and Z axis are the same");
+
+        default:
+            qFatal("Wrong functional parameter 2");
+        }
+        break;
+
     case ParameterType::TrafficClass:
         switch(functionalParameterZ)
         {
@@ -2468,6 +2899,42 @@ QList<ParametersSet> SettingsForClassAndServerGroupsCombination::getParametersLi
                 }
             }
             break;
+
+        case ParameterType::OfferedTrafficPerAS:
+        {
+            for (combNo=0; combNo < noOfCOmbinations; combNo++)
+            {
+                if ((system.getServer().schedulerAlg == ResourcessScheduler::Random) && combinations[combNo].length() == lstNoOfGroupInCombination)
+                    continue;
+                lstNoOfGroupInCombination = combinations[combNo].length();
+
+                ParametersSet item;
+                item.combinationNumber = combNo;
+                item.classIndex = -1;
+                item.a = -1;
+                result.append(item);
+            }
+            break;
+        }
+
+        case ParameterType::CombinationNumber:
+        {
+            foreach (a, aOfPerAU)
+            {
+                ParametersSet item;
+                item.combinationNumber = -1;
+                item.classIndex = -1;
+                item.a = a;
+                result.append(item);
+            }
+            break;
+        }
+
+        case ParameterType::TrafficClass:
+            qFatal("Funstional parameters for X and Z axis are the same");
+
+        default:
+            qFatal("Wrong functional parameter 2");
         }
         break;
 
@@ -2487,6 +2954,38 @@ QList<ParametersSet> SettingsForClassAndServerGroupsCombination::getParametersLi
                 }
             }
             break;
+
+        case ParameterType::OfferedTrafficPerAS:
+        {
+            for (i=0; i < system.m(); i++)
+            {
+                ParametersSet item;
+                item.combinationNumber = -1;
+                item.classIndex = i;
+                item.a = -1;
+                result.append(item);
+            }
+            break;
+        }
+
+        case ParameterType::TrafficClass:
+        {
+            foreach (a, aOfPerAU)
+            {
+                ParametersSet item;
+                item.combinationNumber = -1;
+                item.classIndex = -1;
+                item.a = a;
+                result.append(item);
+            }
+            break;
+        }
+
+        case ParameterType::CombinationNumber:
+            qFatal("Funstional parameters for X and Z axis are the same");
+
+        default:
+            qFatal("Wrong functional parameter 2");
         }
         break;
 
@@ -3309,44 +3808,135 @@ bool SettingsTypeForServerAndBufferState::getSinglePlot(QVector<double> &outPlot
             const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
 
             double y=0;
-            if ((*singlePoint)->read(y, qos, parametersSet.serverState, parametersSet.bufferState))
+            if (functionalParameterZ == ParameterType::None)
             {
-                if (y>0)
-                    result = true;
+                if ((*singlePoint)->read(y, qos, parametersSet.serverState, parametersSet.bufferState))
+                {
+                    if (y>0)
+                        result = true;
+                }
+                outPlot.append(y);
             }
-            outPlot.append(y);
+            else if (functionalParameterZ == ParameterType::ServerState)
+            {
+                for (int n=0; n <= rSystem.getModel().getServer().V(); n++)
+                {
+                    if ((*singlePoint)->read(y, qos, n, parametersSet.bufferState))
+                    {
+                        if (y>0)
+                            result = true;
+                    }
+                    outPlot.append(y);
+                }
+            }
+            else if (functionalParameterZ == ParameterType::BufferState)
+            {
+                for (int n=0; n <= rSystem.getModel().getBuffer().V(); n++)
+                {
+                    if ((*singlePoint)->read(y, qos, parametersSet.serverState, n))
+                    {
+                        if (y>0)
+                            result = true;
+                    }
+                    outPlot.append(y);
+                }
+            }
         }
     }
 
     if (functionalParameterX == ParameterType::ServerState)
     {
-        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int n=0; n<=rSystem.getModel().getServer().V(); n++)
         {
             double y=0;
 
-            if ((*singlePoint)->read(y, qos, n, parametersSet.bufferState))
+            if (functionalParameterZ == ParameterType::OfferedTrafficPerAS)
             {
-                if (y>0)
-                    result = true;
+                foreach(decimal a, rSystem.getAvailableAperAU())
+                {
+                    const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+                    if ((*singlePoint)->read(y, qos, n, parametersSet.bufferState))
+                    {
+                        if (y>0)
+                            result = true;
+                    }
+                    outPlot.append(y);
+                }
             }
-            outPlot.append(y);
+            else
+            {
+                const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+
+                if (functionalParameterZ == ParameterType::None)
+                {
+                    if ((*singlePoint)->read(y, qos, n, parametersSet.bufferState))
+                    {
+                        if (y>0)
+                            result = true;
+                    }
+                    outPlot.append(y);
+                }
+                else if (functionalParameterZ == ParameterType::BufferState)
+                {
+                    for (int nb=0; nb<=rSystem.getModel().getBuffer().V(); nb++)
+                    {
+                        if ((*singlePoint)->read(y, qos, n, nb))
+                        {
+                            if (y>0)
+                                result = true;
+                        }
+                        outPlot.append(y);
+                    }
+                }
+            }
         }
     }
 
     if (functionalParameterX == ParameterType::BufferState)
     {
-        const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
         for (int n=0; n<=rSystem.getModel().getBuffer().V(); n++)
         {
             double y=0;
 
-            if ((*singlePoint)->read(y, qos, parametersSet.serverState, n))
+            if (functionalParameterZ == ParameterType::OfferedTrafficPerAS)
             {
-                if (y>0)
-                    result = true;
+                foreach(decimal a, rSystem.getAvailableAperAU())
+                {
+                    const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, a);
+                    if ((*singlePoint)->read(y, qos, parametersSet.serverState, n))
+                    {
+                        if (y>0)
+                            result = true;
+                    }
+                    outPlot.append(y);
+                }
             }
-            outPlot.append(y);
+            else
+            {
+                const RInvestigator *singlePoint = rSystem.getInvestigationResults(algorithm, parametersSet.a);
+
+                if (functionalParameterZ == ParameterType::None)
+                {
+                    if ((*singlePoint)->read(y, qos, parametersSet.serverState, n))
+                    {
+                        if (y>0)
+                            result = true;
+                    }
+                    outPlot.append(y);
+                }
+                else if (functionalParameterZ == ParameterType::ServerState)
+                {
+                    for (int ns=0; ns<=rSystem.getModel().getServer().V(); ns++)
+                    {
+                        if ((*singlePoint)->read(y, qos, ns, n))
+                        {
+                            if (y>0)
+                                result = true;
+                        }
+                        outPlot.append(y);
+                    }
+                }
+            }
         }
     }
     return result;
@@ -3521,6 +4111,33 @@ QList<ParametersSet> SettingsTypeForServerAndBufferState::getParametersList(cons
                 }
             }
             break;
+        case ParameterType::ServerState:
+            for (nb=0; nb <= system.getBuffer().V(); nb++)
+            {
+                ParametersSet item;
+                item.serverState = -1;
+                item.bufferState = nb;
+                item.a = -1;
+                result.append(item);
+            }
+            break;
+
+        case ParameterType::BufferState:
+            for (ns=0; ns <= system.getServer().V(); ns++)
+            {
+                ParametersSet item;
+                item.serverState = ns;
+                item.bufferState = -1;
+                item.a = -1;
+                result.append(item);
+            }
+            break;
+
+        case ParameterType::OfferedTrafficPerAS:
+            qFatal("Funstional parameters for X and Z axis are the same");
+
+        default:
+            qFatal("Wrong functional parameter 2");
         }
         break;
 
@@ -3541,6 +4158,34 @@ QList<ParametersSet> SettingsTypeForServerAndBufferState::getParametersList(cons
                 }
             }
             break;
+
+        case ParameterType::OfferedTrafficPerAS:
+            for (nb=0; nb <= system.getBuffer().V(); nb++)
+            {
+                ParametersSet item;
+                 item.serverState = -1;
+                item.bufferState = nb;
+                item.a = -1;
+                result.append(item);
+            }
+            break;
+
+        case ParameterType::BufferState:
+            foreach (a, aOfPerAU)
+            {
+                ParametersSet item;
+                item.serverState = -1;
+                item.bufferState = -1;
+                item.a = a;
+                result.append(item);
+            }
+            break;
+
+        case ParameterType::ServerState:
+            qFatal("Funstional parameters for X and Z axis are the same");
+
+        default:
+            qFatal("Wrong functional parameter 2");
         }
         break;
 
@@ -3560,6 +4205,35 @@ QList<ParametersSet> SettingsTypeForServerAndBufferState::getParametersList(cons
                 }
             }
             break;
+
+        case ParameterType::OfferedTrafficPerAS:
+            for (ns=0; ns <= system.getServer().V(); ns++)
+            {
+                ParametersSet item;
+                item.serverState = ns;
+                item.bufferState = -1;
+                item.a = -1;
+                result.append(item);
+            }
+            break;
+
+        case ParameterType::ServerState:
+            foreach (a, aOfPerAU)
+            {
+                ParametersSet item;
+                item.serverState = -1;
+                item.bufferState = -1;
+                item.a = a;
+                result.append(item);
+            }
+            break;
+
+
+        case ParameterType::BufferState:
+            qFatal("Funstional parameters for X and Z axis are the same");
+
+        default:
+            qFatal("Wrong functional parameter 2");
         }
         break;
 
