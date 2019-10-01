@@ -283,13 +283,16 @@ void GnuplotScript::WriteDataAndScript3d(QString baseFileNameWithPath, const Mod
 
 
         dataStream<<"#"<<TypesAndSettings::parameterToString(setting->getFunctionalParameterX());
-        int colNo = 2;
+        dataStream<<"\t"<<TypesAndSettings::parameterToString(setting->getFunctionalParameterZ());
 
+ //Data file header and script file
+
+        int colNo = 3;
         foreach(ParametersSet param, yVals.keys())
         {
             dataStream<<"\t"<<setting->getParameterDescription(param, system->getConstSyst());
-
-            dataStream<<"\t+-";
+            if (algorithm->hasConfIntervall())
+                dataStream<<"\t+-";
             if (firstPlot)
             {
                 firstPlot = false;
@@ -297,23 +300,31 @@ void GnuplotScript::WriteDataAndScript3d(QString baseFileNameWithPath, const Mod
             }
             else
                 scriptStream<<"  , ";
-            scriptStream<<"\""<<dataFileName<<"\" using 1:2:3\\\r\n";
+
+            scriptStream<<"\""<<dataFileName<<"\" using 1:2:"<<colNo<<" title \"" <<setting->getParameterDescription(param, system->getConstSyst())<< "\" \\\r\n";
+            colNo++;
+            if (algorithm->hasConfIntervall())
+                colNo++;
         }
-        dataStream<<"\n";
 
         for (i=0; i < xVals.length(); i++)
         {
-            dataStream<< static_cast<double>(xVals[i]);
-
-            foreach(ParametersSet param, yVals.keys())
+            for (int j=0; j < zVals.length(); j++)
             {
-                if (std::isnan(yVals[param][i]))
-                    dataStream<<"\t0";
-                else
-                    dataStream<<"\t"<<yVals[param][i];
+                dataStream<<"\n"<<static_cast<double>(xVals[i])<<"\t"<< static_cast<double>(zVals[j]);
 
-                if (algorithm->hasConfIntervall())
-                    dataStream<<"\t0";
+                foreach(ParametersSet param, yVals.keys())
+                {
+                    if (std::isnan(yVals[param][i * zVals.length() + j]))
+                        dataStream<<"\t?";
+                    else if (yVals[param][i * zVals.length() + j] > 0)
+                        dataStream<<"\t"<<yVals[param][i * zVals.length() + j];
+                    else
+                        dataStream<<"\t?";
+
+                    if (algorithm->hasConfIntervall())
+                        dataStream<<"\t0";
+                }
             }
             dataStream<<"\n";
 

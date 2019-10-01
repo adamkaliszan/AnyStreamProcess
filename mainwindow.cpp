@@ -2395,3 +2395,4 @@ void MainWindow::on_pushButtonSave3dChart_clicked()
 
     saveTheResults3d(fileName, type);
 }
+
