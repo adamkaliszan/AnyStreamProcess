@@ -236,6 +236,8 @@ void GnuplotScript::WriteDataAndScript(QString baseFileNameWithPath, const Model
 
 void GnuplotScript::WriteDataAndScript3d(QString baseFileNameWithPath, const ModelCreator *system, Settings *setting, Type qosType, QList<ParametersSet> parameters, QList<Investigator *> algorithms, int logScale, int showZeros)
 {
+    QVector<decimal> xVals = TypesAndSettings::getPlotsXorZ(*systemResults, setting->getFunctionalParameterX());
+    QVector<decimal> zVals = TypesAndSettings::getPlotsXorZ(*systemResults, setting->getFunctionalParameterZ());
 
     QFile scriptFile(baseFileNameWithPath + ".gp");
 
@@ -256,6 +258,20 @@ void GnuplotScript::WriteDataAndScript3d(QString baseFileNameWithPath, const Mod
 
     scriptStream<<"set terminal postscript enhanced 'Times' 6 color\r\n";
     scriptStream<<"set encoding cp1250\r\n";
+
+    scriptStream<<"set view 19, 250\r\n";
+
+    scriptStream<<"set xyplane at 0\r\n";
+    scriptStream<<"set grid z vertical lw 1.0\r\n";
+    scriptStream<<"set grid y vertical lw 1.0\r\n";
+    scriptStream<<"set grid x vertical lw 1.0\r\n";
+
+    scriptStream<<"set xlabel \"" << TypesAndSettings::parameterToString(setting->getFunctionalParameterX())<< "\"\r\n";
+    scriptStream<<"set xrange ["<<static_cast<double>(xVals.first())<<":"<<static_cast<double>(xVals.last())<<"]\r\n";
+
+    scriptStream<<"set ylabel \"" << TypesAndSettings::parameterToString(setting->getFunctionalParameterZ())<< "\"\r\n";
+    scriptStream<<"set yrange ["<<static_cast<double>(zVals.first())<<":"<<static_cast<double>(zVals.last())<<"]\r\n";
+
     scriptStream<<"set output \""<<baseFileName<<".eps\"\r\n";
     scriptStream<<"splot\\\r\n";
 
@@ -265,12 +281,11 @@ void GnuplotScript::WriteDataAndScript3d(QString baseFileNameWithPath, const Mod
     int dt = 1;
     int lw = 1;
 
-    foreach(Investigator *algorithm, systemResults->getAvailableAlgorithms())
+    foreach(Investigator *algorithm, algorithms)
     {
         if (!algorithm->getQoS_Set().contains(qosType))
             continue;
-        QVector<decimal> xVals = TypesAndSettings::getPlotsXorZ(*systemResults, setting->getFunctionalParameterX());
-        QVector<decimal> zVals = TypesAndSettings::getPlotsXorZ(*systemResults, setting->getFunctionalParameterZ());
+
         QMap<ParametersSet, QVector<double>> yVals = TypesAndSettings::getPlotsValues(*systemResults, qosType, setting->getFunctionalParameterX(), algorithm);
 
         QString dataFileNameWithPath = baseFileNameWithPath + algorithm->shortName() + ".dat";
@@ -288,7 +303,9 @@ void GnuplotScript::WriteDataAndScript3d(QString baseFileNameWithPath, const Mod
  //Data file header and script file
 
         int colNo = 3;
-        foreach(ParametersSet param, yVals.keys())
+
+        //foreach(ParametersSet param, yVals.keys())
+        foreach(ParametersSet param, parameters)
         {
             dataStream<<"\t"<<setting->getParameterDescription(param, system->getConstSyst());
             if (algorithm->hasConfIntervall())
@@ -301,7 +318,16 @@ void GnuplotScript::WriteDataAndScript3d(QString baseFileNameWithPath, const Mod
             else
                 scriptStream<<"  , ";
 
-            scriptStream<<"\""<<dataFileName<<"\" using 1:2:"<<colNo<<" title \"" <<setting->getParameterDescription(param, system->getConstSyst())<< "\" \\\r\n";
+            scriptStream<<"\""<<dataFileName<<"\" using 1:2:"<<colNo;
+            if (algorithm->hasConfIntervall())
+            {
+                scriptStream<<" with boxes";
+            }
+            else
+            {
+                scriptStream<<" with lines";
+            }
+            scriptStream<<" title \"" <<setting->getParameterDescription(param, system->getConstSyst())<< "\" \\\r\n";
             colNo++;
             if (algorithm->hasConfIntervall())
                 colNo++;
@@ -313,11 +339,11 @@ void GnuplotScript::WriteDataAndScript3d(QString baseFileNameWithPath, const Mod
             {
                 dataStream<<"\n"<<static_cast<double>(xVals[i])<<"\t"<< static_cast<double>(zVals[j]);
 
-                foreach(ParametersSet param, yVals.keys())
+                foreach(ParametersSet param, parameters)
                 {
                     if (std::isnan(yVals[param][i * zVals.length() + j]))
                         dataStream<<"\t?";
-                    else if (yVals[param][i * zVals.length() + j] > 0)
+                    else if ((yVals[param][i * zVals.length() + j] > 0) || showZeros)
                         dataStream<<"\t"<<yVals[param][i * zVals.length() + j];
                     else
                         dataStream<<"\t?";
@@ -326,9 +352,29 @@ void GnuplotScript::WriteDataAndScript3d(QString baseFileNameWithPath, const Mod
                         dataStream<<"\t0";
                 }
             }
-            dataStream<<"\n";
-
         }
+        // Option on order to generate line 3d chart. All point is placed twice on the chart
+        for (int j=0; j < zVals.length(); j++)
+        {
+            for (i=0; i < xVals.length(); i++)
+            {
+                dataStream<<"\n"<<static_cast<double>(xVals[i])<<"\t"<< static_cast<double>(zVals[j]);
+
+                foreach(ParametersSet param, parameters)
+                {
+                    if (std::isnan(yVals[param][i * zVals.length() + j]))
+                        dataStream<<"\t?";
+                    else if ((yVals[param][i * zVals.length() + j] > 0) || showZeros)
+                        dataStream<<"\t"<<yVals[param][i * zVals.length() + j];
+                    else
+                        dataStream<<"\t?";
+
+                    if (algorithm->hasConfIntervall())
+                        dataStream<<"\t0";
+                }
+            }
+        }
+
         dataFile.close();
         lc++;
     }

@@ -1289,14 +1289,55 @@ void MainWindow::saveTheResults3d(QString &fileName, Type qosType)
     QString dataFileName = fileName + QString(".dat");
     QString graphBaseFileName = fileName;
 
+    Results::Settings *setting = Results::TypesAndSettings::getSetting(qosType);
+
     scrGnuplot->systemResults = this->resultsForSystem;
 
     QList<Investigator*> algorithms;
-    QList<ParametersSet> parameters;
 
-    Results::Settings *setting = Results::TypesAndSettings::getSetting(qosType);
-    scrGnuplot->WriteDataAndScript3d(fileName, this->system, setting, qosType, parameters, algorithms, 1, 0);
 
+    QList<ParametersSet> parametersList;
+
+    foreach(QListWidgetItem *tmp, ui->listWidgetAlgorithms->selectedItems())
+    {
+        algorithms.append(tmp->data(Qt::UserRole).value<Investigator *>());
+    }
+
+
+    ParametersSet parameters;
+    clearParameters(parameters);
+
+    if (setting->getAdditionalParameter1() != Results::ParameterType::None)
+    {
+        foreach (const QListWidgetItem *tmpItem1, ui->listWidgetResultsQtAdditionalParameters1->selectedItems())
+        {
+            QString name = Settings::updateParameters(parameters, tmpItem1->data(Qt::UserRole), setting->getAdditionalParameter1(), system->getConstSyst(), resultsForSystem);
+            if (setting->getAdditionalParameter2() != Results::ParameterType::None)
+            {
+                foreach (const QListWidgetItem *tmpItem2, ui->listWidgetResultsQtAdditionalParameters2->selectedItems())
+                {
+                    QString name2 = Settings::updateParameters(parameters, tmpItem2->data(Qt::UserRole), setting->getAdditionalParameter2(), system->getConstSyst(), resultsForSystem);
+
+                    if (setting->getAdditionalParameter3() != Results::ParameterType::None)
+                    {
+                        foreach (const QListWidgetItem *tmpItem3, ui->listWidgetResultsQtAdditionalParameters3->selectedItems())
+                        {
+                            Settings::updateParameters(parameters, tmpItem3->data(Qt::UserRole), setting->getAdditionalParameter3(), system->getConstSyst(), resultsForSystem);
+                            parametersList.append(parameters);
+                        }
+                    }
+                    else
+                        parametersList.append(parameters);
+                }
+            }
+            else
+                parametersList.append(parameters);
+        }
+    }
+    else
+        parametersList.append(parameters);
+
+    scrGnuplot->WriteDataAndScript3d(fileName, this->system, setting, qosType, parametersList, algorithms, 1, 0);
 }
 
 void MainWindow::saveResultsGnuplotE()
