@@ -1,5 +1,5 @@
 #include <QtDebug>
-#include "algorithmConv3d.h"
+#include "conv3d.h"
 #include "algorithms/trclvector2.h"
 
 

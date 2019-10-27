@@ -1,4 +1,4 @@
-#include "alg_cFIFO_hybrid.h"
+#include "cFIFO_hybrid.h"
 
 namespace Algorithms
 {

@@ -1,4 +1,4 @@
-#include "algRekLagGS.h"
+#include "LAG_recurenceGS.h"
 #include "utils/vectorUtils.h"
 #include "utils/lag.h"
 

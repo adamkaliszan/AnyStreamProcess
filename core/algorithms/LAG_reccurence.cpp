@@ -1,5 +1,5 @@
 #include "model.h"
-#include "algorithms/algRekLag.h"
+#include "algorithms/LAG_reccurence.h"
 #include "utils/lag.h"
 
 namespace Algorithms

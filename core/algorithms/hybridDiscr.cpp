@@ -1,4 +1,4 @@
-#include "algorithmHybridDiscr.h"
+#include "hybridDiscr.h"
 #include "results/resultsInvestigator.h"
 
 namespace Algorithms

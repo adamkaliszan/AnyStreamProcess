@@ -1,4 +1,4 @@
-#include "algorithmConv.h"
+#include "conv.h"
 #include "algorithms/trclvector2.h"
 
 /*

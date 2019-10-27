@@ -5,7 +5,7 @@
 #include <QMetaType>
 
 #include "algorithms/investigator.h"
-#include "algorithms/algorithmConv.h"
+#include "algorithms/conv.h"
 #include "algorithms/trclvector2.h"
 
 namespace Algorithms

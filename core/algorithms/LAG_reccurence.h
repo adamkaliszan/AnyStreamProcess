@@ -1,7 +1,7 @@
 #ifndef ALG_REK_LAG_H
 #define ALG_REK_LAG_H
 
-#include "algorithms/algRekGeneral.h"
+#include "algorithms/reccurenceGeneral.h"
 
 namespace Algorithms
 {

@@ -1,4 +1,4 @@
-#include "algorithmConvGamma3.h"
+#include "convGamma3.h"
 #include "results/resultsInvestigator.h"
 
 namespace Algorithms

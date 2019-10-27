@@ -1,4 +1,4 @@
-#include "algRekGeneral.h"
+#include "reccurenceGeneral.h"
 
 #include <utils/vectorUtils.h>
 

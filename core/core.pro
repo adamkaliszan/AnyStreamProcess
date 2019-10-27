@@ -13,28 +13,32 @@ QT += datavisualization
 
 CONFIG += staticlib
 
+QMAKE_CXXFLAGS += -std=c++11
+QMAKE_CXXFLAGS += -std=gnu++11
+QMAKE_CXXFLAGS += -fext-numeric-literals
+
 SOURCES += \
+    algorithms/FAG_AnyStr_hybrid.cpp \
+    algorithms/FAG_hybrid.cpp \
+    algorithms/LAG_reccurence.cpp \
+    algorithms/LAG_reccurenceGS.cpp \
+    algorithms/cFIFO_convGamma.cpp \
+    algorithms/cFIFO_hybrid.cpp \
+    algorithms/conv.cpp \
+    algorithms/conv3d.cpp \
+    algorithms/convGamma2d.cpp \
+    algorithms/convGamma3.cpp \
+    algorithms/dFIFO_hybridDesc.cpp \
+    algorithms/hybridDiscr.cpp \
+    algorithms/reccurenceGeneral.cpp \
     model.cpp \
     algorithms/investigator.cpp \
-    algorithms/algorithmConvGamma3.cpp \
-    algorithms/algorithmConvGamma2d.cpp \
-    algorithms/algorithmHybridDiscr.cpp \
-    algorithms/algorithmHybridDiscrDesc.cpp \
-    algorithms/alg_cFIFO_hybrid.cpp \
-    algorithms/alg_cFIFO_convGamma.cpp \
-    algorithms/alg_noFIFO.cpp \
-    algorithms/alg_FAG_AnyStream.cpp \
     algorithms/trclvector2.cpp \
-    algorithms/algorithmConv.cpp \
     algorithms/simulatordatacollection.cpp \
     algorithms/simulator.cpp \
-    algorithms/algorithmConv3d.cpp \
     algorithms/simulationParameters.cpp \
     algorithms/simulatorAllSystems.cpp \
     algorithms/simulatorStatistics.cpp \
-    algorithms/algRekLagGS.cpp \
-    algorithms/algRekGeneral.cpp \
-    algorithms/algRekLag.cpp \
     results/resultsGnuplot.cpp \
     results/resultsSingle.cpp \
     results/resultsInvestigator.cpp \
@@ -48,25 +52,25 @@ SOURCES += \
 
 
 HEADERS += \
+    algorithms/FAG_AnyStr_hybrid.h \
+    algorithms/FAG_hybrid.h \
+    algorithms/LAG_reccurence.h \
+    algorithms/LAG_recurenceGS.h \
+    algorithms/cFIFO_convGamma.h \
+    algorithms/cFIFO_hybrid.h \
+    algorithms/conv.h \
+    algorithms/conv3d.h \
+    algorithms/convGamma2d.h \
+    algorithms/convGamma3.h \
+    algorithms/dFIFO_hybridDesc.h \
+    algorithms/hybridDiscr.h \
+    algorithms/reccurenceGeneral.h \
     model.h \
-    algorithms/algorithmConvGamma2d.h \
-    algorithms/algorithmHybridDiscr.h \
-    algorithms/algorithmHybridDiscrDesc.h \
-    algorithms/alg_cFIFO_hybrid.h \
-    algorithms/alg_cFIFO_convGamma.h \
-    algorithms/alg_noFIFO.h \
-    algorithms/alg_FAG_AnyStream.h \
     algorithms/investigator.h \
     algorithms/trclvector2.h \
-    algorithms/algorithmConv.h \
     algorithms/simulatordatacollection.h \
     algorithms/simulator.h \
-    algorithms/algorithmConv3d.h \
     algorithms/simulationParameters.h \
-    algorithms/algorithmConvGamma3.h \
-    algorithms/algRekGeneral.h \
-    algorithms/algRekLag.h \
-    algorithms/algRekLagGS.h \
     algorithms/simulatorAllSystems.h \
     algorithms/simulatorStatistics.h \
     results/resultsGnuplot.h \

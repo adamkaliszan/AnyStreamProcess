@@ -30,20 +30,20 @@
 
 #include "qcolor.h"
 
-#include "algorithms/algorithmConv.h"
-#include "algorithms/alg_cFIFO_convGamma.h"
-#include "algorithms/alg_noFIFO.h"
-#include "algorithms/alg_FAG_AnyStream.h"
-#include "algorithms/algorithmConvGamma2d.h"
-#include "algorithms/algorithmConvGamma3.h"
-#include "algorithms/algorithmConv3d.h"
-#include "algorithms/alg_cFIFO_hybrid.h"
-#include "algorithms/algorithmHybridDiscr.h"
-#include "algorithms/algorithmHybridDiscrDesc.h"
+#include "algorithms/conv.h"
+#include "algorithms/cFIFO_convGamma.h"
+#include "algorithms/FAG_hybrid.h"
+#include "algorithms/FAG_AnyStr_hybrid.h"
+#include "algorithms/convGamma2d.h"
+#include "algorithms/convGamma3.h"
+#include "algorithms/conv3d.h"
+#include "algorithms/cFIFO_hybrid.h"
+#include "algorithms/hybridDiscr.h"
+#include "algorithms/dFIFO_hybridDesc.h"
 #include "algorithms/simulatorAllSystems.h"
 #include "algorithms/simulationParameters.h"
-#include "algorithms/algRekLag.h"
-#include "algorithms/algRekLagGS.h"
+#include "algorithms/LAG_reccurence.h"
+#include "algorithms/LAG_recurenceGS.h"
 
 #include "results/resultsGnuplot.h"
 #include "results/resultsInvestigator.h"
@@ -276,7 +276,7 @@ void MainWindow::addAlgorithmsAndParams()
     //addExperimentalAlgorithm(new Algorithm2Pass());
     addExperimentalAlgorithm(new Algorithms::AlgorithmHybridDiscrDesc());
 
-    algorithms.append(new Algorithms::AlgorithmHybridNoFifo());
+    algorithms.append(new Algorithms::FAG_hybrid());
 //    algorithms.append(new AlgorithmAnyStreamFAG());
 //    algorithms.append(new convolutionAlgorithmGamma());
 //    algorithms.append(new AlgorithmHybrid(AlgorithmHybrid::algVariant::yProp));

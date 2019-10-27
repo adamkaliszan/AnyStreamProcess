@@ -4,19 +4,19 @@
 #include <qglobal.h>
 #include <QMetaType>
 #include "algorithms/investigator.h"
-#include "algorithms/algorithmConv.h"
+#include "algorithms/conv.h"
 #include "algorithms/trclvector2.h"
 
 namespace Algorithms
 {
 
-class AlgorithmAnyStreamFAG : public Investigator
+class FAG_AnyStry_hybrid : public Investigator
 {
 protected:
     TrClVector *p_single;
 
 public:
-    AlgorithmAnyStreamFAG();
+    FAG_AnyStry_hybrid();
 
     QString shortName() const { return QString("AnyStream"); }
     int complexity()    const { return 1; }
@@ -29,7 +29,7 @@ public:
 
 } //namespace Algorithms
 
-Q_DECLARE_METATYPE(Algorithms::AlgorithmAnyStreamFAG*)
+Q_DECLARE_METATYPE(Algorithms::FAG_AnyStry_hybrid*)
 
 #endif // ALGORITHMANYSTREAMFAG_H
 

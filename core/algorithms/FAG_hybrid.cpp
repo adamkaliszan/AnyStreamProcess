@@ -1,22 +1,26 @@
-#include "alg_FAG_AnyStream.h"
-
+#include "FAG_hybrid.h"
 #include "results/resultsInvestigator.h"
 
 namespace Algorithms
 {
 
-AlgorithmAnyStreamFAG::AlgorithmAnyStreamFAG(): Investigator()
+FAG_hybrid::FAG_hybrid() : Investigator()
 {
     myQoS_Set
-       <<Results::Type::BlockingProbability
-       <<Results::Type::OccupancyDistribution;
+     << Results::Type::BlockingProbability
+     << Results::Type::LossProbability
+     << Results::Type::OccupancyDistribution
+     << Results::Type::NumberOfCallsInSystemVsSystemState
+     << Results::Type::NewCallOfSingleClassIntensityOut_inSystemVsSystemState<< Results::Type::NewCallOfSingleClassIntensityIn_inSystemVsSystemState<< Results::Type::EndCallOfSingleClassIntensityOut_inSystemVsSystemState<< Results::Type::EndCallOfSingleClassIntensityIn_inSystemVsSystemState
+        ;
 }
 
-void AlgorithmAnyStreamFAG::calculateSystem(const ModelSystem &system
-      , double a
-      , RInvestigator *results
-      , SimulationParameters *simParameters
-      )
+
+void FAG_hybrid::calculateSystem(const ModelSystem &system
+        , double a
+        , RInvestigator *results
+        , SimulationParameters *simParameters
+        )
 {
     (void) simParameters;
 
@@ -26,37 +30,22 @@ void AlgorithmAnyStreamFAG::calculateSystem(const ModelSystem &system
     for (int i=0; i<system.m(); i++)
     {
         p_single[i] = system.getTrClass(i).trDistribution(i, classes[i].A, system.V(), 0);
-
-
-        TrClVector *tmp = &p_single[i];
-        for (int tmpV = system.V() - 1; tmpV >= 0; tmpV--)
-        {
-            tmp->previous = new TrClVector(tmpV, tmp->aggregatedClasses);
-            *(tmp->previous) = system.getTrClass(i).trDistribution(i, classes[i].A, tmpV, 0);
-            tmp = tmp->previous;
-        }
-        p_single[i].normalize();
-
-        qDebug()<<".";//p_single[i];
-        //p_single[i].generateDeNormalizedPoissonPrevDistrib();
     }
     TrClVector P(system.V());
 
     P = TrClVector(system.V());
-    P.generateNormalizedPoissonPrevDistrib();
     for (int i=0; i < system.m(); i++)
     {
-        P = TrClVector::convFAGanyStream(P, p_single[i], system.V());
-        P.normalize();
+        P = TrClVector::convFAG(P, p_single[i], true, system.V());
     }
 
-    for (int i=0; i<system.m(); i++)
+    for (int i=0; i < system.m(); i++)
     {
         //Prawdopodobieństwo blokady i strat
         double E = 0;
         double B_n = 0;
         double B_d = 0;
-        for (int n=system.V() + 1 - classes[i].t; n <= system.V(); n++)
+        for (int n = system.V() + 1 - classes[i].t; n <= system.V(); n++)
         {
             E+=P[n];
             B_n+=(P[n] * P.getIntOutNew(n, i));
@@ -68,7 +57,6 @@ void AlgorithmAnyStreamFAG::calculateSystem(const ModelSystem &system
 
         (*results)->write(TypeForClass::BlockingProbability, E, i);
         (*results)->write(TypeForClass::LossProbability, B_n/B_d, i);
-
 
         //Średnia liczba obsługiwanych zgłoszeń
         //TODO for (int n=0; n <= system->V(); n++)
@@ -88,27 +76,27 @@ void AlgorithmAnyStreamFAG::calculateSystem(const ModelSystem &system
         //Średni czas obsługi
         //algRes->set_tService(system->getClass(i), a, lQeue / A[i] * system->getClass(i)->getMu());
         double avgToS = 0;
-        for (int n=0; n <= system.getServer().V(); n++)
+        for (int n=0; n<=system.getServer().V(); n++)
         {
             avgToS += P[n] / P.getIntOutEnd(n, i);
         }
         //TODO algResults->set_tService(system->getClass(i), a, avgToS);
 
 
-        for (int n=0; n <= system.getServer().V(); n++)
+        for (int n=0; n<=system.getServer().V(); n++)
         {
             (*results)->write(TypeForClassAndServerState::Usage, P.getY(n, i)*classes[i].t, i, n);
         }
+
         for (int n=0; n <= system.V(); n++)
         {
             (*results)->write(TypeForClassAndSystemState::UsageForSystem, P.getY(n, i)*classes[i].t, i, n);
 
         //Intensywności przejść klas
-            (*results)->write(TypeForClassAndSystemState::NewCallIntensityInForSystem, P.getIntInNew(n, i), i, n);
-            (*results)->write(TypeForClassAndSystemState::EndCallIntensityInForSystem, P.getIntInEnd(n, i), i, n);
-
+            (*results)->write(TypeForClassAndSystemState::NewCallIntensityInForSystem        , P.getIntInNew (n, i), i, n);
+            (*results)->write(TypeForClassAndSystemState::EndCallIntensityInForSystem        , P.getIntInEnd (n, i), i, n);
             (*results)->write(TypeForClassAndSystemState::OfferedNewCallIntensityOutForSystem, P.getIntOutNew(n, i), i, n);
-            (*results)->write(TypeForClassAndSystemState::EndCallIntensityOutForSystem,        P.getIntOutEnd(n, i), i, n);
+            (*results)->write(TypeForClassAndSystemState::EndCallIntensityOutForSystem       , P.getIntOutEnd(n, i), i, n);
         }
     }
 
@@ -128,10 +116,31 @@ void AlgorithmAnyStreamFAG::calculateSystem(const ModelSystem &system
 
     deleteTemporaryData();
     delete []p_single;
+
     //emit this->sigCalculationDone();
 }
 
-bool AlgorithmAnyStreamFAG::possible(const ModelSystem &system) const
+void FAG_hybrid::calculateYSystem(
+    QVector<QVector<double> > ySystem
+  , const TrClVector &P
+)
+{
+    for (int i=0; i < system->m(); i++)
+        for (int n=0; n<=system->V(); n++)
+            ySystem[i][n] = P.getY(n, i);
+}
+
+void FAG_hybrid::calculateYServer(
+    QVector<QVector<double> > yServerVsVb
+  , const TrClVector &P
+)
+{
+    for (int i=0; i < system->m(); i++)
+        for (int n=0; n <= system->V(); n++)
+            yServerVsVb[i][n] = P.getY(n, i);
+}
+
+bool FAG_hybrid::possible(const ModelSystem &system) const
 {
     if (system.getBuffer().V() > 0)
         return false;

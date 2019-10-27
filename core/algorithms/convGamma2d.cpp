@@ -1,4 +1,4 @@
-#include "algorithmConvGamma2d.h"
+#include "convGamma2d.h"
 
 
 /*

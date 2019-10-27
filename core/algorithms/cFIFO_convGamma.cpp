@@ -1,4 +1,4 @@
-#include "alg_cFIFO_convGamma.h"
+#include "cFIFO_convGamma.h"
 
 #include "results/resultsInvestigator.h"
 

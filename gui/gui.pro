@@ -9,6 +9,8 @@ QT += widgets
 QT += charts
 QT += datavisualization
 
+DEFINES +="INC_AGENDA_PERFORMANCE=1"
+
 QTPLUGIN += qsqlmysql
 
 TEMPLATE = subdirs
