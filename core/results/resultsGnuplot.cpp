@@ -259,7 +259,7 @@ void GnuplotScript::WriteDataAndScript3d(QString baseFileNameWithPath, const Mod
     scriptStream<<"set terminal postscript enhanced 'Times' 6 color\r\n";
     scriptStream<<"set encoding cp1250\r\n";
 
-    scriptStream<<"set view 19, 250\r\n";
+    //scriptStream<<"set view 19, 250\r\n";
 
     scriptStream<<"set xyplane at 0\r\n";
     scriptStream<<"set grid z vertical lw 1.0\r\n";
@@ -394,6 +394,6 @@ GnuplotScript::GnuplotScript(): systemResults(nullptr)
 {
     plotCi = true;
     plotWithColors = true;
-    gp = new Gnuplot("tee plot.gp | gnuplot -persist");
+    //gp = new Gnuplot("tee plot.gp | gnuplot -persist");
 }
 

@@ -10,7 +10,6 @@
 #include "results/resultsSystem.h"
 
 #include "algorithms/investigator.h"
-#include "gnuplot-iostream.h"
 
 enum class terminalType
 {
@@ -25,7 +24,7 @@ class GnuplotScript
     friend QTextStream& operator<<(QTextStream& out, const GnuplotScript& gnuScript);
 
 private:
-    Gnuplot *gp;
+    //Gnuplot *gp;
 
     QString fontName;
     int     fontSize;

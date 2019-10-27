@@ -23,6 +23,8 @@ private:
     {
 #ifdef INC_AGENDA_PERFORMANCE
         double timeOffset;                                           //The ralative time of an events, that are stored on the heap is a sum of its (not always updated) relative time and timeOffset
+#else
+#error "not defined INC_AGENDA_PERFORMANCE"
 #endif
         u_int32_t capacity;
         u_int32_t len;
@@ -41,8 +43,11 @@ private:
 
                 if (tmpProc->idx != i)
                     qFatal("Wrong index %d should be %d", array[i]->idx, i);
+
+#ifdef INC_AGENDA_PERFORMANCE
                 if (tmpProc->time < timeOffset)
                     qFatal("Time %lf smaller then offset %lf", array[i]->time, timeOffset);
+#endif
                 if (tmpProc->time < array[0]->time)
                     qFatal("Binary heap is not sorted");
 
@@ -138,7 +143,7 @@ private:
                 qFatal("Negative time value");
             consistencyCheck();
 #endif
-#if INC_AGENDA_PERFORMANCE
+#ifdef INC_AGENDA_PERFORMANCE
             newProc->time += timeOffset;
 #endif
             if (capacity == len)

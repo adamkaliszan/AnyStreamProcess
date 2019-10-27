@@ -11,7 +11,11 @@
 #include <QtDataVisualization/QScatterDataProxy>
 #include <QtDataVisualization/QScatter3DSeries>
 
+
 #include <QtDataVisualization/Q3DTheme>
+
+#include <QtCharts>
+#include <QLineSeries>
 
 #include "results/resultsSystem.h"
 #include "algorithms/investigator.h"

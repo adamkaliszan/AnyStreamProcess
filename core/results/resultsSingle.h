@@ -1,8 +1,6 @@
 #ifndef RESULTS_SINGLE_H
 #define RESULTS_SINGLE_H
 
-#include <QtCharts>
-
 #include "model.h"
 //#include "results/resultsApi.h"
 #include "results/baseTypes.h"

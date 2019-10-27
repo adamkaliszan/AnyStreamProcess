@@ -1,37 +1,20 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2014-05-09T16:23:27
+# Project created by QtCreator 2019-10-26T15:03:05
 #
 #-------------------------------------------------
 
-QT += core gui sql
-QT += widgets
-QT += charts
-QT += datavisualization
-
-QTPLUGIN += qsqlmysql
-
-LIBS += -lboost_iostreams -lboost_system -lboost_filesystem
+TEMPLATE = lib
 
 DEFINES +="INC_AGENDA_PERFORMANCE=1"
 
-QMAKE_CXXFLAGS += -std=c++11
-QMAKE_CXXFLAGS += -std=gnu++11
-QMAKE_CXXFLAGS += -fext-numeric-literals
+QT += charts
+QT += datavisualization
 
-TRANSLATIONS = languages/kolejki_en.ts  languages/kolejki_pl.ts
+CONFIG += staticlib
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
-
-TARGET = kolejki
-TEMPLATE = app
-
-INCLUDEPATH += 3rd/QtXlsxWriter/include/QtXlsx
-
-SOURCES += main.cpp\
-        mainwindow.cpp \
+SOURCES += \
     model.cpp \
-    dialogAbout.cpp \
     algorithms/investigator.cpp \
     algorithms/algorithmConvGamma3.cpp \
     algorithms/algorithmConvGamma2d.cpp \
@@ -47,27 +30,25 @@ SOURCES += main.cpp\
     algorithms/simulator.cpp \
     algorithms/algorithmConv3d.cpp \
     algorithms/simulationParameters.cpp \
-    results/resultsGnuplot.cpp \
-    utils/probDistributions.cpp \
-    utils/lag.cpp \
-    utils/vectorUtils.cpp \
+    algorithms/simulatorAllSystems.cpp \
+    algorithms/simulatorStatistics.cpp \
+    algorithms/algRekLagGS.cpp \
     algorithms/algRekGeneral.cpp \
     algorithms/algRekLag.cpp \
+    results/resultsGnuplot.cpp \
     results/resultsSingle.cpp \
     results/resultsInvestigator.cpp \
     results/resultsSystem.cpp \
-    algorithms/algRekLagGS.cpp \
-    utils/utilsMisc.cpp \
     results/resultsSingleGroup.cpp \
     results/resultsApi.cpp \
-    algorithms/simulatorAllSystems.cpp \
-    algorithms/simulatorStatistics.cpp \
-    dialogconfig.cpp \
-    config.cpp
+    utils/probDistributions.cpp \
+    utils/lag.cpp \
+    utils/vectorUtils.cpp \
+    utils/utilsMisc.cpp \
 
-HEADERS  += mainwindow.h \
+
+HEADERS += \
     model.h \
-    dialogAbout.h \
     algorithms/algorithmConvGamma2d.h \
     algorithms/algorithmHybridDiscr.h \
     algorithms/algorithmHybridDiscrDesc.h \
@@ -83,41 +64,24 @@ HEADERS  += mainwindow.h \
     algorithms/algorithmConv3d.h \
     algorithms/simulationParameters.h \
     algorithms/algorithmConvGamma3.h \
-    gnuplot-iostream.h \
-    results/resultsGnuplot.h \
-    results/resultsSingle.h \
-    utils/lag.h \
-    utils/probDistributions.h \
-    utils/decimal.h \
-    utils/vectorUtils.h \
     algorithms/algRekGeneral.h \
     algorithms/algRekLag.h \
+    algorithms/algRekLagGS.h \
+    algorithms/simulatorAllSystems.h \
+    algorithms/simulatorStatistics.h \
+    results/resultsGnuplot.h \
+    results/resultsSingle.h \
+    results/resultsUtils.h \
     results/baseTypes.h \
     results/resultsInvestigator.h \
     results/resultsSystem.h \
-    algorithms/algRekLagGS.h \
-    results/resultsUtils.h \
-    utils/utilsMisc.h \
     results/resultsSingleGroup.h \
     results/resultsSingleGroup.h \
     results/resultsApi.h \
     results/resultsApiTypes.h \
-    algorithms/simulatorAllSystems.h \
-    algorithms/simulatorStatistics.h \
-    dialogconfig.h \
-    config.h
+    utils/lag.h \
+    utils/probDistributions.h \
+    utils/decimal.h \
+    utils/vectorUtils.h \
+    utils/utilsMisc.h \
 
-FORMS    += mainwindow.ui \
-    dialogAbout.ui \
-    dialogconfig.ui \
-    dialogconfig.ui
-
-RESOURCES += \
-    resources.qrc
-
-DISTFILES += \
-    languages/kolejki_pl.ts \
-    languages/kolejki_en.ts
-
-SUBDIRS += \
-    Core/Core.pro

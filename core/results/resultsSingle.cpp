@@ -5,7 +5,6 @@
 #include "resultsSingleGroup.h"
 #include "resultsUtils.h"
 #include "utils/lag.h"
-#include <QtCharts>
 
 namespace Results
 {
