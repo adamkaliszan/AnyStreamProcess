@@ -49,7 +49,6 @@ HEADERS  += mainwindow.h \
 
 FORMS    += mainwindow.ui \
     dialogAbout.ui \
-
     dialogconfig.ui
 
 RESOURCES += \
