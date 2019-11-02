@@ -5,7 +5,6 @@ DEFINES +="INC_AGENDA_PERFORMANCE=1"
 CONFIG += ordered
 
 SUBDIRS = core \
-          console \
-          gui
+          console
 
-gui.depends = core
+console.depends = core
