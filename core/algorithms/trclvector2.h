@@ -6,6 +6,7 @@
 #include <string.h>
 #include <QTextStream>
 #include <QVector>
+#include <QJsonObject>
 
 //#include "algorithms/alg_FAG_AnyStream.h"
 
@@ -72,6 +73,8 @@ public:
     TrClVector(int LastIdx);
     TrClVector(int V, const QVector<pairIdT> &aggregatedClasses);
     ~TrClVector();
+
+    QJsonObject getJson() const;
 
     TrClVector &operator=(const TrClVector &rho);
     double & operator[](int n);

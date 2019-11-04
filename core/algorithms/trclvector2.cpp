@@ -3,6 +3,8 @@
 #include <stdexcept>
 #include <math.h>
 
+#include <QJsonArray>
+
 TrClVector::TrClVector(): previous(nullptr)
 {
     _states.resize(1);
@@ -39,6 +41,31 @@ TrClVector::~TrClVector()
 
     if (previous != nullptr)
         delete previous;
+}
+
+QJsonObject TrClVector::getJson() const
+{
+    QJsonObject result;
+
+    QJsonArray p;
+    QJsonArray arrivalIntensity;
+    QJsonArray serviceIntensity;
+
+
+    for (int n=0; n<=V(); n++)
+    {
+        p.push_back(QJsonValue(this->_states[n].p));
+        arrivalIntensity.push_back(QJsonValue(this->_states[n].tIntOutNew));
+        serviceIntensity.push_back(QJsonValue(this->_states[n].tIntOutEnd));
+    }
+
+
+    result.insert("V", V());
+    result.insert("P", p);
+    result.insert("newCallInt", arrivalIntensity);
+    result.insert("servInt", serviceIntensity);
+
+    return result;
 }
 
 double &TrClVector::operator[](int n)
