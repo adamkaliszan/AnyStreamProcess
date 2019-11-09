@@ -36,15 +36,14 @@ void AlgorithmHybridDiscr::calculateSystem(
     p_single = new TrClVector[m];
     P_without_i = new TrClVector[m];
 
-    State **unusedProb;
-    unusedProb = new State*[VsVb+1];
+    QVector<QVector<double>> X(VsVb+1);
 
 
     double *delta = new double[VsVb+1];
-    double **deltaDetail = new double*[VsVb+1];
+    double **delta2d = new double*[VsVb+1];
 
     State *Q = new State[VsVb+1];
-    State **Qdetail = new State*[VsVb+1];
+    State **Q2d = new State*[VsVb+1];
 
     int t_max = 0;
     for (int i=0; i<m; i++)
@@ -55,14 +54,13 @@ void AlgorithmHybridDiscr::calculateSystem(
 
     for (int n=0; n<=VsVb; n++)
     {
-         unusedProb[n] = new State[t_max];
-         Qdetail[n] = new State[t_max];
-         bzero(unusedProb[n], t_max*sizeof(State));
-         bzero(Qdetail[n], t_max*sizeof(State));
+         X[n].resize(t_max);
+         Q2d[n] = new State[t_max];
+         bzero(Q2d[n], static_cast<size_t>(t_max)*sizeof(State));
          if (n<=Vs)
-             unusedProb[n][0].p = 1;
+             X[n][0] = 1;
 
-         deltaDetail[n] = new double[t_max];
+         delta2d[n] = new double[t_max];
     }
 
     TrClVector P(VsVb);
@@ -105,30 +103,30 @@ void AlgorithmHybridDiscr::calculateSystem(
         double sum = 0;
         for (int x=0; x<t_max; x++)
         {
-            unusedProb[n][x].p=0;
+            X[n][x]=0;
 
-            if (x > n-Vs)
+            if (x > Vs)
                 continue;
 
             for (int i=0; i<m; i++)
             {
                 if (x>=classes[i].t)
                     continue;
-                unusedProb[n][x].p+=ySYSTEM_V[i][n];
+                X[n][x]+=ySYSTEM_V[i][n];
 
             }
-            sum +=unusedProb[n][x].p;
+            sum +=X[n][x];
         }
 
         if (qFuzzyIsNull(sum)) //sum == 0
         {
-            unusedProb[n][0].p = 1;
+            X[n][0] = 1;
             for (int x=1; x<t_max; x++)
-                unusedProb[n][x].p = 0;
+                X[n][x] = 0;
         }
         else
             for (int x=0; x<t_max; x++)
-                unusedProb[n][x].p /=sum;
+                X[n][x] /=sum;
     }
 
     double sumQ=0;
@@ -136,13 +134,13 @@ void AlgorithmHybridDiscr::calculateSystem(
     {
         delta[n] = 1;
         Q[n] = P.getState(n);
-        Qdetail[n][0] = P.getState(n);
+        Q2d[n][0] = P.getState(n);
         sumQ += Q[n].p;
 
         for (int x=0; x<t_max; x++)
-            deltaDetail[n][x] = 1;
+            delta2d[n][x] = 1;
 
-        Qdetail[n][0] = Q[n];
+        Q2d[n][0] = Q[n];
     }
 
     for (int n=Vs+1; n<=VsVb; n++)
@@ -158,18 +156,18 @@ void AlgorithmHybridDiscr::calculateSystem(
 
         for (int x=0; x<t_max; x++)
         {
-            deltaDetail[n][x] = 0;
+            delta2d[n][x] = 0;
             for (int i=0; i<m; i++)
-                deltaDetail[n][x] += (deltaDetail[n-classes[i].t][x]*ySYSTEM_V[i][n] * classes[i].t);
+                delta2d[n][x] += (delta2d[n-classes[i].t][x]*ySYSTEM_V[i][n] * classes[i].t);
 
-            deltaDetail[n][x] /=(Vs-x);
+            delta2d[n][x] /=(Vs-x);
             if (n+x<=VsVb)
-                Qdetail[n][x].p = deltaDetail[n][x] * P[n] * unusedProb[n][x].p;
+                Q2d[n][x].p = delta2d[n][x] * P[n] * X[n][x];
             else
-                Qdetail[n][x].p = 0;
+                Q2d[n][x].p = 0;
 
-            sumQ += Qdetail[n][x].p;
-            Q[n].p+=Qdetail[n][x].p;
+            sumQ += Q2d[n][x].p;
+            Q[n].p+=Q2d[n][x].p;
         }
     }
 
@@ -177,7 +175,7 @@ void AlgorithmHybridDiscr::calculateSystem(
     {
         Q[n].p /= sumQ;
         for (int x=0; x<t_max; x++)
-            Qdetail[n][x].p /= sumQ;
+            Q2d[n][x].p /= sumQ;
     }
 
     for (int i=0; i<system.m(); i++)
@@ -189,7 +187,7 @@ void AlgorithmHybridDiscr::calculateSystem(
             for (int x=0; x<t_max; x++)
             {
                 if (x+n+classes[i].t>VsVb)
-                    E+=Qdetail[n][x].p;
+                    E+=Q2d[n][x].p;
             }
         }
         (*results)->write(TypeForClass::BlockingProbability, E, i);
@@ -203,8 +201,8 @@ void AlgorithmHybridDiscr::calculateSystem(
             for (int x=0; x<t_max; x++)
             {
                 if (n + x + classes[i].t > VsVb)
-                    B_n+=(intensity*Qdetail[n][x].p);
-                B_d +=(intensity*Qdetail[n][x].p);
+                    B_n+=(intensity*Q2d[n][x].p);
+                B_d +=(intensity*Q2d[n][x].p);
             }
         }
         (*results)->write(TypeForClass::LossProbability, B_n/B_d, i);
@@ -273,12 +271,12 @@ void AlgorithmHybridDiscr::calculateSystem(
             double val = 0;
 
             if (n_s <=Vs && n_b == 0)
-                val = Qdetail[n_s + n_b][0].p;
+                val = Q2d[n_s + n_b][0].p;
             else
             {
                 int unused = n_s - Vs;
                 if (n_b >= unused)
-                    val = Qdetail[n_s + n_b][unused].p;
+                    val = Q2d[n_s + n_b][unused].p;
             }
             (*results)->write(TypeForServerAngBufferState::StateProbability, val, n_s, n_b);
 

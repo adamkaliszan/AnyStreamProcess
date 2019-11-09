@@ -6,6 +6,12 @@
 
 #include <QJsonDocument>
 
+#include <QtNetwork/QNetworkAccessManager>
+#include <QtNetwork/QNetworkRequest>
+#include <QUrl>
+#include <QVariantMap>
+#include <QVariant>
+
 #include "../core/model.h"
 
 ModelSystem prepareSystem()
@@ -27,6 +33,21 @@ ModelSystem prepareSystem()
 
 int main(int argc, char *argv[])
 {
+    QVariantMap map;
+//    map.insert("api_key",WRKey);
+    map.insert("V", QVariant(50));
+    QByteArray payload=QJsonDocument::fromVariant(map).toJson();
+    qDebug()<<QVariant(payload).toString();
+
+    QUrl myurl;
+    myurl.setScheme("http"); //https also applicable
+    myurl.setHost("api.thingspeak.com");
+    myurl.setPath("/update.json");
+
+    QNetworkRequest request;
+    request.setUrl(myurl);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
     int v = 120;
 
     ModelSystem model = prepareSystem();

@@ -44,13 +44,9 @@ void AlgorithmHybridDiscrDesc::calculateSystem(
     P_without_i = new TrClVector[m];          /// FAG traffic distribution
     TrClVector P(VsVb);                       /// FAG traffic distribution
 
-    double **X;                               /// 2d distribution - X[n, x] is a probability, that x AS in state n are unused
-    double **delta_X;                         /// Q_2d[s][q] = delta_X[s][q]
-
-    X = new double*[VsVb+1];
-    delta_X = new double*[VsVb+1];            ///
-    QVector<QVector<double>> Q_X;             /// 2d distribution
-    Q_X.resize(VsVb+1);
+    QVector<QVector<double>> distrX(VsVb+1);  /// 2d distribution - X[n, x] is a probability, that x AS in state n are unused
+    QVector<QVector<double>> delta_X(VsVb+1); /// Q_2d[s][q] = delta_X[s][q]
+    QVector<QVector<double>> Q_X(VsVb+1);     /// 2d distribution
 
     int t_max = 0;
     for (int i=0; i<m; i++)
@@ -61,13 +57,12 @@ void AlgorithmHybridDiscrDesc::calculateSystem(
 
     for (int n=0; n<=VsVb; n++)
     {
-         X[n] = new double[t_max];
+         distrX[n].resize(t_max);
          Q_X[n].resize(t_max);
-         bzero(X[n], static_cast<size_t>(t_max)*sizeof(double));
          if (n<=Vs)
-             X[n][0] = 1;
+             distrX[n][0] = 1;
 
-         delta_X[n] = new double[t_max];
+         delta_X[n].resize(t_max);
     }
 
     for (int i=0; i<m; i++)
@@ -95,43 +90,43 @@ void AlgorithmHybridDiscrDesc::calculateSystem(
             for (int l=0; l<=n; l+= classes[i].t)
             {
                 double pP = p_single[i][l] * P_without_i[i][n-l];
-                nominator += ((double)(l)/(double)(classes[i].t) * pP);
+                nominator += (static_cast<double>(l)/classes[i].t * pP);
                 denumerator += pP;
             }
             ySYSTEM_V[i][n]=nominator/denumerator;
         }
     }
 
-    //Liczenie rozkładu niedostępnych PJP w serwerze
+    //Calculatiing unavailability X[n, x] distribution in server (n - system state, x - no of unavailable AUs in server)
     for (int n=Vs+1; n<=VsVb; n++)
     {
         double sum = 0;
         for (int x=0; x<t_max; x++)
         {
-            X[n][x]=0;
+            distrX[n][x]=0;
 
-            if (x > n-Vs)
+            if (x > VsVb-n)
                 continue;
 
             for (int i=0; i<m; i++)
             {
                 if (x>=classes[i].t)
                     continue;
-                X[n][x]+=ySYSTEM_V[i][n];
+                distrX[n][x]+=ySYSTEM_V[i][n];
 
             }
-            sum +=X[n][x];
+            sum +=distrX[n][x];
         }
 
         if (qFuzzyCompare(sum, 0))
         {
-            X[n][0] = 1;
+            distrX[n][0] = 1;
             for (int x=1; x<t_max; x++)
-                X[n][x] = 0;
+                distrX[n][x] = 0;
         }
         else
             for (int x=0; x<t_max; x++)
-                X[n][x] /=sum;
+                distrX[n][x] /=sum;
     }
 
     for (int n=0; n<=VsVb; n++)
@@ -157,7 +152,7 @@ void AlgorithmHybridDiscrDesc::calculateSystem(
         for (int x=0; x<t_max; x++)
         {
             if (n+x<=VsVb)
-                Q_X[n][x] = delta_X[n][x] * P[n] * X[n][x];
+                Q_X[n][x] = delta_X[n][x] * P[n] * distrX[n][x];
             else
                 Q_X[n][x] = 0;
 
@@ -190,7 +185,7 @@ void AlgorithmHybridDiscrDesc::calculateSystem(
         double B_d = 0;
         for (int n=0; n<=VsVb; n++)
         {
-            double intensity = system.getTrClass(i).intensityNewCallForState(1, (int)(ySYSTEM_V[i][n]));
+            double intensity = system.getTrClass(i).intensityNewCallForState(1, static_cast<int>(ySYSTEM_V[i][n]));
             for (int x=0; x<qMin(t_max, classes[i].t); x++)
             {
                 if (x+n+classes[i].t>VsVb)
@@ -272,19 +267,10 @@ void AlgorithmHybridDiscrDesc::calculateSystem(
         }
     }
 
-    for (int n=0; n<=VsVb; n++)
-    {
-        double Qn = 0;
-        for (int x=0; x<t_max; x++)
-            Qn+=Q_X[n][x];
-        //TODO algRes->resultsAS->setVal(resultsType::trDistribSystem, a, n, Qn, 0);
-    }
-
 
     QVector<QVector<double>> distribution2d(Vs+1);
     for(int n=0; n<=Vs; n++)
         distribution2d[n].resize(Vb+1);
-
 
     for (int n=0; n <= VsVb; n++)
     {
@@ -307,6 +293,14 @@ void AlgorithmHybridDiscrDesc::calculateSystem(
     for(int n_serv=0; n_serv<=Vs; n_serv++)
         for (int n_buf=0; n_buf<=Vb; n_buf++)
             (*results)->write(TypeForServerAngBufferState::StateProbability, distribution2d[n_serv][n_buf], n_serv, n_buf);
+
+    for (int n=0; n <= VsVb; n++)
+    {
+        double Qn = 0;
+        for (int x=0; x<t_max; x++)
+            Qn+=Q_X[n][x];
+        (*results)->write(TypeForSystemState::StateProbability, Qn, n);
+    }
 
     deleteTemporaryData();
 
