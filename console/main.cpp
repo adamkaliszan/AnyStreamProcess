@@ -42,29 +42,53 @@ int main(int argc, char *argv[])
 
     QJsonObject jsonTrClass;
 
-    ModelTrClass::StreamType strType[] = {ModelTrClass::StreamType::Gamma, ModelTrClass::StreamType::Normal, ModelTrClass::StreamType::Pareto, ModelTrClass::StreamType::Poisson, ModelTrClass::StreamType::Uniform};
+    ModelTrClass::StreamType arrivalStrType[] = {ModelTrClass::StreamType::Gamma, ModelTrClass::StreamType::Normal};//, ModelTrClass::StreamType::Pareto, ModelTrClass::StreamType::Poisson, ModelTrClass::StreamType::Uniform};
+    ModelTrClass::StreamType serviceStrType[] = {ModelTrClass::StreamType::Gamma, ModelTrClass::StreamType::Normal};//, ModelTrClass::StreamType::Pareto, ModelTrClass::StreamType::Poisson, ModelTrClass::StreamType::Uniform};
 
 
 
 
 
 
-    file<< "{";
-    for (int aNum=1; aNum<=4; aNum++)
+    bool firstObject = true;
+    file<< "[";
+    for (ModelTrClass::StreamType arrivalStr : arrivalStrType)
     {
-        if (aNum > 1)
-            file<<",";
-        for (int n=0; n<=10; n++)
+        for (double EaDa =3; EaDa <=3; EaDa++)
         {
-            if (n > 0)
-                file<<",";
-            double A =  static_cast<double>(aNum)/10.0;
-            file<< QString("\"A%1\" : ").arg(A).toStdString();
-            QJsonObject jsonAV = trClass.trDistribution(0, A, n, 0).getJson();
-            file<< QJsonDocument(jsonAV).toJson(QJsonDocument::JsonFormat::Compact).toStdString();
+            for (ModelTrClass::StreamType serviceStr : serviceStrType)
+            {
+                for (double EsDs =3; EsDs <=3; EsDs++)
+                {
+                    for (int aNum=1; aNum<=4; aNum++)
+                    {
+                        double A =  static_cast<double>(aNum)/10.0;
+
+                        if (!firstObject)
+                            file<<",";
+                        firstObject = false;
+                        file<< "{";
+
+                        file<<"\"arrivalStr\": \""<<ModelTrClass::streamTypeToString(arrivalStr).toStdString()<<"\",";
+                        file<<"\"Ea2Da\":"<<EaDa<<",";
+                        file<<"\"serviceStr\": \""<<ModelTrClass::streamTypeToString(serviceStr).toStdString()<<"\",";
+                        file<<"\"Es2Ds\":"<<EsDs<<",";
+                        file<<"\"A\":"<<A;
+                        file<< ",\"dta\": [";
+
+                        for (int n=0; n<=2; n++)
+                        {
+                            if (n > 0)
+                                file<<",";
+                            file<< QJsonDocument(trClass.trDistribution(0, A, n, 0).getJson()).toJson(QJsonDocument::JsonFormat::Compact).toStdString();
+                        }
+                        file<< "]}";
+                    }
+                }
+            }
         }
     }
-    file<<"}";
+    file<<"]";
 
     return 0;
 }
