@@ -1,5 +1,5 @@
 #include <qmath.h>
-
+#include <assert.h>
 
 #include "resultsSingle.h"
 #include "resultsSingleGroup.h"

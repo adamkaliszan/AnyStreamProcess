@@ -28,6 +28,15 @@
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QMessageBox>
+#include <QChart>
+#include <QValueAxis>
+#include <QLogValueAxis>
+#include <QtDataVisualization>
+#include <Q3DScatter>
+#include <QLogValue3DAxisFormatter>
+
+#include <QLineSeries>
+
 #include <QtGui/QPainter>
 #include <QtGui/QScreen>
 
@@ -60,6 +69,9 @@ class MainWindow : public QMainWindow
     Q_OBJECT
     
 public:
+
+    void vector2qLineSeries(QVector<QPointF> &input, QtCharts::QLineSeries *output);
+
     explicit MainWindow(QWidget *parent = 0);
 
     void addAlgorithmForCurentSystem(Investigator *newAlg);
@@ -105,10 +117,10 @@ private:
     QtCharts::QValueAxis         *axisYlinear;
 
     QWidget *containerGraph3d;
-    Q3DScatter *graph3d;
+    QtDataVisualization::Q3DScatter *graph3d;
 
-    QLogValue3DAxisFormatter *graph3dAxisYFormatLog;
-    QValue3DAxisFormatter *graph3dAxisYFormatLin;
+    QtDataVisualization::QLogValue3DAxisFormatter *graph3dAxisYFormatLog;
+    QtDataVisualization::QValue3DAxisFormatter *graph3dAxisYFormatLin;
 
 
 

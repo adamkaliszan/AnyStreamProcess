@@ -24,8 +24,8 @@ LIBS += -L../core -lcore
 
 INCLUDEPATH += $$PWD/../core
 
-QMAKE_CXXFLAGS += -std=c++11
-QMAKE_CXXFLAGS += -std=gnu++11
+QMAKE_CXXFLAGS += -std=c++17
+QMAKE_CXXFLAGS += -std=gnu++17
 QMAKE_CXXFLAGS += -fext-numeric-literals
 
 TRANSLATIONS = languages/kolejki_en.ts  languages/kolejki_pl.ts

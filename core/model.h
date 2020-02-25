@@ -109,6 +109,13 @@ public:
         Pareto
     };
 
+    struct
+    {
+        QString name;
+        StreamType value;
+    } PairStrAndStrType;
+
+
 public:
     static QString streamTypeToString(StreamType str);
     static QString streamTypeToShortString(StreamType str);

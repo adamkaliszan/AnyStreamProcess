@@ -8,9 +8,6 @@ TEMPLATE = lib
 
 DEFINES +="INC_AGENDA_PERFORMANCE=1"
 
-QT += charts
-QT += datavisualization
-
 CONFIG += staticlib
 
 QMAKE_CXXFLAGS += -std=c++11

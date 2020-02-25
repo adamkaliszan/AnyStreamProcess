@@ -93,7 +93,7 @@ void GnuplotScript::WriteDataAndScript(QString baseFileNameWithPath, const Model
         if (!algorithm->getQoS_Set().contains(qosType))
             continue;
         QVector<decimal> xVals = TypesAndSettings::getPlotsXorZ(*systemResults, setting->getFunctionalParameterX());
-        QMap<ParametersSet, QVector<double>> yVals = TypesAndSettings::getPlotsValues(*systemResults, qosType, setting->getFunctionalParameterX(), algorithm);
+        QMap<ParametersSet, QVector<QPointF>> yVals = TypesAndSettings::getPlotsValues(*systemResults, qosType, setting->getFunctionalParameterX(), algorithm);
 
         QString dataFileNameWithPath = baseFileNameWithPath + algorithm->shortName() + ".dat";
         QString dataFileName = dataFileNameWithPath.mid(dataFileNameWithPath.lastIndexOf("/")+1);
@@ -206,10 +206,10 @@ void GnuplotScript::WriteDataAndScript(QString baseFileNameWithPath, const Model
 
             foreach(ParametersSet param, yVals.keys())
             {
-                if (std::isnan(yVals[param][i]))
+                if (std::isnan(yVals[param][i].ry()))
                     dataStream<<"\t0";
                 else
-                    dataStream<<"\t"<<yVals[param][i];
+                    dataStream<<"\t"<<yVals[param][i].ry();
 
                 if (algorithm->hasConfIntervall())
                     dataStream<<"\t0";
@@ -286,7 +286,7 @@ void GnuplotScript::WriteDataAndScript3d(QString baseFileNameWithPath, const Mod
         if (!algorithm->getQoS_Set().contains(qosType))
             continue;
 
-        QMap<ParametersSet, QVector<double>> yVals = TypesAndSettings::getPlotsValues(*systemResults, qosType, setting->getFunctionalParameterX(), algorithm);
+        QMap<ParametersSet, QVector<QPointF>> vals = TypesAndSettings::getPlotsValues(*systemResults, qosType, setting->getFunctionalParameterX(), algorithm);
 
         QString dataFileNameWithPath = baseFileNameWithPath + algorithm->shortName() + ".dat";
         QString dataFileName = dataFileNameWithPath.mid(dataFileNameWithPath.lastIndexOf("/")+1);
@@ -341,10 +341,10 @@ void GnuplotScript::WriteDataAndScript3d(QString baseFileNameWithPath, const Mod
 
                 foreach(ParametersSet param, parameters)
                 {
-                    if (std::isnan(yVals[param][i * zVals.length() + j]))
+                    if (std::isnan(vals[param][i * zVals.length() + j].ry()))
                         dataStream<<"\t?";
-                    else if ((yVals[param][i * zVals.length() + j] > 0) || showZeros)
-                        dataStream<<"\t"<<yVals[param][i * zVals.length() + j];
+                    else if ((vals[param][i * zVals.length() + j].ry() > 0) || showZeros)
+                        dataStream<<"\t"<<vals[param][i * zVals.length() + j].ry();
                     else
                         dataStream<<"\t?";
 
@@ -362,10 +362,10 @@ void GnuplotScript::WriteDataAndScript3d(QString baseFileNameWithPath, const Mod
 
                 foreach(ParametersSet param, parameters)
                 {
-                    if (std::isnan(yVals[param][i * zVals.length() + j]))
+                    if (std::isnan(vals[param][i * zVals.length() + j].ry()))
                         dataStream<<"\t?";
-                    else if ((yVals[param][i * zVals.length() + j] > 0) || showZeros)
-                        dataStream<<"\t"<<yVals[param][i * zVals.length() + j];
+                    else if ((vals[param][i * zVals.length() + j].ry() > 0) || showZeros)
+                        dataStream<<"\t"<<vals[param][i * zVals.length() + j].ry();
                     else
                         dataStream<<"\t?";
 

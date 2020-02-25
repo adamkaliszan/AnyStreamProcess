@@ -55,6 +55,14 @@ using namespace QtCharts;
 using namespace QtDataVisualization;
 
 
+void MainWindow::vector2qLineSeries(QVector<QPointF> &input, QLineSeries *output)
+{
+    foreach(QPointF tmp, input)
+    {
+        output->append(tmp.rx(), tmp.ry());
+    }
+}
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -2089,7 +2097,11 @@ void MainWindow::prepare2dChart(Results::Settings *setting, Results::Type type, 
                                 QString name3 = Settings::updateParameters(parameters, tmpItem3->data(Qt::UserRole), setting->getAdditionalParameter3(), system->getConstSyst(), resultsForSystem);
 
                                 QLineSeries *series = new QLineSeries();
-                                setting->getSinglePlot(series, yMinAndMax, *resultsForSystem, algorithm, parameters, !ui->checkBoxResultsQtLogScaleOnAxisY->isChecked());
+                                //setting->getSinglePlot(series, yMinAndMax, *resultsForSystem, algorithm, parameters, !ui->checkBoxResultsQtLogScaleOnAxisY->isChecked());
+
+                                QVector<QPointF> outPlot;
+                                setting->getSinglePlot(outPlot, *resultsForSystem, algorithm, parameters);
+                                vector2qLineSeries(outPlot, series);
 
                                 series->setName(algorithm->shortName() + " " + name + " " + name2 + " " + name3);
 
@@ -2112,7 +2124,10 @@ void MainWindow::prepare2dChart(Results::Settings *setting, Results::Type type, 
                         else
                         {
                             QLineSeries *series = new QLineSeries();
-                            setting->getSinglePlot(series, yMinAndMax, *resultsForSystem, algorithm, parameters, !ui->checkBoxResultsQtLogScaleOnAxisY->isChecked());
+                            //setting->getSinglePlot(series, yMinAndMax, *resultsForSystem, algorithm, parameters, !ui->checkBoxResultsQtLogScaleOnAxisY->isChecked());
+                            QVector<QPointF> outPlot;
+                            setting->getSinglePlot(outPlot, *resultsForSystem, algorithm, parameters);
+                            vector2qLineSeries(outPlot, series);
 
                             series->setName(algorithm->shortName() + " " + name + " " + name2);
 
@@ -2136,7 +2151,10 @@ void MainWindow::prepare2dChart(Results::Settings *setting, Results::Type type, 
                 else
                 {
                     QLineSeries *series = new QLineSeries();
-                    setting->getSinglePlot(series, yMinAndMax, *resultsForSystem, algorithm, parameters, !ui->checkBoxResultsQtLogScaleOnAxisY->isChecked());
+                    //setting->getSinglePlot(series, yMinAndMax, *resultsForSystem, algorithm, parameters, !ui->checkBoxResultsQtLogScaleOnAxisY->isChecked());
+                    QVector<QPointF> outPlot;
+                    setting->getSinglePlot(outPlot, *resultsForSystem, algorithm, parameters);
+                    vector2qLineSeries(outPlot, series);
 
                     series->setName(algorithm->shortName() + " " + name);
                     QPen tmpPen = QPen(algColors[algColIdx]);
@@ -2155,7 +2173,10 @@ void MainWindow::prepare2dChart(Results::Settings *setting, Results::Type type, 
         else
         {
             QLineSeries *series = new QLineSeries();
-            setting->getSinglePlot(series, yMinAndMax, *resultsForSystem, algorithm, parameters, !ui->checkBoxResultsQtLogScaleOnAxisY->isChecked());
+            //setting->getSinglePlot(series, yMinAndMax, *resultsForSystem, algorithm, parameters, !ui->checkBoxResultsQtLogScaleOnAxisY->isChecked());
+            QVector<QPointF> outPlot;
+            setting->getSinglePlot(outPlot, *resultsForSystem, algorithm, parameters);
+            vector2qLineSeries(outPlot, series);
 
             series->setName(algorithm->shortName());
             series->setColor(algColors[algColIdx]);
@@ -2268,7 +2289,7 @@ void MainWindow::prepare3dChart(Results::Settings *setting, Results::Type type, 
                             {
                                 QString name3 = Settings::updateParameters(parameters, tmpItem3->data(Qt::UserRole), setting->getAdditionalParameter2(), system->getConstSyst(), resultsForSystem);
                                 data = new QScatter3DSeries();
-                                setting->getSinglePlot3d(*data, *resultsForSystem, algorithm, parameters);
+                                //TODO setting->getSinglePlot3d(*data, *resultsForSystem, algorithm, parameters);
 
                                 data->setName(name+name2+name3);
 
@@ -2282,7 +2303,7 @@ void MainWindow::prepare3dChart(Results::Settings *setting, Results::Type type, 
                         else
                         {
                             data = new QScatter3DSeries();
-                            setting->getSinglePlot3d(*data, *resultsForSystem, algorithm, parameters);
+                            //TODO setting->getSinglePlot3d(*data, *resultsForSystem, algorithm, parameters);
 
                             data->setName(name+name2);
 
@@ -2298,8 +2319,8 @@ void MainWindow::prepare3dChart(Results::Settings *setting, Results::Type type, 
                 else
                 {
                     data = new QScatter3DSeries();
-                    setting->getSinglePlot3d(*data, *resultsForSystem, algorithm, parameters);
-
+                    //setting->getSinglePlot3d(*data, *resultsForSystem, algorithm, parameters);
+                    //TODO
                     data->setName(name);
                     data->setMesh(shapes[shapeIdx]);
 //                    data->set BaseColor(colors[colorIdx]);
@@ -2313,8 +2334,8 @@ void MainWindow::prepare3dChart(Results::Settings *setting, Results::Type type, 
         else
         {
             data = new QScatter3DSeries();
-            setting->getSinglePlot3d(*data, *resultsForSystem, algorithm, parameters);
-
+            //setting->getSinglePlot3d(*data, *resultsForSystem, algorithm, parameters);
+            //TODO
 
             data->setBaseColor(colors[colorIdx]);
             graph3d->addSeries(data);

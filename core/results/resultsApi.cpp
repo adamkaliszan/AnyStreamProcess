@@ -3,7 +3,7 @@
 
 #include "utils/lag.h"
 
-using namespace QtDataVisualization;
+//using namespace QtDataVisualization;
 
 namespace Results
 {
@@ -125,35 +125,35 @@ QString TypesAndSettings::typeToX_AxisString(Type type)
     return result;
 }
 
-QMap<ParametersSet, QVector<double>> TypesAndSettings::getPlotsValues(RSystem &rSystem, Type qos, ParameterType functionalParameter, Investigator *algorithm)
+QMap<ParametersSet, QVector<QPointF>> TypesAndSettings::getPlotsValues(RSystem &rSystem, Type qos, ParameterType functionalParameter, Investigator *algorithm)
 {
     Settings *qosSettings = _myMap[qos];
     qosSettings->setFunctionalParameterX(functionalParameter);
     QList<ParametersSet> sysParams = qosSettings->getParametersList(rSystem.getModel(), rSystem.getAvailableAperAU());
 
-    QMap<ParametersSet, QVector<double>> result;
+    QMap<ParametersSet, QVector<QPointF>> result;
 
     foreach (ParametersSet sysParam, sysParams)
     {
-        QVector<double> vector;
+        QVector<QPointF> vector;
         qosSettings->getSinglePlot(vector, rSystem, algorithm, sysParam);
         result.insert(sysParam, vector);
     }
     return result;
 }
 
-QMap<ParametersSet, QVector<double> > TypesAndSettings::getPlotsValues3d(RSystem &rSystem, Type qos, ParameterType functionalParameter1, ParameterType functionalParameter2, Investigator *algorithm)
+QMap<ParametersSet, QVector<QPointF> > TypesAndSettings::getPlotsValues3d(RSystem &rSystem, Type qos, ParameterType functionalParameter1, ParameterType functionalParameter2, Investigator *algorithm)
 {
     Settings *qosSettings = _myMap[qos];
     qosSettings->setFunctionalParameterX(functionalParameter1);
     qosSettings->setFunctionalParameterY(functionalParameter2);
     QList<ParametersSet> sysParams = qosSettings->getParametersList(rSystem.getModel(), rSystem.getAvailableAperAU());
 
-    QMap<ParametersSet, QVector<double>> result;
+    QMap<ParametersSet, QVector<QPointF>> result;
 
     foreach (ParametersSet sysParam, sysParams)
     {
-        QVector<double> vector;
+        QVector<QPointF> vector;
         qosSettings->getSinglePlot(vector, rSystem, algorithm, sysParam);
         result.insert(sysParam, vector);
     }
@@ -268,6 +268,7 @@ SettingsTypeForClass::SettingsTypeForClass(TypeForClass qos, QString name, QStri
     additionalParameter[2] = ParameterType::None;
 }
 
+#if 0
 bool SettingsTypeForClass::getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
 {
     bool result = false;
@@ -316,6 +317,7 @@ bool SettingsTypeForClass::getSinglePlot(QLineSeries *outPlot, QPair<double, dou
     }
     return result;
 }
+#endif
 
 QList<ParametersSet> SettingsTypeForClass::getParametersList(const ModelSystem &system, const QList<decimal> &aOfPerAU) const
 {
@@ -388,7 +390,7 @@ QList<ParametersSet> SettingsTypeForClass::getParametersList(const ModelSystem &
     return result;
 }
 
-bool SettingsTypeForClass::getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
+bool SettingsTypeForClass::getSinglePlot(QVector<QPointF> &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
 {
     bool result = false;
 
@@ -406,7 +408,7 @@ bool SettingsTypeForClass::getSinglePlot(QVector<double> &outPlot, RSystem &rSys
                 if (y>0)
                     result = true;
             }
-            outPlot.append(y);
+            outPlot.append(QPointF((double)a, y));
         }
     }
 
@@ -422,12 +424,13 @@ bool SettingsTypeForClass::getSinglePlot(QVector<double> &outPlot, RSystem &rSys
                 if (y>0)
                     result = true;
             }
-            outPlot.append(y);
+            outPlot.append(QPointF(i,y));
         }
     }
     return result;
 }
 
+#if 0
 bool SettingsTypeForClass::getSinglePlot3d(QScatter3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
 {
     bool result = false;
@@ -485,6 +488,7 @@ bool SettingsTypeForClass::getSinglePlot3d(QScatter3DSeries &outPlot, RSystem &r
     }
     return result;
 }
+#endif
 
 SettingsTypeForSystemState::SettingsTypeForSystemState(TypeForSystemState qos, QString name, QString shortName): Settings (name, shortName), qos(qos)
 {
@@ -498,6 +502,7 @@ SettingsTypeForSystemState::SettingsTypeForSystemState(TypeForSystemState qos, Q
     additionalParameter[2] = ParameterType::None;
 }
 
+#if 0
 bool SettingsTypeForSystemState::getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
 {
     bool result = false;
@@ -544,8 +549,9 @@ bool SettingsTypeForSystemState::getSinglePlot(QLineSeries *outPlot, QPair<doubl
     }
     return result;
 }
+#endif
 
-bool SettingsTypeForSystemState::getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
+bool SettingsTypeForSystemState::getSinglePlot(QVector<QPointF> &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
 {
     bool result = false;
 
@@ -567,7 +573,7 @@ bool SettingsTypeForSystemState::getSinglePlot(QVector<double> &outPlot, RSystem
                     if (y > 0)
                         result = true;
                 }
-                outPlot.append(y);
+                outPlot.append(QPointF((double)a, y));
             }
             else if (functionalParameterZ == ParameterType::SystemState)
             {
@@ -583,7 +589,7 @@ bool SettingsTypeForSystemState::getSinglePlot(QVector<double> &outPlot, RSystem
                     {
                         y = 0;
                     }
-                    outPlot.append(y);
+                    outPlot.append(QPointF((double)a, y));
                 }
             }
         }
@@ -603,7 +609,7 @@ bool SettingsTypeForSystemState::getSinglePlot(QVector<double> &outPlot, RSystem
                     if (y > 0)
                         result = true;
                 }
-                outPlot.append(y);
+                outPlot.append(QPointF(n, y));
             }
             else if (functionalParameterZ == ParameterType::OfferedTrafficPerAS)
             {
@@ -620,7 +626,7 @@ bool SettingsTypeForSystemState::getSinglePlot(QVector<double> &outPlot, RSystem
                     {
                         y = 0;
                     }
-                    outPlot.append(y);
+                    outPlot.append(QPointF(n, y));
                 }
             }
         }
@@ -628,6 +634,7 @@ bool SettingsTypeForSystemState::getSinglePlot(QVector<double> &outPlot, RSystem
     return result;
 }
 
+#if 0
 bool SettingsTypeForSystemState::getSinglePlot3d(QScatter3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
 {
     bool result = false;
@@ -685,6 +692,7 @@ bool SettingsTypeForSystemState::getSinglePlot3d(QScatter3DSeries &outPlot, RSys
     }
     return result;
 }
+#endif
 
 QList<ParametersSet> SettingsTypeForSystemState::getParametersList(const ModelSystem &system, const QList<decimal> &aOfPerAU) const
 {
@@ -767,6 +775,7 @@ SettingsTypeForServerState::SettingsTypeForServerState(TypeForServerState qos, Q
     additionalParameter[2] = ParameterType::None;
 }
 
+#if 0
 bool SettingsTypeForServerState::getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
 {
     bool result = false;
@@ -813,8 +822,9 @@ bool SettingsTypeForServerState::getSinglePlot(QLineSeries *outPlot, QPair<doubl
     }
     return result;
 }
+#endif
 
-bool SettingsTypeForServerState::getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
+bool SettingsTypeForServerState::getSinglePlot(QVector<QPointF> &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
 {
     bool result = false;
 
@@ -831,7 +841,7 @@ bool SettingsTypeForServerState::getSinglePlot(QVector<double> &outPlot, RSystem
                 if (y > 0)
                     result = true;
             }
-            outPlot.append(y);
+            outPlot.append(QPointF((double)a, y));
         }
     }
 
@@ -847,12 +857,13 @@ bool SettingsTypeForServerState::getSinglePlot(QVector<double> &outPlot, RSystem
                 if (y > 0)
                     result = true;
             }
-            outPlot.append(y);
+            outPlot.append(QPointF(n, y));
         }
     }
     return result;
 }
 
+#if 0
 bool SettingsTypeForServerState::getSinglePlot3d(QScatter3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
 {
     (void) parametersSet;
@@ -910,7 +921,7 @@ bool SettingsTypeForServerState::getSinglePlot3d(QScatter3DSeries &outPlot, RSys
     }
     return result;
 }
-
+#endif
 QList<ParametersSet> SettingsTypeForServerState::getParametersList(const ModelSystem &system, const QList<decimal> &aOfPerAU) const
 {
     QList<ParametersSet> result;
@@ -984,6 +995,7 @@ QList<ParametersSet> SettingsTypeForServerState::getParametersList(const ModelSy
     return result;
 }
 
+
 SettingsTypeForBufferState::SettingsTypeForBufferState(TypeForBufferState qos, QString name, QString shortName): Settings (name, shortName), qos(qos)
 {
     dependencyParameters.append(ParameterType::OfferedTrafficPerAS);
@@ -996,6 +1008,7 @@ SettingsTypeForBufferState::SettingsTypeForBufferState(TypeForBufferState qos, Q
     additionalParameter[2] = ParameterType::None;
 }
 
+#if 0
 bool SettingsTypeForBufferState::getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
 {
     bool result = false;
@@ -1042,8 +1055,9 @@ bool SettingsTypeForBufferState::getSinglePlot(QLineSeries *outPlot, QPair<doubl
     }
     return result;
 }
+#endif
 
-bool SettingsTypeForBufferState::getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
+bool SettingsTypeForBufferState::getSinglePlot(QVector<QPointF> &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
 {
     bool result = false;
 
@@ -1060,7 +1074,7 @@ bool SettingsTypeForBufferState::getSinglePlot(QVector<double> &outPlot, RSystem
                 if (y>0)
                     result = true;
             }
-            outPlot.append(y);
+            outPlot.append(QPointF((double)a, y));
         }
     }
 
@@ -1076,12 +1090,13 @@ bool SettingsTypeForBufferState::getSinglePlot(QVector<double> &outPlot, RSystem
                 if (y>0)
                     result = true;
             }
-            outPlot.append(y);
+            outPlot.append(QPointF(n, y));
         }
     }
     return result;
 }
 
+#if 0
 bool SettingsTypeForBufferState::getSinglePlot3d(QScatter3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
 {
     (void) parametersSet;
@@ -1140,6 +1155,7 @@ bool SettingsTypeForBufferState::getSinglePlot3d(QScatter3DSeries &outPlot, RSys
     }
     return result;
 }
+#endif
 
 QList<ParametersSet> SettingsTypeForBufferState::getParametersList(const ModelSystem &system, const QList<decimal> &aOfPerAU) const
 {
@@ -1233,6 +1249,7 @@ SettingsTypeForClassAndSystemState::SettingsTypeForClassAndSystemState(TypeForCl
     additionalParameter[1] = ParameterType::TrafficClass;
 }
 
+#if 0
 bool SettingsTypeForClassAndSystemState::getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
 {
     bool result = false;
@@ -1296,8 +1313,9 @@ bool SettingsTypeForClassAndSystemState::getSinglePlot(QLineSeries *outPlot, QPa
     }
     return result;
 }
+#endif
 
-bool SettingsTypeForClassAndSystemState::getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
+bool SettingsTypeForClassAndSystemState::getSinglePlot(QVector<QPointF> &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
 {
     bool result = false;
 
@@ -1313,7 +1331,7 @@ bool SettingsTypeForClassAndSystemState::getSinglePlot(QVector<double> &outPlot,
                 if (y>0)
                     result = true;
             }
-            outPlot.append(y);
+            outPlot.append(QPointF((double)a, y));
         }
     }
 
@@ -1328,7 +1346,7 @@ bool SettingsTypeForClassAndSystemState::getSinglePlot(QVector<double> &outPlot,
                 if ((y > 0))
                     result = true;
             }
-            outPlot.append(y);
+            outPlot.append(QPointF(n, y));
         }
     }
 
@@ -1343,12 +1361,13 @@ bool SettingsTypeForClassAndSystemState::getSinglePlot(QVector<double> &outPlot,
                 if ((y > 0))
                     result = true;
             }
-            outPlot.append(y);
+            outPlot.append(QPointF(i, y));
         }
     }
     return result;
 }
 
+#if 0
 bool SettingsTypeForClassAndSystemState::getSinglePlot3d(QScatter3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
 {
     bool result = false;
@@ -1492,6 +1511,7 @@ bool SettingsTypeForClassAndSystemState::getSinglePlot3d(QScatter3DSeries &outPl
     }
     return result;
 }
+#endif
 
 QList<ParametersSet> SettingsTypeForClassAndSystemState::getParametersList(const ModelSystem &system, const QList<decimal> &aOfPerAU) const
 {
@@ -1627,6 +1647,7 @@ QList<ParametersSet> SettingsTypeForClassAndSystemState::getParametersList(const
     return result;
 }
 
+
 SettingsTypeForClassAndServerState::SettingsTypeForClassAndServerState(TypeForClassAndServerState qos, QString name, QString shortName): Settings (name, shortName), qos(qos)
 {
     dependencyParameters.append(ParameterType::ServerState);
@@ -1640,6 +1661,7 @@ SettingsTypeForClassAndServerState::SettingsTypeForClassAndServerState(TypeForCl
     additionalParameter[2] = ParameterType::None;
 }
 
+#if 0
 bool SettingsTypeForClassAndServerState::getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
 {
     bool result = false;
@@ -1706,8 +1728,9 @@ bool SettingsTypeForClassAndServerState::getSinglePlot(QLineSeries *outPlot, QPa
     }
     return result;
 }
+#endif
 
-bool SettingsTypeForClassAndServerState::getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
+bool SettingsTypeForClassAndServerState::getSinglePlot(QVector<QPointF> &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
 {
     bool result = false;
 
@@ -1724,7 +1747,7 @@ bool SettingsTypeForClassAndServerState::getSinglePlot(QVector<double> &outPlot,
                 if (y>0)
                     result = true;
             }
-            outPlot.append(y);
+            outPlot.append(QPointF((double)a, y));
         }
     }
 
@@ -1740,7 +1763,7 @@ bool SettingsTypeForClassAndServerState::getSinglePlot(QVector<double> &outPlot,
                 if (y>0)
                     result = true;
             }
-            outPlot.append(y);
+            outPlot.append(QPointF(n, y));
         }
     }
 
@@ -1756,12 +1779,13 @@ bool SettingsTypeForClassAndServerState::getSinglePlot(QVector<double> &outPlot,
                 if (y > 0)
                     result = true;
             }
-            outPlot.append(y);
+            outPlot.append(QPointF(i, y));
         }
     }
     return result;
 }
 
+#if 0
 bool SettingsTypeForClassAndServerState::getSinglePlot3d(QScatter3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
 {
     bool result = false;
@@ -1903,6 +1927,7 @@ bool SettingsTypeForClassAndServerState::getSinglePlot3d(QScatter3DSeries &outPl
     }
     return result;
 }
+#endif
 
 QList<ParametersSet> SettingsTypeForClassAndServerState::getParametersList(const ModelSystem &system, const QList<decimal> &aOfPerAU) const
 {
@@ -2072,6 +2097,7 @@ SettingsTypeForClassAndBufferState::SettingsTypeForClassAndBufferState(TypeForCl
     additionalParameter[2] = ParameterType::None;
 }
 
+#if 0
 bool SettingsTypeForClassAndBufferState::getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
 {
     bool result = false;
@@ -2138,8 +2164,9 @@ bool SettingsTypeForClassAndBufferState::getSinglePlot(QLineSeries *outPlot, QPa
     }
     return result;
 }
+#endif
 
-bool SettingsTypeForClassAndBufferState::getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
+bool SettingsTypeForClassAndBufferState::getSinglePlot(QVector<QPointF> &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
 {
     bool result = false;
 
@@ -2156,7 +2183,7 @@ bool SettingsTypeForClassAndBufferState::getSinglePlot(QVector<double> &outPlot,
                 if ((y > 0))
                     result = true;
             }
-            outPlot.append(y);
+            outPlot.append(QPointF((double)a, y));
         }
     }
 
@@ -2172,7 +2199,7 @@ bool SettingsTypeForClassAndBufferState::getSinglePlot(QVector<double> &outPlot,
                 if ((y > 0))
                     result = true;
             }
-            outPlot.append(y);
+            outPlot.append(QPointF(n, y));
         }
     }
 
@@ -2188,12 +2215,13 @@ bool SettingsTypeForClassAndBufferState::getSinglePlot(QVector<double> &outPlot,
                 if ((y > 0))
                     result = true;
             }
-            outPlot.append(y);
+            outPlot.append(QPointF(i, y));
         }
     }
     return result;
 }
 
+#if 0
 bool SettingsTypeForClassAndBufferState::getSinglePlot3d(QScatter3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
 {
     bool result = false;
@@ -2336,6 +2364,7 @@ bool SettingsTypeForClassAndBufferState::getSinglePlot3d(QScatter3DSeries &outPl
     }
     return result;
 }
+#endif
 
 QList<ParametersSet> SettingsTypeForClassAndBufferState::getParametersList(const ModelSystem &system, const QList<decimal> &aOfPerAU) const
 {
@@ -2502,6 +2531,7 @@ SettingsForClassAndServerGroupsCombination::SettingsForClassAndServerGroupsCombi
     additionalParameter[2] = ParameterType::None;
 }
 
+#if 0
 bool SettingsForClassAndServerGroupsCombination::getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
 {
     bool result = false;
@@ -2592,8 +2622,9 @@ bool SettingsForClassAndServerGroupsCombination::getSinglePlot(QLineSeries *outP
 
     return result;
 }
+#endif
 
-bool SettingsForClassAndServerGroupsCombination::getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
+bool SettingsForClassAndServerGroupsCombination::getSinglePlot(QVector<QPointF> &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
 {
     bool result = false;
 
@@ -2611,7 +2642,7 @@ bool SettingsForClassAndServerGroupsCombination::getSinglePlot(QVector<double> &
                 if (y > 0)
                     result = true;
             }
-            outPlot.append(y);
+            outPlot.append(QPointF((double)a, y));
         }
     }
 
@@ -2630,7 +2661,7 @@ bool SettingsForClassAndServerGroupsCombination::getSinglePlot(QVector<double> &
                 if (y > 0)
                     result = true;
             }
-            outPlot.append(y);
+            outPlot.append(QPointF(n, y));
         }
     }
 
@@ -2647,13 +2678,14 @@ bool SettingsForClassAndServerGroupsCombination::getSinglePlot(QVector<double> &
                 if (y > 0)
                     result = true;
             }
-            outPlot.append(y);
+            outPlot.append(QPointF(i, y));
         }
     }
 
     return result;
 }
 
+#if 0
 bool SettingsForClassAndServerGroupsCombination::getSinglePlot3d(QScatter3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
 {
     bool result = false;
@@ -2808,6 +2840,7 @@ bool SettingsForClassAndServerGroupsCombination::getSinglePlot3d(QScatter3DSerie
 
     return result;
 }
+#endif
 
 QList<ParametersSet> SettingsForClassAndServerGroupsCombination::getParametersList(const ModelSystem &system, const QList<decimal> &aOfPerAU) const
 {
@@ -3009,6 +3042,7 @@ SettingsAvailableSubroupDistribution::SettingsAvailableSubroupDistribution(QStri
     additionalParameter[2] = ParameterType::None;
 }
 
+#if 0
 bool SettingsAvailableSubroupDistribution::getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
 {
     bool result = false;
@@ -3080,8 +3114,9 @@ bool SettingsAvailableSubroupDistribution::getSinglePlot(QLineSeries *outPlot, Q
     }
     return result;
 }
+#endif
 
-bool SettingsAvailableSubroupDistribution::getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
+bool SettingsAvailableSubroupDistribution::getSinglePlot(QVector<QPointF> &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
 {
     bool result = false;
 
@@ -3099,7 +3134,7 @@ bool SettingsAvailableSubroupDistribution::getSinglePlot(QVector<double> &outPlo
                 if (y > 0)
                     result = true;
             }
-            outPlot.append(y);
+            outPlot.append(QPointF((double)a, y));
         }
     }
 
@@ -3116,7 +3151,7 @@ bool SettingsAvailableSubroupDistribution::getSinglePlot(QVector<double> &outPlo
                 if (y > 0)
                     result = true;
             }
-            outPlot.append(y);
+            outPlot.append(QPointF(k, y));
         }
     }
 
@@ -3133,18 +3168,20 @@ bool SettingsAvailableSubroupDistribution::getSinglePlot(QVector<double> &outPlo
                 if (y > 0)
                     result = true;
             }
-            outPlot.append(y);
+            outPlot.append(QPointF(i, y));
 
         }
     }
     return result;
 }
 
+#if 0
 bool SettingsAvailableSubroupDistribution::getSinglePlot3d(QScatter3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
 {
     //TODO Adam
     return false;
 }
+#endif
 
 QList<ParametersSet> SettingsAvailableSubroupDistribution::getParametersList(const ModelSystem &system, const QList<decimal> &aOfPerAU) const
 {
@@ -3729,6 +3766,7 @@ SettingsTypeForServerAndBufferState::SettingsTypeForServerAndBufferState(TypeFor
     additionalParameter[2] = ParameterType::None;
 }
 
+#if 0
 bool SettingsTypeForServerAndBufferState::getSinglePlot(QLineSeries *outPlot, QPair<double, double> &yMinAndMax, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet, bool linearScale) const
 {
     bool result = false;
@@ -3795,8 +3833,9 @@ bool SettingsTypeForServerAndBufferState::getSinglePlot(QLineSeries *outPlot, QP
     }
     return result;
 }
+#endif
 
-bool SettingsTypeForServerAndBufferState::getSinglePlot(QVector<double> &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
+bool SettingsTypeForServerAndBufferState::getSinglePlot(QVector<QPointF> &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
 {
     bool result = false;
 
@@ -3815,7 +3854,7 @@ bool SettingsTypeForServerAndBufferState::getSinglePlot(QVector<double> &outPlot
                     if (y>0)
                         result = true;
                 }
-                outPlot.append(y);
+                outPlot.append(QPointF((double)a, y));
             }
             else if (functionalParameterZ == ParameterType::ServerState)
             {
@@ -3826,7 +3865,7 @@ bool SettingsTypeForServerAndBufferState::getSinglePlot(QVector<double> &outPlot
                         if (y>0)
                             result = true;
                     }
-                    outPlot.append(y);
+                    outPlot.append(QPointF((double)a, y));
                 }
             }
             else if (functionalParameterZ == ParameterType::BufferState)
@@ -3838,7 +3877,7 @@ bool SettingsTypeForServerAndBufferState::getSinglePlot(QVector<double> &outPlot
                         if (y>0)
                             result = true;
                     }
-                    outPlot.append(y);
+                    outPlot.append(QPointF((double)a, y));
                 }
             }
         }
@@ -3860,7 +3899,7 @@ bool SettingsTypeForServerAndBufferState::getSinglePlot(QVector<double> &outPlot
                         if (y>0)
                             result = true;
                     }
-                    outPlot.append(y);
+                    outPlot.append(QPointF((double)a, y));
                 }
             }
             else
@@ -3873,8 +3912,9 @@ bool SettingsTypeForServerAndBufferState::getSinglePlot(QVector<double> &outPlot
                     {
                         if (y>0)
                             result = true;
+
                     }
-                    outPlot.append(y);
+                    outPlot.append(QPointF(n, y));
                 }
                 else if (functionalParameterZ == ParameterType::BufferState)
                 {
@@ -3885,7 +3925,7 @@ bool SettingsTypeForServerAndBufferState::getSinglePlot(QVector<double> &outPlot
                             if (y>0)
                                 result = true;
                         }
-                        outPlot.append(y);
+                        outPlot.append(QPointF(n, y));
                     }
                 }
             }
@@ -3908,7 +3948,7 @@ bool SettingsTypeForServerAndBufferState::getSinglePlot(QVector<double> &outPlot
                         if (y>0)
                             result = true;
                     }
-                    outPlot.append(y);
+                    outPlot.append(QPointF(n, y));
                 }
             }
             else
@@ -3922,7 +3962,7 @@ bool SettingsTypeForServerAndBufferState::getSinglePlot(QVector<double> &outPlot
                         if (y>0)
                             result = true;
                     }
-                    outPlot.append(y);
+                    outPlot.append(QPointF(n, y));
                 }
                 else if (functionalParameterZ == ParameterType::ServerState)
                 {
@@ -3933,7 +3973,7 @@ bool SettingsTypeForServerAndBufferState::getSinglePlot(QVector<double> &outPlot
                             if (y>0)
                                 result = true;
                         }
-                        outPlot.append(y);
+                        outPlot.append(QPointF(n, y));
                     }
                 }
             }
@@ -3942,6 +3982,7 @@ bool SettingsTypeForServerAndBufferState::getSinglePlot(QVector<double> &outPlot
     return result;
 }
 
+#if 0
 bool SettingsTypeForServerAndBufferState::getSinglePlot3d(QScatter3DSeries &outPlot, RSystem &rSystem, Investigator *algorithm, const ParametersSet &parametersSet) const
 {
     bool result = false;
@@ -4086,6 +4127,7 @@ bool SettingsTypeForServerAndBufferState::getSinglePlot3d(QScatter3DSeries &outP
     }
     return result;
 }
+#endif
 
 QList<ParametersSet> SettingsTypeForServerAndBufferState::getParametersList(const ModelSystem &system, const QList<decimal> &aOfPerAU) const
 {
