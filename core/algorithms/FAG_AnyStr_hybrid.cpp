@@ -4,7 +4,6 @@
 
 namespace Algorithms
 {
-
 FAG_AnyStry_hybrid::FAG_AnyStry_hybrid(): Investigator()
 {
     myQoS_Set

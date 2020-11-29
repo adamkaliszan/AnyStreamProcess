@@ -75,6 +75,7 @@ public:
     ~TrClVector();
 
     QJsonObject getJson() const;
+    QString getCvs(char cvsSeparator) const;
 
     TrClVector &operator=(const TrClVector &rho);
     double & operator[](int n);

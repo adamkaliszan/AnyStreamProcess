@@ -68,6 +68,20 @@ QJsonObject TrClVector::getJson() const
     return result;
 }
 
+QString TrClVector::getCvs(char cvsSeparator) const
+{
+    QString result;
+    QTextStream stream(&result);
+
+    for (int n=0; n<=V(); n++)
+    {
+        stream<<QString::number(_states[n].p, 'e', 7)<<cvsSeparator<<QString::number(_states[n].tIntOutNew, 'e', 7)<<cvsSeparator<<QString::number(_states[n].tIntOutEnd, 'e', 7);
+        if (n<V())
+            stream<<cvsSeparator;
+    }
+    return result;
+}
+
 double &TrClVector::operator[](int n)
 {
     if (n > V())

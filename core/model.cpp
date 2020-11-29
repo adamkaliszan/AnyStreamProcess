@@ -1221,6 +1221,30 @@ int ModelCreator::k_bType() const
     return _buffer.resourcess.length();
 }
 
+
+QTextStream &operator<<(QTextStream &stream, enum ModelTrClass::StreamType strType)
+{
+    switch (strType) {
+    case ModelTrClass::StreamType::Poisson: stream<<"Poisson";    break;
+    case ModelTrClass::StreamType::Uniform: stream<<"Uniform";    break;
+    case ModelTrClass::StreamType::Pareto:  stream<<"Pareto";     break;
+    case ModelTrClass::StreamType::Gamma:   stream<<"Gamma";      break;
+    case ModelTrClass::StreamType::Normal:  stream<<"NormalLike"; break;
+    }
+    return stream;
+}
+QDebug &operator<<(QDebug &stream, enum ModelTrClass::StreamType strType)
+{
+    switch (strType) {
+    case ModelTrClass::StreamType::Poisson: stream<<"Poisson";    break;
+    case ModelTrClass::StreamType::Uniform: stream<<"Uniform";    break;
+    case ModelTrClass::StreamType::Pareto:  stream<<"Pareto";     break;
+    case ModelTrClass::StreamType::Gamma:   stream<<"Gamma";      break;
+    case ModelTrClass::StreamType::Normal:  stream<<"NormalLike"; break;
+    }
+    return stream;
+}
+
 QTextStream& operator<<(QTextStream &stream, const ModelCreator &model)
 {
     stream<<"S"<<model.vk_s();

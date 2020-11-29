@@ -33,7 +33,7 @@ ModelSystem prepareSystem()
 int main(int argc, char *argv[]){
     QCoreApplication app(argc, argv);
     QCoreApplication::setApplicationName("AnyStream generator");
-    QCoreApplication::setApplicationVersion("0.61");
+    QCoreApplication::setApplicationVersion("0.63");
 
     QCommandLineParser parser;
     parser.setApplicationDescription("Tool for investigating any stream processes");
@@ -41,15 +41,17 @@ int main(int argc, char *argv[]){
     parser.addVersionOption();
 
 
-    QCommandLineOption optSservUnits(QStringList() << "V" << "volume"
-                                    , QCoreApplication::translate("main", "set number of service units")
-                                    , QCoreApplication::translate("main", "V")
-                                    , "120");
+    QCommandLineOption optSservUnits(QStringList() << "V" << "volume", QCoreApplication::translate("main", "set number of service units") , QCoreApplication::translate("main","V")   , "120");
+    QCommandLineOption optAmin      ("Amin"                          , QCoreApplication::translate("main", "Minimum traffic offered")     , QCoreApplication::translate("main","Amin"), "1.0");
+    QCommandLineOption optAmax      ("Amax"                          , QCoreApplication::translate("main", "Maximum traffic offered")     , QCoreApplication::translate("main","Amax"), "5.0");
+    QCommandLineOption optAinc      ("Ainc"                          , QCoreApplication::translate("main", "Increment of offered traffic"), QCoreApplication::translate("main","Ainc"), "0.1");
+    QCommandLineOption optEaDaMin   ("EaDaMin", QCoreApplication::translate("main", "Minimum ratio of square Expected value to Variance in arrival stream")     , QCoreApplication::translate("main","EaDaMin"), "3.0");
+    QCommandLineOption optEaDaMax   ("EaDaMax", QCoreApplication::translate("main", "Maximum ratio of square Expected value to Variance in arrival stream")     , QCoreApplication::translate("main","EaDaMax"), "5.0");
+    QCommandLineOption optEaDaInc   ("EaDaInc", QCoreApplication::translate("main", "Increment of ratio of square Expected value to Variance in arrival stream"), QCoreApplication::translate("main","EaDaInc"), "0.1");
 
-    QCommandLineOption optAmin("Amin", QCoreApplication::translate("main", "Minimum traffic offered")     , QCoreApplication::translate("main","Amin"), "1.0");
-    QCommandLineOption optAmax("Amax", QCoreApplication::translate("main", "Maximum traffic offered")     , QCoreApplication::translate("main","Amax"), "5.0");
-    QCommandLineOption optAinc("Ainc", QCoreApplication::translate("main", "Increment of offered traffic"), QCoreApplication::translate("main","Ainc"), "0.1");
-
+    QCommandLineOption optEsDsMin   ("EsDsMin", QCoreApplication::translate("main", "Minimum ratio of square Expected value to Variance in service stream")     , QCoreApplication::translate("main","EsDsMin"), "3.0");
+    QCommandLineOption optEsDsMax   ("EsDsMax", QCoreApplication::translate("main", "Maximum ratio of square Expected value to Variance in service stream")     , QCoreApplication::translate("main","EsDsMax"), "5.0");
+    QCommandLineOption optEsDsInc   ("EsDsInc", QCoreApplication::translate("main", "Increment of ratio of square Expected value to Variance in service stream"), QCoreApplication::translate("main","EsDsInc"), "0.1");
 
     QList<QCommandLineOption> optArrivalStreams;
     QList<QCommandLineOption> optServiceStreams;
@@ -62,31 +64,18 @@ int main(int argc, char *argv[]){
         optServiceStreams.append(QCommandLineOption("ss"+ModelTrClass::streamTypeToString(tmp), "add service " + ModelTrClass::streamTypeToString(tmp) + " stream"));
     }
 
-
-    QCommandLineOption optEaDaMin("EaDaMin", QCoreApplication::translate("main", "Minimum ratio of square Expected value to Variance in arrival stream")     , QCoreApplication::translate("main","EaDaMin"), "3.0");
-    QCommandLineOption optEaDaMax("EaDaMax", QCoreApplication::translate("main", "Maximum ratio of square Expected value to Variance in arrival stream")     , QCoreApplication::translate("main","EaDaMax"), "5.0");
-    QCommandLineOption optEaDaInc("EaDaInc", QCoreApplication::translate("main", "Increment of ratio of square Expected value to Variance in arrival stream"), QCoreApplication::translate("main","EaDaInc"), "0.1");
-
-    QCommandLineOption optEsDsMin("EsDsMin", QCoreApplication::translate("main", "Minimum ratio of square Expected value to Variance in service stream")     , QCoreApplication::translate("main","EsDsMin"), "3.0");
-    QCommandLineOption optEsDsMax("EsDsMax", QCoreApplication::translate("main", "Maximum ratio of square Expected value to Variance in service stream")     , QCoreApplication::translate("main","EsDsMax"), "5.0");
-    QCommandLineOption optEsDsInc("EsDsInc", QCoreApplication::translate("main", "Increment of ratio of square Expected value to Variance in service stream"), QCoreApplication::translate("main","EsDsInc"), "0.1");
-
     parser.addOption(optSservUnits);
     parser.addOption(optAmin);
     parser.addOption(optAmax);
-
     parser.addOption(optEaDaMin);
     parser.addOption(optEaDaMax);
     parser.addOption(optEaDaInc);
-
     parser.addOption(optEsDsMin);
     parser.addOption(optEsDsMax);
     parser.addOption(optEsDsInc);
-
     parser.addOption(optAinc);
     parser.addOptions(optArrivalStreams);
     parser.addOptions(optServiceStreams);
-
     parser.process(app);
 
     int V = 120;
@@ -109,61 +98,61 @@ int main(int argc, char *argv[]){
 
     bool conversionResult = false;
     if (parser.isSet(optSservUnits))
-        V = parser.value(optSservUnits).toUInt(&conversionResult);
+        V = parser.value(optSservUnits).toDouble(&conversionResult);
     if (!conversionResult)
         V = 120;
 
     conversionResult = false;
     if (parser.isSet(optAmin))
-        AMin = parser.value(optAmin).toUInt(&conversionResult);
+        AMin = parser.value(optAmin).toDouble(&conversionResult);
     if (!conversionResult)
         AMin = 1;
 
     conversionResult = false;
     if (parser.isSet(optAmax))
-        AMax = parser.value(optAmax).toUInt(&conversionResult);
+        AMax = parser.value(optAmax).toDouble(&conversionResult);
     if (!conversionResult)
         AMax = 60;
 
     conversionResult = false;
     if (parser.isSet(optAinc))
-        AIncrement = parser.value(optAinc).toUInt(&conversionResult);
+        AIncrement = parser.value(optAinc).toDouble(&conversionResult);
     if (!conversionResult)
         AIncrement = 1;
 
     conversionResult = false;
     if (parser.isSet(optEaDaMin))
-        EaDaMin = parser.value(optEaDaMin).toUInt(&conversionResult);
+        EaDaMin = parser.value(optEaDaMin).toDouble(&conversionResult);
     if (!conversionResult)
         EaDaMin = 3;
 
     conversionResult = false;
     if (parser.isSet(optEaDaMax))
-        EaDaMax = parser.value(optEaDaMax).toUInt(&conversionResult);
+        EaDaMax = parser.value(optEaDaMax).toDouble(&conversionResult);
     if (!conversionResult)
         EaDaMax = 5;
 
     conversionResult = false;
     if (parser.isSet(optEaDaInc))
-        EaDaIncrement = parser.value(optEaDaInc).toUInt(&conversionResult);
+        EaDaIncrement = parser.value(optEaDaInc).toDouble(&conversionResult);
     if (!conversionResult)
         EaDaIncrement = 1;
 
     conversionResult = false;
     if (parser.isSet(optEsDsMin))
-        EsDsMin = parser.value(optEsDsMin).toUInt(&conversionResult);
+        EsDsMin = parser.value(optEsDsMin).toDouble(&conversionResult);
     if (!conversionResult)
         EsDsMin = 3;
 
     conversionResult = false;
     if (parser.isSet(optEsDsMax))
-        EsDsMax = parser.value(optEsDsMax).toUInt(&conversionResult);
+        EsDsMax = parser.value(optEsDsMax).toDouble(&conversionResult);
     if (!conversionResult)
         EsDsMax = 5;
 
     conversionResult = false;
     if (parser.isSet(optEaDaInc))
-        EsDsIncrement = parser.value(optEsDsInc).toUInt(&conversionResult);
+        EsDsIncrement = parser.value(optEsDsInc).toDouble(&conversionResult);
     if (!conversionResult)
         EsDsIncrement = 1;
 
@@ -207,14 +196,35 @@ int main(int argc, char *argv[]){
     trClass.setNewCallStrType(ModelTrClass::StreamType::Poisson, ModelTrClass::SourceType::Independent);
     trClass.setCallServStrType(ModelTrClass::StreamType::Poisson);
 
-    std::ofstream file;
-    file.open("results.js");
+    std::ofstream fileJson;
+    fileJson.open("results.js");
+
+    std::ofstream fileCvs;
+    fileCvs.open("results.cvs");
 
     QJsonObject jsonTrClass;
 
 
     bool firstObject = true;
-    file<< "[";
+    fileJson<< "[";
+
+
+    char cvsSeparator = '\t';
+    fileCvs << "A" << cvsSeparator << "Astr_ID" << cvsSeparator << "Astr_Desc" << cvsSeparator << "EaDa" << cvsSeparator << "Sstr_ID" << cvsSeparator<< "Sstr_Desc" << cvsSeparator << "EsDs" << cvsSeparator;
+
+    for (int v=1; v<=V; v++)
+    {
+        for (int n=0; n<=v; n++)
+        {
+            fileCvs<<"p("<<n<<")_"<<v<<cvsSeparator<<"a("<<n<<")_"<<v<<cvsSeparator<<"s("<<n<<")_"<<v;
+            if (n < V)
+                fileCvs<<cvsSeparator;
+        }
+    }
+    fileCvs<<std::endl;
+
+    int noOfLines = 0;
+
     for (ModelTrClass::StreamType arrivalStr : arrivalStrType)
     {
         trClass.setNewCallStrType(arrivalStr, ModelTrClass::SourceType::Independent);
@@ -234,27 +244,41 @@ int main(int argc, char *argv[]){
                     trClass.setServiceExPerDx((serviceStr == ModelTrClass::StreamType::Poisson) ? 1 :EsDs);
                     for (double A = AMin; A <= AMax; A+= AIncrement)
                     {
-                        qDebug() << "\t\tA " << A;
-
+                        qDebug() << "Call arrival stream: "<< arrivalStr <<" (" << EaDa <<") call service stream: "<< serviceStr << " (" << EsDs << ")\t\tA " << A<<"";
                         if (!firstObject)
-                            file<<",";
+                            fileJson<<",";
                         firstObject = false;
-                        file<< "{";
+                        fileJson<< "{";
 
-                        file<<"\"arrivalStr\": \""<<ModelTrClass::streamTypeToString(arrivalStr).toStdString()<<"\",";
-                        file<<"\"Ea2Da\":"<<EaDa<<",";
-                        file<<"\"serviceStr\": \""<<ModelTrClass::streamTypeToString(serviceStr).toStdString()<<"\",";
-                        file<<"\"Es2Ds\":"<<EsDs<<",";
-                        file<<"\"A\":"<<A;
-                        file<< ",\"dta\": [";
+                        fileJson<<"\"arrivalStr\": \""<<ModelTrClass::streamTypeToString(arrivalStr).toStdString()<<"\",";
+                        fileJson<<"\"Ea2Da\":"<<EaDa<<",";
+                        fileJson<<"\"serviceStr\": \""<<ModelTrClass::streamTypeToString(serviceStr).toStdString()<<"\",";
+                        fileJson<<"\"Es2Ds\":"<<EsDs<<",";
+                        fileJson<<"\"A\":"<<A;
+                        fileJson<< ",\"dta\": [";
 
-                        for (int n=0; n<=V; n++)
+                        QString strNameArrival = ModelTrClass::streamTypeToString(arrivalStr);
+                        QString strNameService = ModelTrClass::streamTypeToString(serviceStr);
+
+                        fileCvs << A << cvsSeparator;
+                        fileCvs << ((int) arrivalStr) << cvsSeparator << strNameArrival.constData() << cvsSeparator << EaDa << cvsSeparator;
+                        fileCvs << ((int) serviceStr) << cvsSeparator << strNameService.constData() << cvsSeparator << EsDs << cvsSeparator;
+                        for (int n=1; n<=V; n++)
                         {
-                            if (n > 0)
-                                file<<",";
-                            file<< QJsonDocument(trClass.trDistribution(0, A, n, 0).getJson()).toJson(QJsonDocument::JsonFormat::Compact).toStdString();
+                            TrClVector tmpTrDitrib = trClass.trDistribution(0, A, n, 0);
+
+                            if (n > 1)
+                            {
+                                fileJson<<",";
+                                fileCvs<<cvsSeparator;
+                            }
+
+                            fileJson<< QJsonDocument(tmpTrDitrib.getJson()).toJson(QJsonDocument::JsonFormat::Compact).toStdString();
+                            fileCvs<<tmpTrDitrib.getCvs(cvsSeparator).toStdString();
                         }
-                        file<< "]}";
+                        fileJson<< "]}";
+                        fileCvs<<std::endl;
+                        noOfLines++;
                     }
                     if (serviceStr == ModelTrClass::StreamType::Poisson)
                         break;
@@ -264,7 +288,10 @@ int main(int argc, char *argv[]){
             }
         }
     }
-    file<<"]";
+    fileJson<<"]";
+
+    qDebug() <<"Total no of lines" << noOfLines;
+
 
     return 0;
 }

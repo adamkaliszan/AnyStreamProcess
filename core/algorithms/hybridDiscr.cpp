@@ -1,5 +1,6 @@
 #include "hybridDiscr.h"
 #include "results/resultsInvestigator.h"
+#include "model.h"
 
 namespace Algorithms
 {

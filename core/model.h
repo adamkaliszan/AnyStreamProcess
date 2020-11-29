@@ -4,8 +4,12 @@
 #include <QMetaType>
 #include <QTextStream>
 #include <QDebug>
+#include <QVector>
+#include <QList>
 #include <qglobal.h>
 #include <math.h>
+
+#include <iostream>
 
 #include "utils/probDistributions.h"
 #include "algorithms/trclvector2.h"
@@ -593,6 +597,10 @@ public:
 
     QString getGnuplotDescription() const;
 };
+
+QTextStream &operator<<(QTextStream &stream, enum ModelTrClass::StreamType strType);
+QDebug &operator<<(QDebug &stream, enum ModelTrClass::StreamType strType);
+
 
 QTextStream &operator<<(QTextStream &stream, const ModelCreator &model);
 QTextStream &operator<<(QTextStream &stream, const ModelSystem &model);
