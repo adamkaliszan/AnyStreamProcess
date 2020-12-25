@@ -53,6 +53,9 @@ int main(int argc, char *argv[]){
     QCommandLineOption optEsDsMax   ("EsDsMax", QCoreApplication::translate("main", "Maximum ratio of square Expected value to Variance in service stream")     , QCoreApplication::translate("main","EsDsMax"), "5.0");
     QCommandLineOption optEsDsInc   ("EsDsInc", QCoreApplication::translate("main", "Increment of ratio of square Expected value to Variance in service stream"), QCoreApplication::translate("main","EsDsInc"), "0.1");
 
+    QCommandLineOption optOutput    ("Output",  QCoreApplication::translate("main", "Ouptut filename (without extension)")                                      , QCoreApplication::translate("main","Output"), "results");
+
+
     QList<QCommandLineOption> optArrivalStreams;
     QList<QCommandLineOption> optServiceStreams;
 
@@ -74,6 +77,8 @@ int main(int argc, char *argv[]){
     parser.addOption(optEsDsMax);
     parser.addOption(optEsDsInc);
     parser.addOption(optAinc);
+    parser.addOption(optOutput);
+
     parser.addOptions(optArrivalStreams);
     parser.addOptions(optServiceStreams);
     parser.process(app);
@@ -92,6 +97,7 @@ int main(int argc, char *argv[]){
     double EsDsMax = 3;
     double EsDsIncrement = 0.01;
 
+    std::string filename;
 
     QList<ModelTrClass::StreamType> arrivalStrType;
     QList<ModelTrClass::StreamType> serviceStrType;
@@ -124,13 +130,13 @@ int main(int argc, char *argv[]){
     if (parser.isSet(optEaDaMin))
         EaDaMin = parser.value(optEaDaMin).toDouble(&conversionResult);
     if (!conversionResult)
-        EaDaMin = 3;
+        EaDaMin = 1;
 
     conversionResult = false;
     if (parser.isSet(optEaDaMax))
         EaDaMax = parser.value(optEaDaMax).toDouble(&conversionResult);
     if (!conversionResult)
-        EaDaMax = 5;
+        EaDaMax = 3;
 
     conversionResult = false;
     if (parser.isSet(optEaDaInc))
@@ -142,19 +148,25 @@ int main(int argc, char *argv[]){
     if (parser.isSet(optEsDsMin))
         EsDsMin = parser.value(optEsDsMin).toDouble(&conversionResult);
     if (!conversionResult)
-        EsDsMin = 3;
+        EsDsMin = 1;
 
     conversionResult = false;
     if (parser.isSet(optEsDsMax))
         EsDsMax = parser.value(optEsDsMax).toDouble(&conversionResult);
     if (!conversionResult)
-        EsDsMax = 5;
+        EsDsMax = 3;
 
     conversionResult = false;
     if (parser.isSet(optEaDaInc))
         EsDsIncrement = parser.value(optEsDsInc).toDouble(&conversionResult);
     if (!conversionResult)
         EsDsIncrement = 1;
+
+//    conversionResult = false;
+//    if (parser.isSet(optOutput))
+        filename = parser.value(optOutput).toStdString();
+//    if (!conversionResult)
+//        filename = "results";
 
 
     for (int i=0; i<supportedStreams.length(); i++)
@@ -197,10 +209,10 @@ int main(int argc, char *argv[]){
     trClass.setCallServStrType(ModelTrClass::StreamType::Poisson);
 
     std::ofstream fileJson;
-    fileJson.open("results.js");
+    fileJson.open(filename + ".js");
 
     std::ofstream fileCvs;
-    fileCvs.open("results.cvs");
+    fileCvs.open(filename + ".csv");
 
     QJsonObject jsonTrClass;
 

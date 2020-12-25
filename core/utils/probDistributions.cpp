@@ -22,7 +22,7 @@ paretoDistrib::paretoDistrib(double E, double D)
     uniformDis01 = std::uniform_real_distribution<double>(0.000001, 1);
 }
 
-double paretoDistrib::operator()(std::mt19937 &gen)
+double paretoDistrib::operator()(std::mt19937_64 &gen)
 {
     double randVal = this->uniformDis01(gen);
     double result = reverseCDF(randVal);

@@ -98,7 +98,9 @@ public:
 
     const TrClVector *getTruncatedVector(int lastIndex) const;
 
-    int    V() const                                       { return  _states.length() -1; }
+    int    V() const                                       {
+        return  _states.length() -1;
+    }
     int    m() const                                       { return aggregatedClasses.length(); }
 
     void    setState(int n, const State &refState);

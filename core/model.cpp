@@ -2,6 +2,10 @@
 #include <QString>
 #include <QTextStream>
 #include <QDebug>
+#include <QtAlgorithms>
+#include <QtCore/QList>
+#include <QThread>
+#include <QThreadPool>
 
 #include <math.h>
 #include "model.h"
@@ -260,131 +264,43 @@ QString ModelTrClass::shortName() const
 
 void ModelTrClass::doSimExpUnlimitedSoNo(TrClVector &states, int Vs, int Vb, double Aoffered, double IncommingEx2perDxDNewCall, double EsingleCallServ, double DsingleCallServ) const
 {
-    SimulatorProcess *proc = nullptr;
-    SimulatorSingleServiceSystem *System = new SimulatorSingleServiceSystem(0, srcType(), Vs, Vb, this->_t, states, Aoffered, IncommingEx2perDxDNewCall, EsingleCallServ, DsingleCallServ);
+    QThreadPool *threadPool = QThreadPool::globalInstance();
+    const int TotNoOfSeries = 6;
+    threadPool->setMaxThreadCount(TotNoOfSeries);
 
-
-
-    switch (newCallStr())
+    ModelTrClassSimulationWork *simulationTask;
+    TrClVector simStates[TotNoOfSeries];
+    for (int simNo=0; simNo<TotNoOfSeries; simNo++)
     {
-    case StreamType::Poisson:
-        switch (callServStr())
-        {
-        case StreamType::Poisson:
-            proc = new SimulatorProcess_IndepMM(System);
-            break;
-        case StreamType::Uniform:
-            proc = new SimulatorProcess_IndepMU(System);
-            break;
-        case StreamType::Normal:
-            proc = new SimulatorProcess_IndepMN(System);
-            break;
-        case StreamType::Gamma:
-            proc = new SimulatorProcess_IndepMG(System);
-            break;
-        case StreamType::Pareto:
-            proc = new SimulatorProcess_IndepMP(System);
-            break;
-        }
-        break;
-    case StreamType::Uniform:
-        switch (callServStr())
-        {
-        case StreamType::Poisson:
-            proc = new SimulatorProcess_IndepUM(System);
-            break;
-        case StreamType::Uniform:
-            proc = new SimulatorProcess_IndepUU(System);
-            break;
-        case StreamType::Normal:
-            proc = new SimulatorProcess_IndepUN(System);
-            break;
-        case StreamType::Gamma:
-            proc = new SimulatorProcess_IndepUG(System);
-            break;
-        case StreamType::Pareto:
-            proc = new SimulatorProcess_IndepUP(System);
-            break;
-        }
-        break;
-    case StreamType::Normal:
-        switch (callServStr())
-        {
-        case StreamType::Poisson:
-            proc = new SimulatorProcess_IndepNM(System);
-            break;
-        case StreamType::Uniform:
-            proc = new SimulatorProcess_IndepNU(System);
-            break;
-        case StreamType::Normal:
-            proc = new SimulatorProcess_IndepNN(System);
-            break;
-        case StreamType::Gamma:
-            proc = new SimulatorProcess_IndepNG(System);
-            break;
-        case StreamType::Pareto:
-            proc = new SimulatorProcess_IndepNP(System);
-            break;
-        }
-        break;
-    case StreamType::Gamma:
-        switch (callServStr())
-        {
-        case StreamType::Poisson:
-            proc = new SimulatorProcess_IndepGM(System);
-            break;
-        case StreamType::Uniform:
-            proc = new SimulatorProcess_IndepGU(System);
-            break;
-        case StreamType::Normal:
-            proc = new SimulatorProcess_IndepGN(System);
-            break;
-        case StreamType::Gamma:
-            proc = new SimulatorProcess_IndepGG(System);
-            break;
-        case StreamType::Pareto:
-            proc = new SimulatorProcess_IndepGP(System);
-            break;
-        }
-        break;
-
-    case StreamType::Pareto:
-        switch (callServStr())
-        {
-        case StreamType::Poisson:
-            proc = new SimulatorProcess_IndepPM(System);
-            break;
-        case StreamType::Uniform:
-            proc = new SimulatorProcess_IndepPU(System);
-            break;
-        case StreamType::Normal:
-            proc = new SimulatorProcess_IndepPN(System);
-            break;
-        case StreamType::Gamma:
-            proc = new SimulatorProcess_IndepPG(System);
-            break;
-        case StreamType::Pareto:
-            proc = new SimulatorProcess_IndepPP(System);
-            break;
-        }
-        break;
+        simStates[simNo] = TrClVector(states);
+        simulationTask = new ModelTrClassSimulationWork(&simStates[simNo], Vs, Vb, Aoffered, _t
+          , srcType(), newCallStr(), IncommingEx2perDxDNewCall
+          , callServStr(), EsingleCallServ, DsingleCallServ);
+        simulationTask->setAutoDelete(true);
+        threadPool->start(simulationTask);
     }
-    if (proc == nullptr)
-        qFatal("Simulation Critical error: not supported traffic class");
+    threadPool->waitForDone();
 
-    proc->initialize();
+    for (int serNo=0; serNo < TotNoOfSeries; serNo++)
+    {
+        for (int n=0; n<=Vs+Vb; n++)
+        {
+            states[n]+= simStates[serNo][n];
+            states.getState(n).tIntInEnd+=simStates[serNo].getState(n).tIntInEnd;
+            states.getState(n).tIntInNew+=simStates[serNo].getState(n).tIntInNew;
+            states.getState(n).tIntOutEnd+=simStates[serNo].getState(n).tIntOutEnd;
+            states.getState(n).tIntOutNew+=simStates[serNo].getState(n).tIntOutNew;
+        }
+    }
 
-    System->stabilize((1+Vs+Vb) * 10000 / t());
-    System->doSimExperiment((Vs+Vb+1) * 100000 / t() , states);
-
-    double sum = 0;
     for (int n=0; n<=Vs+Vb; n++)
-        sum += states[n];
-    for (int n=0; n<=Vs+Vb; n++)
-        states[n] /= sum;
-    sum = 1;
-
-    delete System;
+    {
+        states.getState(n).p/= TotNoOfSeries;
+        states.getState(n).tIntInEnd/= TotNoOfSeries;
+        states.getState(n).tIntInNew/= TotNoOfSeries;
+        states.getState(n).tIntOutEnd/= TotNoOfSeries;
+        states.getState(n).tIntOutNew/= TotNoOfSeries;
+    }
 }
 
 void ModelTrClass::doSimExpLimitedSoNo(TrClVector &states, int Vs, int Vb, double Aoffered, double IncommingEx2perDxDNewCall, double EsingleCallServ, double DsingleCallServ) const
@@ -623,8 +539,8 @@ void ModelTrClass::doSimExpLimitedSoNo(TrClVector &states, int Vs, int Vb, doubl
         proc->initialize();
     }
 
-    System->stabilize((1+Vs+Vb) * 10000/ t());
-    System->doSimExperiment((1+Vs+Vb) * 100000 / t(), states);
+    System->stabilize((1+Vs+Vb) * 1000 / t());
+    System->doSimExperiment((1+Vs+Vb) * (1+Vs+Vb) * 10000 / t(), states);
 
     double sum = 0;
     for (int n=0; n<=Vs+Vb; n++)
@@ -1573,6 +1489,8 @@ template <class P> bool ModelTrClass::SimulatorProcess_DepPlus::endOfCallService
     return false;
 }
 
+std::random_device ModelTrClass::SimulatorSingleServiceSystem::rd;
+
 double ModelTrClass::SimulatorSingleServiceSystem::distrLambda(double Ex)
 {
     double randomNumber;
@@ -1594,7 +1512,7 @@ double ModelTrClass::SimulatorSingleServiceSystem::distrUniform(double tMin, dou
 
 ModelTrClass::SimulatorSingleServiceSystem::SimulatorSingleServiceSystem(int noOfSourcess, SourceType srcType, int Vs, int Vb, int t, TrClVector &states, double Aoffered, double IncommingEx2perDxDNewCall, double E_service, double D_service)
 {
-    gen = std::mt19937(rd());
+    gen = std::mt19937_64(rd());
 
     n_inServer = 0;
     n_total = 0;
@@ -1602,9 +1520,6 @@ ModelTrClass::SimulatorSingleServiceSystem::SimulatorSingleServiceSystem(int noO
     this->Vb = Vb;
     this->states = &states;
     this->t = t;
-
-    this->time = 0;
-
 
     double deltaTServCall, deltaTnewCall;
 
@@ -1732,7 +1647,7 @@ double ModelTrClass::SimulatorSingleServiceSystem::timeServEndPareto()
 
 void ModelTrClass::SimulatorSingleServiceSystem::addProcess(ModelTrClass::SimulatorProcess *newProc, double relativeTime)
 {
-    newProc->time = relativeTime+this->time;
+    newProc->time = relativeTime;
     agenda.append(newProc);
     std::sort(agenda.begin(), agenda.end(), simProcComparer);
 }
@@ -1748,13 +1663,16 @@ void ModelTrClass::SimulatorSingleServiceSystem::stabilize(int noOfEvents)
     for( ;noOfEvents>0; noOfEvents--)
     {
         SimulatorProcess *proc = agenda.takeFirst();
-        time = proc->time;
+        QListIterator<SimulatorProcess *> iterator(agenda);
+        while (iterator.hasNext())
+            iterator.next()->time-=proc->time;
+
         if (!proc->execute(this))
             delete proc;
     }
 }
 
-void ModelTrClass::SimulatorSingleServiceSystem::doSimExperiment(int noOfEvents, TrClVector &states)
+void ModelTrClass::SimulatorSingleServiceSystem::doSimExperiment(long int noOfEvents, TrClVector &states)
 {
     if (states.m() !=1)
         qFatal("Wrong distriobution");
@@ -1779,12 +1697,13 @@ void ModelTrClass::SimulatorSingleServiceSystem::doSimExperiment(int noOfEvents,
     }
     for( ;noOfEvents>0; noOfEvents--)
     {
-        double lastTime = time;
-
         int oldState = n_total;
         SimulatorProcess *proc = agenda.takeFirst();
-        time = proc->time;
-        double deltaTime = time - lastTime;
+        QListIterator<SimulatorProcess *> iterator(agenda);
+        while (iterator.hasNext())
+            iterator.next()->time-=proc->time;
+
+        double deltaTime = proc->time;
         states[n_total] += deltaTime;
 
         if (!proc->execute(this))
@@ -1900,10 +1819,10 @@ void ModelTrClass::SimulatorSingleServiceSystem::endCallService(ModelTrClass::Si
     //Take call from qeue
     if (callPartialyServiced)
     {
-        double timeToTheEnd = callPartialyServiced->time - time;
+        double timeToTheEnd = callPartialyServiced->time;
         timeToTheEnd /= t;
         timeToTheEnd *=resPartOccupied;
-        callPartialyServiced->time = time + timeToTheEnd;
+        callPartialyServiced->time = timeToTheEnd;
 
         n_inServer +=t;
         n_inServer -= resPartOccupied;
@@ -2216,6 +2135,151 @@ bool MCTrCl::operator!=(const MCTrCl &rho) const
                 return true;
     }
     return false;
+}
+
+
+
+ModelTrClassSimulationWork::ModelTrClassSimulationWork(TrClVector *states, int Vs, int Vb, double Aoffered, int t, ModelTrClass::SourceType srcNewCallSrcType, ModelTrClass::StreamType newCallStreamType, double IncommingEx2perDxDNewCall, ModelTrClass::StreamType endCallStreamType, double EsingleCallServ, double DsingleCallServ)
+{
+    this->states = states;
+    system = new ModelTrClass::SimulatorSingleServiceSystem(0, srcNewCallSrcType, Vs, Vb, t, *states, Aoffered, IncommingEx2perDxDNewCall, EsingleCallServ, DsingleCallServ);
+    proc = nullptr;
+    switch (newCallStreamType)
+    {
+    case ModelTrClass::StreamType::Poisson:
+        switch (endCallStreamType)
+        {
+        case ModelTrClass::StreamType::Poisson:
+            proc = new ModelTrClass::SimulatorProcess_IndepMM(system);
+            break;
+        case ModelTrClass::StreamType::Uniform:
+            proc = new ModelTrClass::SimulatorProcess_IndepMU(system);
+            break;
+        case ModelTrClass::StreamType::Normal:
+            proc = new ModelTrClass::SimulatorProcess_IndepMN(system);
+            break;
+        case ModelTrClass::StreamType::Gamma:
+            proc = new ModelTrClass::SimulatorProcess_IndepMG(system);
+            break;
+        case ModelTrClass::StreamType::Pareto:
+            proc = new ModelTrClass::SimulatorProcess_IndepMP(system);
+            break;
+        }
+        break;
+    case ModelTrClass::StreamType::Uniform:
+        switch (endCallStreamType)
+        {
+        case ModelTrClass::StreamType::Poisson:
+            proc = new ModelTrClass::SimulatorProcess_IndepUM(system);
+            break;
+        case ModelTrClass::StreamType::Uniform:
+            proc = new ModelTrClass::SimulatorProcess_IndepUU(system);
+            break;
+        case ModelTrClass::StreamType::Normal:
+            proc = new ModelTrClass::SimulatorProcess_IndepUN(system);
+            break;
+        case ModelTrClass::StreamType::Gamma:
+            proc = new ModelTrClass::SimulatorProcess_IndepUG(system);
+            break;
+        case ModelTrClass::StreamType::Pareto:
+            proc = new ModelTrClass::SimulatorProcess_IndepUP(system);
+            break;
+        }
+        break;
+    case ModelTrClass::StreamType::Normal:
+        switch (endCallStreamType)
+        {
+        case ModelTrClass::StreamType::Poisson:
+            proc = new ModelTrClass::SimulatorProcess_IndepNM(system);
+            break;
+        case ModelTrClass::StreamType::Uniform:
+            proc = new ModelTrClass::SimulatorProcess_IndepNU(system);
+            break;
+        case ModelTrClass::StreamType::Normal:
+            proc = new ModelTrClass::SimulatorProcess_IndepNN(system);
+            break;
+        case ModelTrClass::StreamType::Gamma:
+            proc = new ModelTrClass::SimulatorProcess_IndepNG(system);
+            break;
+        case ModelTrClass::StreamType::Pareto:
+            proc = new ModelTrClass::SimulatorProcess_IndepNP(system);
+            break;
+        }
+        break;
+    case ModelTrClass::StreamType::Gamma:
+        switch (endCallStreamType)
+        {
+        case ModelTrClass::StreamType::Poisson:
+            proc = new ModelTrClass::SimulatorProcess_IndepGM(system);
+            break;
+        case ModelTrClass::StreamType::Uniform:
+            proc = new ModelTrClass::SimulatorProcess_IndepGU(system);
+            break;
+        case ModelTrClass::StreamType::Normal:
+            proc = new ModelTrClass::SimulatorProcess_IndepGN(system);
+            break;
+        case ModelTrClass::StreamType::Gamma:
+            proc = new ModelTrClass::SimulatorProcess_IndepGG(system);
+            break;
+        case ModelTrClass::StreamType::Pareto:
+            proc = new ModelTrClass::SimulatorProcess_IndepGP(system);
+            break;
+        }
+        break;
+
+    case ModelTrClass::StreamType::Pareto:
+        switch (endCallStreamType)
+        {
+        case ModelTrClass::StreamType::Poisson:
+            proc = new ModelTrClass::SimulatorProcess_IndepPM(system);
+            break;
+        case ModelTrClass::StreamType::Uniform:
+            proc = new ModelTrClass::SimulatorProcess_IndepPU(system);
+            break;
+        case ModelTrClass::StreamType::Normal:
+            proc = new ModelTrClass::SimulatorProcess_IndepPN(system);
+            break;
+        case ModelTrClass::StreamType::Gamma:
+            proc = new ModelTrClass::SimulatorProcess_IndepPG(system);
+            break;
+        case ModelTrClass::StreamType::Pareto:
+            proc = new ModelTrClass::SimulatorProcess_IndepPP(system);
+            break;
+        }
+        break;
+    }
+    if (proc == nullptr)
+        qFatal("Simulation Critical error: not supported traffic class");
+
+}
+
+ModelTrClassSimulationWork::~ModelTrClassSimulationWork()
+{
+    delete system;
+}
+
+void ModelTrClassSimulationWork::run()
+{
+    proc->initialize();
+
+    for (int n=0; n<=system->Vs+system->Vb; n++)
+    {
+        states->getState(n).p = 0;
+        states->getState(n).tIntInEnd = 0;
+        states->getState(n).tIntInNew = 0;
+        states->getState(n).tIntOutEnd = 0;
+        states->getState(n).tIntOutNew = 0;
+    }
+
+    system->stabilize((1+system->Vs+system->Vb) * (1+system->Vs+system->Vb) * 10000 / system->getT());
+    system->doSimExperiment((1+system->Vs+system->Vb) * (system->Vs+system->Vb+1) * 1000000 / system->getT() , *states);
+
+    double sum = 0;
+    for (int n=0; n<=system->Vs+system->Vb; n++)
+        sum += states->getState(n).p;
+    for (int n=0; n<=system->Vs+system->Vb; n++)
+        states->getState(n).p/= sum;
+    sum = 1;
 }
 
 CLASS_SIMULATOR_INDEP_CPP(M, M, NewCallExp, ServEndExp)

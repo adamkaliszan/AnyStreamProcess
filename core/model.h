@@ -6,6 +6,9 @@
 #include <QDebug>
 #include <QVector>
 #include <QList>
+#include <QLinkedList>
+#include <QThread>
+#include <QRunnable>
 #include <qglobal.h>
 #include <math.h>
 
@@ -206,10 +209,8 @@ public:
     class SimulatorSingleServiceSystem
     {
     private:
-        //classType trClassType;
-
-        std::random_device rd;
-        std::mt19937 gen;
+        static std::random_device rd;
+        std::mt19937_64 gen;
 
         std::normal_distribution<> distribNormalNewCall;
         std::normal_distribution<> distribNormalService;
@@ -220,8 +221,6 @@ public:
         paretoDistrib distribParetoNewCall;
         paretoDistrib distribParetoService;
 
-
-        double time;
         int n_inServer;
         int n_total;
         int t;
@@ -268,8 +267,10 @@ public:
         void addProcess(SimulatorProcess *newProc, double relativeTime);
         void removeProcess(SimulatorProcess *proc);
 
+        int getT() const { return t; }
+
         void stabilize(int noOfEvents);
-        void doSimExperiment(int noOfEvents, TrClVector &states);
+        void doSimExperiment(long noOfEvents, TrClVector &states);
 
         bool addCall(SimulatorProcess *call, double timeOfService);
         void endCallService(SimulatorProcess *call);
@@ -463,6 +464,22 @@ public:
     CLASS_SIMULATOR_DEP_PLUS(P, G, NewCallPareto, ServEndGamma)
     CLASS_SIMULATOR_DEP_PLUS(P, P, NewCallPareto, ServEndPareto)
 };
+
+class ModelTrClassSimulationWork : public QRunnable
+{
+private:
+    ModelTrClass::SimulatorSingleServiceSystem *system;
+    ModelTrClass::SimulatorProcess *proc;
+
+    TrClVector *states;
+public:
+    ModelTrClassSimulationWork(TrClVector *states, int Vs, int Vb, double Aoffered, int t
+      , ModelTrClass::SourceType srcNewCallSrcType, ModelTrClass::StreamType newCallStreamType, double IncommingEx2perDxDNewCall
+      , ModelTrClass::StreamType endCallStreamType, double EsingleCallServ, double DsingleCallServ);
+    ~ModelTrClassSimulationWork();
+    void run();
+};
+
 
 QDebug& operator<<(QDebug &stream, const ModelTrClass &trClass);
 QDebug& operator<<(QDebug &stream, ModelTrClass &trClass);

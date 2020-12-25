@@ -19,7 +19,7 @@ private:
 public:
     paretoDistrib(double E = 1, double D = 1);
 
-    double operator()(std::mt19937 &gen);
+    double operator()(std::mt19937_64 &gen);
 };
 
 
