@@ -223,6 +223,14 @@ double TrClVector::getY(int n, int i) const
     return _states[n].y[classIdx];
 }
 
+void TrClVector::calculateP_baseOnOutIntensities()
+{
+    int t = aggregatedClasses[0].t;
+    _states[0].p = 1;
+    for (int n=t; n<V(); n+=t)
+        _states[n].p = _states[n-t].p * _states[n-t].tIntOutNew / _states[n].tIntOutEnd;
+}
+
 TrClVector &TrClVector::operator=(const TrClVector &rho)
 {
     //if(_states2 == rho._states2)
@@ -760,6 +768,7 @@ void State::addClassOnTheEnd()
     }
     m++;
 }
+
 /*
 trClVector trClVector::convQUEUE(const trClVector &Pa, const trClVector &Pb, int V, bool doNormalization, int len)
 {

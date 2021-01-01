@@ -174,7 +174,7 @@ public:
     double intensityNewCallForState(double intensityNewCallTotal, int stateN) const;
     double intensityNewCallForY(double lambdaZero, double y) const;
 
-    TrClVector trDistribution(int classIdx, double A, int Vs, int Vb) const;
+    TrClVector trDistribution(int classIdx, double A, int Vs, int Vb, int noOfOseries = 12, int noOfEventsPerUnit = 100000000) const;
 
     bool operator ==(const ModelTrClass& rho) const;
     bool operator !=(const ModelTrClass& rho) const;
@@ -185,15 +185,14 @@ public:
 
 
 
-    void doSimExpUnlimitedSoNo(
-              TrClVector &states
+    void doSimExpUnlimitedSoNo(TrClVector &states
             , int Vs
             , int Vb
             , double Aoffered
             , double IncommingEx2perDxDNewCall
             , double EsingleCallServ
             , double DsingleCallServ
-            ) const;
+            , int noOfSeries, int noOfEventsPerUnit) const;
 
     void doSimExpLimitedSoNo(
               TrClVector &states
@@ -470,12 +469,13 @@ class ModelTrClassSimulationWork : public QRunnable
 private:
     ModelTrClass::SimulatorSingleServiceSystem *system;
     ModelTrClass::SimulatorProcess *proc;
+    int noOfEventsPerUnit;
 
     TrClVector *states;
 public:
     ModelTrClassSimulationWork(TrClVector *states, int Vs, int Vb, double Aoffered, int t
       , ModelTrClass::SourceType srcNewCallSrcType, ModelTrClass::StreamType newCallStreamType, double IncommingEx2perDxDNewCall
-      , ModelTrClass::StreamType endCallStreamType, double EsingleCallServ, double DsingleCallServ);
+      , ModelTrClass::StreamType endCallStreamType, double EsingleCallServ, double DsingleCallServ, int noOfEventsPerUnit);
     ~ModelTrClassSimulationWork();
     void run();
 };

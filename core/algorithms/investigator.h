@@ -15,6 +15,7 @@
 #include "results/resultsInvestigator.h"
 #include "model.h"
 
+extern char *argv0;
 
 using namespace Results;
 

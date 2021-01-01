@@ -33,7 +33,7 @@ ModelSystem prepareSystem()
 int main(int argc, char *argv[]){
     QCoreApplication app(argc, argv);
     QCoreApplication::setApplicationName("AnyStream generator");
-    QCoreApplication::setApplicationVersion("0.63");
+    QCoreApplication::setApplicationVersion("0.9.3");
 
     QCommandLineParser parser;
     parser.setApplicationDescription("Tool for investigating any stream processes");
@@ -54,6 +54,8 @@ int main(int argc, char *argv[]){
     QCommandLineOption optEsDsInc   ("EsDsInc", QCoreApplication::translate("main", "Increment of ratio of square Expected value to Variance in service stream"), QCoreApplication::translate("main","EsDsInc"), "0.1");
 
     QCommandLineOption optOutput    ("Output",  QCoreApplication::translate("main", "Ouptut filename (without extension)")                                      , QCoreApplication::translate("main","Output"), "results");
+    QCommandLineOption optNoOfSer   ("NoOfSer", QCoreApplication::translate("main", "Number of simulation series")                                              , QCoreApplication::translate("main","Output"), "12");
+    QCommandLineOption optSimLen    ("NoOfEv",  QCoreApplication::translate("main", "No of events per state unit")                                              , QCoreApplication::translate("main","Output"), "100000000");
 
 
     QList<QCommandLineOption> optArrivalStreams;
@@ -78,6 +80,8 @@ int main(int argc, char *argv[]){
     parser.addOption(optEsDsInc);
     parser.addOption(optAinc);
     parser.addOption(optOutput);
+    parser.addOption(optNoOfSer);
+    parser.addOption(optSimLen);
 
     parser.addOptions(optArrivalStreams);
     parser.addOptions(optServiceStreams);
@@ -96,6 +100,9 @@ int main(int argc, char *argv[]){
     double EsDsMin = 3;
     double EsDsMax = 3;
     double EsDsIncrement = 0.01;
+
+    long int noOfEventsPerUnit;
+    int noOfSimSeries;
 
     std::string filename;
 
@@ -162,12 +169,9 @@ int main(int argc, char *argv[]){
     if (!conversionResult)
         EsDsIncrement = 1;
 
-//    conversionResult = false;
-//    if (parser.isSet(optOutput))
-        filename = parser.value(optOutput).toStdString();
-//    if (!conversionResult)
-//        filename = "results";
-
+    filename          = parser.value(optOutput).toStdString();
+    noOfEventsPerUnit = parser.value(optSimLen).toLong(&conversionResult);
+    noOfSimSeries     = parser.value(optNoOfSer).toInt(&conversionResult);
 
     for (int i=0; i<supportedStreams.length(); i++)
     {
@@ -277,7 +281,7 @@ int main(int argc, char *argv[]){
                         fileCvs << ((int) serviceStr) << cvsSeparator << strNameService.constData() << cvsSeparator << EsDs << cvsSeparator;
                         for (int n=1; n<=V; n++)
                         {
-                            TrClVector tmpTrDitrib = trClass.trDistribution(0, A, n, 0);
+                            TrClVector tmpTrDitrib = trClass.trDistribution(0, A, n, 0, noOfSimSeries, noOfEventsPerUnit);
 
                             if (n > 1)
                             {

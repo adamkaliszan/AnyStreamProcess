@@ -3,8 +3,11 @@
 #include <QCommandLineParser>
 #include <QApplication>
 
+extern char *argv0;
+
 int main(int argc, char *argv[])
 {
+    argv0  = argv[0];
     //QCoreApplication app(argc, argv);
     QCoreApplication::setApplicationName("Qeue systems");
     QCoreApplication::setApplicationVersion("0.11");

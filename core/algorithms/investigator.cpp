@@ -1,5 +1,7 @@
 #include "algorithms/investigator.h"
 
+char *argv0;
+
 Investigator::Investigator():
     system(nullptr)
 {

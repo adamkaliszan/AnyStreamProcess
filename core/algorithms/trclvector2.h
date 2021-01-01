@@ -119,6 +119,8 @@ public:
 
     double  getY(int n, int i) const;
 
+    void calculateP_baseOnOutIntensities();
+
     //double getIntInNew(int n);                              /// Intensywność przejścia do stanu po przyjęciu nowego zgłoszenia
     //double getIntInEnd(int n);                              /// Intensywność przejścia do stanu po przyjęciu nowego zgłoszenia
     //static trClVector convQUEUE(const trClVector &Pa, const trClVector &Pb, int V, bool doNormalization = false, int len=0);

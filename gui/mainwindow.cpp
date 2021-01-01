@@ -34,6 +34,7 @@
 #include "algorithms/cFIFO_convGamma.h"
 #include "algorithms/FAG_hybrid.h"
 #include "algorithms/FAG_AnyStr_hybrid.h"
+#include "algorithms/FAG_AnyStr_ML.h"
 #include "algorithms/convGamma2d.h"
 #include "algorithms/convGamma3.h"
 #include "algorithms/conv3d.h"
@@ -283,9 +284,12 @@ void MainWindow::addAlgorithmsAndParams()
     //addExperimentalAlgorithm(new convolutionAlgorithm3d_v1());
     //addExperimentalAlgorithm(new Algorithm2Pass());
     addExperimentalAlgorithm(new Algorithms::AlgorithmHybridDiscrDesc());
+    addExperimentalAlgorithm(new Algorithms::FAG_AnyStr_ML());
 
     algorithms.append(new Algorithms::FAG_hybrid());
-//    algorithms.append(new AlgorithmAnyStreamFAG());
+
+
+    //    algorithms.append(new AlgorithmAnyStreamFAG());
 //    algorithms.append(new convolutionAlgorithmGamma());
 //    algorithms.append(new AlgorithmHybrid(AlgorithmHybrid::algVariant::yProp));
 //    algorithms.append(new AlgorithmHybrid(AlgorithmHybrid::algVariant::yPropPlus));

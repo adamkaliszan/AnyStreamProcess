@@ -1,5 +1,5 @@
-#ifndef ALGORITHMANYSTREAMFAG_H
-#define ALGORITHMANYSTREAMFAG_H
+#ifndef FAG_ANYSTR_ML_H
+#define FAG_ANYSTR_ML_H
 
 #include <qglobal.h>
 #include <QMetaType>
@@ -10,15 +10,15 @@
 namespace Algorithms
 {
 
-class FAG_AnyStry_hybrid : public Investigator
+class FAG_AnyStr_ML : public Investigator
 {
 protected:
     TrClVector *p_single;
 
 public:
-    FAG_AnyStry_hybrid();
+    FAG_AnyStr_ML();
 
-    QString shortName() const { return QString("AnyStream SIM"); }
+    QString shortName() const { return QString("AnyStream ML"); }
     int complexity()    const { return 1; }
     void calculateSystem(const ModelSystem &system
           , double a
@@ -27,9 +27,5 @@ public:
     bool possible(const ModelSystem &system) const;
 };
 
-} //namespace Algorithms
-
-Q_DECLARE_METATYPE(Algorithms::FAG_AnyStry_hybrid*)
-
-#endif // ALGORITHMANYSTREAMFAG_H
-
+}
+#endif // FAG_ANYSTR_ML_H

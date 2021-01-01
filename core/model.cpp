@@ -262,26 +262,26 @@ QString ModelTrClass::shortName() const
     return result;
 }
 
-void ModelTrClass::doSimExpUnlimitedSoNo(TrClVector &states, int Vs, int Vb, double Aoffered, double IncommingEx2perDxDNewCall, double EsingleCallServ, double DsingleCallServ) const
+void ModelTrClass::doSimExpUnlimitedSoNo(TrClVector &states, int Vs, int Vb, double Aoffered, double IncommingEx2perDxDNewCall, double EsingleCallServ, double DsingleCallServ, int noOfSeries, int noOfEventsPerUnit) const
 {
     QThreadPool *threadPool = QThreadPool::globalInstance();
-    const int TotNoOfSeries = 6;
-    threadPool->setMaxThreadCount(TotNoOfSeries);
+
+    threadPool->setMaxThreadCount(noOfSeries);
 
     ModelTrClassSimulationWork *simulationTask;
-    TrClVector simStates[TotNoOfSeries];
-    for (int simNo=0; simNo<TotNoOfSeries; simNo++)
+    TrClVector *simStates = new TrClVector[noOfSeries];
+    for (int simNo=0; simNo<noOfSeries; simNo++)
     {
         simStates[simNo] = TrClVector(states);
         simulationTask = new ModelTrClassSimulationWork(&simStates[simNo], Vs, Vb, Aoffered, _t
           , srcType(), newCallStr(), IncommingEx2perDxDNewCall
-          , callServStr(), EsingleCallServ, DsingleCallServ);
+          , callServStr(), EsingleCallServ, DsingleCallServ, noOfEventsPerUnit);
         simulationTask->setAutoDelete(true);
         threadPool->start(simulationTask);
     }
     threadPool->waitForDone();
 
-    for (int serNo=0; serNo < TotNoOfSeries; serNo++)
+    for (int serNo=0; serNo < noOfSeries; serNo++)
     {
         for (int n=0; n<=Vs+Vb; n++)
         {
@@ -295,12 +295,13 @@ void ModelTrClass::doSimExpUnlimitedSoNo(TrClVector &states, int Vs, int Vb, dou
 
     for (int n=0; n<=Vs+Vb; n++)
     {
-        states.getState(n).p/= TotNoOfSeries;
-        states.getState(n).tIntInEnd/= TotNoOfSeries;
-        states.getState(n).tIntInNew/= TotNoOfSeries;
-        states.getState(n).tIntOutEnd/= TotNoOfSeries;
-        states.getState(n).tIntOutNew/= TotNoOfSeries;
+        states.getState(n).p/= noOfSeries;
+        states.getState(n).tIntInEnd/= noOfSeries;
+        states.getState(n).tIntInNew/= noOfSeries;
+        states.getState(n).tIntOutEnd/= noOfSeries;
+        states.getState(n).tIntOutNew/= noOfSeries;
     }
+    delete []simStates;
 }
 
 void ModelTrClass::doSimExpLimitedSoNo(TrClVector &states, int Vs, int Vb, double Aoffered, double IncommingEx2perDxDNewCall, double EsingleCallServ, double DsingleCallServ) const
@@ -584,7 +585,7 @@ double ModelTrClass::intensityNewCallTotal(double a, size_t V, int sumPropAT) co
     return a * V * _propAt / sumPropAT / _t * _mu;
 }
 
-TrClVector ModelTrClass::trDistribution(int classIdx, double A, int Vs, int Vb) const
+TrClVector ModelTrClass::trDistribution(int classIdx, double A, int Vs, int Vb, int noOfOseries, int noOfEventsPerUnit) const
 {
     if (srcType() == ModelTrClass::SourceType::DependentMinus)
         if (A >= _noOfSourcess)
@@ -656,7 +657,7 @@ TrClVector ModelTrClass::trDistribution(int classIdx, double A, int Vs, int Vb) 
     else
     {
         if (srcType() == SourceType::Independent)
-            doSimExpUnlimitedSoNo(result, Vs, Vb, A, getIncommingExPerDx(), EservSingleCall, DservSingleCall);
+            doSimExpUnlimitedSoNo(result, Vs, Vb, A, getIncommingExPerDx(), EservSingleCall, DservSingleCall, noOfOseries, noOfEventsPerUnit);
         else
             doSimExpLimitedSoNo(result, Vs, Vb, A, getIncommingExPerDx(), EservSingleCall, DservSingleCall);
 
@@ -2139,11 +2140,14 @@ bool MCTrCl::operator!=(const MCTrCl &rho) const
 
 
 
-ModelTrClassSimulationWork::ModelTrClassSimulationWork(TrClVector *states, int Vs, int Vb, double Aoffered, int t, ModelTrClass::SourceType srcNewCallSrcType, ModelTrClass::StreamType newCallStreamType, double IncommingEx2perDxDNewCall, ModelTrClass::StreamType endCallStreamType, double EsingleCallServ, double DsingleCallServ)
+ModelTrClassSimulationWork::ModelTrClassSimulationWork(TrClVector *states, int Vs, int Vb, double Aoffered, int t, ModelTrClass::SourceType srcNewCallSrcType, ModelTrClass::StreamType newCallStreamType, double IncommingEx2perDxDNewCall, ModelTrClass::StreamType endCallStreamType
+                                                       , double EsingleCallServ, double DsingleCallServ, int noOfEventsPerUnit)
 {
     this->states = states;
     system = new ModelTrClass::SimulatorSingleServiceSystem(0, srcNewCallSrcType, Vs, Vb, t, *states, Aoffered, IncommingEx2perDxDNewCall, EsingleCallServ, DsingleCallServ);
     proc = nullptr;
+    this->noOfEventsPerUnit = noOfEventsPerUnit;
+
     switch (newCallStreamType)
     {
     case ModelTrClass::StreamType::Poisson:
@@ -2271,8 +2275,8 @@ void ModelTrClassSimulationWork::run()
         states->getState(n).tIntOutNew = 0;
     }
 
-    system->stabilize((1+system->Vs+system->Vb) * (1+system->Vs+system->Vb) * 10000 / system->getT());
-    system->doSimExperiment((1+system->Vs+system->Vb) * (system->Vs+system->Vb+1) * 1000000 / system->getT() , *states);
+    system->stabilize((1+system->Vs+system->Vb) * (1+system->Vs+system->Vb) * noOfEventsPerUnit / 100 / system->getT());
+    system->doSimExperiment((1+system->Vs+system->Vb) * (system->Vs+system->Vb+1) * noOfEventsPerUnit / system->getT() , *states);
 
     double sum = 0;
     for (int n=0; n<=system->Vs+system->Vb; n++)
