@@ -1,4 +1,6 @@
 #include <cmath>
+#include <QFile>
+#include <QPointF>
 #include "results/resultsGnuplot.h"
 
 void GnuplotScript::WriteDataAndScript(QString baseFileNameWithPath, const ModelCreator *system, Results::Settings *setting, Results::Type qosType)

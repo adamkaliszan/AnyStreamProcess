@@ -1,6 +1,8 @@
 #include<QDebug>
+#include<QTextStream>
 #include<QVector>
 #include<QList>
+#include<QtMath>
 #include <iostream>
 #include <fstream>
 
@@ -53,7 +55,7 @@ int main(int argc, char *argv[]){
     QCommandLineOption optEsDsMax   ("EsDsMax", QCoreApplication::translate("main", "Maximum ratio of square Expected value to Variance in service stream")     , QCoreApplication::translate("main","EsDsMax"), "5.0");
     QCommandLineOption optEsDsInc   ("EsDsInc", QCoreApplication::translate("main", "Increment of ratio of square Expected value to Variance in service stream"), QCoreApplication::translate("main","EsDsInc"), "0.1");
 
-    QCommandLineOption optOutput    ("Output",  QCoreApplication::translate("main", "Ouptut filename (without extension)")                                      , QCoreApplication::translate("main","Output"), "results");
+    QCommandLineOption optOutput    ("Output", QCoreApplication::translate("main", "Ouptut filename (without extension)")                                      , QCoreApplication::translate("main","Output"), "results");
     QCommandLineOption optNoOfSer   ("NoOfSer", QCoreApplication::translate("main", "Number of simulation series")                                              , QCoreApplication::translate("main","Output"), "12");
     QCommandLineOption optSimLen    ("NoOfEv",  QCoreApplication::translate("main", "No of events per state unit")                                              , QCoreApplication::translate("main","Output"), "100000000");
 
@@ -213,10 +215,50 @@ int main(int argc, char *argv[]){
     trClass.setCallServStrType(ModelTrClass::StreamType::Poisson);
 
     std::ofstream fileJson;
-    fileJson.open(filename + ".js");
+    fileJson.open(filename + ".js",  std::ios_base::app);
+
+
+    std::ifstream curJsonFile;
+    curJsonFile.open(filename + ".csv",  std::ios_base::in);
+    int noOfProcessedSystems = 0;
+
+    if (optOutput.defaultValues().first().toStdString() != filename)
+    {
+        noOfProcessedSystems = qMax<int>(std::count(std::istreambuf_iterator<char>(curJsonFile), std::istreambuf_iterator<char>(), '\n') -1, 0);
+    }
+
+
+    int curProcSysNo = 0;
+
+    int noOfSystemToProcess = 0;
+    for (ModelTrClass::StreamType arrivalStr : arrivalStrType)
+    {
+        trClass.setNewCallStrType(arrivalStr, ModelTrClass::SourceType::Independent);
+        for (ModelTrClass::StreamType serviceStr : serviceStrType)
+        {
+            for (double EaDa =EaDaMin; EaDa <=EaDaMax; EaDa+= EaDaIncrement)
+            {
+                for (double EsDs =EsDsMin; EsDs <=EsDsMax; EsDs+= EsDsIncrement)
+                {
+                    for (double A = AMin; A <= AMax; A+= AIncrement)
+                    {
+                        noOfSystemToProcess++;
+                    }
+                    if (serviceStr == ModelTrClass::StreamType::Poisson)
+                        break;
+                }
+                if (arrivalStr == ModelTrClass::StreamType::Poisson)
+                    break;
+            }
+        }
+    }
+    qDebug() << "Total number of simulations:" << noOfSystemToProcess;
+
+    curJsonFile.close();
 
     std::ofstream fileCvs;
-    fileCvs.open(filename + ".csv");
+    fileCvs.open(filename + ".csv",  std::ios_base::app);
+
 
     QJsonObject jsonTrClass;
 
@@ -241,13 +283,12 @@ int main(int argc, char *argv[]){
 
     int noOfLines = 0;
 
+    QTextStream tmpStream(stdout);
     for (ModelTrClass::StreamType arrivalStr : arrivalStrType)
     {
         trClass.setNewCallStrType(arrivalStr, ModelTrClass::SourceType::Independent);
         for (ModelTrClass::StreamType serviceStr : serviceStrType)
         {
-            qDebug()<<"Arrival stream " << ModelTrClass::streamTypeToString(arrivalStr)<<", Service stream " << ModelTrClass::streamTypeToString(serviceStr);
-
             trClass.setCallServStrType(serviceStr);
             for (double EaDa =EaDaMin; EaDa <=EaDaMax; EaDa+= EaDaIncrement)
             {
@@ -255,12 +296,20 @@ int main(int argc, char *argv[]){
 
                 for (double EsDs =EsDsMin; EsDs <=EsDsMax; EsDs+= EsDsIncrement)
                 {
-                    qDebug()<<"\tArrival stream E2D " << EaDa << ", Service stream E2D " << EsDs << "A <" << AMin << " .. " << AMax <<">";
-
                     trClass.setServiceExPerDx((serviceStr == ModelTrClass::StreamType::Poisson) ? 1 :EsDs);
                     for (double A = AMin; A <= AMax; A+= AIncrement)
                     {
-                        qDebug() << "Call arrival stream: "<< arrivalStr <<" (" << EaDa <<") call service stream: "<< serviceStr << " (" << EsDs << ")\t\tA " << A<<"";
+                        tmpStream << "Progress: " << (curProcSysNo * 1000 / noOfSystemToProcess) /10.0 <<"%";
+                        if (noOfProcessedSystems > curProcSysNo++)
+                        {
+                            tmpStream <<"\r";
+                            continue;
+                        }
+                        tmpStream << "\tCall arrival str: "<< arrivalStr << " (" << EaDa << ")";
+                        tmpStream << "\tCall service str: "<< serviceStr << " (" << EsDs << ")";
+                        tmpStream << "\tA:" << A << "\n";
+                        tmpStream.flush();
+
                         if (!firstObject)
                             fileJson<<",";
                         firstObject = false;
@@ -306,8 +355,7 @@ int main(int argc, char *argv[]){
     }
     fileJson<<"]";
 
-    qDebug() <<"Total no of lines" << noOfLines;
-
+    qDebug() <<"Progress: 100%\tTotal no of processed systems " << curProcSysNo - noOfProcessedSystems;
 
     return 0;
 }

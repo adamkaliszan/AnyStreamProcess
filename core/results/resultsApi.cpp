@@ -1,4 +1,5 @@
 #include <cmath>
+#include <QPointF>
 #include "resultsApi.h"
 
 #include "utils/lag.h"
