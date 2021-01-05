@@ -12,10 +12,14 @@
 #include <qglobal.h>
 #include <math.h>
 
+#include <queue>
+
 #include <iostream>
 
 #include "utils/probDistributions.h"
 #include "algorithms/trclvector2.h"
+
+#include <QMap>
 
 
 /*
@@ -233,9 +237,11 @@ public:
         double D_service;
         double t_serviceMin;
         double t_serviceMax;
-        QList<SimulatorProcess *> agenda;
-        QList<SimulatorProcess *> qeue;
 
+        std::priority_queue<SimulatorProcess *> agenda2;
+        double agendaTimeOffset;
+
+        QList<SimulatorProcess *> qeue;
 
         SimulatorProcess* callPartialyServiced;
         int resPartOccupied;

@@ -35,7 +35,7 @@ ModelSystem prepareSystem()
 int main(int argc, char *argv[]){
     QCoreApplication app(argc, argv);
     QCoreApplication::setApplicationName("AnyStream generator");
-    QCoreApplication::setApplicationVersion("0.9.3");
+    QCoreApplication::setApplicationVersion("0.9.5");
 
     QCommandLineParser parser;
     parser.setApplicationDescription("Tool for investigating any stream processes");
@@ -236,9 +236,9 @@ int main(int argc, char *argv[]){
         trClass.setNewCallStrType(arrivalStr, ModelTrClass::SourceType::Independent);
         for (ModelTrClass::StreamType serviceStr : serviceStrType)
         {
-            for (double EaDa =EaDaMin; EaDa <=EaDaMax; EaDa+= EaDaIncrement)
+            for (double EaDa = EaDaMin; EaDa <= EaDaMax; EaDa+= EaDaIncrement)
             {
-                for (double EsDs =EsDsMin; EsDs <=EsDsMax; EsDs+= EsDsIncrement)
+                for (double EsDs = EsDsMin; EsDs <= EsDsMax; EsDs+= EsDsIncrement)
                 {
                     for (double A = AMin; A <= AMax; A+= AIncrement)
                     {
@@ -268,18 +268,21 @@ int main(int argc, char *argv[]){
 
 
     char cvsSeparator = '\t';
-    fileCvs << "A" << cvsSeparator << "Astr_ID" << cvsSeparator << "Astr_Desc" << cvsSeparator << "EaDa" << cvsSeparator << "Sstr_ID" << cvsSeparator<< "Sstr_Desc" << cvsSeparator << "EsDs" << cvsSeparator;
 
-    for (int v=1; v<=V; v++)
+    if (noOfProcessedSystems == 0)
     {
-        for (int n=0; n<=v; n++)
+        fileCvs << "A" << cvsSeparator << "Astr_ID" << cvsSeparator << "Astr_Desc" << cvsSeparator << "EaDa" << cvsSeparator << "Sstr_ID" << cvsSeparator<< "Sstr_Desc" << cvsSeparator << "EsDs" << cvsSeparator;
+        for (int v=1; v<=V; v++)
         {
-            fileCvs<<"p("<<n<<")_"<<v<<cvsSeparator<<"a("<<n<<")_"<<v<<cvsSeparator<<"s("<<n<<")_"<<v;
-            if (n < V)
-                fileCvs<<cvsSeparator;
+            for (int n=0; n<=v; n++)
+            {
+                fileCvs<<"p("<<n<<")_"<<v<<cvsSeparator<<"a("<<n<<")_"<<v<<cvsSeparator<<"s("<<n<<")_"<<v;
+                if (n < V)
+                    fileCvs<<cvsSeparator;
+            }
         }
+        fileCvs<<std::endl;
     }
-    fileCvs<<std::endl;
 
     int noOfLines = 0;
 
