@@ -230,6 +230,13 @@ int main(int argc, char *argv[]){
 
     int curProcSysNo = 0;
 
+    int progressUnit = 0;
+
+    for (int i=1; i<= V; i++)
+    {
+        progressUnit+=(i*i);
+    }
+
     int noOfSystemToProcess = 0;
     for (ModelTrClass::StreamType arrivalStr : arrivalStrType)
     {
@@ -242,7 +249,7 @@ int main(int argc, char *argv[]){
                 {
                     for (double A = AMin; A <= AMax; A+= AIncrement)
                     {
-                        noOfSystemToProcess++;
+                        noOfSystemToProcess+=progressUnit;
                     }
                     if (serviceStr == ModelTrClass::StreamType::Poisson)
                         break;
@@ -286,7 +293,10 @@ int main(int argc, char *argv[]){
 
     int noOfLines = 0;
 
-    QTextStream tmpStream(stdout);
+    QTextStream coutStream(stdout);
+    QString outputCSV;
+    QString outputJson;
+
     for (ModelTrClass::StreamType arrivalStr : arrivalStrType)
     {
         trClass.setNewCallStrType(arrivalStr, ModelTrClass::SourceType::Independent);
@@ -302,16 +312,10 @@ int main(int argc, char *argv[]){
                     trClass.setServiceExPerDx((serviceStr == ModelTrClass::StreamType::Poisson) ? 1 :EsDs);
                     for (double A = AMin; A <= AMax; A+= AIncrement)
                     {
-                        tmpStream << "Progress: " << (curProcSysNo * 1000 / noOfSystemToProcess) /10.0 <<"%";
+                        coutStream << "Progress: " << (curProcSysNo * 1000 / noOfSystemToProcess) /10.0 <<"%\r";
                         if (noOfProcessedSystems > curProcSysNo++)
-                        {
-                            tmpStream <<"\r";
                             continue;
-                        }
-                        tmpStream << "\tCall arrival str: "<< arrivalStr << " (" << EaDa << ")";
-                        tmpStream << "\tCall service str: "<< serviceStr << " (" << EsDs << ")";
-                        tmpStream << "\tA:" << A << "\n";
-                        tmpStream.flush();
+
 
                         if (!firstObject)
                             fileJson<<",";
@@ -331,8 +335,16 @@ int main(int argc, char *argv[]){
                         fileCvs << A << cvsSeparator;
                         fileCvs << ((int) arrivalStr) << cvsSeparator << strNameArrival.constData() << cvsSeparator << EaDa << cvsSeparator;
                         fileCvs << ((int) serviceStr) << cvsSeparator << strNameService.constData() << cvsSeparator << EsDs << cvsSeparator;
+
+                        int subProgress = 0;
                         for (int n=1; n<=V; n++)
                         {
+                            coutStream << "Progress: " << ((curProcSysNo * 10000 + subProgress * 10000 / progressUnit / noOfSystemToProcess) / noOfSystemToProcess)  / 100.0 <<"%";
+                            coutStream << "\tCall arrival str: "<< arrivalStr << " (" << EaDa << ")";
+                            coutStream << "\tCall service str: "<< serviceStr << " (" << EsDs << ")";
+                            coutStream << "\tA:" << A << "V: "<< n << "/" <<V<< "\n";
+                            coutStream.flush();
+
                             TrClVector tmpTrDitrib = trClass.trDistribution(0, A, n, 0, noOfSimSeries, noOfEventsPerUnit);
 
                             if (n > 1)
@@ -343,6 +355,10 @@ int main(int argc, char *argv[]){
 
                             fileJson<< QJsonDocument(tmpTrDitrib.getJson()).toJson(QJsonDocument::JsonFormat::Compact).toStdString();
                             fileCvs<<tmpTrDitrib.getCvs(cvsSeparator).toStdString();
+
+                            subProgress+= n*n;
+
+
                         }
                         fileJson<< "]}";
                         fileCvs<<std::endl;
