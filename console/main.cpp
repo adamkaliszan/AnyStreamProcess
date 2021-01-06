@@ -13,7 +13,12 @@
 #include <QVariantMap>
 #include <QVariant>
 
+#include <chrono>
+
 #include "../core/model.h"
+
+
+using namespace std::chrono;
 
 ModelSystem prepareSystem()
 {
@@ -32,10 +37,12 @@ ModelSystem prepareSystem()
     return ModelSystem(trClasses, resServer, resBuffer, policy);
 }
 
+milliseconds *statTime;
+
 int main(int argc, char *argv[]){
     QCoreApplication app(argc, argv);
     QCoreApplication::setApplicationName("AnyStream generator");
-    QCoreApplication::setApplicationVersion("0.9.5");
+    QCoreApplication::setApplicationVersion("1.0.2");
 
     QCommandLineParser parser;
     parser.setApplicationDescription("Tool for investigating any stream processes");
@@ -193,6 +200,9 @@ int main(int argc, char *argv[]){
         serviceStrType.append(ModelTrClass::StreamType::Poisson);
 
 
+
+    char cvsSeparator = '\t';
+
     qDebug().resetFormat();
     qDebug()<<"V = "<<V<<",\tA min " << AMin << ",\tA max " << AMax <<",\tA inc " << AIncrement << ",\tu = 1";
     qDebug()<<"Arrival E2D min = "<<EaDaMin <<", E2D max " << EaDaMax <<", EaDa inc " << EaDaIncrement << "Streams:";
@@ -218,14 +228,44 @@ int main(int argc, char *argv[]){
     fileJson.open(filename + ".js",  std::ios_base::app);
 
 
-    std::ifstream curJsonFile;
-    curJsonFile.open(filename + ".csv",  std::ios_base::in);
-    int noOfProcessedSystems = 0;
+    std::ifstream curCsvFile;
+    curCsvFile.open(filename + ".csv",  std::ios_base::in);
+    int noOfProcessedSystems = 0;           /// Number of system that was processed (to the end or partial;y)
+    int lastSystemCapacity = -1;            /// -1 empty line without initial columns (7 in csv file: A, ...)
+
 
     if (optOutput.defaultValues().first().toStdString() != filename)
     {
-        noOfProcessedSystems = qMax<int>(std::count(std::istreambuf_iterator<char>(curJsonFile), std::istreambuf_iterator<char>(), '\n') -1, 0);
+        noOfProcessedSystems = std::count(std::istreambuf_iterator<char>(curCsvFile), std::istreambuf_iterator<char>(), '\n');
+
+
+        if (noOfProcessedSystems > 0)
+        {
+            std::string lastLine;
+            curCsvFile.seekg (0, std::ios::beg);
+            for (int line=0; line < noOfProcessedSystems; line++)
+            {
+                std::getline(curCsvFile, lastLine);
+            }
+
+            int noOfTab = std::count(std::istreambuf_iterator<char>(curCsvFile), std::istreambuf_iterator<char>(), cvsSeparator);
+
+            noOfTab-=6;  //Jest 7 tabów, ale na końcu linii jst /n
+
+            if (noOfTab > 1)
+            {
+                for (lastSystemCapacity=0; lastSystemCapacity < V; lastSystemCapacity++)
+                {
+                    noOfTab-= ((lastSystemCapacity+2)*3);
+
+                    if (noOfTab < 0)
+                        break;
+                }
+            }
+        }
     }
+
+
 
 
     int curProcSysNo = 0;
@@ -237,7 +277,7 @@ int main(int argc, char *argv[]){
         progressUnit+=(i*i);
     }
 
-    int noOfSystemToProcess = 0;
+    int noOfUnitsToProcess = 0;
     for (ModelTrClass::StreamType arrivalStr : arrivalStrType)
     {
         trClass.setNewCallStrType(arrivalStr, ModelTrClass::SourceType::Independent);
@@ -249,7 +289,7 @@ int main(int argc, char *argv[]){
                 {
                     for (double A = AMin; A <= AMax; A+= AIncrement)
                     {
-                        noOfSystemToProcess+=progressUnit;
+                        noOfUnitsToProcess+=progressUnit;
                     }
                     if (serviceStr == ModelTrClass::StreamType::Poisson)
                         break;
@@ -259,9 +299,9 @@ int main(int argc, char *argv[]){
             }
         }
     }
-    qDebug() << "Total number of simulations:" << noOfSystemToProcess;
+    qDebug() << "Total number of simulations:" << noOfUnitsToProcess;
 
-    curJsonFile.close();
+    curCsvFile.close();
 
     std::ofstream fileCvs;
     fileCvs.open(filename + ".csv",  std::ios_base::app);
@@ -274,7 +314,7 @@ int main(int argc, char *argv[]){
     fileJson<< "[";
 
 
-    char cvsSeparator = '\t';
+    statTime = new milliseconds[V];
 
     if (noOfProcessedSystems == 0)
     {
@@ -288,14 +328,16 @@ int main(int argc, char *argv[]){
                     fileCvs<<cvsSeparator;
             }
         }
+
         fileCvs<<std::endl;
     }
 
-    int noOfLines = 0;
 
     QTextStream coutStream(stdout);
     QString outputCSV;
     QString outputJson;
+
+    bool timeStatisticsReady = false;
 
     for (ModelTrClass::StreamType arrivalStr : arrivalStrType)
     {
@@ -310,40 +352,65 @@ int main(int argc, char *argv[]){
                 for (double EsDs =EsDsMin; EsDs <=EsDsMax; EsDs+= EsDsIncrement)
                 {
                     trClass.setServiceExPerDx((serviceStr == ModelTrClass::StreamType::Poisson) ? 1 :EsDs);
-                    for (double A = AMin; A <= AMax; A+= AIncrement)
+                    for (double A = AMin; A <= AMax; A+= AIncrement, curProcSysNo++)
                     {
-                        coutStream << "Progress: " << (curProcSysNo * 1000 / noOfSystemToProcess) /10.0 <<"%\r";
-                        if (noOfProcessedSystems > curProcSysNo++)
+                        double progress = (curProcSysNo * progressUnit* 100.0)  / noOfUnitsToProcess;
+                        coutStream << "Progress: " <<  qSetRealNumberPrecision(2)  << qSetFieldWidth(5) << progress << qSetFieldWidth(1)<<"%"<<"\r";
+                        if (noOfProcessedSystems > curProcSysNo)
+                        {
+                            firstObject = false;
                             continue;
+                        }
 
-
-                        if (!firstObject)
-                            fileJson<<",";
-                        firstObject = false;
-                        fileJson<< "{";
-
-                        fileJson<<"\"arrivalStr\": \""<<ModelTrClass::streamTypeToString(arrivalStr).toStdString()<<"\",";
-                        fileJson<<"\"Ea2Da\":"<<EaDa<<",";
-                        fileJson<<"\"serviceStr\": \""<<ModelTrClass::streamTypeToString(serviceStr).toStdString()<<"\",";
-                        fileJson<<"\"Es2Ds\":"<<EsDs<<",";
-                        fileJson<<"\"A\":"<<A;
-                        fileJson<< ",\"dta\": [";
 
                         QString strNameArrival = ModelTrClass::streamTypeToString(arrivalStr);
                         QString strNameService = ModelTrClass::streamTypeToString(serviceStr);
 
-                        fileCvs << A << cvsSeparator;
-                        fileCvs << ((int) arrivalStr) << cvsSeparator << strNameArrival.constData() << cvsSeparator << EaDa << cvsSeparator;
-                        fileCvs << ((int) serviceStr) << cvsSeparator << strNameService.constData() << cvsSeparator << EsDs << cvsSeparator;
+                        if (lastSystemCapacity == -1)
+                        {
+                            fileCvs << A << cvsSeparator;
+                            fileCvs << ((int) arrivalStr) << cvsSeparator << strNameArrival.constData() << cvsSeparator << EaDa << cvsSeparator;
+                            fileCvs << ((int) serviceStr) << cvsSeparator << strNameService.constData() << cvsSeparator << EsDs << cvsSeparator;
+
+                            if (!firstObject)
+                                fileJson<<",";
+                            firstObject = false;
+                            fileJson<< "{";
+
+                            fileJson<<"\"arrivalStr\": \""<<ModelTrClass::streamTypeToString(arrivalStr).toStdString()<<"\",";
+                            fileJson<<"\"Ea2Da\":"<<EaDa<<",";
+                            fileJson<<"\"serviceStr\": \""<<ModelTrClass::streamTypeToString(serviceStr).toStdString()<<"\",";
+                            fileJson<<"\"Es2Ds\":"<<EsDs<<",";
+                            fileJson<<"\"A\":"<<A;
+                            fileJson<< ",\"dta\": [";
+                        }
 
                         int subProgress = 0;
                         for (int n=1; n<=V; n++)
                         {
-                            coutStream << "Progress: " << ((curProcSysNo * 10000 + subProgress * 10000 / progressUnit / noOfSystemToProcess) / noOfSystemToProcess)  / 100.0 <<"%";
+                            double progress = ((curProcSysNo * progressUnit + subProgress)* 100.0)  / noOfUnitsToProcess;
+                            coutStream << "Progress: " <<  qSetRealNumberPrecision(4) << qSetFieldWidth(5) << progress << qSetFieldWidth(1)<<"%";
+
+                            milliseconds timeNow = duration_cast< milliseconds >(system_clock::now().time_since_epoch());
+                            if (timeStatisticsReady)
+                            {
+                                milliseconds interval = timeNow - statTime[n-1];
+                                hours durH = duration_cast<hours>(interval);
+                                minutes durM = duration_cast<minutes>(interval) - duration_cast<minutes>(durH);
+                                seconds durS = duration_cast<seconds>(interval) - duration_cast<seconds>(durH) - - duration_cast<seconds>(durM);
+
+                                coutStream << " "<<durH.count()<<"h"<<durM.count()<<"m"<<durS.count()<<"s per system (" << noOfUnitsToProcess/progressUnit - curProcSysNo <<" left)";
+                            }
+                            statTime[n-1] = timeNow;
+
                             coutStream << "\tCall arrival str: "<< arrivalStr << " (" << EaDa << ")";
                             coutStream << "\tCall service str: "<< serviceStr << " (" << EsDs << ")";
-                            coutStream << "\tA:" << A << "V: "<< n << "/" <<V<< "\n";
+                            coutStream << "\tA:" << A << ", V: "<< n << "/" <<V<< "\n";
                             coutStream.flush();
+
+                            subProgress+= n*n;
+                            if (n <= lastSystemCapacity)
+                                continue;
 
                             TrClVector tmpTrDitrib = trClass.trDistribution(0, A, n, 0, noOfSimSeries, noOfEventsPerUnit);
 
@@ -354,15 +421,17 @@ int main(int argc, char *argv[]){
                             }
 
                             fileJson<< QJsonDocument(tmpTrDitrib.getJson()).toJson(QJsonDocument::JsonFormat::Compact).toStdString();
+                            fileJson.flush();
                             fileCvs<<tmpTrDitrib.getCvs(cvsSeparator).toStdString();
-
-                            subProgress+= n*n;
-
-
+                            fileCvs.flush();
                         }
-                        fileJson<< "]}";
-                        fileCvs<<std::endl;
-                        noOfLines++;
+                        if (lastSystemCapacity == -1)
+                            timeStatisticsReady = true;
+
+                        lastSystemCapacity = -1;   // -1 write initiali columns in new record
+
+                        fileJson<< "]}";      fileJson.flush();
+                        fileCvs<<std::endl;   fileCvs.flush();
                     }
                     if (serviceStr == ModelTrClass::StreamType::Poisson)
                         break;
