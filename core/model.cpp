@@ -6,6 +6,7 @@
 #include <QtCore/QList>
 #include <QThread>
 #include <QThreadPool>
+#include <QRandomGenerator>
 
 #include <queue>
 #include <math.h>
@@ -211,21 +212,21 @@ QString ModelTrClass::shortName() const
         {
         case SourceType::Independent:
             if ((_propAt != 1) || (! qFuzzyCompare(_mu, 1)))
-                result.sprintf("Erl. at=%d t=%d µ=%.1f", _propAt, _t, _mu);
+                result.asprintf("Erl. at=%d t=%d µ=%.1f", _propAt, _t, _mu);
             else
-                result.sprintf("Erlang t=%d", _t);
+                result.asprintf("Erlang t=%d", _t);
             break;
         case SourceType::DependentMinus:
             if ((_propAt != 1) || (! qFuzzyCompare(_mu, 1)))
-                result.sprintf("Eng. t=%d S=%d at=%d µ=%.1f", _t, _noOfSourcess, _propAt, _mu);
+                result.asprintf("Eng. t=%d S=%d at=%d µ=%.1f", _t, _noOfSourcess, _propAt, _mu);
             else
-                result.sprintf("Engset t=%d S=%d", _t, _noOfSourcess);
+                result.asprintf("Engset t=%d S=%d", _t, _noOfSourcess);
             break;
         case SourceType::DependentPlus:
             if ((_propAt != 1) || (! qFuzzyCompare(_mu, 1)))
-                result.sprintf("Pas+ t=%d S=%d at=%d  µ=%.1f", _t, _noOfSourcess, _propAt, _mu);
+                result.asprintf("Pas+ t=%d S=%d at=%d  µ=%.1f", _t, _noOfSourcess, _propAt, _mu);
             else
-                result.sprintf("Pascal t=%d S=%d", _t, _noOfSourcess);
+                result.asprintf("Pascal t=%d S=%d", _t, _noOfSourcess);
             break;
         }
     }
@@ -1495,12 +1496,14 @@ template <class P> bool ModelTrClass::SimulatorProcess_DepPlus::endOfCallService
 
 std::random_device ModelTrClass::SimulatorSingleServiceSystem::rd;
 
+QRandomGenerator generator = 123;
+
 double ModelTrClass::SimulatorSingleServiceSystem::distrLambda(double Ex)
 {
     double randomNumber;
     do
     {
-        randomNumber = static_cast<double>(qrand())/RAND_MAX;
+        randomNumber = static_cast<double>(generator.generate() /generator.max());
     }
     while (qFuzzyIsNull(randomNumber) || qFuzzyCompare(randomNumber, 1));
 
@@ -1510,7 +1513,7 @@ double ModelTrClass::SimulatorSingleServiceSystem::distrLambda(double Ex)
 
 double ModelTrClass::SimulatorSingleServiceSystem::distrUniform(double tMin, double tMax)
 {
-    double x = (tMax - tMin) * (static_cast<double>(qrand())/RAND_MAX);
+    double x = (tMax - tMin) * (static_cast<double>(generator.generate())/generator.max());
     return tMin+x;
 }
 

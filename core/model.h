@@ -6,7 +6,6 @@
 #include <QDebug>
 #include <QVector>
 #include <QList>
-#include <QLinkedList>
 #include <QThread>
 #include <QRunnable>
 #include <qglobal.h>
