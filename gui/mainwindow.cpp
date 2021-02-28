@@ -171,7 +171,7 @@ void MainWindow::addServer(int k, int v)
     QListWidgetItem *newItem = new QListWidgetItem();
 
     QString newItemStr;
-    newItem->setData(Qt::DisplayRole, newItemStr.sprintf("k=%d, v=%d", k, v));
+    newItem->setData(Qt::DisplayRole, newItemStr.asprintf("k=%d, v=%d", k, v));
     newItem->setData(Qt::UserRole, variant);
     ui->listWidgetWiazki->addItem(newItem);
 
@@ -186,7 +186,7 @@ void MainWindow::addBuffer(int k, int v)
     QListWidgetItem *newItem = new QListWidgetItem();
 
     QString newItemStr;
-    newItem->setData(Qt::DisplayRole, newItemStr.sprintf("k=%d, v=%d", k, v));
+    newItem->setData(Qt::DisplayRole, newItemStr.asprintf("k=%d, v=%d", k, v));
     newItem->setData(Qt::UserRole, variant);
     ui->listWidgetKolejki->addItem(newItem);
 
@@ -371,7 +371,7 @@ void MainWindow::on_pushButton_wiazkiZmien_clicked()
         group->set_k(k);
         group->set_v(v);
         QString modifiedItemStr;
-        toModify->setData(Qt::DisplayRole, modifiedItemStr.sprintf("k=%d, v=%d", k, v));
+        toModify->setData(Qt::DisplayRole, modifiedItemStr.asprintf("k=%d, v=%d", k, v));
     }
 
     fillSystem();
@@ -430,7 +430,7 @@ void MainWindow::on_pushButton_kolejkiZmien_clicked()
         queue->set_k(k);
         queue->set_v(v);
         QString modifiedItemStr;
-        toModify->setData(Qt::DisplayRole, modifiedItemStr.sprintf("k=%d, v=%d", k, v));
+        toModify->setData(Qt::DisplayRole, modifiedItemStr.asprintf("k=%d, v=%d", k, v));
     }
     fillSystem();
     updateAlgorithmsList();

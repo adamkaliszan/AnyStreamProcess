@@ -262,20 +262,19 @@ void TrClVector::normalize(double sumOfAllTheStates)
     {
 #ifdef QT_DEBUG
         if (std::isnan(_states[n].p))
-            qFatal("p_n = NAN");
+            qFatal("p_n = NAN: n=%d, V=%d", n, V());
 #endif
         sum += _states[n].p;
     }
 
     for (int n=0; n<=V(); n++)
     {
-        _states[n].p *= sumOfAllTheStates;
-        _states[n].p /= sum;
-
 #ifdef QT_DEBUG
         if (std::isnan(_states[n].p))
-            qFatal("p_n = NAN");
+            qFatal("p_n = %f (NAN): n=%d, V=%d, sum = %f", _states[n].p, n, V(), sum);
 #endif
+        _states[n].p *= sumOfAllTheStates;
+        _states[n].p /= sum;
     }
     if (previous != nullptr)
         previous->normalize(sumOfAllTheStates - _states[V()].p);

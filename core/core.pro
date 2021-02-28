@@ -10,6 +10,7 @@ DEFINES +="INC_AGENDA_PERFORMANCE=1"
 
 CONFIG += staticlib
 
+QMAKE_CXXFLAGS += -fPIE
 QMAKE_CXXFLAGS += -std=c++17
 QMAKE_CXXFLAGS += -std=gnu++17
 QMAKE_CXXFLAGS += -fext-numeric-literals
@@ -90,4 +91,13 @@ HEADERS += \
     utils/decimal.h \
     utils/vectorUtils.h \
     utils/utilsMisc.h \
+
+DISTFILES += \
+    ml/__pycache__/trDistributionML.cpython-38.pyc \
+    ml/mlScale.py \
+    ml/test.py \
+    ml/trDistributionML.py \
+    ml/trained_models/uniform_model_all_points/saved_model.pb \
+    ml/trained_models/uniform_model_all_points/variables/variables.data-00000-of-00001 \
+    ml/trained_models/uniform_model_all_points/variables/variables.index
 

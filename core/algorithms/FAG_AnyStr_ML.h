@@ -7,16 +7,29 @@
 #include "algorithms/conv.h"
 #include "algorithms/trclvector2.h"
 
+
+typedef struct _object PyObject;
+
 namespace Algorithms
 {
+
 
 class FAG_AnyStr_ML : public Investigator
 {
 protected:
     TrClVector *p_single;
 
+
+    bool initialized;
+    PyObject *pFuncArrivalDistribution;
+    PyObject *pModule;
+
+
+    void initialize();
+    void finish();
 public:
     FAG_AnyStr_ML();
+    ~FAG_AnyStr_ML();
 
     QString shortName() const { return QString("AnyStream ML"); }
     int complexity()    const { return 1; }

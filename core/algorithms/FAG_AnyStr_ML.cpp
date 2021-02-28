@@ -1,3 +1,4 @@
+#define PY_SSIZE_T_CLEAN
 #include <Python.h>
 #include "FAG_AnyStr_ML.h"
 
@@ -7,11 +8,66 @@ namespace Algorithms
 {
 FAG_AnyStr_ML::FAG_AnyStr_ML(): Investigator()
 {
+    initialized = false;
     myQoS_Set
        <<Results::Type::BlockingProbability
        <<Results::Type::OccupancyDistribution;
 }
 
+FAG_AnyStr_ML::~FAG_AnyStr_ML()
+{
+    if (initialized)
+        finish();
+}
+
+void FAG_AnyStr_ML::initialize()
+{
+    Py_Initialize();
+    initialized = true;
+
+    PyRun_SimpleString(
+        "import sys, os\n"
+        "sys.path.append(os.getcwd())\n"
+    );
+
+    PyObject *pName = PyUnicode_DecodeFSDefault("core.ml.trDistributionML");
+
+    pModule = PyImport_Import(pName);
+    if (pModule == nullptr)
+    {
+        PyErr_Print();
+        initialized = false;
+
+
+
+        Py_DECREF(pName);
+        Py_Finalize();
+        return;
+    }
+    else
+    {
+        Py_DECREF(pName);
+    }
+
+    pFuncArrivalDistribution = PyObject_GetAttrString(pModule, "calculate");
+    if (pFuncArrivalDistribution == nullptr)
+    {
+        PyErr_Print();
+        Py_DECREF(pModule);
+        Py_Finalize();
+        initialized = false;
+        return;
+    }
+}
+
+void FAG_AnyStr_ML::finish()
+{
+    Py_DECREF(pFuncArrivalDistribution);
+    Py_DECREF(pModule);
+    Py_Finalize();
+
+    initialized = false;
+}
 void FAG_AnyStr_ML::calculateSystem(const ModelSystem &system
       , double a
       , RInvestigator *results
@@ -19,42 +75,66 @@ void FAG_AnyStr_ML::calculateSystem(const ModelSystem &system
       )
 {
     (void) simParameters;
+    if (!initialized)
+        initialize();
+    if (!initialized)
+    {
+        qErrnoWarning("Nie mogę zainiclializować alorytmu z uczeniem maszynowym");
+        return;
+    }
 
     prepareTemporaryData(system, a);
     p_single = new TrClVector[system.m()];
 
-    PyObject *pName = PyUnicode_DecodeFSDefault("trDistributionML.py");
-    PyObject *pModule = PyImport_Import(pName);
-    Py_DECREF(pName);
-    PyObject *pFunc;
     PyObject *pArgs;
+    PyObject *pList;
 
-    pFunc = PyObject_GetAttrString(pModule, "calculate");
+    if (pFuncArrivalDistribution == nullptr)
+    {
+        qDebug("Nie mogę odnaleźć funkcji od pythona");
+        PyErr_Print();
+        return;
+    }
 
     for (int i=0; i<system.m(); i++)
     {
         p_single[i] = system.getTrClass(i).trDistribution(i, classes[i].A, system.V(), 0);
 
-/// Budowanie listy z arametrami dla pythona
-        pArgs = PyTuple_New(2*p_single[i].V() + 2);
-        int idx = 0;
+/// Building list with intensities for python
+        pArgs = PyTuple_New(2);
+        pList = PyList_New(0);//2*(p_single[i].V() + 1));
         for (int n=0; n<=p_single[i].V(); n++)
         {
             PyObject *pValue = PyLong_FromDouble(p_single[i].getState(n).tIntOutNew);
-            PyTuple_SetItem(pArgs, idx++, pValue);
-            pValue = PyLong_FromDouble(p_single[i].getState(n).tIntOutEnd);
-            PyTuple_SetItem(pArgs, idx++, pValue);
+            PyList_Append(pList, pValue);
         }
-        PyObject *pResult = PyObject_CallObject(pFunc, pArgs);
+        for (int n=0; n<=p_single[i].V(); n++)
+        {
+            PyObject *pValue = PyLong_FromDouble(p_single[i].getState(n).tIntOutEnd);
+            PyList_Append(pList, pValue);
+        }
 
+        PyObject *pName = PyUnicode_DecodeFSDefault("./core/ml/trained_models/uniform_model_all_points");
+        PyTuple_SetItem(pArgs, 0, pList);
+        PyTuple_SetItem(pArgs, 1, pName);
+
+        PyObject *pResult = PyObject_CallObject(pFuncArrivalDistribution, pArgs);
+        Py_DECREF(pList);
+        Py_DECREF(pName);
+        Py_DECREF(pArgs);
+
+        if (pResult == nullptr)
+        {
+            PyErr_Print();
+            return;
+        }
 
 /// Odbieranie rezultatu
-
         int x = PyList_Size(pResult);
-        idx = 0;
+        int idx = 0;
 
         TrClVector *tmp = &p_single[i];
-        for (int tmpV = system.V() - 1; tmpV >= 0; tmpV--)
+        for (int tmpV = system.V() - 1; tmpV > 0; tmpV--)
         {
             tmp->previous = new TrClVector(tmpV, tmp->aggregatedClasses);
             for (int n=0; n<=tmpV; n++)
@@ -62,26 +142,28 @@ void FAG_AnyStr_ML::calculateSystem(const ModelSystem &system
                 tmp->previous->getState(n).tIntOutNew = PyLong_AsDouble(PyList_GetItem(pResult, idx++));
                 if (idx > x)
                     qFatal("Wrong python result");
-                tmp->previous->getState(n).tIntOutEnd = PyLong_AsDouble(PyList_GetItem(pResult, idx++));
+                tmp->previous->getState(n).tIntOutEnd = n;//PyLong_AsDouble(PyList_GetItem(pResult, idx++));
                 if (idx > x)
                     qFatal("Wrong python result");
             }
             tmp->previous->calculateP_baseOnOutIntensities();
+            tmp = tmp->previous;
         }
-        Py_DECREF(pArgs);
+        Py_DECREF(pResult);
+
+        tmp->previous = new TrClVector(0, tmp->aggregatedClasses);
+        tmp->previous->getState(0).tIntOutNew = 1;
+        tmp->previous->getState(0).tIntOutEnd = 1;
+        tmp->previous->calculateP_baseOnOutIntensities();
+        tmp->previous->previous = nullptr;
+
         p_single[i].normalize();
 
         qDebug()<<".";//p_single[i];
-        //p_single[i].generateDeNormalizedPoissonPrevDistrib();
-    }
-
-    if (Py_FinalizeEx() < 0) {
-        exit(120);
     }
 
     TrClVector P(system.V());
-
-    P = TrClVector(system.V());
+    //P = TrClVector(system.V());
     P.generateNormalizedPoissonPrevDistrib();
     for (int i=0; i < system.m(); i++)
     {
