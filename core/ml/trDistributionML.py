@@ -12,11 +12,11 @@ np.set_printoptions(precision=3, suppress=True)
 
 #Użycie zapisanego modelu
 def calculate(intensities, modelFileName):
+    
     try:
         loaded_model = keras.models.load_model(modelFileName)
         print("Załadowano model, Obliczam rozkłady:\n")
 
-        return calculateP_baseOnOutIntensities(loaded_model, intensities)
     except ImportError:
         sys.stderr.write(f"Nie mogę załadować modelu. Jestem w katalogu {os.getcwd()}")
         return None
@@ -25,7 +25,10 @@ def calculate(intensities, modelFileName):
         return None    
     except Exception:
         sys.stderr.write("Coś poszło nie tak")
-        return None    
+        return None  
+    
+    #return intensities
+    return calculateP_baseOnOutIntensities(loaded_model, intensities)
         
 def calculateP_baseOnOutIntensities(model, intensities):
     

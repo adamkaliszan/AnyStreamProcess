@@ -226,9 +226,25 @@ double TrClVector::getY(int n, int i) const
 void TrClVector::calculateP_baseOnOutIntensities()
 {
     int t = aggregatedClasses[0].t;
+
+    for (int n=0; n<=V(); n++)
+    {
+        _states[n].intInEndSC  = new double(_states[n].tIntInEnd);
+        _states[n].intInNewSC  = new double(_states[n].tIntInNew);
+        _states[n].intOutEndSC = new double(_states[n].tIntOutEnd);
+        _states[n].intOutNewSC = new double(_states[n].tIntOutNew);
+        _states[n].y = new double(0);
+
+        _states[n].p = 0;
+        _states[n].y[0] = 0;
+    }
     _states[0].p = 1;
-    for (int n=t; n<V(); n+=t)
+
+    for (int n=t; n<=V(); n+=t)
+    {
         _states[n].p = _states[n-t].p * _states[n-t].tIntOutNew / _states[n].tIntOutEnd;
+        _states[n].y[0] = (double)n/t;
+    }
 }
 
 TrClVector &TrClVector::operator=(const TrClVector &rho)
@@ -282,15 +298,16 @@ void TrClVector::normalize(double sumOfAllTheStates)
 
 void TrClVector::generateNormalizedPoissonPrevDistrib()
 {
+    int v = V();
     if (previous != nullptr)
         qFatal("Previous distribution exists");
 
-    if (V() == 0)
+    if (v == 0)
         return;
 
-    previous = new TrClVector(this->V()-1, this->aggregatedClasses);
+    previous = new TrClVector(v-1, this->aggregatedClasses);
 
-    for (int n=0; n<V(); n++)
+    for (int n=0; n<v; n++)
         previous->_states[n] = _states[n];
     previous->normalize();
     previous->generateNormalizedPoissonPrevDistrib();

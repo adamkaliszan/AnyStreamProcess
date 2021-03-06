@@ -21,7 +21,7 @@ CONFIG += link_prl
 LIBS += -lboost_iostreams -lboost_system -lboost_filesystem
 LIBS += -L../core -lcore
 
-#LIBS += -lpython3.8
+#LIBS += -lpython3
 LIBS += -lpython3.$$system(python3-config --includes | grep -Eo '[0-9]+$')
 
 QMAKE_CXXFLAGS += -std=c++17

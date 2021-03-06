@@ -28,6 +28,7 @@ void FAG_AnyStr_ML::initialize()
     PyRun_SimpleString(
         "import sys, os\n"
         "sys.path.append(os.getcwd())\n"
+        "print (sys.version)\n"
     );
 
     PyObject *pName = PyUnicode_DecodeFSDefault("core.ml.trDistributionML");
@@ -89,13 +90,6 @@ void FAG_AnyStr_ML::calculateSystem(const ModelSystem &system
     PyObject *pArgs;
     PyObject *pList;
 
-    if (pFuncArrivalDistribution == nullptr)
-    {
-        qDebug("Nie mogę odnaleźć funkcji od pythona");
-        PyErr_Print();
-        return;
-    }
-
     for (int i=0; i<system.m(); i++)
     {
         p_single[i] = system.getTrClass(i).trDistribution(i, classes[i].A, system.V(), 0);
@@ -105,12 +99,12 @@ void FAG_AnyStr_ML::calculateSystem(const ModelSystem &system
         pList = PyList_New(0);//2*(p_single[i].V() + 1));
         for (int n=0; n<=p_single[i].V(); n++)
         {
-            PyObject *pValue = PyLong_FromDouble(p_single[i].getState(n).tIntOutNew);
+            PyObject *pValue = PyFloat_FromDouble(p_single[i].getState(n).tIntOutNew);
             PyList_Append(pList, pValue);
         }
         for (int n=0; n<=p_single[i].V(); n++)
         {
-            PyObject *pValue = PyLong_FromDouble(p_single[i].getState(n).tIntOutEnd);
+            PyObject *pValue = PyFloat_FromDouble(p_single[i].getState(n).tIntOutEnd);
             PyList_Append(pList, pValue);
         }
 
@@ -119,19 +113,36 @@ void FAG_AnyStr_ML::calculateSystem(const ModelSystem &system
         PyTuple_SetItem(pArgs, 1, pName);
 
         PyObject *pResult = PyObject_CallObject(pFuncArrivalDistribution, pArgs);
-        Py_DECREF(pList);
-        Py_DECREF(pName);
-        Py_DECREF(pArgs);
-
         if (pResult == nullptr)
         {
             PyErr_Print();
+            qDebug("Dostałem nulla");
+            Py_DECREF(pList);
+            Py_DECREF(pName);
+            Py_DECREF(pArgs);
+            delete []p_single;
+            deleteTemporaryData();
             return;
         }
 
 /// Odbieranie rezultatu
         int x = PyList_Size(pResult);
+        int y = PyTuple_Size(pResult);
+        if (x == -1)
+        {
+            //PyErr_Print();
+            qDebug("Zły obiekt listy x = %d, y = %d", x, y);
+            Py_DECREF(pResult);
+
+            Py_DECREF(pList);
+            Py_DECREF(pName);
+            Py_DECREF(pArgs);
+            delete []p_single;
+            deleteTemporaryData();
+            return;
+        }
         int idx = 0;
+        qDebug("Odebrałem listę o długości %d", x);
 
         TrClVector *tmp = &p_single[i];
         for (int tmpV = system.V() - 1; tmpV > 0; tmpV--)
@@ -139,21 +150,34 @@ void FAG_AnyStr_ML::calculateSystem(const ModelSystem &system
             tmp->previous = new TrClVector(tmpV, tmp->aggregatedClasses);
             for (int n=0; n<=tmpV; n++)
             {
-                tmp->previous->getState(n).tIntOutNew = PyLong_AsDouble(PyList_GetItem(pResult, idx++));
-                if (idx > x)
-                    qFatal("Wrong python result");
-                tmp->previous->getState(n).tIntOutEnd = n;//PyLong_AsDouble(PyList_GetItem(pResult, idx++));
-                if (idx > x)
-                    qFatal("Wrong python result");
+                PyObject *tmpObj = PyList_GetItem(pResult, idx++);
+                if (tmpObj == nullptr)
+                    qFatal("tIntOutNew: Wrong python object, can't get an list item. List len = %x, list idx = %d, tmpV = %d, n = %d", x, idx, tmpV, n);
+                if (!PyFloat_Check(tmpObj))
+                    qFatal("List item is not a float type %d/%d", idx-1, x);
+
+                tmp->previous->getState(n).tIntOutNew = PyFloat_AsDouble(tmpObj);
+                tmp->previous->getState(n).tIntOutEnd = n; continue;//TODO PyFloat_AsDouble(tmpObj);
+
+         //       tmpObj = PyList_GetItem(pResult, idx++);
+         //       if (tmpObj == nullptr)
+         //           qFatal("tIntOutNew: Wrong python object, can't get an list item. List len = %x, list idx = %d, tmpV = %d, n = %d", x, idx, tmpV, n);
+         //       if (!PyFloat_Check(tmpObj))
+         //           qFatal("List item is not a float type %d/%d", idx-1, x);
+
+         //       tmp->previous->getState(n).tIntOutEnd = PyFloat_AsDouble(tmpObj);
             }
             tmp->previous->calculateP_baseOnOutIntensities();
             tmp = tmp->previous;
         }
         Py_DECREF(pResult);
+        //Py_DECREF(pList);
+        //Py_DECREF(pName);
+        //Py_DECREF(pArgs);
 
         tmp->previous = new TrClVector(0, tmp->aggregatedClasses);
         tmp->previous->getState(0).tIntOutNew = 1;
-        tmp->previous->getState(0).tIntOutEnd = 1;
+        tmp->previous->getState(0).tIntOutEnd = 0;
         tmp->previous->calculateP_baseOnOutIntensities();
         tmp->previous->previous = nullptr;
 
@@ -163,11 +187,12 @@ void FAG_AnyStr_ML::calculateSystem(const ModelSystem &system
     }
 
     TrClVector P(system.V());
-    //P = TrClVector(system.V());
+    P = TrClVector(system.V());
     P.generateNormalizedPoissonPrevDistrib();
+    int V = system.V();
     for (int i=0; i < system.m(); i++)
     {
-        P = TrClVector::convFAGanyStream(P, p_single[i], system.V());
+        P = TrClVector::convFAGanyStream(P, p_single[i],V);
         P.normalize();
     }
 
