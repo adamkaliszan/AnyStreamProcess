@@ -27,6 +27,7 @@
 #include <QtWidgets/QMessageBox>
 #include <QtGui/QPainter>
 #include <QtGui/QScreen>
+#include <qstring.h>
 
 #include "qcolor.h"
 
@@ -468,12 +469,12 @@ QString MainWindow::configureTrClass(ModelTrClass *trClass)
     trClass->setNewCallStrType(newCallStr, srcType);
     trClass->setCallServStrType(callServStr);
     if (newCallStr == ModelTrClass::StreamType::Poisson)
-        ;
+        trClass->setIncommingExPerDx(1);
     else
         trClass->setIncommingExPerDx(ui->doubleSpinBoxIncomingExDx->value());
 
     if (callServStr == ModelTrClass::StreamType::Poisson)
-        ;
+        trClass->setServiceExPerDx(1);
     else
         trClass->setServiceExPerDx(ui->doubleSpinBoxServiceExDx->value());
 
@@ -1728,6 +1729,7 @@ void MainWindow::drawSystemModel()
         /*QGraphicsLineItem *line2 = */sceneSysModel->addLine(xClasses+0.9*wClasses, y, xClasses+0.9*wClasses - 5, y + 5, blackPen);
 
         QGraphicsTextItem  *text = sceneSysModel->addText(sys->getClass(i).shortName(), QFont("Arial", 12));
+        text->setHtml(sys->getClass(i).shortName(true));
         text->setPos(QPoint(static_cast<int>(xClasses), static_cast<int>(y-22)));
     }
 
@@ -1785,7 +1787,7 @@ void MainWindow::on_comboBoxPredefinedSystems_currentIndexChanged(int index)
     {
         ModelTrClass *trClass = system->getClassClone(i);
 
-        QString classDescription = trClass->shortName();
+        QString classDescription = trClass->shortName(true);
 
         QListWidgetItem *newClassItem = new QListWidgetItem();
         QVariant variant;
@@ -1895,7 +1897,7 @@ void MainWindow::fillListWidgetWithParams(QListWidget *outList, QLabel *outLabel
         for(int i = 0; i < resultsForSystem->getModel().m(); i++)
         {
             tmpVariant.setValue(i);
-            tmpItem = new QListWidgetItem(resultsForSystem->getModel().getTrClass(i).shortName());
+            tmpItem = new QListWidgetItem(resultsForSystem->getModel().getTrClass(i).shortName(true));
             tmpItem->setData(Qt::UserRole, tmpVariant);
 
             outList->addItem(tmpItem);

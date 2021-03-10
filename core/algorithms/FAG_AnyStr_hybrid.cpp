@@ -26,7 +26,6 @@ void FAG_AnyStry_hybrid::calculateSystem(const ModelSystem &system
     {
         p_single[i] = system.getTrClass(i).trDistribution(i, classes[i].A, system.V(), 0);
 
-
         TrClVector *tmp = &p_single[i];
         for (int tmpV = system.V() - 1; tmpV >= 0; tmpV--)
         {

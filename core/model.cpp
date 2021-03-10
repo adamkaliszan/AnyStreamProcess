@@ -201,10 +201,11 @@ ModelTrClass::ModelTrClass():
     _srcType     = SourceType::Independent;
 }
 
-QString ModelTrClass::shortName() const
+QString ModelTrClass::shortName(bool enableUtf8) const
 {
     QString result;
-
+    QTextStream resultStream(&result);
+    resultStream.setRealNumberPrecision(1);
 
     if ((newCallStr()==StreamType::Poisson) && (callServStr() == StreamType::Poisson))
     {
@@ -212,56 +213,71 @@ QString ModelTrClass::shortName() const
         {
         case SourceType::Independent:
             if ((_propAt != 1) || (! qFuzzyCompare(_mu, 1)))
-                result.asprintf("Erl. at=%d t=%d µ=%.1f", _propAt, _t, _mu);
+                resultStream<<"Erl. at="<<_propAt<<" t="<<_t<<" µ="<<_mu;
             else
-                result.asprintf("Erlang t=%d", _t);
+                resultStream<<"Erlang t="<<_t;
             break;
         case SourceType::DependentMinus:
             if ((_propAt != 1) || (! qFuzzyCompare(_mu, 1)))
-                result.asprintf("Eng. t=%d S=%d at=%d µ=%.1f", _t, _noOfSourcess, _propAt, _mu);
+                resultStream<<"Eng. t=" << _t << " S=" << _noOfSourcess<<" at="<<_propAt<<" µ="<<_mu;
             else
-                result.asprintf("Engset t=%d S=%d", _t, _noOfSourcess);
+                resultStream<<"Engset t="<<_t<<" S="<<_noOfSourcess;
             break;
         case SourceType::DependentPlus:
             if ((_propAt != 1) || (! qFuzzyCompare(_mu, 1)))
-                result.asprintf("Pas+ t=%d S=%d at=%d  µ=%.1f", _t, _noOfSourcess, _propAt, _mu);
+                resultStream << "Pas. t=" << _t << " S=" << _noOfSourcess << _noOfSourcess << " at=" <<_propAt << " µ=" << _mu;
             else
-                result.asprintf("Pascal t=%d S=%d", _t, _noOfSourcess);
+                resultStream << "Pascal t=" << _t << " S=" << _noOfSourcess;
             break;
         }
     }
     else
     {
-        if (srcType() == SourceType::Independent)
-            result= "Ind ";
-        else if (srcType()==SourceType::DependentMinus)
-            result = "Dep- ";
-        else
-            result = "Deb+ ";
+        switch (srcType())
+        {
+        case SourceType::Independent:
+            break;
+        case SourceType::DependentMinus:
+                resultStream << "Dep- S="<<_noOfSourcess;
+            break;
+        case SourceType::DependentPlus:
+                resultStream << "Dep+ S="<<_noOfSourcess;
+            break;
+        }
 
-        QString incStr;
-        if (newCallStr()==StreamType::Poisson)
-            incStr = QString("%1/").arg(streamTypeToShortString(newCallStr()));
-        else
-            incStr = QString("%1%2/").arg(streamTypeToShortString(newCallStr())).arg(_IncommingExPerDx);
-        result.append(incStr);
+        switch (newCallStr())
+        {
+        case StreamType::Poisson:
+            resultStream << streamTypeToString(newCallStr());
+            break;
+        default:
+            if (!enableUtf8)
+                resultStream << streamTypeToString(newCallStr()) << " E2D=" << _IncommingExPerDx;
+            else
+                resultStream << streamTypeToString(newCallStr()) << QString::fromUtf8(" E²/ð²=") << _IncommingExPerDx;
+            break;
+        }
+        resultStream<<" ";
 
 
-        QString servStr;
-        if (callServStr()==StreamType::Poisson)
-            servStr = QString("%1 ").arg(streamTypeToShortString(callServStr()));
-        else
-            servStr = QString("%1%2 ").arg(streamTypeToShortString(callServStr())).arg(_ServiceExPerDx);
+        switch (callServStr())
+        {
+        case StreamType::Poisson:
+            //streamTypeToShortString(callServStr());
+            break;
+        default:
+            if (!enableUtf8)
+                resultStream << " " << streamTypeToString(callServStr()) << " E2D=" <<_ServiceExPerDx;
+            else
+                resultStream << " " << streamTypeToString(callServStr()) << QString::fromUtf8(" E²/ð²=") <<_ServiceExPerDx;
+            break;
+        }
 
-        result.append(servStr);
-
-        if (_noOfSourcess != 0)
-            result.append(QString("S=%1 ").arg(_noOfSourcess));
+        if (_t != 1)
+            resultStream << " t=" << _t;
 
         if ((_propAt != 1) || ( ! qFuzzyCompare(_mu, 1)))
-            result.append(QString("at=%1 t=%2 µ=%3").arg(_propAt).arg(_t).arg(_mu));
-        else
-            result.append(QString("t=%1").arg(_t));
+            resultStream << " at=" << _propAt << "µ=" << _mu;
     }
     return result;
 }
@@ -1503,7 +1519,7 @@ double ModelTrClass::SimulatorSingleServiceSystem::distrLambda(double Ex)
     double randomNumber;
     do
     {
-        randomNumber = static_cast<double>(generator.generate() /generator.max());
+        randomNumber = static_cast<double>(generator.generate()) / static_cast<double>(generator.max());
     }
     while (qFuzzyIsNull(randomNumber) || qFuzzyCompare(randomNumber, 1));
 
@@ -2218,8 +2234,9 @@ bool MCTrCl::operator!=(const MCTrCl &rho) const
 
 
 
-ModelTrClassSimulationWork::ModelTrClassSimulationWork(TrClVector *states, int Vs, int Vb, double Aoffered, int t, ModelTrClass::SourceType srcNewCallSrcType, ModelTrClass::StreamType newCallStreamType, double IncommingEx2perDxDNewCall, ModelTrClass::StreamType endCallStreamType
-                                                       , double EsingleCallServ, double DsingleCallServ, int noOfEventsPerUnit)
+ModelTrClassSimulationWork::ModelTrClassSimulationWork(TrClVector *states, int Vs, int Vb, double Aoffered, int t
+    , ModelTrClass::SourceType srcNewCallSrcType, ModelTrClass::StreamType newCallStreamType, double IncommingEx2perDxDNewCall
+    , ModelTrClass::StreamType endCallStreamType, double EsingleCallServ, double DsingleCallServ, int noOfEventsPerUnit)
 {
     this->states = states;
     system = new ModelTrClass::SimulatorSingleServiceSystem(0, srcNewCallSrcType, Vs, Vb, t, *states, Aoffered, IncommingEx2perDxDNewCall, EsingleCallServ, DsingleCallServ);
@@ -2353,8 +2370,11 @@ void ModelTrClassSimulationWork::run()
         states->getState(n).tIntOutNew = 0;
     }
 
-    system->stabilize((1+system->Vs+system->Vb) * (1+system->Vs+system->Vb) * noOfEventsPerUnit / 100 / system->getT());
-    system->doSimExperiment((1+system->Vs+system->Vb) * (system->Vs+system->Vb+1) * noOfEventsPerUnit / system->getT() , *states);
+    int stabilizationLen = (1+system->Vs+system->Vb) * (1+system->Vs+system->Vb) * noOfEventsPerUnit / 100 / system->getT();
+    long int expLen = (1+system->Vs+system->Vb) * (1 + system->Vs+system->Vb);
+    expLen*= (noOfEventsPerUnit / system->getT());
+    system->stabilize(stabilizationLen);
+    system->doSimExperiment(expLen, *states);
 
     double sum = 0;
     for (int n=0; n<=system->Vs+system->Vb; n++)

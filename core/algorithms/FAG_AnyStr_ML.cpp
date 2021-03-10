@@ -83,106 +83,122 @@ void FAG_AnyStr_ML::calculateSystem(const ModelSystem &system
         qErrnoWarning("Nie mogę zainiclializować alorytmu z uczeniem maszynowym");
         return;
     }
+    PyObject *pArgs;
+    PyObject *pList;
 
     prepareTemporaryData(system, a);
     p_single = new TrClVector[system.m()];
 
-    PyObject *pArgs;
-    PyObject *pList;
 
-    for (int i=0; i<system.m(); i++)
+    int m = system.m();
+    for (int i=0; i<m; i++)
     {
         p_single[i] = system.getTrClass(i).trDistribution(i, classes[i].A, system.V(), 0);
 
-/// Building list with intensities for python
-        pArgs = PyTuple_New(2);
-        pList = PyList_New(0);//2*(p_single[i].V() + 1));
-        for (int n=0; n<=p_single[i].V(); n++)
+        if (system.getTrClass(i).newCallStr() == ModelTrClass::StreamType::Poisson)
         {
-            PyObject *pValue = PyFloat_FromDouble(p_single[i].getState(n).tIntOutNew);
-            PyList_Append(pList, pValue);
-        }
-        for (int n=0; n<=p_single[i].V(); n++)
-        {
-            PyObject *pValue = PyFloat_FromDouble(p_single[i].getState(n).tIntOutEnd);
-            PyList_Append(pList, pValue);
-        }
-
-        PyObject *pName = PyUnicode_DecodeFSDefault("./core/ml/trained_models/uniform_model_all_points");
-        PyTuple_SetItem(pArgs, 0, pList);
-        PyTuple_SetItem(pArgs, 1, pName);
-
-        PyObject *pResult = PyObject_CallObject(pFuncArrivalDistribution, pArgs);
-        if (pResult == nullptr)
-        {
-            PyErr_Print();
-            qDebug("Dostałem nulla");
-            Py_DECREF(pList);
-            Py_DECREF(pName);
-            Py_DECREF(pArgs);
-            delete []p_single;
-            deleteTemporaryData();
-            return;
-        }
-
-/// Odbieranie rezultatu
-        int x = PyList_Size(pResult);
-        int y = PyTuple_Size(pResult);
-        if (x == -1)
-        {
-            //PyErr_Print();
-            qDebug("Zły obiekt listy x = %d, y = %d", x, y);
-            Py_DECREF(pResult);
-
-            Py_DECREF(pList);
-            Py_DECREF(pName);
-            Py_DECREF(pArgs);
-            delete []p_single;
-            deleteTemporaryData();
-            return;
-        }
-        int idx = 0;
-        qDebug("Odebrałem listę o długości %d", x);
-
-        TrClVector *tmp = &p_single[i];
-        for (int tmpV = system.V() - 1; tmpV > 0; tmpV--)
-        {
-            tmp->previous = new TrClVector(tmpV, tmp->aggregatedClasses);
-            for (int n=0; n<=tmpV; n++)
+            TrClVector *tmp = &p_single[i];
+            for (int tmpV = system.V() - 1; tmpV >= 0; tmpV--)
             {
-                PyObject *tmpObj = PyList_GetItem(pResult, idx++);
-                if (tmpObj == nullptr)
-                    qFatal("tIntOutNew: Wrong python object, can't get an list item. List len = %x, list idx = %d, tmpV = %d, n = %d", x, idx, tmpV, n);
-                if (!PyFloat_Check(tmpObj))
-                    qFatal("List item is not a float type %d/%d", idx-1, x);
-
-                tmp->previous->getState(n).tIntOutNew = PyFloat_AsDouble(tmpObj);
-                tmp->previous->getState(n).tIntOutEnd = n; continue;//TODO PyFloat_AsDouble(tmpObj);
-
-         //       tmpObj = PyList_GetItem(pResult, idx++);
-         //       if (tmpObj == nullptr)
-         //           qFatal("tIntOutNew: Wrong python object, can't get an list item. List len = %x, list idx = %d, tmpV = %d, n = %d", x, idx, tmpV, n);
-         //       if (!PyFloat_Check(tmpObj))
-         //           qFatal("List item is not a float type %d/%d", idx-1, x);
-
-         //       tmp->previous->getState(n).tIntOutEnd = PyFloat_AsDouble(tmpObj);
+                tmp->previous = new TrClVector(tmpV, tmp->aggregatedClasses);
+                *(tmp->previous) = system.getTrClass(i).trDistribution(i, classes[i].A, tmpV, 0);
+                tmp = tmp->previous;
             }
-            tmp->previous->calculateP_baseOnOutIntensities();
-            tmp = tmp->previous;
         }
-        Py_DECREF(pResult);
-        //Py_DECREF(pList);
-        //Py_DECREF(pName);
-        //Py_DECREF(pArgs);
+        else
+        {
+            QString modelName;
+            QTextStream modelNameStream(&modelName);
+            modelNameStream<<"./core/ml/trained_models/"<<system.V()<<"/"<<ModelTrClass::streamTypeToString(system.getTrClass(i).newCallStr())<< "/model_all_points";
 
-        tmp->previous = new TrClVector(0, tmp->aggregatedClasses);
-        tmp->previous->getState(0).tIntOutNew = 1;
-        tmp->previous->getState(0).tIntOutEnd = 0;
-        tmp->previous->calculateP_baseOnOutIntensities();
-        tmp->previous->previous = nullptr;
+    /// Building list with intensities for python
+            pArgs = PyTuple_New(2);
+            pList = PyList_New(0);//2*(p_single[i].V() + 1));
+            for (int n=0; n<=p_single[i].V(); n++)
+            {
+                PyObject *pValue = PyFloat_FromDouble(p_single[i].getState(n).tIntOutNew);
+                PyList_Append(pList, pValue);
+            }
+            for (int n=0; n<=p_single[i].V(); n++)
+            {
+                PyObject *pValue = PyFloat_FromDouble(p_single[i].getState(n).tIntOutEnd);
+                PyList_Append(pList, pValue);
+            }
 
+            PyObject *pName = PyUnicode_DecodeFSDefault(modelName.toStdString().c_str());
+            PyTuple_SetItem(pArgs, 0, pList);
+            PyTuple_SetItem(pArgs, 1, pName);
+
+            PyObject *pResult = PyObject_CallObject(pFuncArrivalDistribution, pArgs);
+            if (pResult == nullptr)
+            {
+                PyErr_Print();
+                qDebug("Dostałem nulla");
+                Py_DECREF(pList);
+                Py_DECREF(pName);
+                Py_DECREF(pArgs);
+                delete []p_single;
+                deleteTemporaryData();
+                return;
+            }
+
+    /// Odbieranie rezultatu
+            int x = PyList_Size(pResult);
+            int y = PyTuple_Size(pResult);
+            if (x == -1)
+            {
+                //PyErr_Print();
+                qDebug("Zły obiekt listy x = %d, y = %d", x, y);
+                Py_DECREF(pResult);
+
+                Py_DECREF(pList);
+                Py_DECREF(pName);
+                Py_DECREF(pArgs);
+                delete []p_single;
+                deleteTemporaryData();
+                return;
+            }
+            int idx = 0;
+            qDebug("Odebrałem listę o długości %d", x);
+
+            TrClVector *tmp = &p_single[i];
+            for (int tmpV = system.V() - 1; tmpV > 0; tmpV--)
+            {
+                tmp->previous = new TrClVector(tmpV, tmp->aggregatedClasses);
+                for (int n=0; n<=tmpV; n++)
+                {
+                    PyObject *tmpObj = PyList_GetItem(pResult, idx++);
+                    if (tmpObj == nullptr)
+                        qFatal("tIntOutNew: Wrong python object, can't get an list item. List len = %x, list idx = %d, tmpV = %d, n = %d", x, idx, tmpV, n);
+                    if (!PyFloat_Check(tmpObj))
+                        qFatal("List item is not a float type %d/%d", idx-1, x);
+
+                    tmp->previous->getState(n).tIntOutNew = PyFloat_AsDouble(tmpObj);
+                    tmp->previous->getState(n).tIntOutEnd = n; continue;//TODO PyFloat_AsDouble(tmpObj);
+
+             //       tmpObj = PyList_GetItem(pResult, idx++);
+             //       if (tmpObj == nullptr)
+             //           qFatal("tIntOutNew: Wrong python object, can't get an list item. List len = %x, list idx = %d, tmpV = %d, n = %d", x, idx, tmpV, n);
+             //       if (!PyFloat_Check(tmpObj))
+             //           qFatal("List item is not a float type %d/%d", idx-1, x);
+
+             //       tmp->previous->getState(n).tIntOutEnd = PyFloat_AsDouble(tmpObj);
+                }
+                tmp->previous->calculateP_baseOnOutIntensities();
+                tmp = tmp->previous;
+            }
+            Py_DECREF(pResult);
+            //Py_DECREF(pList);
+            //Py_DECREF(pName);
+            //Py_DECREF(pArgs);
+
+            tmp->previous = new TrClVector(0, tmp->aggregatedClasses);
+            tmp->previous->getState(0).tIntOutNew = 1;
+            tmp->previous->getState(0).tIntOutEnd = 0;
+            tmp->previous->calculateP_baseOnOutIntensities();
+            tmp->previous->previous = nullptr;
+        }
         p_single[i].normalize();
-
         qDebug()<<".";//p_single[i];
     }
 

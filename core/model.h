@@ -146,7 +146,7 @@ public:
     ModelTrClass();
     ModelTrClass(const ModelTrClass& rho);
 
-    QString shortName() const;
+    QString shortName(bool enableUtf8 = false) const;
 
     void setNewCallStrType(StreamType strType, SourceType srcType);
     void setCallServStrType(StreamType strType);
@@ -177,7 +177,7 @@ public:
     double intensityNewCallForState(double intensityNewCallTotal, int stateN) const;
     double intensityNewCallForY(double lambdaZero, double y) const;
 
-    TrClVector trDistribution(int classIdx, double A, int Vs, int Vb, int noOfOseries = 12, int noOfEventsPerUnit = 100000000) const;
+    TrClVector trDistribution(int classIdx, double A, int Vs, int Vb, int noOfOseries = 4, int noOfEventsPerUnit = 109000) const;
 
     bool operator ==(const ModelTrClass& rho) const;
     bool operator !=(const ModelTrClass& rho) const;
