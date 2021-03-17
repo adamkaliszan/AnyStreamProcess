@@ -1519,7 +1519,7 @@ double ModelTrClass::SimulatorSingleServiceSystem::distrLambda(double Ex)
     double randomNumber;
     do
     {
-        randomNumber = static_cast<double>(generator.generate()) / static_cast<double>(generator.max());
+        randomNumber = generator.generateDouble();// static_cast<double>(generator.generate()) / generator.max();
     }
     while (qFuzzyIsNull(randomNumber) || qFuzzyCompare(randomNumber, 1));
 
@@ -1529,7 +1529,7 @@ double ModelTrClass::SimulatorSingleServiceSystem::distrLambda(double Ex)
 
 double ModelTrClass::SimulatorSingleServiceSystem::distrUniform(double tMin, double tMax)
 {
-    double x = (tMax - tMin) * (static_cast<double>(generator.generate())/generator.max());
+    double x = (tMax - tMin) * generator.generateDouble();//(static_cast<double>(generator.generate())/generator.max());
     return tMin+x;
 }
 
@@ -1602,10 +1602,10 @@ ModelTrClass::SimulatorSingleServiceSystem::SimulatorSingleServiceSystem(int noO
 
 ModelTrClass::SimulatorSingleServiceSystem::~SimulatorSingleServiceSystem()
 {
-    while (!agenda2.empty())
+    while (!agenda.empty())
     {
-        delete agenda2.top();
-        agenda2.pop();
+        delete agenda.top();
+        agenda.pop();
     }
     while (!qeue.isEmpty())
         delete qeue.takeFirst();
@@ -1675,22 +1675,22 @@ double ModelTrClass::SimulatorSingleServiceSystem::timeServEndPareto()
 void ModelTrClass::SimulatorSingleServiceSystem::addProcess(ModelTrClass::SimulatorProcess *newProc, double relativeTime)
 {
     newProc->time = relativeTime + agendaTimeOffset;
-    agenda2.push(newProc);
+    agenda.push(newProc);
 }
 
 void ModelTrClass::SimulatorSingleServiceSystem::removeProcess(ModelTrClass::SimulatorProcess *proc)
 {
     std::stack<SimulatorProcess *> tmpStack;
-    while(!agenda2.empty())
+    while(!agenda.empty())
     {
-        SimulatorProcess *tmpProc = agenda2.top();
+        SimulatorProcess *tmpProc = agenda.top();
         if (tmpProc != proc)
             tmpStack.push(tmpProc);
-        agenda2.pop();
+        agenda.pop();
     }
     while (!tmpStack.empty())
     {
-        agenda2.push(tmpStack.top());
+        agenda.push(tmpStack.top());
         tmpStack.pop();
     }
     delete proc;
@@ -1702,8 +1702,8 @@ void ModelTrClass::SimulatorSingleServiceSystem::stabilize(int noOfEvents)
     {
         //SimulatorProcess *proc = agenda.takeFirst();
 
-        SimulatorProcess *proc = agenda2.top();
-        agenda2.pop();
+        SimulatorProcess *proc = agenda.top();
+        agenda.pop();
 
         double tmp = proc->time;
         proc->time -= agendaTimeOffset;
@@ -1712,23 +1712,18 @@ void ModelTrClass::SimulatorSingleServiceSystem::stabilize(int noOfEvents)
 
         if (noOfEvents % 1024 == 0)
         {
-//            QListIterator<SimulatorProcess *> iterator(agenda);
-//            while (iterator.hasNext())
-//                iterator.next()->time-=agendaTimeOffset;
-//            agendaTimeOffset = 0;
-
-
             std::list<SimulatorProcess *> tmpAgenda;
-            while (!agenda2.empty())
+            while (!agenda.empty())
             {
-                tmpAgenda.push_front(agenda2.top());
-                agenda2.pop();
+                tmpAgenda.push_front(agenda.top());
+                agenda.pop();
             }
             for (auto iter = tmpAgenda.begin(); iter != tmpAgenda.end(); iter++)
             {
                 (*iter)->time-=agendaTimeOffset;
-                agenda2.push(*iter);
+                agenda.push(*iter);
             }
+            agendaTimeOffset = 0;
         }
 
         if (!proc->execute(this))
@@ -1762,8 +1757,8 @@ void ModelTrClass::SimulatorSingleServiceSystem::doSimExperiment(long int noOfEv
     for( ;noOfEvents>0; noOfEvents--)
     {
         int oldState = n_total;
-        SimulatorProcess *proc = agenda2.top();
-        agenda2.pop();
+        SimulatorProcess *proc = agenda.top();
+        agenda.pop();
 
         double tmp = proc->time;
         proc->time -= agendaTimeOffset;
@@ -1773,15 +1768,15 @@ void ModelTrClass::SimulatorSingleServiceSystem::doSimExperiment(long int noOfEv
         {
             std::list<SimulatorProcess *> tmpAgenda;
 
-            while(!agenda2.empty())
+            while(!agenda.empty())
             {
-                tmpAgenda.push_front(agenda2.top());
-                agenda2.pop();
+                tmpAgenda.push_front(agenda.top());
+                agenda.pop();
             }
             for (auto iterator = tmpAgenda.begin(); iterator != tmpAgenda.end(); iterator++)
             {
                 (*iterator)->time -= agendaTimeOffset;
-                agenda2.push(*iterator);
+                agenda.push(*iterator);
             }
             agendaTimeOffset = 0;
         }
@@ -1915,14 +1910,14 @@ void ModelTrClass::SimulatorSingleServiceSystem::endCallService(ModelTrClass::Si
         callPartialyServiced = nullptr;
 
         std::list<SimulatorProcess *> tmpList;
-        while (!agenda2.empty())
+        while (!agenda.empty())
         {
-            tmpList.push_back(agenda2.top());
-            agenda2.pop();
+            tmpList.push_back(agenda.top());
+            agenda.pop();
         }
         for (auto iterator = tmpList.begin(); iterator != tmpList.end(); iterator++)
         {
-            agenda2.push(*iterator);
+            agenda.push(*iterator);
         }
     }
 

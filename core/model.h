@@ -177,7 +177,7 @@ public:
     double intensityNewCallForState(double intensityNewCallTotal, int stateN) const;
     double intensityNewCallForY(double lambdaZero, double y) const;
 
-    TrClVector trDistribution(int classIdx, double A, int Vs, int Vb, int noOfOseries = 4, int noOfEventsPerUnit = 109000) const;
+    TrClVector trDistribution(int classIdx, double A, int Vs, int Vb, int noOfOseries = 1, int noOfEventsPerUnit = 109000) const;
 
     bool operator ==(const ModelTrClass& rho) const;
     bool operator !=(const ModelTrClass& rho) const;
@@ -208,6 +208,13 @@ public:
             ) const;
 
     class SimulatorProcess;
+    struct CmpEdgePtrs
+    {
+        bool operator()(const SimulatorProcess* lhs, const SimulatorProcess* rhs) const
+        {
+            return lhs->time < rhs->time;
+        }
+    };
     class SimulatorSingleServiceSystem
     {
     private:
@@ -237,7 +244,7 @@ public:
         double t_serviceMin;
         double t_serviceMax;
 
-        std::priority_queue<SimulatorProcess *> agenda2;
+        std::priority_queue<SimulatorProcess *, std::vector<SimulatorProcess *>, CmpEdgePtrs> agenda;
         double agendaTimeOffset;
 
         QList<SimulatorProcess *> qeue;
@@ -262,7 +269,10 @@ public:
         double timeNewCallPareto();
 
         inline double timeServEndExp() {return distrLambda(E_service); }
-        inline double timeServEndUni() {return distrUniform(t_serviceMin, t_serviceMax); }
+        inline double timeServEndUni()
+        {
+            return distrUniform(t_serviceMin, t_serviceMax);
+        }
         double timeServEndNormal();
         double timeServEndGamma();
         double timeServEndPareto();
