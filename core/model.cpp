@@ -1713,8 +1713,11 @@ void ModelTrClass::SimulatorSingleServiceSystem::stabilize(int noOfEvents)
         if (noOfEvents % 1024 == 0)
         {
             std::list<SimulatorProcess *> tmpAgenda;
+            //double lastValue = agenda.top()->time;
             while (!agenda.empty())
             {
+                //if (lastValue > agenda.top()->time)
+                //    qFatal("Agenda error");
                 tmpAgenda.push_front(agenda.top());
                 agenda.pop();
             }
@@ -1768,8 +1771,12 @@ void ModelTrClass::SimulatorSingleServiceSystem::doSimExperiment(long int noOfEv
         {
             std::list<SimulatorProcess *> tmpAgenda;
 
+            //double lastValue = agenda.top()->time;
             while(!agenda.empty())
             {
+                //if (lastValue > agenda.top()->time)
+                //    qFatal("Agenda error");
+
                 tmpAgenda.push_front(agenda.top());
                 agenda.pop();
             }

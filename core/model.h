@@ -212,7 +212,7 @@ public:
     {
         bool operator()(const SimulatorProcess* lhs, const SimulatorProcess* rhs) const
         {
-            return lhs->time < rhs->time;
+            return lhs->time > rhs->time;
         }
     };
     class SimulatorSingleServiceSystem
