@@ -26,7 +26,7 @@ double Simulator::distrLambdaED(double Ex, double D)
     (void) D;
     double randomNumber;
     do
-    randomNumber = static_cast<double>(qrand())/RAND_MAX;
+        randomNumber = static_cast<double>(qrand())/RAND_MAX;
     while (qFuzzyIsNull(randomNumber) || qFuzzyCompare(randomNumber, 1));
 
     double result = -log(randomNumber)*Ex;

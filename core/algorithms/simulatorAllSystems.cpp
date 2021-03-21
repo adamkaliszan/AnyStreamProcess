@@ -6,6 +6,7 @@
 #include "utils/utilsMisc.h"
 #include "simulatorAllSystems.h"
 
+
 namespace Algorithms
 {
 
@@ -685,17 +686,32 @@ void SimulatorAll::System::addCall(SimulatorAll::Call *nCall)
     state.n+= nCall->reqAS;
     state.n_i[nCall->classIdx]+= nCall->reqAS;
 #ifdef QT_DEBUG
-    assert(state.n <=this->par.V());
+    if (state.n > par.V())
+        qFatal("Too big state %d, system capacity is no of calls in system %d", state.n, par.V());
+
+    if (state.n < calls.length())
+        qFatal("Wrong state: %d, no of calls in system %d", state.n, calls.length());
 #endif
 }
 
 void SimulatorAll::System::removeCall(SimulatorAll::Call *rCall)
 {
-    assert(calls.removeAll(rCall) == 1);
+#ifdef QT_DEBUG
+    int noOfRemovedCalls = calls.removeAll(rCall);
+    if (noOfRemovedCalls != 1)
+        qFatal("Can't find a call on a list with calls %d. %d calls was removed", rCall->classIdx, noOfRemovedCalls);
+#else
+    calls.removeAll(rCall);
+#endif
+
     state.n-= rCall->reqAS;
     state.n_i[rCall->classIdx]-= rCall->reqAS;
 #ifdef QT_DEBUG
-    assert(state.n >= 0);
+    if (state.n < 0)
+        qFatal("Negative state %d, no of calls in system %d", state.n, calls.length());
+
+    if (state.n < calls.length())
+        qFatal("Wrong state: %d, no of calls in system %d", state.n, calls.length());
 #endif
 }
 
@@ -744,7 +760,8 @@ int Algorithms::SimulatorAll::System::serveCallsInEque_DFifo()
         if (server->findAS(tmpCall->reqAS, groupNumber))
         {
             tmpCall = buffer->popCall();
-            assert(server->addCall(tmpCall, groupNumber));
+            bool addResult = server->addCall(tmpCall, groupNumber);
+            assert(addResult);
 
             engine->prepareCallToService(tmpCall);
 
@@ -910,7 +927,10 @@ void SimulatorAll::Server::removeCall(SimulatorAll::Call *call)
     state.removeCall(call, call->server);
     call->server.allocatedAU = 0;
 #ifdef QT_DEBUG
-    assert(calls.removeAll(call) == 1);
+    int noOfRemovedCalls = calls.removeAll(call);
+    assert(noOfRemovedCalls == 1);
+    if (noOfRemovedCalls != 1)
+        qFatal("Con't remove call from server. Implementation error. No of removed calls %d", noOfRemovedCalls);
 #else
     calls.removeOne(call);
 #endif
@@ -1692,8 +1712,12 @@ void SimulatorAll::Buffer::addCall(SimulatorAll::Call *nCall, int groupNo)
     state.addCall(nCall, nCall->buffer);
     calls.append(nCall);
 #ifdef QT_DEBUG
-    assert(vTotal >= state.n);
-    assert(system->par.getBuffer().V(groupNo) == state.n_k[groupNo] + state.subgroupFreeAUs[groupNo]);
+    if (vTotal < state.n)
+        qFatal("Implementation error in simulator. Buffer has wrong state %d. Buffer capacity id %d", state.n, vTotal);
+
+    if (system->par.getBuffer().V(groupNo) != state.n_k[groupNo] + state.subgroupFreeAUs[groupNo])
+        qFatal("mplementation error in simulator. Wrong group in buffer. Group %d capacity %d. Group state %d occupied, %d free"
+          , groupNo, system->par.getBuffer().V(groupNo), state.n_k[groupNo], state.subgroupFreeAUs[groupNo]);
 #endif
 }
 
@@ -1702,8 +1726,12 @@ void SimulatorAll::Buffer::removeCall(SimulatorAll::Call *rCall)
     state.removeCall(rCall, rCall->buffer);
     rCall->buffer.allocatedAU = 0;
 #ifdef QT_DEBUG
-    assert(calls.removeAll(rCall) == 1);
-    assert(system->par.getBuffer().V(rCall->buffer.groupIndex) == state.n_k[rCall->buffer.groupIndex] + state.subgroupFreeAUs[rCall->buffer.groupIndex]);
+    int noOfRemovedCalls = calls.removeAll(rCall);
+
+    if (noOfRemovedCalls != 1)
+        qFatal("Implementation error in simulator. Can't remove call from buffer. %d calls was removed", noOfRemovedCalls);
+    if (system->par.getBuffer().V(rCall->buffer.groupIndex) != state.n_k[rCall->buffer.groupIndex] + state.subgroupFreeAUs[rCall->buffer.groupIndex]);
+        qFatal("Implementation error in simulator. Wrong buffer state after removing call");
 #else
     calls.removeOne(rCall);
 #endif
