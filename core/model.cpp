@@ -301,6 +301,15 @@ void ModelTrClass::doSimExpUnlimitedSoNo(TrClVector &states, int Vs, int Vb, dou
     }
     threadPool->waitForDone();
 
+
+    for (int n=0; n<=Vs+Vb; n++)
+    {
+        states[n] = 0;
+        states.getState(n).tIntInEnd = 0;
+        states.getState(n).tIntInNew = 0;
+        states.getState(n).tIntOutEnd = 0;
+        states.getState(n).tIntOutNew = 0;
+    }
     for (int serNo=0; serNo < noOfSeries; serNo++)
     {
         for (int n=0; n<=Vs+Vb; n++)
@@ -2363,18 +2372,11 @@ void ModelTrClassSimulationWork::run()
 {
     proc->initialize();
 
-    for (int n=0; n<=system->Vs+system->Vb; n++)
-    {
-        states->getState(n).p = 0;
-        states->getState(n).tIntInEnd = 0;
-        states->getState(n).tIntInNew = 0;
-        states->getState(n).tIntOutEnd = 0;
-        states->getState(n).tIntOutNew = 0;
-    }
 
     int stabilizationLen = (1+system->Vs+system->Vb) * (1+system->Vs+system->Vb) * noOfEventsPerUnit / 100 / system->getT();
     long int expLen = (1+system->Vs+system->Vb) * (1 + system->Vs+system->Vb);
     expLen*= (noOfEventsPerUnit / system->getT());
+
     system->stabilize(stabilizationLen);
     system->doSimExperiment(expLen, *states);
 
