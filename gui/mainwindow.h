@@ -89,7 +89,6 @@ public:
 
     void NewTitle();
     bool fillSystem();
-    void readDataBase();
 
     static ModelTrClass::StreamType DBstrToStreamType(QString str);
     static ModelTrClass::SourceType DBstrToSourceType(QString str);
@@ -221,10 +220,7 @@ private:
 
     int getNoOfPoints(double aMin, double aMax, double aDelta) const;
 
-    bool dbReadSystems();
 
-
-    QSqlDatabase   db;            //SQL database
     bool           isDbWorking;
 
     Ui::MainWindow *ui;

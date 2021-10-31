@@ -18,11 +18,7 @@ class FAG_AnyStr_ML : public Investigator
 {
 protected:
     TrClVector *p_single;
-
-
     bool initialized;
-    PyObject *pFuncArrivalDistribution;
-    PyObject *pModule;
 
 
     void initialize();
