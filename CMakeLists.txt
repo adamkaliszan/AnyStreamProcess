@@ -70,7 +70,7 @@ else()
 endif()
 
 target_include_directories(AppGUI PUBLIC core)
-target_link_libraries(AppGUI PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Charts Qt${QT_VERSION_MAJOR}::DataVisualization)
+target_link_libraries(AppGUI PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Charts Qt${QT_VERSION_MAJOR}::DataVisualization protobuf)
 target_link_libraries(AppGUI PUBLIC core)
 
 

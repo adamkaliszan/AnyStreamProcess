@@ -21,11 +21,7 @@ private:
 
     struct BinaryHeap
     {
-#ifdef INC_AGENDA_PERFORMANCE
         double timeOffset;                                           //The ralative time of an events, that are stored on the heap is a sum of its (not always updated) relative time and timeOffset
-#else
-
-#endif
         u_int32_t capacity;
         u_int32_t len;
         QVector<P*> array;
@@ -44,10 +40,9 @@ private:
                 if (tmpProc->idx != i)
                     qFatal("Wrong index %d should be %d", array[i]->idx, i);
 
-#ifdef INC_AGENDA_PERFORMANCE
                 if (tmpProc->time < timeOffset)
                     qFatal("Time %lf smaller then offset %lf", array[i]->time, timeOffset);
-#endif
+
                 if (tmpProc->time < array[0]->time)
                     qFatal("Binary heap is not sorted");
 
@@ -143,9 +138,7 @@ private:
                 qFatal("Negative time value");
             consistencyCheck();
 #endif
-#ifdef INC_AGENDA_PERFORMANCE
             newProc->time += timeOffset;
-#endif
             if (capacity == len)
             {
                 capacity *=2;
@@ -187,11 +180,7 @@ private:
 
         void changeTime(P *proc, double newTime)
         {
-#ifdef INC_AGENDA_PERFORMANCE
             proc->time = timeOffset+newTime;
-#else
-            proc->time = newTime;
-#endif
             _fixTheHeapDown(proc->idx);
             _fixTheHeapUp(proc->idx);
 #ifdef QT_DEBUG
@@ -214,9 +203,7 @@ private:
                 array[len] = NULL;
                 _fixTheHeapDown(0);
             }
-#ifdef INC_AGENDA_PERFORMANCE
             result->time-=timeOffset;
-#endif
 #ifdef QT_DEBUG
             consistencyCheck();
 #endif
@@ -225,7 +212,6 @@ private:
 
         void decreaseTime(double time)
         {
-#ifdef INC_AGENDA_PERFORMANCE
             timeOffset += time;
             if (timeOffset > 1024)
             {
@@ -233,19 +219,13 @@ private:
                     array[idx]->time -= timeOffset;
                 timeOffset = 0;
             }
-#else
-        for (u_int32_t idx = 0; idx < len; idx++)
-            array[idx]->time -= time;
-#endif
         }
     } processes;                                                     // Struct, that sorts the processes according to the "time" field
 
 public:
     SimulatorDataCollection()
     {
-#ifdef INC_AGENDA_PERFORMANCE
         processes.timeOffset = 0;
-#endif
         processes.capacity = 4;
         processes.len = 0;
         processes.array.resize(processes.capacity);
