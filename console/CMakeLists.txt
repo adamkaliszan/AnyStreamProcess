@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(AnyStream VERSION 0.1 LANGUAGES CXX)
-
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(CMAKE_AUTOUIC ON)
@@ -27,56 +25,40 @@ find_package(Qt5DataVisualization REQUIRED)
 find_package(Qt5PrintSupport REQUIRED)
 
 
-add_subdirectory(core)
-add_subdirectory(console)
-
-
 #set(TS_FILES gui/languages/kolejki_en.ts gui/languages/kolejki_pl.ts)
 
-set(GUI_SOURCES
-        gui/main.cpp
-        gui/mainwindow.cpp
-        gui/mainwindow.h
-        gui/mainwindow.ui
-        gui/config.cpp
-        gui/config.h
-        gui/dialogAbout.cpp
-        gui/dialogAbout.h
-        gui/dialogAbout.ui
-        gui/dialogconfig.cpp
-        gui/dialogconfig.h
-        gui/dialogconfig.ui
-        gui/qrc_resources.cpp
+set(CONSOLE_SOURCES
+        main.cpp
         ${TS_FILES}
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
-    qt_add_executable(AppGUI
+    qt_add_executable(AppConsole
         MANUAL_FINALIZATION
-        ${GUI_SOURCES}
+        ${CONSOLE_SOURCES}
     )
 
     qt_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
 else()
     if(ANDROID)
-        add_library(AppGUI SHARED
-            ${GUI_SOURCES}
+        add_library(AppConsole SHARED
+            ${CONSOLE_SOURCES}
         )
     else()
-        add_executable(AppGUI
-            ${GUI_SOURCES}
+        add_executable(AppConsole
+            ${CONSOLE_SOURCES}
         )
     endif()
 
     qt5_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
 endif()
 
-target_include_directories(AppGUI PUBLIC core)
-target_link_libraries(AppGUI PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Charts Qt${QT_VERSION_MAJOR}::DataVisualization protobuf)
-target_link_libraries(AppGUI PUBLIC core)
+target_include_directories(AppConsole PUBLIC ../core)
+target_link_libraries(AppConsole PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Charts Qt${QT_VERSION_MAJOR}::DataVisualization protobuf)
+target_link_libraries(AppConsole PUBLIC core)
 
 
 if(QT_VERSION_MAJOR EQUAL 6)
-    qt_finalize_executable(AppGUI)
+    qt_finalize_executable(AppConsole)
 endif()
 

@@ -200,7 +200,6 @@ int main(int argc, char *argv[]){
         serviceStrType.append(ModelTrClass::StreamType::Poisson);
 
 
-
     char cvsSeparator = '\t';
 
     qDebug().resetFormat();
@@ -238,7 +237,6 @@ int main(int argc, char *argv[]){
     {
         noOfProcessedSystems = std::count(std::istreambuf_iterator<char>(curCsvFile), std::istreambuf_iterator<char>(), '\n');
 
-
         if (noOfProcessedSystems > 0)
         {
             std::string lastLine;
@@ -265,11 +263,7 @@ int main(int argc, char *argv[]){
         }
     }
 
-
-
-
     int curProcSysNo = 0;
-
     int progressUnit = 0;
 
     for (int i=1; i<= V; i++)
