@@ -5,24 +5,9 @@
 #include <QMap>
 #include <QMetaType>
 
-//#include <QtDataVisualization/QValue3DAxis>
-
-//#include <QtDataVisualization/Q3DScatter>
-//#include <QtDataVisualization/QScatterDataProxy>
-//#include <QtDataVisualization/QScatter3DSeries>
-
-
-//#include <QtDataVisualization/Q3DTheme>
-
-//#include <QtCharts>
-//#include <QLineSeries>
-
 #include "results/resultsSystem.h"
 #include "algorithms/investigator.h"
 #include "resultsApiTypes.h"
-
-
-//using namespace QtDataVisualization;
 
 namespace Results
 {

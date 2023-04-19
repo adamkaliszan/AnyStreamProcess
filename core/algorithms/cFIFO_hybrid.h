@@ -4,18 +4,17 @@
 #include <qglobal.h>
 #include <QMetaType>
 #include "algorithms/investigator.h"
-#include "algorithms/conv.h"
 #include "algorithms/trclvector2.h"
 
 namespace Algorithms
 {
 
-class AlgorithmHybrid : public Investigator
+class cFIFO_convHybrid : public Investigator
 {
 public:
     enum class AlgVariant;
-
-    AlgorithmHybrid(AlgVariant variant = AlgVariant::yFAG);
+    
+    cFIFO_convHybrid(AlgVariant variant = AlgVariant::yFAG);
 
     QString shortName()      const;
     virtual int complexity() const {return 1; }
@@ -89,7 +88,7 @@ public:
 
 } // namespace Algorithms
 
-Q_DECLARE_METATYPE(Algorithms::AlgorithmHybrid*)
+Q_DECLARE_METATYPE(Algorithms::cFIFO_convHybrid*)
 //Q_DECLARE_METATYPE(Algorithm2Pass*)
 
 #endif // ALGORITHMHYBRID_H

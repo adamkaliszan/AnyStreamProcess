@@ -38,9 +38,7 @@
 #endif
 
 #include "algorithms/cFIFO_convGamma.h"
-#include "algorithms/convGamma2d.h"
 #include "algorithms/convGamma3.h"
-#include "algorithms/conv3d.h"
 #include "algorithms/cFIFO_hybrid.h"
 #include "algorithms/hybridDiscr.h"
 #include "algorithms/dFIFO_hybridDesc.h"
@@ -303,8 +301,8 @@ void MainWindow::addAlgorithmsAndParams()
 //    addTestedAlgorithm(new Algorithms::algRekLagGS());
 //  addTestedAlgorithm(new Algorithms::algRekLagGS2());
 //    addTestedAlgorithm(new Algorithms::algRekLAG());
-
-    addTestedAlgorithm(new Algorithms::AlgorithmHybrid(Algorithms::AlgorithmHybrid::AlgVariant::yFAG));
+    
+    addTestedAlgorithm(new Algorithms::cFIFO_convHybrid(Algorithms::cFIFO_convHybrid::AlgVariant::yFAG));
 
 /*
     addExperimentalAlgorithm(new convolutionAlgorithm1());

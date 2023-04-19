@@ -5,8 +5,6 @@
 
 #include "algorithms/investigator.h"
 
-//class algRekLagGSData;
-
 namespace Algorithms
 {
 

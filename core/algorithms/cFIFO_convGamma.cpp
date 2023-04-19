@@ -5,21 +5,21 @@
 namespace Algorithms
 {
 
-convolutionAlgorithmGamma::convolutionAlgorithmGamma(): Investigator()
+cFIFO_convGamma::cFIFO_convGamma(): Investigator()
 {
     myQoS_Set
        <<Results::Type::BlockingProbability
        <<Results::Type::OccupancyDistribution;
 }
 
-bool convolutionAlgorithmGamma::possible(const ModelSystem &system) const
+bool cFIFO_convGamma::possible(const ModelSystem &system) const
 {
     if (system.getBuffer().V() == 0)
         return false;
     return Investigator::possible(system);
 }
 
-void convolutionAlgorithmGamma::calculateSystem(const ModelSystem &system
+void cFIFO_convGamma::calculateSystem(const ModelSystem &system
       , double a
       , RInvestigator *results
       , SimulationParameters *simParameters
@@ -181,13 +181,13 @@ void convolutionAlgorithmGamma::calculateSystem(const ModelSystem &system
     //emit this->sigCalculationDone();
 }
 
-void convolutionAlgorithmGamma::prepareTemporaryData(const ModelSystem &system, double a)
+void cFIFO_convGamma::prepareTemporaryData(const ModelSystem &system, double a)
 {
     Investigator::prepareTemporaryData(system, a);
     this->p_single.fill(nullptr, system.m());
 }
 
-void convolutionAlgorithmGamma::deleteTemporaryData()
+void cFIFO_convGamma::deleteTemporaryData()
 {
     Investigator::deleteTemporaryData();
 
@@ -197,14 +197,14 @@ void convolutionAlgorithmGamma::deleteTemporaryData()
 }
 
 
-convolutionAlgorithmGamma::VectQEUE::VectQEUE(): Vs(0), Vb(0), VsVb(0), m(0)
+cFIFO_convGamma::VectQEUE::VectQEUE(): Vs(0), Vb(0), VsVb(0), m(0)
 {
     trClasses2.clear(); loc2globIdx.clear(); ySYSTEM.clear();
     states.clear();
     states.fill(1, 1);
 }
 
-convolutionAlgorithmGamma::VectQEUE::VectQEUE(int Vs, int Vb, int m, int i, const ModelTrClass &trClass): Vs(Vs), Vb(Vb), VsVb(Vs+Vb), m(m)
+cFIFO_convGamma::VectQEUE::VectQEUE(int Vs, int Vb, int m, int i, const ModelTrClass &trClass): Vs(Vs), Vb(Vb), VsVb(Vs+Vb), m(m)
 {
     loc2globIdx.fill(0, 1);
     loc2globIdx[0] = i;
@@ -222,7 +222,7 @@ convolutionAlgorithmGamma::VectQEUE::VectQEUE(int Vs, int Vb, int m, int i, cons
         ySYSTEM[0][n] = static_cast<double>(n)/static_cast<double>(trClass.t());
 }
 
-convolutionAlgorithmGamma::VectQEUE::~VectQEUE()
+cFIFO_convGamma::VectQEUE::~VectQEUE()
 {
     ySYSTEM.clear();
     loc2globIdx.clear();
@@ -230,7 +230,7 @@ convolutionAlgorithmGamma::VectQEUE::~VectQEUE()
     trClasses2.clear();
 }
 
-void convolutionAlgorithmGamma::VectQEUE::setStates(TrClVector &src)
+void cFIFO_convGamma::VectQEUE::setStates(TrClVector &src)
 {
     if (VsVb != src.V())
         qFatal("Wrong distribution's length");
@@ -239,7 +239,7 @@ void convolutionAlgorithmGamma::VectQEUE::setStates(TrClVector &src)
         states[n] = src[n];
 }
 
-double convolutionAlgorithmGamma::VectQEUE::get_y(int globIdx, int n) const
+double cFIFO_convGamma::VectQEUE::get_y(int globIdx, int n) const
 {
     int classLocIdx = -1;
     int i;
@@ -256,12 +256,12 @@ double convolutionAlgorithmGamma::VectQEUE::get_y(int globIdx, int n) const
     return ySYSTEM[classLocIdx][n];
 }
 
-double convolutionAlgorithmGamma::VectQEUE::getState(int n)
+double cFIFO_convGamma::VectQEUE::getState(int n)
 {
     return states[n];
 }
 
-void convolutionAlgorithmGamma::VectQEUE::fillGamma(double **gamma, double **gammaOther, int rowNo) const
+void cFIFO_convGamma::VectQEUE::fillGamma(double **gamma, double **gammaOther, int rowNo) const
 {
     if (rowNo <=Vs)
     {
@@ -330,7 +330,7 @@ void convolutionAlgorithmGamma::VectQEUE::fillGamma(double **gamma, double **gam
     qDebug()<<msgTmp;
 }
 
-void convolutionAlgorithmGamma::VectQEUE::agregate(const VectQEUE *A, const convolutionAlgorithmGamma::VectQEUE *B)
+void cFIFO_convGamma::VectQEUE::agregate(const VectQEUE *A, const cFIFO_convGamma::VectQEUE *B)
 {
     if (A->m == 0)
     {
@@ -494,7 +494,7 @@ void convolutionAlgorithmGamma::VectQEUE::agregate(const VectQEUE *A, const conv
     delete []gammaB;
 }
 
-void convolutionAlgorithmGamma::VectQEUE::clone(const convolutionAlgorithmGamma::VectQEUE *A)
+void cFIFO_convGamma::VectQEUE::clone(const cFIFO_convGamma::VectQEUE *A)
 {
     Vs   = A->Vs;
     Vb   = A->Vb;

@@ -11,10 +11,10 @@ namespace Algorithms
 /**
  * @brief The convolutionAlgorithmGamma: uogólniony algorytm splotowy
  */
-class convolutionAlgorithmGamma : public Investigator
+class cFIFO_convGamma : public Investigator
 {
 public:
-    convolutionAlgorithmGamma();
+    cFIFO_convGamma();
 
 
     QString shortName()      const {return "conv gamma"; }
@@ -66,7 +66,7 @@ public:
 
 } // namespace Algorithms
 
-Q_DECLARE_METATYPE(Algorithms::convolutionAlgorithmGamma*)
+Q_DECLARE_METATYPE(Algorithms::cFIFO_convGamma*)
 
 
 #endif // ALGORITHMCONVGAMMA_H

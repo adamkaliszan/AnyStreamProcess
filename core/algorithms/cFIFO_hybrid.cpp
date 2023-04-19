@@ -7,7 +7,7 @@ namespace Algorithms
  * Anomalie
  * W stanie n w obszarze serwera zmieniają się y po dodaniu kolejki
  * Zatem zmieniają się prawdopodobieństwa mikrostanów
- * Suma prawdopodobieńśtw mikrostanów zachowuje proporcje podobnei jak prawdipodobieństwa makrostanóœ w obszarze serwera
+ * Suma prawdopodobieńśtw mikrostanów zachowuje proporcje podobnie jak prawdipodobieństwa makrostanóœ w obszarze serwera
  * Jest to możliwe gdy zostanie zachowany lokalny balans. Róœnania rekurencyjne pomijają yki, brany jest pod uwagę suma yt
  * Co się dzieje, gdy różne są intensywności obsługi ?
  * Sumy prawdopodobieństw kombinacji l, n-l jest poprawna, w odniesieniu do symulacji. Podejrzenie p`[l] = xp[l] i P`[n-l] = 1/xP[n-l]. Dla FAG x = 1
@@ -15,7 +15,7 @@ namespace Algorithms
  *
  */
 
-AlgorithmHybrid::AlgorithmHybrid(AlgorithmHybrid::AlgVariant variant) : Investigator(), variant(variant)
+cFIFO_convHybrid::cFIFO_convHybrid(cFIFO_convHybrid::AlgVariant variant) : Investigator(), variant(variant)
 {
     myQoS_Set
      << Results::Type::BlockingProbability
@@ -34,7 +34,7 @@ AlgorithmHybrid::AlgorithmHybrid(AlgorithmHybrid::AlgVariant variant) : Investig
         ;
 }
 
-QString AlgorithmHybrid::shortName() const
+QString cFIFO_convHybrid::shortName() const
 {
     QString result;
     switch (variant)
@@ -61,7 +61,7 @@ QString AlgorithmHybrid::shortName() const
 }
 
 
-void AlgorithmHybrid::calculateSystem(const ModelSystem &system
+void cFIFO_convHybrid::calculateSystem(const ModelSystem &system
         , double a
         , RInvestigator *results
         , SimulationParameters *simParameters
@@ -336,7 +336,7 @@ void AlgorithmHybrid::calculateSystem(const ModelSystem &system
     //emit this->sigCalculationDone();
 }
 
-void AlgorithmHybrid::calculateYSystem(QVector<QVector<double> > &ySYSTEM_VsVb
+void cFIFO_convHybrid::calculateYSystem(QVector<QVector<double> > &ySYSTEM_VsVb
         , QVector<QVector<double> > yFAG
         , const ModelSystem &system
         , TrClVector *PwithoutI
@@ -361,7 +361,7 @@ void AlgorithmHybrid::calculateYSystem(QVector<QVector<double> > &ySYSTEM_VsVb
     }
 }
 
-void AlgorithmHybrid::calculateYSystemFAG(QVector<QVector<double> > &ySystem
+void cFIFO_convHybrid::calculateYSystemFAG(QVector<QVector<double> > &ySystem
   , QVector<QVector<double> > yFAG)
 {
     for (int i=0; i<system->m(); i++)
@@ -371,7 +371,7 @@ void AlgorithmHybrid::calculateYSystemFAG(QVector<QVector<double> > &ySystem
     }
 }
 
-void AlgorithmHybrid::calculateYSystemApprox(QVector<QVector<double> > &ySystem
+void cFIFO_convHybrid::calculateYSystemApprox(QVector<QVector<double> > &ySystem
   , QVector<QVector<double> > yFAG
   , int infinityFtr
 )
@@ -394,7 +394,7 @@ void AlgorithmHybrid::calculateYSystemApprox(QVector<QVector<double> > &ySystem
     }
 }
 
-void AlgorithmHybrid::calculateYSystemLambdaT(QVector<QVector<double> > &ySystem
+void cFIFO_convHybrid::calculateYSystemLambdaT(QVector<QVector<double> > &ySystem
   , QVector<QVector<double> > ySystemFAG
 )
 {
@@ -405,7 +405,7 @@ void AlgorithmHybrid::calculateYSystemLambdaT(QVector<QVector<double> > &ySystem
     }
 }
 
-void AlgorithmHybrid::calculateYServer(QVector<QVector<double> > &ySeverVsVb
+void cFIFO_convHybrid::calculateYServer(QVector<QVector<double> > &ySeverVsVb
   , QVector<QVector<double> > ySystemFAG
   , double *Q
 )
@@ -425,14 +425,14 @@ void AlgorithmHybrid::calculateYServer(QVector<QVector<double> > &ySeverVsVb
     }
 }
 
-bool AlgorithmHybrid::possible(const ModelSystem &system) const
+bool cFIFO_convHybrid::possible(const ModelSystem &system) const
 {
     if (system.getBuffer().V() == 0)
         return false;
     return Investigator::possible(system);
 }
 
-void AlgorithmHybrid::calculateYServerFAG(QVector<QVector<double> > &yServerVsVb
+void cFIFO_convHybrid::calculateYServerFAG(QVector<QVector<double> > &yServerVsVb
   , QVector<QVector<double> > ySystemFAG
 )
 {
@@ -452,7 +452,7 @@ void AlgorithmHybrid::calculateYServerFAG(QVector<QVector<double> > &yServerVsVb
     }
 }
 
-void AlgorithmHybrid::calculateYServerPropLambdaT(QVector<QVector<double> > &yServerVsVb
+void cFIFO_convHybrid::calculateYServerPropLambdaT(QVector<QVector<double> > &yServerVsVb
   , QVector<QVector<double> > ySystemFAG
   , double *Q
 )
@@ -469,7 +469,7 @@ void AlgorithmHybrid::calculateYServerPropLambdaT(QVector<QVector<double> > &ySe
 }
 
 
-void AlgorithmHybrid::calculateYQeue(QVector<QVector<double> > &yQeueVsVb
+void cFIFO_convHybrid::calculateYQeue(QVector<QVector<double> > &yQeueVsVb
   , QVector<QVector<double> > ySystemFAG
   , double *Q
 )
@@ -491,7 +491,7 @@ void AlgorithmHybrid::calculateYQeue(QVector<QVector<double> > &yQeueVsVb
     }
 }
 
-void AlgorithmHybrid::calculateYQeueFAG(QVector<QVector<double> > &yQeueVsVb
+void cFIFO_convHybrid::calculateYQeueFAG(QVector<QVector<double> > &yQeueVsVb
   , QVector<QVector<double> > ySystemFAG
 )
 {
@@ -511,7 +511,7 @@ void AlgorithmHybrid::calculateYQeueFAG(QVector<QVector<double> > &yQeueVsVb
     }
 }
 
-void AlgorithmHybrid::calculateYQeuePropLambdaT(QVector<QVector<double> > &yQeueVsVb
+void cFIFO_convHybrid::calculateYQeuePropLambdaT(QVector<QVector<double> > &yQeueVsVb
   , QVector<QVector<double> > yFAG
   , double *Q
   , bool lambdaIsDependent

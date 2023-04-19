@@ -22,6 +22,4 @@ public:
     double operator()(std::mt19937_64 &gen);
 };
 
-
-
 #endif // UTILS_PROB_DISTRIB_H

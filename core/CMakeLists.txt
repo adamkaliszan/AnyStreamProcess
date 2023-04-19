@@ -29,9 +29,6 @@ set (SRC_LIB
     algorithms/LAG_reccurenceGS.cpp           algorithms/LAG_recurenceGS.h
     algorithms/cFIFO_convGamma.cpp            algorithms/cFIFO_convGamma.h
     algorithms/cFIFO_hybrid.cpp               algorithms/cFIFO_hybrid.h
-    algorithms/conv.cpp                       algorithms/conv.h
-    algorithms/conv3d.cpp                     algorithms/conv3d.h
-    algorithms/convGamma2d.cpp                algorithms/convGamma2d.h
     algorithms/convGamma3.cpp                 algorithms/convGamma3.h
     algorithms/dFIFO_hybridDesc.cpp           algorithms/dFIFO_hybridDesc.h
     algorithms/hybridDiscr.cpp                algorithms/hybridDiscr.h

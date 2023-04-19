@@ -24,7 +24,6 @@ public:
     static double distrParetoED(double Ex, double D);
 
     static double distrUniform(double tMin, double tMax);
-
 };
 
 } // namespace Algorithms

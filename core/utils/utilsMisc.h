@@ -6,7 +6,6 @@
 namespace Utils
 {
 
-
 class UtilsMisc
 {
 public:

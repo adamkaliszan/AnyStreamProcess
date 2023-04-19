@@ -1,16 +1,13 @@
 #ifndef INVESTIGATOR_321_H
 #define INVESTIGATOR_321_H
 
-//#include <QMetaType>
-#include <QSet>
-
-#include <QString>
-
 #include <iostream>
 #include <math.h>
 
-#include "algorithms/simulationParameters.h"
+#include <QSet>
+#include <QString>
 
+#include "algorithms/simulationParameters.h"
 #include "results/resultsApiTypes.h"
 #include "results/resultsInvestigator.h"
 #include "model.h"
@@ -22,7 +19,6 @@ using namespace Results;
 namespace Results
 {
     class RInvestigator;
-
 }
 
 class Investigator

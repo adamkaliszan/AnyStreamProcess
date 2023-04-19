@@ -4,7 +4,6 @@
 #include <QMetaType>
 #include <qstring.h>
 
-
 class SimulationParameters
 {
 public:
