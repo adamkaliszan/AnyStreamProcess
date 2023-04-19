@@ -2,6 +2,7 @@
 #include <QDebug>
 #include <stdexcept>
 #include <math.h>
+#include <algorithm>
 
 #include <QJsonArray>
 
@@ -84,7 +85,7 @@ QString TrClVector::getCvs(char cvsSeparator) const
 
 double &TrClVector::operator[](int n)
 {
-    if (n > V())
+    if (n > V() || n < 0)
         throw std::out_of_range("Vector's index is out of range");
     return _states[n].p;
 }
@@ -484,6 +485,12 @@ TrClVector TrClVector::convFAG(const TrClVector &Pa, const TrClVector &Pb, bool 
     return result;
 }
 
+struct StateSumator {
+    double operator()(const double &lho, const State &rho) const {
+        return lho + rho.p;
+    }
+};
+
 TrClVector TrClVector::convFAGanyStream(const TrClVector &P_A, const TrClVector &P_B, int len)
 {
     int n, la, lb;
@@ -495,6 +502,7 @@ TrClVector TrClVector::convFAGanyStream(const TrClVector &P_A, const TrClVector 
 
     prepareResult(result, P_A, P_B, len);
 
+    StateSumator op;
     for (n=0; n<=len; n++)
     {
         result[n]=0;
@@ -510,7 +518,12 @@ TrClVector TrClVector::convFAGanyStream(const TrClVector &P_A, const TrClVector 
             const TrClVector *Pa = P_A.getTruncatedVector(result.V() - lb);
             const TrClVector *Pb = P_B.getTruncatedVector(result.V() - la);
 
-            result[n] += Pa->_states[la].p * Pb->_states[lb].p;
+            double kA = std::accumulate(P_A._states.begin(), P_A._states.begin() + la+1, 0.0, op) /
+                        std::accumulate(Pa->_states.begin(), Pa->_states.begin() + la+1, 0.0, op);
+            double kB = std::accumulate(P_B._states.begin(), P_B._states.begin() + lb+1, 0.0, op) /
+                        std::accumulate(Pb->_states.begin(), Pb->_states.begin() + lb+1, 0.0, op);
+
+            result[n] += kA * Pa->_states[la].p * kB * Pb->_states[lb].p;
 
             result._states[n].tIntOutNew += (Pa->_states[la].p * Pb->_states[lb].p * (Pa->_states[la].tIntOutNew + Pb->_states[lb].tIntOutNew));
             result._states[n].tIntOutEnd += (Pa->_states[la].p * Pb->_states[lb].p * (Pa->_states[la].tIntOutEnd + Pb->_states[lb].tIntOutEnd));

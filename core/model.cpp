@@ -1607,11 +1607,12 @@ ModelTrClass::SimulatorSingleServiceSystem::SimulatorSingleServiceSystem(int noO
 
 ModelTrClass::SimulatorSingleServiceSystem::~SimulatorSingleServiceSystem()
 {
-    while (!agenda.empty())
-    {
-        delete agenda.top();
-        agenda.pop();
+    auto iter = std::begin(agenda);
+    while (iter != std::end(agenda)) {
+        delete *iter;
+        iter++;
     }
+    agenda.clear();
     while (!qeue.isEmpty())
         delete qeue.takeFirst();
 }
@@ -1680,24 +1681,12 @@ double ModelTrClass::SimulatorSingleServiceSystem::timeServEndPareto()
 void ModelTrClass::SimulatorSingleServiceSystem::addProcess(ModelTrClass::SimulatorProcess *newProc, double relativeTime)
 {
     newProc->time = relativeTime + agendaTimeOffset;
-    agenda.push(newProc);
+    agenda.emplace(newProc);
 }
 
 void ModelTrClass::SimulatorSingleServiceSystem::removeProcess(ModelTrClass::SimulatorProcess *proc)
 {
-    std::stack<SimulatorProcess *> tmpStack;
-    while(!agenda.empty())
-    {
-        SimulatorProcess *tmpProc = agenda.top();
-        if (tmpProc != proc)
-            tmpStack.push(tmpProc);
-        agenda.pop();
-    }
-    while (!tmpStack.empty())
-    {
-        agenda.push(tmpStack.top());
-        tmpStack.pop();
-    }
+    agenda.erase(proc);
     delete proc;
 }
 
@@ -1706,30 +1695,21 @@ void ModelTrClass::SimulatorSingleServiceSystem::stabilize(int noOfEvents)
     for( ;noOfEvents>0; noOfEvents--)
     {
         //SimulatorProcess *proc = agenda.takeFirst();
+        auto first = std::begin(agenda);
 
-        SimulatorProcess *proc = agenda.top();
-        agenda.pop();
+        SimulatorProcess *proc = *first;
+        agenda.erase(first);
 
         double tmp = proc->time;
         proc->time -= agendaTimeOffset;
 
+        assert(proc->time > 0);
+
         agendaTimeOffset = tmp;
 
-        if (noOfEvents % 1024 == 0)
-        {
-            std::list<SimulatorProcess *> tmpAgenda;
-            //double lastValue = agenda.top()->time;
-            while (!agenda.empty())
-            {
-                //if (lastValue > agenda.top()->time)
-                //    qFatal("Agenda error");
-                tmpAgenda.push_front(agenda.top());
-                agenda.pop();
-            }
-            for (auto iter = tmpAgenda.begin(); iter != tmpAgenda.end(); iter++)
-            {
-                (*iter)->time-=agendaTimeOffset;
-                agenda.push(*iter);
+        if (noOfEvents % (1<<20) == 0) {
+            for (auto iter = std::begin(agenda); iter != std::end(agenda); iter++) {
+                (*iter)->time-= agendaTimeOffset;
             }
             agendaTimeOffset = 0;
         }
@@ -1765,35 +1745,23 @@ void ModelTrClass::SimulatorSingleServiceSystem::doSimExperiment(long int noOfEv
     for( ;noOfEvents>0; noOfEvents--)
     {
         int oldState = n_total;
-        SimulatorProcess *proc = agenda.top();
-        agenda.pop();
+        auto iter = std::begin(agenda);
+        SimulatorProcess *proc = *iter;
+        agenda.erase(iter);
 
         double tmp = proc->time;
         proc->time -= agendaTimeOffset;
         agendaTimeOffset = tmp;
 
-        if (noOfEvents % 1024 == 0)
-        {
-            std::list<SimulatorProcess *> tmpAgenda;
-
-            //double lastValue = agenda.top()->time;
-            while(!agenda.empty())
-            {
-                //if (lastValue > agenda.top()->time)
-                //    qFatal("Agenda error");
-
-                tmpAgenda.push_front(agenda.top());
-                agenda.pop();
-            }
-            for (auto iterator = tmpAgenda.begin(); iterator != tmpAgenda.end(); iterator++)
-            {
-                (*iterator)->time -= agendaTimeOffset;
-                agenda.push(*iterator);
+        if (noOfEvents % (1<<20) == 0) {
+            for (auto iter = std::begin(agenda); iter != std::end(agenda); iter++) {
+                (*iter)->time-= agendaTimeOffset;
             }
             agendaTimeOffset = 0;
         }
 
         double deltaTime = proc->time;
+        assert(deltaTime > 0);
         states[n_total] += deltaTime;
 
         if (!proc->execute(this))
@@ -1916,21 +1884,13 @@ void ModelTrClass::SimulatorSingleServiceSystem::endCallService(ModelTrClass::Si
         timeToTheEnd *=resPartOccupied;
         callPartialyServiced->time = timeToTheEnd;
 
+        auto iter = agenda.find(callPartialyServiced);
+        agenda.erase(iter);
         n_inServer +=t;
         n_inServer -= resPartOccupied;
         resPartOccupied = 0;
         callPartialyServiced = nullptr;
-
-        std::list<SimulatorProcess *> tmpList;
-        while (!agenda.empty())
-        {
-            tmpList.push_back(agenda.top());
-            agenda.pop();
-        }
-        for (auto iterator = tmpList.begin(); iterator != tmpList.end(); iterator++)
-        {
-            agenda.push(*iterator);
-        }
+        agenda.emplace(*iter);
     }
 
     while (n_inServer < Vs)

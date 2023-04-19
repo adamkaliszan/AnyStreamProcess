@@ -11,7 +11,7 @@
 #include <qglobal.h>
 #include <math.h>
 
-#include <queue>
+#include <set>
 
 #include <iostream>
 
@@ -212,7 +212,7 @@ public:
     {
         bool operator()(const SimulatorProcess* lhs, const SimulatorProcess* rhs) const
         {
-            return lhs->time > rhs->time;
+            return lhs->time < rhs->time;
         }
     };
     class SimulatorSingleServiceSystem
@@ -244,7 +244,7 @@ public:
         double t_serviceMin;
         double t_serviceMax;
 
-        std::priority_queue<SimulatorProcess *, std::vector<SimulatorProcess *>, CmpEdgePtrs> agenda;
+        std::set<SimulatorProcess *, CmpEdgePtrs> agenda;
         double agendaTimeOffset;
 
         QList<SimulatorProcess *> qeue;
