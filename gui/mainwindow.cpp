@@ -31,11 +31,13 @@
 
 #include "qcolor.h"
 
-#include "algorithms/conv.h"
-#include "algorithms/cFIFO_convGamma.h"
-#include "algorithms/FAG_hybrid.h"
-#include "algorithms/FAG_AnyStr_hybrid.h"
+#include "algorithms/FAG_conv_1d_plu.h"
+#include "algorithms/FAG_conv_AnyStr_sim.h"
+#if defined (USE_TENSORFLOW)
 #include "algorithms/FAG_AnyStr_ML.h"
+#endif
+
+#include "algorithms/cFIFO_convGamma.h"
 #include "algorithms/convGamma2d.h"
 #include "algorithms/convGamma3.h"
 #include "algorithms/conv3d.h"
@@ -285,10 +287,11 @@ void MainWindow::addAlgorithmsAndParams()
     //addExperimentalAlgorithm(new convolutionAlgorithm3d_v1());
     //addExperimentalAlgorithm(new Algorithm2Pass());
     addExperimentalAlgorithm(new Algorithms::AlgorithmHybridDiscrDesc());
+#if defined (USE_TENSORFLOW)
     addExperimentalAlgorithm(new Algorithms::FAG_AnyStr_ML());
-
-    algorithms.append(new Algorithms::FAG_hybrid());
-
+#endif
+    algorithms.append(new Algorithms::FAG_conv_1d());
+    algorithms.append(new Algorithms::FAG_conv_AnyStr_sim());
 
     //    algorithms.append(new AlgorithmAnyStreamFAG());
 //    algorithms.append(new convolutionAlgorithmGamma());
@@ -297,9 +300,9 @@ void MainWindow::addAlgorithmsAndParams()
 //    algorithms.append(new AlgorithmHybrid(AlgorithmHybrid::algVariant::yAprox));
 //    algorithms.append(new AlgorithmHybridDiscrDesc());
     addTestedAlgorithm(new Algorithms::SimulatorAll());
-    addTestedAlgorithm(new Algorithms::algRekLagGS());
-    addTestedAlgorithm(new Algorithms::algRekLagGS2());
-    addTestedAlgorithm(new Algorithms::algRekLAG());
+//    addTestedAlgorithm(new Algorithms::algRekLagGS());
+//  addTestedAlgorithm(new Algorithms::algRekLagGS2());
+//    addTestedAlgorithm(new Algorithms::algRekLAG());
 
     addTestedAlgorithm(new Algorithms::AlgorithmHybrid(Algorithms::AlgorithmHybrid::AlgVariant::yFAG));
 

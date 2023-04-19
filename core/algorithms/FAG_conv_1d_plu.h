@@ -3,22 +3,24 @@
 
 #include <qglobal.h>
 #include <QMetaType>
-#include "algorithms/conv.h"
 #include "algorithms/investigator.h"
 #include "algorithms/trclvector2.h"
 
 namespace Algorithms
 {
 
-class FAG_hybrid : public Investigator
+/*
+ *  Legacy convalution algorithm with additional intensity of service and arrival calculation
+ */
+class FAG_conv_1d : public Investigator
 {
 protected:
     TrClVector *p_single;
 
 public:
-    FAG_hybrid();
+    FAG_conv_1d();
 
-    QString shortName()  const { return QString("hybr NQ"); }
+    QString shortName()  const { return QString("FAG conv legacy"); }
     int complexity()     const { return 1; }
     void calculateSystem(
         const ModelSystem &system
@@ -34,6 +36,6 @@ private:
 
 } // namespace Algorithms
 
-Q_DECLARE_METATYPE(Algorithms::FAG_hybrid*)
+Q_DECLARE_METATYPE(Algorithms::FAG_conv_1d*)
 
 #endif // ALGORITHM_HYBRID_NOFIFO_H

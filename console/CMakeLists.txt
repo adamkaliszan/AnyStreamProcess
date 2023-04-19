@@ -18,7 +18,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(QT NAMES Qt5 COMPONENTS Widgets LinguistTools REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets LinguistTools REQUIRED)
-find_package(TensorflowCC REQUIRED)
+
+if (ENABLE_TENSORFLOW)
+    find_package(TensorflowCC REQUIRED)
+endif()
 
 find_package(Qt5Charts REQUIRED)
 find_package(Qt5DataVisualization REQUIRED)

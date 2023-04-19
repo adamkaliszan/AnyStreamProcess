@@ -11,6 +11,11 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set (ENABLE_TENSORFLOW false)
+
+if (ENABLE_TENSORFLOW)
+    add_compile_definitions(USE_TENSORFLOW 1)
+endif()
 #add_compile_definitions(INC_AGENDA_PERFORMANCE 1)
 
 # QtCreator supports the following variables for Android, which are identical to qmake Android variables.
@@ -20,12 +25,14 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(QT NAMES Qt5 COMPONENTS Widgets LinguistTools REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets LinguistTools REQUIRED)
-find_package(TensorflowCC REQUIRED)
+
+if (ENABLE_TENSORFLOW)
+    find_package(TensorflowCC REQUIRED)
+endif()
 
 find_package(Qt5Charts REQUIRED)
 find_package(Qt5DataVisualization REQUIRED)
 find_package(Qt5PrintSupport REQUIRED)
-
 
 add_subdirectory(core)
 add_subdirectory(console)
@@ -46,9 +53,11 @@ set(GUI_SOURCES
         gui/dialogconfig.cpp
         gui/dialogconfig.h
         gui/dialogconfig.ui
-        gui/qrc_resources.cpp
         ${TS_FILES}
 )
+
+#gui/qrc_resources.cpp
+
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(AppGUI

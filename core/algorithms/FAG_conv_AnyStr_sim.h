@@ -4,21 +4,20 @@
 #include <qglobal.h>
 #include <QMetaType>
 #include "algorithms/investigator.h"
-#include "algorithms/conv.h"
 #include "algorithms/trclvector2.h"
 
 namespace Algorithms
 {
 
-class FAG_AnyStry_hybrid : public Investigator
+class FAG_conv_AnyStr_sim : public Investigator
 {
 protected:
     TrClVector *p_single;
 
 public:
-    FAG_AnyStry_hybrid();
+    FAG_conv_AnyStr_sim();
 
-    QString shortName() const { return QString("AnyStream SIM"); }
+    QString shortName() const { return QString("FAG conv 2d sim"); }
     int complexity()    const { return 1; }
     void calculateSystem(const ModelSystem &system
           , double a
@@ -29,7 +28,7 @@ public:
 
 } //namespace Algorithms
 
-Q_DECLARE_METATYPE(Algorithms::FAG_AnyStry_hybrid*)
+Q_DECLARE_METATYPE(Algorithms::FAG_conv_AnyStr_sim*)
 
 #endif // ALGORITHMANYSTREAMFAG_H
 

@@ -641,10 +641,6 @@ TrClVector ModelTrClass::trDistribution(int classIdx, double A, int Vs, int Vb, 
 
     LambdaZero = A_cor * _mu;
 
-
-
-
-
     if ((newCallStr()==StreamType::Poisson) && (callServStr()==StreamType::Poisson))
     {
         result[0] = 1;
