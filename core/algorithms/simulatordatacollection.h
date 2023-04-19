@@ -8,7 +8,7 @@
 #include <QtGlobal>
 #include <QtDebug>
 
-#include "results/resultsInvestigator.h"
+#include <set>
 
 namespace Algorithms
 {
@@ -19,204 +19,50 @@ class SimulatorDataCollection
 private:
     QStack<P*> outOfDateProcesses;
 
-    struct BinaryHeap
+    struct Comparator {
+        int operator()(const P *lho, const P *rho) const {
+            return lho->time < rho->time;
+        }
+    };
+
+    struct Collection
     {
         double timeOffset;                                           //The ralative time of an events, that are stored on the heap is a sum of its (not always updated) relative time and timeOffset
-        u_int32_t capacity;
-        u_int32_t len;
-        QVector<P*> array;
-
-#ifdef QT_DEBUG
-        void consistencyCheck()
-        {
-            P *tmpProc;
-            for (u_int32_t i=0; i<len; i++)
-            {
-                tmpProc = array[i];
-
-                if (tmpProc->hasCallData() == false)
-                    qFatal("Proces without call");
-
-                if (tmpProc->idx != i)
-                    qFatal("Wrong index %d should be %d", array[i]->idx, i);
-
-                if (tmpProc->time < timeOffset)
-                    qFatal("Time %lf smaller then offset %lf", array[i]->time, timeOffset);
-
-                if (tmpProc->time < array[0]->time)
-                    qFatal("Binary heap is not sorted");
-
-                u_int32_t leftIdx = 2*i+1;
-                u_int32_t rightIdx = 2*i+2;
-                if (leftIdx < len)
-                {
-                    P* childLeft = array[leftIdx];
-                    if (childLeft->time < tmpProc->time)
-                        qFatal("Binary heap is not sorted (left child)");
-                }
-                if (rightIdx < len)
-                {
-                    P* childRight = array[rightIdx];
-                    if (childRight->time < tmpProc->time)
-                        qFatal("Binary heap is not sorted (Right child)");
-                }
-            }
-        }
-#endif
-
-        void _swap(u_int32_t idx1, u_int32_t idx2)
-        {
-            P *tmpProc = array[idx1];
-            array[idx1] = array[idx2];
-            array[idx2] = tmpProc;
-
-            array[idx1]->idx = idx1;
-            array[idx2]->idx = idx2;
-        }
-        void _fixTheHeapUp()
-        {
-            //qDebug()<<"Fix the heap UP: "<<array;
-            u_int32_t tmpIdx = len-1;
-            u_int32_t parIdx = len/2-1;
-
-            while (tmpIdx != 0)
-            {
-                if (array[parIdx]->time > array[tmpIdx]->time)
-                    _swap(parIdx, tmpIdx);
-
-                tmpIdx = parIdx;
-                parIdx = (parIdx-1)/2;
-            }
-            //qDebug()<<"               : "<<array;
-        }
-        void _fixTheHeapUp(int idx)
-        {
-            //qDebug()<<"Fix the heap UP: "<<array;
-            u_int32_t tmpIdx = idx;
-            u_int32_t parIdx = (tmpIdx-1)/2;
-
-            while (tmpIdx != 0)
-            {
-                if (array[parIdx]->time > array[tmpIdx]->time)
-                    _swap(parIdx, tmpIdx);
-
-                tmpIdx = parIdx;
-                parIdx = (parIdx-1)/2;
-            }
-            //qDebug()<<"               : "<<array;
-        }
-        void _fixTheHeapDown(u_int32_t idx)
-        {
-#ifdef QT_DEBUG
-            if (idx >= len)
-                qFatal("Wrong index");
-#endif
-            u_int32_t leftIdx = 2*idx+1;
-            u_int32_t rightIdx = leftIdx+1;
-            u_int32_t smalerIdx;
-
-            while (leftIdx < len)
-            {
-                smalerIdx = leftIdx;
-                if (rightIdx < len)
-                    if (array[leftIdx]->time > array[rightIdx]->time)
-                        smalerIdx = rightIdx;
-
-                if (array[idx]->time > array[smalerIdx]->time)
-                    _swap(idx, smalerIdx);
-
-                idx = smalerIdx;
-                leftIdx = 2*idx+1;
-                rightIdx = leftIdx + 1;
-            }
-        }
+        std::set<P*, Comparator> set;
 
         void add(P *newProc)
         {
-#ifdef QT_DEBUG
-            if (newProc->time < 0)
-                qFatal("Negative time value");
-            consistencyCheck();
-#endif
             newProc->time += timeOffset;
-            if (capacity == len)
-            {
-                capacity *=2;
-                array.resize(capacity);
-            }
-            array[len] = newProc;
-            newProc->idx = len;
-            len++;
-            _fixTheHeapUp();
-#ifdef QT_DEBUG
-            consistencyCheck();
-#endif
+            set.insert(newProc);
         }
         void remove(P *proc)
         {
-#ifdef QT_DEBUG
-            consistencyCheck();
-#endif
-            u_int32_t idx = proc->idx;
-
-            if (idx == len-1)
-            {
-                len--;
-                array[len] = NULL;
-            }
-            else
-            {
-                len--;
-                _swap(idx, len);
-                array[len] = NULL;
-                _fixTheHeapDown(idx);
-                _fixTheHeapUp(idx);
-            }
-#ifdef QT_DEBUG
-            consistencyCheck();
-#endif
+            set.erase(proc);
         }
 
 
         void changeTime(P *proc, double newTime)
         {
+            set.erase(proc);
             proc->time = timeOffset+newTime;
-            _fixTheHeapDown(proc->idx);
-            _fixTheHeapUp(proc->idx);
-#ifdef QT_DEBUG
-            consistencyCheck();
-#endif
+            set.insert(proc);
         }
 
         P *takeFirst()
         {
-#ifdef QT_DEBUG
-            if (this->len == 0)
-                qFatal("Agenda is empty");
-            consistencyCheck();
-#endif
-            P *result=array[0];
-            len--;
-            if (len > 0)
-            {
-                _swap(0, len);
-                array[len] = NULL;
-                _fixTheHeapDown(0);
-            }
-            result->time-=timeOffset;
-#ifdef QT_DEBUG
-            consistencyCheck();
-#endif
-            return result;
+            auto first = set.begin();
+            set.erase(first);
+            (*first)->time -= timeOffset;
+            return *first;
         }
 
         void decreaseTime(double time)
         {
             timeOffset += time;
-            if (timeOffset > 1024)
-            {
-                for (u_int32_t idx = 0; idx < len; idx++)
-                    array[idx]->time -= timeOffset;
+            if (timeOffset > 1024) {
+                for (auto iter = std::begin(set); iter != std::end(set); iter++) {
+                    (*iter)->time -=timeOffset;
+                }
                 timeOffset = 0;
             }
         }
@@ -226,14 +72,11 @@ public:
     SimulatorDataCollection()
     {
         processes.timeOffset = 0;
-        processes.capacity = 4;
-        processes.len = 0;
-        processes.array.resize(processes.capacity);
     }
 
     ~SimulatorDataCollection()
     {
-        foreach(P *proc, processes.array)
+        foreach(P *proc, processes.set)
         {
             delete proc;
         }

@@ -141,7 +141,6 @@ void SimulatorAll::Engine::updateServiceTime(SimulatorAll::Call *uCall)
 
 void SimulatorAll::Engine::reuseProcess(ProcAll *proc)
 {
-    proc->idx = 0;
 #ifdef QT_DEBUG
     proc->setUseless();
 #endif

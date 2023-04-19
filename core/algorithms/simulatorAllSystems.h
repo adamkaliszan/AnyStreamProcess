@@ -539,7 +539,6 @@ private:
 
 public:
     double time;             /// Those value can be out of date. Use them only on object taken from agenda
-    uint   idx;              /// Index on the binary heap
     SimulatorAll::Call *callData;
 
 #ifdef QT_DEBUG

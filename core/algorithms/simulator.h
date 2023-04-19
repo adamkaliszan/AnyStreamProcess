@@ -4,8 +4,6 @@
 #include "algorithms/investigator.h"
 #include <boost/math/distributions/pareto.hpp>
 
-#define QT_DEBUG 1
-
 namespace Algorithms
 {
 
